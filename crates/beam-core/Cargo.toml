@@ -6,10 +6,29 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+beam-proto.workspace = true
+blake3.workspace = true
+bytes.workspace = true
+data-encoding.workspace = true
+dirs.workspace = true
+fs4.workspace = true
+futures.workspace = true
+gethostname.workspace = true
+hex.workspace = true
 iroh.workspace = true
 iroh-mainline-address-lookup.workspace = true
 iroh-mdns-address-lookup.workspace = true
+prost.workspace = true
+rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 tokio.workspace = true
+tracing.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
 
 [lints]
 workspace = true
