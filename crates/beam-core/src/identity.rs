@@ -12,8 +12,9 @@ pub(crate) fn load_or_create(data_dir: &Path) -> Result<SecretKey> {
     let path = data_dir.join(KEY_FILE);
     match fs::read(&path) {
         Ok(bytes) => {
-            let key: [u8; 32] = bytes.try_into().map_err(|_| std::io::ErrorKind::InvalidData);
-            Ok(SecretKey::from_bytes(&key.map_err(std::io::Error::from).at(&path)?))
+            let key: std::result::Result<[u8; 32], _> = bytes.try_into();
+            let key = key.map_err(|_| std::io::Error::from(std::io::ErrorKind::InvalidData));
+            Ok(SecretKey::from_bytes(&key.at(&path)?))
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             let key = SecretKey::generate();

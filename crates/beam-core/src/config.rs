@@ -65,5 +65,7 @@ impl Config {
 
 #[must_use]
 pub fn default_data_dir() -> PathBuf {
-    dirs::data_dir().unwrap_or_else(|| PathBuf::from(".")).join(APP_DIR)
+    dirs::data_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(APP_DIR)
 }

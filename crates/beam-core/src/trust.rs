@@ -66,7 +66,9 @@ impl TrustStore {
         let mut matches = self.devices.iter().filter(|device| {
             device.name.to_lowercase() == needle || device.id.to_z32().starts_with(&needle)
         });
-        let first = matches.next().ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
+        let first = matches
+            .next()
+            .ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
         if matches.next().is_some() {
             return Err(Error::AmbiguousDevice(query.to_owned()));
         }

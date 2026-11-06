@@ -83,6 +83,9 @@ pub(crate) trait StorageContext<T> {
 
 impl<T> StorageContext<T> for std::io::Result<T> {
     fn at(self, path: impl Into<PathBuf>) -> Result<T> {
-        self.map_err(|source| Error::Storage { path: path.into(), source })
+        self.map_err(|source| Error::Storage {
+            path: path.into(),
+            source,
+        })
     }
 }
