@@ -1,0 +1,82 @@
+use std::time::Duration;
+
+use iroh::endpoint::{QuicTransportConfig, presets};
+use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
+use iroh_mainline_address_lookup::DhtAddressLookup;
+use iroh_mdns_address_lookup::MdnsAddressLookup;
+
+use crate::config::{Config, RelayPolicy, Visibility};
+use crate::error::{Error, Result};
+
+const MIB: u32 = 1024 * 1024;
+const STREAM_WINDOW: u32 = 16 * MIB;
+const CONNECTION_WINDOW: u32 = 128 * MIB;
+const MAX_FILE_STREAMS: u32 = 64;
+const IDLE_TIMEOUT: Duration = Duration::from_secs(30);
+const KEEP_ALIVE: Duration = Duration::from_secs(5);
+const MDNS_NAME_LIMIT: usize = 200;
+
+#[derive(Debug)]
+pub(crate) struct Network {
+    pub(crate) endpoint: Endpoint,
+    pub(crate) mdns: Option<MdnsAddressLookup>,
+}
+
+pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> Result<Network> {
+    let online = !isolated && config.relay_policy != RelayPolicy::Off;
+    let builder = if online {
+        Endpoint::builder(presets::N0)
+            .relay_mode(relay_mode(config)?)
+            .address_lookup(DhtAddressLookup::builder())
+    } else {
+        Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Disabled)
+    };
+    let endpoint = builder
+        .secret_key(secret)
+        .transport_config(transport_config()?)
+        .bind()
+        .await
+        .map_err(|error| Error::NetworkStart(error.to_string()))?;
+    let mdns = if isolated { None } else { Some(start_mdns(&endpoint, config)?) };
+    Ok(Network { endpoint, mdns })
+}
+
+fn relay_mode(config: &Config) -> Result<RelayMode> {
+    if config.relays.is_empty() {
+        return Ok(RelayMode::Default);
+    }
+    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(&config.relays)?)))
+}
+
+pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {
+    urls.iter()
+        .map(|url| url.parse().map_err(|_| Error::InvalidRelayUrl(url.clone())))
+        .collect()
+}
+
+fn transport_config() -> Result<QuicTransportConfig> {
+    let idle = IDLE_TIMEOUT.try_into().map_err(|_| Error::NetworkStart("idle timeout".into()))?;
+    Ok(QuicTransportConfig::builder()
+        .stream_receive_window(STREAM_WINDOW.into())
+        .receive_window(CONNECTION_WINDOW.into())
+        .send_window(u64::from(CONNECTION_WINDOW))
+        .max_concurrent_uni_streams(MAX_FILE_STREAMS.into())
+        .max_idle_timeout(Some(idle))
+        .keep_alive_interval(KEEP_ALIVE)
+        .build())
+}
+
+fn start_mdns(endpoint: &Endpoint, config: &Config) -> Result<MdnsAddressLookup> {
+    let name: String = config.name.chars().take(MDNS_NAME_LIMIT).collect();
+    if let Ok(user_data) = name.parse() {
+        endpoint.set_user_data_for_address_lookup(Some(user_data));
+    }
+    let mdns = MdnsAddressLookup::builder()
+        .advertise(config.visibility != Visibility::Hidden)
+        .build(endpoint.id())
+        .map_err(|error| Error::NetworkStart(error.to_string()))?;
+    let services =
+        endpoint.address_lookup().map_err(|error| Error::NetworkStart(error.to_string()))?;
+    services.add(mdns.clone());
+    Ok(mdns)
+}
