@@ -36,6 +36,10 @@ pub enum Event {
         transferred: u64,
         total: u64,
     },
+    Reconnecting {
+        id: TransferId,
+        reason: Error,
+    },
     Completed {
         id: TransferId,
     },

@@ -8,6 +8,7 @@ use iroh::{RelayUrl, TransportAddr};
 use crate::error::{Error, Result};
 
 const RELAY_GRACE: Duration = Duration::from_secs(20);
+const DIRECT_HEAD_START: Duration = Duration::from_secs(4);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
@@ -56,23 +57,46 @@ pub(crate) fn is_local(ip: IpAddr) -> bool {
     }
 }
 
+/// Gives hole punching a head start before settling for an allowed relay.
 pub(crate) async fn wait_for_route(
     connection: &Connection,
     rule: &RouteRule,
     limit: Duration,
 ) -> Result<Route> {
     let mut snapshots = connection.paths_stream();
-    let wait = async {
-        while let Some(paths) = snapshots.next().await {
-            if let Some(route) = rule.evaluate(&paths) {
-                return Ok(route);
-            }
+    let started = Instant::now();
+    let mut relay_allowed = false;
+    loop {
+        let settled = started.elapsed() >= DIRECT_HEAD_START;
+        if relay_allowed && settled {
+            return Ok(Route::Relay);
         }
-        Err(Error::ConnectionLost)
-    };
-    tokio::time::timeout(limit, wait)
-        .await
-        .unwrap_or(Err(Error::NoDirectPath))
+        let next_deadline = if settled || relay_allowed {
+            DIRECT_HEAD_START
+        } else {
+            limit
+        };
+        let wait = next_deadline.saturating_sub(started.elapsed());
+        match tokio::time::timeout(wait, snapshots.next()).await {
+            Ok(Some(paths)) => match rule.evaluate(&paths) {
+                Some(Route::Relay) => relay_allowed = true,
+                Some(route) => return Ok(route),
+                None => relay_allowed = false,
+            },
+            Ok(None) => return Err(Error::ConnectionLost),
+            Err(_) if relay_allowed => return Ok(Route::Relay),
+            Err(_) => return Err(Error::NoDirectPath),
+        }
+    }
+}
+
+/// The route file data is using right now.
+pub(crate) fn current_route(connection: &Connection) -> Route {
+    let paths = connection.paths();
+    paths
+        .iter()
+        .find(Path::is_selected)
+        .map_or(Route::Direct, |path| classify(&path))
 }
 
 pub(crate) async fn enforce_route(connection: &Connection, rule: &RouteRule) -> Error {

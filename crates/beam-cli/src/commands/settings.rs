@@ -31,6 +31,7 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
         RelayCommand::Policy { policy } => update(data_dir, |config| {
             config.relay_policy = match policy {
                 PolicyArg::HandshakeOnly => RelayPolicy::HandshakeOnly,
+                PolicyArg::OwnRelays => RelayPolicy::OwnRelays,
                 PolicyArg::Always => RelayPolicy::Always,
                 PolicyArg::Off => RelayPolicy::Off,
             };
@@ -41,6 +42,9 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
             update(data_dir, |config| {
                 config.relays.retain(|existing| *existing != url);
                 config.relays.push(url);
+                if config.relay_policy == RelayPolicy::HandshakeOnly {
+                    config.relay_policy = RelayPolicy::OwnRelays;
+                }
             })
         }
         RelayCommand::Remove { url } => update(data_dir, |config| {
@@ -62,6 +66,7 @@ fn update(data_dir: &Path, change: impl FnOnce(&mut Config)) -> Result<()> {
 fn policy_name(policy: RelayPolicy) -> &'static str {
     match policy {
         RelayPolicy::HandshakeOnly => "handshake only",
+        RelayPolicy::OwnRelays => "own relays",
         RelayPolicy::Always => "always",
         RelayPolicy::Off => "off",
     }

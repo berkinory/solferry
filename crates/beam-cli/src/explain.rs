@@ -25,7 +25,7 @@ fn advice(error: &Error) -> Advice {
         Error::InvalidRelayUrl(_) => "Use a full address such as https://relay.example.com.",
         Error::Unreachable(_) => "Make sure beam is running on that device, then try again.",
         Error::NoDirectPath => {
-            "These networks block direct connections. Use Tailscale, add your own relay with `beam relay add`, or allow relaying with `beam relay policy always`."
+            "These networks block direct connections. Use Tailscale, add your own relay with `beam relay add`, or allow public relays with `beam relay policy always`."
         }
         Error::NotPaired => "Pair first: run `beam pair` there and `beam join <code>` here.",
         Error::VersionMismatch { .. } => "Update beam on both devices.",

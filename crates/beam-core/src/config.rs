@@ -14,6 +14,8 @@ pub enum RelayPolicy {
     /// Servers help devices find each other, file data only takes direct paths.
     #[default]
     HandshakeOnly,
+    /// File data may use relays you added or that a paired device shared with you.
+    OwnRelays,
     /// File data may fall back to any relay.
     Always,
     /// No servers at all: local network and overlay networks only.

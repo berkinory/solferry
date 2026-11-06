@@ -13,6 +13,7 @@ use tokio::sync::mpsc;
 
 use super::{CHUNK_SIZE, Manifest, Meter};
 use crate::error::{Error, Result, StorageContext};
+use crate::route::{Route, current_route};
 
 const FILE_CONCURRENCY: usize = 16;
 const READ_AHEAD: usize = 4;
@@ -23,7 +24,7 @@ pub(crate) async fn run(
     manifest: &Arc<Manifest>,
     offsets: &[u64],
     meter: &Meter,
-) -> Result<()> {
+) -> Result<Route> {
     let files: Vec<usize> = (0..manifest.entries.len())
         .filter(|&index| !manifest.entries[index].is_dir)
         .collect();
@@ -33,8 +34,9 @@ pub(crate) async fn run(
         .buffer_unordered(FILE_CONCURRENCY)
         .try_collect::<()>();
     tokio::try_join!(uploads, confirm(control, manifest, count))?;
+    let route = current_route(connection);
     connection.close(close::DONE.into(), b"done");
-    Ok(())
+    Ok(route)
 }
 
 async fn confirm(control: &mut RecvStream, manifest: &Manifest, count: usize) -> Result<()> {

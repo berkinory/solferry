@@ -11,12 +11,13 @@ use crate::config::RelayPolicy;
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
 use crate::net::parse_relays;
-use crate::route::{Route, RouteRule, enforce_route, wait_for_route};
+use crate::route::{Route, RouteRule, current_route, enforce_route, wait_for_route};
 use crate::transfer::sender;
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
 
 const DIRECT_PATH_WAIT: Duration = Duration::from_secs(12);
-const RETRY_WINDOW: Duration = Duration::from_secs(300);
+const FIRST_CONTACT_WINDOW: Duration = Duration::from_secs(20);
+const RESUME_WINDOW: Duration = Duration::from_secs(300);
 const RETRY_BASE: Duration = Duration::from_secs(1);
 const RETRY_MAX: Duration = Duration::from_secs(15);
 
@@ -44,11 +45,22 @@ impl Node {
         let manifest = Arc::new(manifest);
         let started = Instant::now();
         let mut delay = RETRY_BASE;
+        let mut reached = false;
         loop {
-            let outcome = attempt(&self.shared, target.clone(), &manifest).await;
+            let outcome = attempt(&self.shared, target.clone(), &manifest, &mut reached).await;
+            let window = if reached {
+                RESUME_WINDOW
+            } else {
+                FIRST_CONTACT_WINDOW
+            };
             match outcome {
-                Err(error) if error.is_retryable() && started.elapsed() < RETRY_WINDOW => {
+                Err(error) if error.is_retryable() && started.elapsed() < window => {
                     tracing::info!(%error, "retrying transfer");
+                    let id = manifest.id;
+                    let _ = self
+                        .shared
+                        .events
+                        .send(Event::Reconnecting { id, reason: error });
                     tokio::time::sleep(delay).await;
                     delay = (delay * 2).min(RETRY_MAX);
                 }
@@ -76,6 +88,7 @@ async fn attempt(
     shared: &Shared,
     target: EndpointAddr,
     manifest: &Arc<Manifest>,
+    reached: &mut bool,
 ) -> Result<SendReport> {
     let peer = target.id;
     let connection = shared
@@ -83,6 +96,7 @@ async fn attempt(
         .connect(target, ALPN_TRANSFER)
         .await
         .map_err(|error| Error::Unreachable(error.to_string()))?;
+    *reached = true;
     let result = async {
         let (send, recv) = connection
             .open_bi()
@@ -99,12 +113,16 @@ async fn attempt(
 }
 
 fn route_rule(shared: &Shared, peer: EndpointId) -> Result<RouteRule> {
-    let mut relays: Vec<RelayUrl> = parse_relays(&shared.config.relays)?;
-    if let Some(device) = shared.trust().get(&peer) {
-        relays.extend(parse_relays(&device.relays)?);
+    let policy = shared.config.relay_policy;
+    let mut relays: Vec<RelayUrl> = Vec::new();
+    if policy == RelayPolicy::OwnRelays {
+        relays = parse_relays(&shared.config.relays)?;
+        if let Some(device) = shared.trust().get(&peer) {
+            relays.extend(parse_relays(&device.relays)?);
+        }
     }
     Ok(RouteRule {
-        any_relay: shared.config.relay_policy == RelayPolicy::Always,
+        any_relay: policy == RelayPolicy::Always,
         relays,
     })
 }
@@ -166,11 +184,11 @@ async fn negotiate(
         bytes,
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
-    sender::run(connection, &mut recv, manifest, &reply.offsets, &meter).await?;
+    let final_route = sender::run(connection, &mut recv, manifest, &reply.offsets, &meter).await?;
     Ok(SendReport {
         id: manifest.id,
         peer_name: hello.name,
-        route,
+        route: final_route,
         bytes_sent: bytes - resumed,
         resumed_bytes: resumed,
     })

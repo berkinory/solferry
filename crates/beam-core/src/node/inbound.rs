@@ -12,7 +12,7 @@ use super::Shared;
 use crate::config::Visibility;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::{Direction, Event, TransferId};
-use crate::route::{Route, is_local};
+use crate::route::{current_route, is_local};
 use crate::transfer::receiver::{self, Plan};
 use crate::transfer::{Meter, Staging, exchange_hello, validate_offer};
 use crate::trust::{Device, Relationship};
@@ -136,16 +136,6 @@ fn admits_stranger(shared: &Shared, connection: &Connection) -> bool {
                 TransportAddr::Ip(addr) => is_local(addr.ip()),
                 _ => false,
             })
-}
-
-fn current_route(connection: &Connection) -> Route {
-    let paths = connection.paths();
-    let selected = paths.iter().find(iroh::endpoint::Path::is_selected);
-    match selected.as_ref().map(iroh::endpoint::Path::remote_addr) {
-        Some(TransportAddr::Ip(addr)) if is_local(addr.ip()) => Route::Local,
-        Some(TransportAddr::Relay(_)) => Route::Relay,
-        _ => Route::Direct,
-    }
 }
 
 fn transfer_id(offer: &Offer) -> Result<TransferId> {

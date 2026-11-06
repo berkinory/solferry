@@ -16,6 +16,7 @@ use crate::trust::{Device, Relationship};
 
 const INVITE_PREFIX: &str = "beam1";
 const INVITE_LIFETIME: Duration = Duration::from_secs(600);
+const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Debug)]
 pub struct Invite {
@@ -91,6 +92,7 @@ impl Node {
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
         }
+        let _ = tokio::time::timeout(ONLINE_WAIT, self.online()).await;
         let relays = ticket.relay_urls.clone();
         let relationship = if ticket.own_device {
             Relationship::Own

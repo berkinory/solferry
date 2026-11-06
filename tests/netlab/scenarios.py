@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""Runs beam through NAT, loss, outages and restarts. Needs passwordless sudo, Linux only."""
+
+import hashlib
+import json
+import re
+import sys
+import tempfile
+import threading
+import time
+from pathlib import Path
+
+import lab
+
+REPO = Path(__file__).resolve().parents[2]
+BEAM = REPO / "target/release/beam"
+RELAY = sys.argv[1] if len(sys.argv) > 1 else "iroh-relay"
+
+
+def digest(path):
+    with open(path, "rb") as file:
+        return hashlib.file_digest(file, "blake2b").hexdigest()
+
+
+class Stage:
+    def __init__(self, nat="cone", size_mib=200, a_policy="own-relays", b_policy="own-relays"):
+        self.work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+        self.work.chmod(0o755)
+        lab.up(nat)
+        lab.start_relays(RELAY, self.work)
+        lab.configure(self.work / "a", "alpha", [lab.RELAY_X], a_policy)
+        lab.configure(self.work / "b", "beta", [lab.RELAY_Y], b_policy)
+        self.a = lab.Host("beam-a", self.work / "a", BEAM)
+        self.b = lab.Host("beam-b", self.work / "b", BEAM)
+        rc, output, _ = lab.pair(self.a, self.b, self.work)
+        if rc:
+            raise RuntimeError(f"pairing failed: {output}")
+        self.file = self.work / "payload.bin"
+        with open("/dev/urandom", "rb") as source, open(self.file, "wb") as target:
+            for _ in range(size_mib):
+                target.write(source.read(1024 * 1024))
+        self.inbox = self.work / "inbox"
+        self.receiver = None
+
+    def listen(self):
+        self.receiver = self.b.spawn(["receive", "--yes", "--dir", self.inbox], self.work / "receive.log")
+        time.sleep(1.5)
+
+    def send(self, timeout=240):
+        return self.a.run(["send", self.file, "--to", "beta"], timeout=timeout)
+
+    def delivered(self):
+        target = self.inbox / self.file.name
+        return target.exists() and digest(target) == digest(self.file)
+
+    def use_policy(self, policy):
+        lab.configure(self.work / "a", "alpha", [lab.RELAY_X], policy)
+
+    def close(self):
+        self.a.stop()
+        self.b.stop()
+
+
+def speed(seconds, mib):
+    return f"{mib / seconds:.0f} MiB/s" if seconds else "?"
+
+
+def summary(rc, output, seconds, ok, mib):
+    route = re.search(r"over (.+?)(,|$)", output, re.M)
+    resumed = re.search(r"resumed ([\d.]+ \w+)", output)
+    return {"rc": rc, "delivered": ok, "route": route and route.group(1), "seconds": round(seconds, 1), "speed": speed(seconds, mib), "resumed": resumed and resumed.group(1), "tail": output.splitlines()[-2:]}
+
+
+def in_background(seconds, action):
+    timer = threading.Timer(seconds, action)
+    timer.start()
+    return timer
+
+
+def nat_cone():
+    stage = Stage("cone")
+    stage.listen()
+    rc, output, seconds = stage.send()
+    return summary(rc, output, seconds, stage.delivered(), 200), stage
+
+
+def nat_symmetric_own_relay():
+    stage = Stage("symmetric")
+    stage.listen()
+    rc, output, seconds = stage.send()
+    return summary(rc, output, seconds, stage.delivered(), 200), stage
+
+
+def nat_symmetric_no_relay():
+    stage = Stage("symmetric")
+    stage.use_policy("handshake-only")
+    stage.listen()
+    rc, output, seconds = stage.send()
+    return summary(rc, output, seconds, stage.delivered(), 200), stage
+
+
+def bad_link():
+    stage = Stage("cone", 300)
+    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem delay 40ms 10ms loss 1% rate 200mbit")
+    lab.ns("beam-ry", "tc qdisc add dev wan0 root netem delay 40ms 10ms loss 1% rate 200mbit")
+    stage.listen()
+    rc, output, seconds = stage.send(400)
+    return summary(rc, output, seconds, stage.delivered(), 300), stage
+
+
+def outage(seconds_down):
+    def run():
+        stage = Stage("cone", 1500)
+        stage.listen()
+        lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 100mbit")
+        block = lambda: lab.ns("beam-rx", "iptables -I FORWARD -j DROP")
+        unblock = lambda: lab.ns("beam-rx", "iptables -D FORWARD -j DROP")
+        in_background(4, block)
+        in_background(4 + seconds_down, unblock)
+        rc, output, seconds = stage.send(400)
+        return summary(rc, output, seconds, stage.delivered(), 1500), stage
+
+    return run
+
+
+def receiver_restart():
+    stage = Stage("cone", 1500)
+    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
+    stage.listen()
+
+    def restart():
+        stage.b.stop()
+        time.sleep(3)
+        stage.listen()
+
+    in_background(5, restart)
+    rc, output, seconds = stage.send(400)
+    return summary(rc, output, seconds, stage.delivered(), 1500), stage
+
+
+def address_change():
+    stage = Stage("cone", 1500)
+    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
+    stage.listen()
+
+    def move():
+        lab.ns("beam-a", "ip addr add 10.1.0.77/24 dev eth0")
+        lab.ns("beam-a", "ip addr del 10.1.0.2/24 dev eth0")
+        lab.ns("beam-a", "ip route replace default via 10.1.0.1")
+
+    in_background(5, move)
+    rc, output, seconds = stage.send(400)
+    return summary(rc, output, seconds, stage.delivered(), 1500), stage
+
+
+SCENARIOS = {
+    "nat-cone": nat_cone,
+    "nat-symmetric-own-relay": nat_symmetric_own_relay,
+    "nat-symmetric-no-relay": nat_symmetric_no_relay,
+    "direct-throughput": direct_path,
+    "bad-link": bad_link,
+    "outage-10s": outage(10),
+    "outage-45s": outage(45),
+    "receiver-restart": receiver_restart,
+    "address-change": address_change,
+}
+
+
+def direct_path():
+    stage = Stage("cone", 2000)
+    stage.use_policy("handshake-only")
+    stage.listen()
+    rc, output, seconds = stage.send()
+    return summary(rc, output, seconds, stage.delivered(), 2000), stage
+
+
+def main():
+    wanted = sys.argv[2:] or list(SCENARIOS)
+    results = {}
+    for name in wanted:
+        print(f"== {name}", flush=True)
+        try:
+            results[name], stage = SCENARIOS[name]()
+            stage.close()
+        except Exception as error:
+            results[name] = {"error": repr(error)[:300]}
+        print(json.dumps(results[name], ensure_ascii=False), flush=True)
+    lab.down()
+
+
+if __name__ == "__main__":
+    main()

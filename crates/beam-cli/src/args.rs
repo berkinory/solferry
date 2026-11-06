@@ -79,7 +79,9 @@ pub enum RelayCommand {
 pub enum PolicyArg {
     /// Servers only introduce devices. File data stays direct.
     HandshakeOnly,
-    /// File data may pass through relays.
+    /// File data may use relays you added.
+    OwnRelays,
+    /// File data may pass through any relay.
     Always,
     /// No servers. Local network and overlay networks only.
     Off,
