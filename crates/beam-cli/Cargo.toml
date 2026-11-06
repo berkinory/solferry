@@ -1,0 +1,16 @@
+[package]
+name = "beam-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "beam"
+path = "src/main.rs"
+
+[dependencies]
+beam-core.workspace = true
+
+[lints]
+workspace = true

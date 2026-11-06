@@ -1,0 +1,47 @@
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "Apache-2.0"
+repository = "https://github.com/berkinory/beam"
+
+[workspace.dependencies]
+beam-core = { path = "crates/beam-core" }
+beam-proto = { path = "crates/beam-proto" }
+
+iroh = "1.4"
+iroh-mainline-address-lookup = "0.6"
+iroh-mdns-address-lookup = "0.6"
+
+anyhow = "1"
+blake3 = { version = "1", features = ["rayon", "mmap"] }
+clap = { version = "4", features = ["derive"] }
+futures = "0.3"
+prost = "0.14"
+rand = "0.9"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["fs", "io-util", "macros", "rt-multi-thread", "signal", "sync", "time"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

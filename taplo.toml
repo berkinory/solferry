@@ -1,0 +1,6 @@
+include = ["Cargo.toml", "crates/*/Cargo.toml", "*.toml"]
+
+[formatting]
+align_comments = false
+array_auto_collapse = true
+reorder_keys = false
