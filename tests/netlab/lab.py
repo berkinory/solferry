@@ -84,6 +84,19 @@ def make_ca(workdir):
     )
 
 
+def lan():
+    """Two devices on one link with no route anywhere else."""
+    down()
+    for name in ["beam-a", "beam-b"]:
+        sh(f"ip netns add {name}")
+        ns(name, "ip link set lo up")
+    link("beam-a", "eth0", "beam-b", "eth0")
+    for name, address in [("beam-a", "192.168.50.2"), ("beam-b", "192.168.50.3")]:
+        ns(name, f"ip addr add {address}/24 dev eth0")
+        ns(name, "ip link set eth0 up")
+        ns(name, "ip route add 224.0.0.0/4 dev eth0")
+
+
 def start_relays(binary, workdir):
     make_ca(workdir)
     ns("beam-wan", "ip addr add 203.0.113.2/24 dev br0")

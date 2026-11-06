@@ -99,13 +99,16 @@ def nat_symmetric_no_relay():
     return summary(rc, output, seconds, stage.delivered(), 200), stage
 
 
-def bad_link():
-    stage = Stage("cone", 300)
-    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem delay 40ms 10ms loss 1% rate 200mbit")
-    lab.ns("beam-ry", "tc qdisc add dev wan0 root netem delay 40ms 10ms loss 1% rate 200mbit")
-    stage.listen()
-    rc, output, seconds = stage.send(400)
-    return summary(rc, output, seconds, stage.delivered(), 300), stage
+def bad_link(netem):
+    def run():
+        stage = Stage("cone", 300)
+        for router in ["beam-rx", "beam-ry"]:
+            lab.ns(router, f"tc qdisc add dev wan0 root netem {netem}")
+        stage.listen()
+        rc, output, seconds = stage.send(200)
+        return summary(rc, output, seconds, stage.delivered(), 300), stage
+
+    return run
 
 
 def outage(seconds_down):
@@ -161,12 +164,34 @@ def direct_path():
     return summary(rc, output, seconds, stage.delivered(), 2000), stage
 
 
+def offline_lan():
+    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work.chmod(0o755)
+    lab.lan()
+    lab.configure(work / "a", "alpha", [], "off")
+    lab.configure(work / "b", "beta", [], "off")
+    sender, receiver = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    payload = work / "payload.bin"
+    with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
+        target.write(source.read(500 * 1024 * 1024))
+    receiver.spawn(["receive", "--yes", "--dir", work / "inbox"], work / "receive.log")
+    time.sleep(3)
+    rc, output, seconds = sender.run(["send", payload, "--to", "beta"])
+    target = work / "inbox/payload.bin"
+    ok = target.exists() and digest(target) == digest(payload)
+    stage = type("Offline", (), {"close": lambda self: (sender.stop(), receiver.stop())})()
+    return summary(rc, output, seconds, ok, 500), stage
+
+
 SCENARIOS = {
     "nat-cone": nat_cone,
     "nat-symmetric-own-relay": nat_symmetric_own_relay,
     "nat-symmetric-no-relay": nat_symmetric_no_relay,
     "direct-throughput": direct_path,
-    "bad-link": bad_link,
+    "offline-lan": offline_lan,
+    "wifi-link": bad_link("delay 5ms loss 0.5% rate 300mbit"),
+    "lossy-link": bad_link("delay 40ms loss 1% rate 200mbit"),
+    "jitter-link": bad_link("delay 40ms 10ms loss 1% rate 200mbit"),
     "outage-10s": outage(10),
     "outage-45s": outage(45),
     "receiver-restart": receiver_restart,

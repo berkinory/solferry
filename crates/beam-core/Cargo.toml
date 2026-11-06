@@ -19,6 +19,7 @@ hex.workspace = true
 iroh.workspace = true
 iroh-mainline-address-lookup.workspace = true
 iroh-mdns-address-lookup.workspace = true
+noq-proto.workspace = true
 prost.workspace = true
 rand.workspace = true
 rustls-pki-types.workspace = true

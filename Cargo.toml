@@ -29,6 +29,7 @@ gethostname = "1"
 hex = "0.4"
 indicatif = "0.18"
 
+noq-proto = "1.4"
 prost = "0.14"
 qrcode = { version = "0.14", default-features = false }
 rand = "0.9"

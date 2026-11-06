@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Duration;
 
 use iroh::endpoint::{QuicTransportConfig, presets};
@@ -6,6 +7,7 @@ use iroh::tls::CaTlsConfig;
 use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
 use iroh_mainline_address_lookup::DhtAddressLookup;
 use iroh_mdns_address_lookup::MdnsAddressLookup;
+use noq_proto::congestion::Bbr3Config;
 use rustls_pki_types::CertificateDer;
 use rustls_pki_types::pem::PemObject;
 
@@ -82,6 +84,7 @@ fn transport_config() -> Result<QuicTransportConfig> {
         .try_into()
         .map_err(|_| Error::NetworkStart("idle timeout".into()))?;
     Ok(QuicTransportConfig::builder()
+        .congestion_controller_factory(Arc::new(Bbr3Config::default()))
         .stream_receive_window(STREAM_WINDOW.into())
         .receive_window(CONNECTION_WINDOW.into())
         .send_window(u64::from(CONNECTION_WINDOW))

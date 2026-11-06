@@ -53,6 +53,10 @@ Received data stays in `.beam-partial/<id>/` inside the destination. Files move 
 
 A resumed file is hashed from the first byte on both sides, so a damaged partial file is caught and sent again. The same check covers bit rot and a source file that changes between attempts.
 
+## Congestion control
+
+Connections use BBR. Consumer Wi-Fi and mobile links lose packets for reasons unrelated to congestion, and loss-based Cubic collapses there. In `tests/netlab`, a 300 Mbit link with 0.5% loss moved 26 MiB/s with BBR and 5 MiB/s with Cubic, and a 200 Mbit link with 1% loss and 80 ms RTT moved 11 MiB/s with BBR and did not finish 300 MiB in 200 seconds with Cubic.
+
 ## Stream window
 
 Each stream has a 2 MiB receive window. noq closes a connection that exceeds 1024 gaps in one stream, and a larger window makes that reachable under heavy packet loss. See the constant in `net.rs` before changing it. The cost is throughput on high latency links, which parallel streams per file can solve later.
