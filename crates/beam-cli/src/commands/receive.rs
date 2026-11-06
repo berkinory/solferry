@@ -1,7 +1,7 @@
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
-use beam_core::{Direction, Event, IncomingOffer, Result};
+use beam_core::{Direction, Event, IncomingOffer, Relationship, Result};
 use indicatif::HumanBytes;
 
 use super::send::route_name;
@@ -39,7 +39,7 @@ pub async fn run(data_dir: PathBuf, dir: Option<PathBuf>, yes: bool, once: bool)
 
 async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
     let summary = &offer.summary;
-    let trust = if summary.trusted {
+    let trust = if summary.relationship.is_some() {
         "paired"
     } else {
         "NOT PAIRED"

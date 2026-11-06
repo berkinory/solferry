@@ -48,7 +48,7 @@ async fn resolve(node: &Node, targets: &[String]) -> Result<Vec<EndpointAddr>> {
     let mut addrs = Vec::with_capacity(targets.len());
     for target in targets {
         match node.find_device(target) {
-            Ok(device) => addrs.push(EndpointAddr::new(device.id)),
+            Ok(device) => addrs.push(device.addr()),
             Err(Error::UnknownDevice(_)) => {
                 if let Ok(id) = target.parse::<EndpointId>() {
                     addrs.push(EndpointAddr::new(id));

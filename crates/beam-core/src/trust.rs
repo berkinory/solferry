@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use iroh::EndpointId;
+use iroh::{EndpointAddr, EndpointId, RelayUrl, TransportAddr};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
@@ -22,6 +22,18 @@ pub struct Device {
     pub relationship: Relationship,
     pub relays: Vec<String>,
     pub paired_at_ms: u64,
+}
+
+impl Device {
+    /// Dialable address: the id plus the relays this device told us about.
+    #[must_use]
+    pub fn addr(&self) -> EndpointAddr {
+        let relays = self
+            .relays
+            .iter()
+            .filter_map(|url| url.parse::<RelayUrl>().ok());
+        EndpointAddr::from_parts(self.id, relays.map(TransportAddr::Relay))
+    }
 }
 
 #[derive(Debug)]

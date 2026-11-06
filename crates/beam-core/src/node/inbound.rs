@@ -21,7 +21,7 @@ use crate::trust::{Device, Relationship};
 pub struct OfferSummary {
     pub peer: EndpointId,
     pub peer_name: String,
-    pub trusted: bool,
+    pub relationship: Option<Relationship>,
     pub files: usize,
     pub bytes: u64,
     pub first_path: String,
@@ -85,7 +85,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     };
 
     let summary = summarize(peer, &hello.name, device.as_ref(), &offer);
-    let Some(destination) = decide(shared, device.as_ref(), summary).await else {
+    let Some(destination) = decide(shared, summary).await else {
         reply(&mut send, Decision::Declined, Vec::new()).await?;
         return Ok(());
     };
@@ -161,7 +161,7 @@ fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offe
         peer_name: device
             .map_or(name, |device| device.name.as_str())
             .to_owned(),
-        trusted: device.is_some(),
+        relationship: device.map(|device| device.relationship),
         files: offer.entries.iter().filter(|entry| !entry.is_dir).count(),
         bytes: offer.entries.iter().map(|entry| entry.size).sum(),
         first_path: offer
@@ -172,14 +172,7 @@ fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offe
     }
 }
 
-async fn decide(
-    shared: &Shared,
-    device: Option<&Device>,
-    summary: OfferSummary,
-) -> Option<PathBuf> {
-    if device.is_some_and(|device| device.relationship == Relationship::Own) {
-        return Some(shared.config.download_dir.clone());
-    }
+async fn decide(shared: &Shared, summary: OfferSummary) -> Option<PathBuf> {
     let (reply, decision) = oneshot::channel();
     shared
         .offers
