@@ -39,6 +39,7 @@ pub async fn run(data_dir: PathBuf, dir: Option<PathBuf>, yes: bool, once: bool)
 
 async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
     let summary = &offer.summary;
+    let own_device = summary.relationship == Some(Relationship::Own);
     let trust = if summary.relationship.is_some() {
         "paired"
     } else {
@@ -52,6 +53,7 @@ async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
         summary.first_path,
     );
     let accepted = yes
+        || own_device
         || tokio::task::spawn_blocking(move || ask(&prompt))
             .await
             .unwrap_or(false);

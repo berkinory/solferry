@@ -216,17 +216,12 @@ async fn known_devices_mode_refuses_strangers_until_paired() {
         "invites are single use"
     );
 
+    let destination = receiver.data.join("inbox");
+    accept_all(receiver.offers, destination.clone());
     sender
         .node
         .send(receiver.node.addr(), vec![file])
         .await
         .unwrap();
-    assert!(
-        receiver
-            .node
-            .config()
-            .download_dir
-            .join("note.txt")
-            .is_file()
-    );
+    assert!(destination.join("note.txt").is_file());
 }
