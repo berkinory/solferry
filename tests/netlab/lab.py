@@ -7,8 +7,8 @@ import subprocess
 import time
 from pathlib import Path
 
-RELAY_X = "http://203.0.113.1:3340/"
-RELAY_Y = "http://203.0.113.1:3341/"
+RELAY_X = "https://203.0.113.1:3340/"
+RELAY_Y = "https://203.0.113.2:3340/"
 NAMESPACES = ["beam-wan", "beam-rx", "beam-ry", "beam-a", "beam-b"]
 USER = os.environ.get("SUDO_USER") or os.environ["USER"]
 
@@ -57,22 +57,61 @@ def up(mode="cone"):
         ns(router, "sysctl -qw net.ipv4.ip_forward=1")
         suffix = " --random-fully" if mode == "symmetric" else ""
         ns(router, f"iptables -t nat -A POSTROUTING -o wan0 -j MASQUERADE{suffix}")
+        ns(router, "iptables -A INPUT -i wan0 -m conntrack --ctstate NEW -j DROP")
         ns(host, f"ip addr add {lan}.2/24 dev eth0")
         ns(host, "ip link set eth0 up")
         ns(host, f"ip route add default via {lan}.1")
 
 
+def make_ca(workdir):
+    subprocess.run(
+        ["openssl", "req", "-x509", "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1", "-nodes", "-days", "2",
+         "-keyout", workdir / "ca.key", "-out", workdir / "ca.pem", "-subj", "/CN=beam netlab",
+         "-addext", "basicConstraints=critical,CA:TRUE"],
+        check=True, capture_output=True,
+    )
+    subprocess.run(
+        ["openssl", "req", "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1", "-nodes",
+         "-keyout", workdir / "relay.key", "-out", workdir / "relay.csr", "-subj", "/CN=relay"],
+        check=True, capture_output=True,
+    )
+    extensions = workdir / "san.ext"
+    extensions.write_text("subjectAltName=IP:203.0.113.1,IP:203.0.113.2\n")
+    subprocess.run(
+        ["openssl", "x509", "-req", "-in", workdir / "relay.csr", "-CA", workdir / "ca.pem", "-CAkey", workdir / "ca.key",
+         "-CAcreateserial", "-days", "2", "-extfile", extensions, "-out", workdir / "relay.pem"],
+        check=True, capture_output=True,
+    )
+
+
 def start_relays(binary, workdir):
-    for name, port in [("x", 3340), ("y", 3341)]:
+    make_ca(workdir)
+    ns("beam-wan", "ip addr add 203.0.113.2/24 dev br0")
+    for name, ip in [("x", "203.0.113.1"), ("y", "203.0.113.2")]:
         config = workdir / f"relay-{name}.toml"
-        config.write_text(f'http_bind_addr = "203.0.113.1:{port}"\nenable_relay = true\nenable_quic_addr_discovery = false\nenable_metrics = false\n')
+        config.write_text(
+            f'''http_bind_addr = "{ip}:8340"
+enable_relay = true
+enable_quic_addr_discovery = true
+enable_metrics = false
+
+[tls]
+https_bind_addr = "{ip}:3340"
+quic_bind_addr = "{ip}:7842"
+hostname = "{ip}"
+cert_mode = "Manual"
+manual_cert_path = "{workdir}/relay.pem"
+manual_key_path = "{workdir}/relay.key"
+'''
+        )
         sh(f"ip netns exec beam-wan {binary} --config-path {config} >{workdir}/relay-{name}.log 2>&1 &")
     time.sleep(1)
 
 
 def configure(data_dir, name, relays, policy="handshake-only"):
     data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "config.json").write_text(json.dumps({"name": name, "relay_policy": policy, "relays": relays}))
+    settings = {"name": name, "relay_policy": policy, "relays": relays, "relay_ca_file": str(data_dir.parent / "ca.pem")}
+    (data_dir / "config.json").write_text(json.dumps(settings))
 
 
 class Host:

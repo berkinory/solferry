@@ -133,7 +133,7 @@ def receiver_restart():
         time.sleep(3)
         stage.listen()
 
-    in_background(5, restart)
+    in_background(14, restart)
     rc, output, seconds = stage.send(400)
     return summary(rc, output, seconds, stage.delivered(), 1500), stage
 
@@ -148,9 +148,17 @@ def address_change():
         lab.ns("beam-a", "ip addr del 10.1.0.2/24 dev eth0")
         lab.ns("beam-a", "ip route replace default via 10.1.0.1")
 
-    in_background(5, move)
+    in_background(10, move)
     rc, output, seconds = stage.send(400)
     return summary(rc, output, seconds, stage.delivered(), 1500), stage
+
+
+def direct_path():
+    stage = Stage("cone", 2000)
+    stage.use_policy("handshake-only")
+    stage.listen()
+    rc, output, seconds = stage.send()
+    return summary(rc, output, seconds, stage.delivered(), 2000), stage
 
 
 SCENARIOS = {
@@ -164,14 +172,6 @@ SCENARIOS = {
     "receiver-restart": receiver_restart,
     "address-change": address_change,
 }
-
-
-def direct_path():
-    stage = Stage("cone", 2000)
-    stage.use_policy("handshake-only")
-    stage.listen()
-    rc, output, seconds = stage.send()
-    return summary(rc, output, seconds, stage.delivered(), 2000), stage
 
 
 def main():

@@ -11,7 +11,7 @@ use crate::config::RelayPolicy;
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
 use crate::net::parse_relays;
-use crate::route::{Route, RouteRule, current_route, enforce_route, wait_for_route};
+use crate::route::{Route, RouteRule, enforce_route, wait_for_route};
 use crate::transfer::sender;
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
 

@@ -243,6 +243,7 @@ dependencies = [
  "iroh-mdns-address-lookup",
  "prost",
  "rand 0.9.5",
+ "rustls-pki-types",
  "serde",
  "serde_json",
  "tempfile",

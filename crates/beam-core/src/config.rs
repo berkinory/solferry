@@ -37,6 +37,8 @@ pub struct Config {
     pub name: String,
     pub relay_policy: RelayPolicy,
     pub relays: Vec<String>,
+    /// PEM file with extra root certificates, for relays behind a private CA.
+    pub relay_ca_file: Option<PathBuf>,
     pub visibility: Visibility,
     pub download_dir: PathBuf,
 }
@@ -47,6 +49,7 @@ impl Default for Config {
             name: gethostname::gethostname().to_string_lossy().into_owned(),
             relay_policy: RelayPolicy::default(),
             relays: Vec::new(),
+            relay_ca_file: None,
             visibility: Visibility::default(),
             download_dir: dirs::download_dir()
                 .or_else(dirs::home_dir)
