@@ -16,14 +16,14 @@ pub(crate) fn read_json<T: DeserializeOwned>(path: &Path) -> Result<Option<T>> {
         .map(Some)
         .map_err(|source| Error::CorruptData {
             path: path.to_owned(),
-            source,
+            source: source.into(),
         })
 }
 
 pub(crate) fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
     let bytes = serde_json::to_vec_pretty(value).map_err(|source| Error::CorruptData {
         path: path.to_owned(),
-        source,
+        source: source.into(),
     })?;
     let tmp = path.with_extension("tmp");
     fs::write(&tmp, bytes).at(&tmp)?;

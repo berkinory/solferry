@@ -3,7 +3,9 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use beam_proto::{Entry, FileResult, FileStart, Finalized, HASH_LEN, close, read_frame, write_frame};
+use beam_proto::{
+    Entry, FileResult, FileStart, Finalized, HASH_LEN, close, read_frame, write_frame,
+};
 use bytes::{Bytes, BytesMut};
 use futures::{StreamExt, TryStreamExt, stream};
 use iroh::endpoint::{Connection, RecvStream};
@@ -22,8 +24,9 @@ pub(crate) async fn run(
     offsets: &[u64],
     meter: &Meter,
 ) -> Result<()> {
-    let files: Vec<usize> =
-        (0..manifest.entries.len()).filter(|&index| !manifest.entries[index].is_dir).collect();
+    let files: Vec<usize> = (0..manifest.entries.len())
+        .filter(|&index| !manifest.entries[index].is_dir)
+        .collect();
     let count = files.len();
     let uploads = stream::iter(files)
         .map(|index| send_file(connection, manifest, index, offsets[index], meter))
@@ -39,11 +42,17 @@ async fn confirm(control: &mut RecvStream, manifest: &Manifest, count: usize) ->
         let result: FileResult = read_frame(control).await?;
         if !result.ok {
             let entry = manifest.entries.get(result.index as usize);
-            return Err(Error::HashMismatch(entry.map(|e| e.path.clone()).unwrap_or_default()));
+            return Err(Error::HashMismatch(
+                entry.map(|e| e.path.clone()).unwrap_or_default(),
+            ));
         }
     }
     let finalized: Finalized = read_frame(control).await?;
-    if finalized.ok { Ok(()) } else { Err(Error::ConnectionLost) }
+    if finalized.ok {
+        Ok(())
+    } else {
+        Err(Error::ConnectionLost)
+    }
 }
 
 async fn send_file(
@@ -58,17 +67,31 @@ async fn send_file(
     let (chunks, mut incoming) = mpsc::channel::<Bytes>(READ_AHEAD);
     let reader = tokio::task::spawn_blocking(move || read_source(&source, size, offset, &chunks));
 
-    let mut stream = connection.open_uni().await.map_err(|_| Error::ConnectionLost)?;
-    let start = FileStart { index: u32::try_from(index).unwrap_or(u32::MAX), offset };
+    let mut stream = connection
+        .open_uni()
+        .await
+        .map_err(|_| Error::ConnectionLost)?;
+    let start = FileStart {
+        index: u32::try_from(index).unwrap_or(u32::MAX),
+        offset,
+    };
     write_frame(&mut stream, &start).await?;
     while let Some(chunk) = incoming.recv().await {
         let len = chunk.len() as u64;
-        stream.write_chunk(chunk).await.map_err(|_| Error::ConnectionLost)?;
+        stream
+            .write_chunk(chunk)
+            .await
+            .map_err(|_| Error::ConnectionLost)?;
         meter.add(len);
     }
-    let hash = reader.await.map_err(|error| Error::Protocol(error.to_string()))??;
+    let hash = reader
+        .await
+        .map_err(|error| Error::Protocol(error.to_string()))??;
     let bytes: &[u8; HASH_LEN] = hash.as_bytes();
-    stream.write_all(bytes).await.map_err(|_| Error::ConnectionLost)?;
+    stream
+        .write_all(bytes)
+        .await
+        .map_err(|_| Error::ConnectionLost)?;
     stream.finish().map_err(|_| Error::ConnectionLost)
 }
 
@@ -89,7 +112,8 @@ fn read_source(
             break;
         }
         hasher.update(&buffer[..read]);
-        let start = offset.saturating_sub(position).min(read as u64) as usize;
+        let start =
+            usize::try_from(offset.saturating_sub(position)).map_or(read, |skip| skip.min(read));
         position += read as u64;
         if position > size {
             return Err(Error::SourceChanged(path.to_owned()));
@@ -101,5 +125,9 @@ fn read_source(
             }
         }
     }
-    if position == size { Ok(hasher.finalize()) } else { Err(Error::SourceChanged(path.to_owned())) }
+    if position == size {
+        Ok(hasher.finalize())
+    } else {
+        Err(Error::SourceChanged(path.to_owned()))
+    }
 }

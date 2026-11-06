@@ -1,5 +1,4 @@
 use std::fmt;
-use std::sync::Arc;
 
 use iroh::EndpointId;
 
@@ -42,6 +41,6 @@ pub enum Event {
     },
     Failed {
         id: TransferId,
-        error: Arc<Error>,
+        error: Error,
     },
 }

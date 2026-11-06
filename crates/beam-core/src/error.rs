@@ -1,23 +1,24 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use beam_proto::FrameError;
 use thiserror::Error;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-#[derive(Debug, Error)]
+#[derive(Clone, Debug, Error)]
 pub enum Error {
     #[error("cannot access {path}")]
     Storage {
         path: PathBuf,
         #[source]
-        source: std::io::Error,
+        source: Arc<std::io::Error>,
     },
     #[error("corrupt data file {path}")]
     CorruptData {
         path: PathBuf,
         #[source]
-        source: serde_json::Error,
+        source: Arc<serde_json::Error>,
     },
     #[error("network stack failed to start: {0}")]
     NetworkStart(String),
@@ -85,7 +86,7 @@ impl<T> StorageContext<T> for std::io::Result<T> {
     fn at(self, path: impl Into<PathBuf>) -> Result<T> {
         self.map_err(|source| Error::Storage {
             path: path.into(),
-            source,
+            source: source.into(),
         })
     }
 }

@@ -14,11 +14,18 @@ pub(crate) async fn exchange_hello(
     recv: &mut RecvStream,
     name: &str,
 ) -> Result<Hello> {
-    let hello = Hello { version: PROTOCOL_VERSION, name: name.to_owned(), capabilities: 0 };
+    let hello = Hello {
+        version: PROTOCOL_VERSION,
+        name: name.to_owned(),
+        capabilities: 0,
+    };
     write_frame(send, &hello).await?;
     let theirs: Hello = read_frame(recv).await?;
     if theirs.version != PROTOCOL_VERSION {
-        return Err(Error::VersionMismatch { ours: PROTOCOL_VERSION, theirs: theirs.version });
+        return Err(Error::VersionMismatch {
+            ours: PROTOCOL_VERSION,
+            theirs: theirs.version,
+        });
     }
     Ok(theirs)
 }
@@ -32,7 +39,10 @@ pub(crate) fn remote_failure(connection: &Connection, fallback: Error) -> Error 
     if code == u64::from(close::NOT_PAIRED) {
         Error::NotPaired
     } else if code == u64::from(close::VERSION_MISMATCH) {
-        Error::VersionMismatch { ours: PROTOCOL_VERSION, theirs: 0 }
+        Error::VersionMismatch {
+            ours: PROTOCOL_VERSION,
+            theirs: 0,
+        }
     } else {
         fallback
     }
@@ -46,7 +56,12 @@ pub(crate) fn validate_offer(offer: &Offer) -> Result<Vec<PathBuf>> {
     if offer.entries.is_empty() || offer.entries.len() > MAX_ENTRIES {
         return Err(invalid("unacceptable entry count"));
     }
-    if offer.entries.iter().try_fold(0u64, |sum, entry| sum.checked_add(entry.size)).is_none() {
+    if offer
+        .entries
+        .iter()
+        .try_fold(0u64, |sum, entry| sum.checked_add(entry.size))
+        .is_none()
+    {
         return Err(invalid("total size overflows"));
     }
     let mut seen = HashSet::with_capacity(offer.entries.len());
@@ -55,7 +70,11 @@ pub(crate) fn validate_offer(offer: &Offer) -> Result<Vec<PathBuf>> {
         .iter()
         .map(|Entry { path, .. }| {
             let safe = sanitize(path).ok_or_else(|| invalid("unsafe path"))?;
-            if seen.insert(path.to_lowercase()) { Ok(safe) } else { Err(invalid("duplicate path")) }
+            if seen.insert(path.to_lowercase()) {
+                Ok(safe)
+            } else {
+                Err(invalid("duplicate path"))
+            }
         })
         .collect()
 }

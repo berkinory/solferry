@@ -9,7 +9,9 @@ use crate::config::{Config, RelayPolicy, Visibility};
 use crate::error::{Error, Result};
 
 const MIB: u32 = 1024 * 1024;
-const STREAM_WINDOW: u32 = 16 * MIB;
+/// noq drops the connection past 1024 gaps per stream. Keeping the window under about 2400
+/// minimum-size packets makes that limit unreachable, whatever the loss pattern.
+const STREAM_WINDOW: u32 = 2 * MIB;
 const CONNECTION_WINDOW: u32 = 128 * MIB;
 const MAX_FILE_STREAMS: u32 = 64;
 const IDLE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -37,7 +39,11 @@ pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> 
         .bind()
         .await
         .map_err(|error| Error::NetworkStart(error.to_string()))?;
-    let mdns = if isolated { None } else { Some(start_mdns(&endpoint, config)?) };
+    let mdns = if isolated {
+        None
+    } else {
+        Some(start_mdns(&endpoint, config)?)
+    };
     Ok(Network { endpoint, mdns })
 }
 
@@ -45,7 +51,9 @@ fn relay_mode(config: &Config) -> Result<RelayMode> {
     if config.relays.is_empty() {
         return Ok(RelayMode::Default);
     }
-    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(&config.relays)?)))
+    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(
+        &config.relays,
+    )?)))
 }
 
 pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {
@@ -55,7 +63,9 @@ pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {
 }
 
 fn transport_config() -> Result<QuicTransportConfig> {
-    let idle = IDLE_TIMEOUT.try_into().map_err(|_| Error::NetworkStart("idle timeout".into()))?;
+    let idle = IDLE_TIMEOUT
+        .try_into()
+        .map_err(|_| Error::NetworkStart("idle timeout".into()))?;
     Ok(QuicTransportConfig::builder()
         .stream_receive_window(STREAM_WINDOW.into())
         .receive_window(CONNECTION_WINDOW.into())
@@ -75,8 +85,9 @@ fn start_mdns(endpoint: &Endpoint, config: &Config) -> Result<MdnsAddressLookup>
         .advertise(config.visibility != Visibility::Hidden)
         .build(endpoint.id())
         .map_err(|error| Error::NetworkStart(error.to_string()))?;
-    let services =
-        endpoint.address_lookup().map_err(|error| Error::NetworkStart(error.to_string()))?;
+    let services = endpoint
+        .address_lookup()
+        .map_err(|error| Error::NetworkStart(error.to_string()))?;
     services.add(mdns.clone());
     Ok(mdns)
 }

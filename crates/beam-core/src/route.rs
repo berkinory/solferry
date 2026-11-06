@@ -31,7 +31,10 @@ impl RouteRule {
     }
 
     fn evaluate(&self, paths: &PathList<'_>) -> Option<Route> {
-        paths.iter().find(|path| path.is_selected() && self.allows(path)).map(|path| classify(&path))
+        paths
+            .iter()
+            .find(|path| path.is_selected() && self.allows(path))
+            .map(|path| classify(&path))
     }
 }
 
@@ -67,14 +70,18 @@ pub(crate) async fn wait_for_route(
         }
         Err(Error::ConnectionLost)
     };
-    tokio::time::timeout(limit, wait).await.unwrap_or(Err(Error::NoDirectPath))
+    tokio::time::timeout(limit, wait)
+        .await
+        .unwrap_or(Err(Error::NoDirectPath))
 }
 
 pub(crate) async fn enforce_route(connection: &Connection, rule: &RouteRule) -> Error {
     let mut snapshots = connection.paths_stream();
     let mut violated_at: Option<Instant> = None;
     loop {
-        let wait = violated_at.map_or(RELAY_GRACE, |since| RELAY_GRACE.saturating_sub(since.elapsed()));
+        let wait = violated_at.map_or(RELAY_GRACE, |since| {
+            RELAY_GRACE.saturating_sub(since.elapsed())
+        });
         match tokio::time::timeout(wait, snapshots.next()).await {
             Ok(Some(paths)) if rule.evaluate(&paths).is_some() => violated_at = None,
             Ok(Some(_)) => violated_at = violated_at.or_else(|| Some(Instant::now())),

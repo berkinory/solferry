@@ -11,14 +11,20 @@ pub(crate) fn sanitize(path: &str) -> Option<PathBuf> {
     if path.is_empty() || path.len() > MAX_PATH_LEN {
         return None;
     }
-    path.split('/').all(is_safe_component).then(|| path.split('/').collect())
+    path.split('/')
+        .all(is_safe_component)
+        .then(|| path.split('/').collect())
 }
 
 fn is_safe_component(component: &str) -> bool {
     let has_forbidden_char = component
         .chars()
         .any(|c| c.is_control() || matches!(c, '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'));
-    let stem = component.split('.').next().unwrap_or(component).to_ascii_lowercase();
+    let stem = component
+        .split('.')
+        .next()
+        .unwrap_or(component)
+        .to_ascii_lowercase();
     !component.is_empty()
         && !has_forbidden_char
         && !component.ends_with(['.', ' '])
@@ -37,8 +43,21 @@ mod tests {
     #[test]
     fn rejects_paths_that_escape_or_alias_the_destination() {
         let attacks = [
-            "", "/etc/passwd", "../secret", "a/../../b", "a//b", "a/./b", "C:\\Windows\\win.ini",
-            "C:/Windows", "..\\..\\x", "a\\b", "ok/nul.txt", "CON", "x\0y", "trail.", "trail ",
+            "",
+            "/etc/passwd",
+            "../secret",
+            "a/../../b",
+            "a//b",
+            "a/./b",
+            "C:\\Windows\\win.ini",
+            "C:/Windows",
+            "..\\..\\x",
+            "a\\b",
+            "ok/nul.txt",
+            "CON",
+            "x\0y",
+            "trail.",
+            "trail ",
             "stream:ads",
         ];
         for attack in attacks {
