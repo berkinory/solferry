@@ -12,7 +12,9 @@ use args::Cli;
 #[tokio::main]
 async fn main() -> ExitCode {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_env("BEAM_LOG"))
+        .with_env_filter(
+            EnvFilter::try_from_env("BEAM_LOG").unwrap_or_else(|_| EnvFilter::new("off")),
+        )
         .with_writer(std::io::stderr)
         .init();
     match commands::run(Cli::parse()).await {

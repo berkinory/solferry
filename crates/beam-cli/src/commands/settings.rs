@@ -44,7 +44,7 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
             })
         }
         RelayCommand::Remove { url } => update(data_dir, |config| {
-            config.relays.retain(|existing| *existing != url)
+            config.relays.retain(|existing| *existing != url);
         }),
     }
 }

@@ -56,9 +56,9 @@ async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
             .await
             .unwrap_or(false);
     if accepted {
-        offer.accept(destination)
+        offer.accept(destination);
     } else {
-        offer.decline()
+        offer.decline();
     }
 }
 
