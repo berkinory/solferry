@@ -54,6 +54,18 @@ pub(crate) async fn bind(
     Ok(Network { endpoint, mdns })
 }
 
+/// A short-lived endpoint that uses one relay and nothing else.
+pub(crate) async fn bind_probe(
+    secret: SecretKey,
+    config: &Config,
+    relay: &RelayLink,
+) -> Result<Endpoint> {
+    configure(secret, config, std::slice::from_ref(relay))?
+        .bind()
+        .await
+        .map_err(|error| Error::NetworkStart(error.to_string()))
+}
+
 fn configure(secret: SecretKey, config: &Config, relays: &[RelayLink]) -> Result<Builder> {
     let map: RelayMap = relays.iter().map(RelayLink::config).collect();
     let builder = Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Custom(map));

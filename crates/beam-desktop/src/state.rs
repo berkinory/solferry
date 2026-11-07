@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use beam_core::{Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, TransferId};
+use beam_core::{
+    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, RelayHealth, TransferId,
+};
 use iroh::{EndpointAddr, EndpointId};
 
 use crate::format;
@@ -59,6 +61,7 @@ pub struct AppState {
     pub invite: Option<String>,
     pub pairing_error: Option<Error>,
     pub relay_error: Option<Error>,
+    pub relay_health: Vec<RelayHealth>,
     pub joining: bool,
     pub paired_count: u32,
     pub fatal: Option<Error>,
@@ -77,6 +80,7 @@ impl AppState {
             Update::StartFailed(error) => self.fatal = Some(error),
             Update::Devices(devices) => self.devices = devices,
             Update::Blocked(blocked) => self.blocked = blocked,
+            Update::RelayHealth(health) => self.relay_health = health,
             Update::Nearby(found) => self.nearby = found,
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),

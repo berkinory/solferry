@@ -77,6 +77,8 @@ pub enum Command {
 pub enum RelayCommand {
     /// Show your relays.
     Show,
+    /// Test every relay and explain what to fix.
+    Check,
     /// Use your own relay server.
     Add { url: String },
     /// Stop using a relay server.

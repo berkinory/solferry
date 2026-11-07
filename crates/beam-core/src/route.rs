@@ -62,6 +62,10 @@ fn is_local(ip: IpAddr) -> bool {
     }
 }
 
+pub(crate) fn is_public(ip: IpAddr) -> bool {
+    !is_local(ip) && !is_overlay(ip)
+}
+
 fn joined_overlay() -> bool {
     netdev::get_interfaces().iter().any(|interface| {
         let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();

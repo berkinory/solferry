@@ -1,4 +1,4 @@
-use beam_core::{Config, RelayLink, Visibility};
+use beam_core::{Config, RelayHealth, RelayLink, Visibility};
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
@@ -99,7 +99,8 @@ fn choose_folder(cx: &mut Context<MainView>) {
 }
 
 fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    let relays: Vec<_> = config.relays.iter().map(|url| relay_row(url, cx)).collect();
+    let health = view.state.read(cx).relay_health.clone();
+    let relays: Vec<_> = config.relays.iter().map(|url| relay_row(url, &health, cx)).collect();
     let failure = view.state.read(cx).relay_error.as_ref().map(explain);
     let failure = failure.map(|explanation| ui::muted(explanation.next, cx));
     ui::card(cx)
@@ -117,10 +118,16 @@ fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -
         .into_any_element()
 }
 
-fn relay_row(url: &str, cx: &mut Context<MainView>) -> AnyElement {
+fn relay_row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElement {
     let removed = url.to_owned();
     let parsed = RelayLink::parse(url);
+    let found = parsed
+        .as_ref()
+        .ok()
+        .and_then(|link| health.iter().find(|health| health.url == *link.url()));
+    let status = found.map_or("", relay_status);
     let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.url().to_string());
+    let shown = if status.is_empty() { shown } else { format!("{shown}: {status}") };
     div()
         .flex()
         .items_center()
@@ -137,6 +144,15 @@ fn relay_row(url: &str, cx: &mut Context<MainView>) -> AnyElement {
                 })),
         )
         .into_any_element()
+}
+
+fn relay_status(health: &RelayHealth) -> &'static str {
+    match (health.reachable, health.accepted, health.direct_paths) {
+        (false, ..) => "can't reach the server",
+        (true, false, _) => "refused, check the link",
+        (true, true, false) => "connected, UDP 7842 is blocked",
+        (true, true, true) => "connected",
+    }
 }
 
 fn add_relay(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {

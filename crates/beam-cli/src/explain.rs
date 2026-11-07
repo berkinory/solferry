@@ -28,6 +28,7 @@ fn advice(error: &Error) -> Advice {
         Error::Unreachable(_) => {
             "Make sure beam is running there. On another network, use Tailscale or your own relay with `beam relay add`."
         }
+        Error::RelayCheckFailed => "",
         Error::NotPaired => "Pair first: run `beam pair` there and `beam join <code>` here.",
         Error::VersionMismatch { .. } => "Update beam on both devices.",
         Error::Busy => "Wait for its current transfers to finish and send again.",

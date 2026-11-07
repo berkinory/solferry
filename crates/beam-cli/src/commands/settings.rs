@@ -1,8 +1,11 @@
 use std::path::Path;
+use std::time::Duration;
 
-use beam_core::{Config, Error, RelayLink, Result};
+use beam_core::{Config, Error, RelayHealth, RelayLink, Result};
 
 use crate::args::RelayCommand;
+
+const RELAY_CHECK_WAIT: Duration = Duration::from_secs(6);
 
 pub async fn status(data_dir: &Path) -> Result<()> {
     let (node, _) = super::start(data_dir.to_owned()).await?;
@@ -16,12 +19,51 @@ pub async fn status(data_dir: &Path) -> Result<()> {
     node.shutdown().await
 }
 
+pub async fn check_relays(data_dir: &Path) -> Result<()> {
+    let (node, _) = super::start(data_dir.to_owned()).await?;
+    let relays = node.relay_health(RELAY_CHECK_WAIT).await;
+    if relays.is_empty() {
+        println!("No relays. This device only uses the local network and overlays.");
+    }
+    let mut healthy = true;
+    for relay in &relays {
+        println!("{}", relay.url);
+        println!("  server  {}", state(relay.reachable));
+        println!("  access  {}", state(relay.reachable && relay.accepted));
+        println!("  direct  {}", state(relay.direct_paths));
+        for problem in problems(relay) {
+            println!("  next: {problem}");
+        }
+        healthy &= relay.accepted;
+    }
+    node.shutdown().await?;
+    if healthy { Ok(()) } else { Err(Error::RelayCheckFailed) }
+}
+
+fn state(ok: bool) -> &'static str {
+    if ok { "ok" } else { "failed" }
+}
+
+fn problems(relay: &RelayHealth) -> Vec<&'static str> {
+    let mut problems = Vec::new();
+    if !relay.reachable {
+        problems.push("The server can't be reached. Check its DNS name, that it is running, and that TCP 443 is open.");
+    } else if !relay.accepted {
+        problems.push("The server refused this device. The link's token is probably wrong, so paste the link your relay printed again.");
+    }
+    if relay.accepted && !relay.direct_paths {
+        problems.push("UDP 7842 is blocked, so files stay on the relay. Open it on the server or its firewall.");
+    }
+    problems
+}
+
 pub fn rename(data_dir: &Path, name: String) -> Result<()> {
     update(data_dir, |config| config.name = name)
 }
 
 pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
     match command {
+        RelayCommand::Check => Ok(()),
         RelayCommand::Show => {
             let config = Config::load(data_dir)?;
             if config.relays.is_empty() {

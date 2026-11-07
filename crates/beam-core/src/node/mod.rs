@@ -1,3 +1,4 @@
+mod health;
 mod inbound;
 mod nearby;
 mod outbound;
@@ -16,6 +17,7 @@ use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
+pub use health::RelayHealth;
 pub use inbound::{IncomingOffer, OfferSummary};
 pub use nearby::NearbyDevice;
 pub use outbound::SendReport;

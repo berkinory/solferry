@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use beam_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    TransferId,
+    RelayHealth, TransferId,
 };
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
@@ -39,6 +39,7 @@ pub enum Update {
     StartFailed(Error),
     Devices(Vec<Device>),
     Blocked(Vec<EndpointId>),
+    RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
     Transfer(Event),
     Offer { key: u64, summary: OfferSummary },
@@ -136,6 +137,16 @@ async fn start(
                 waiting.lock().await.insert(next, offer);
                 let _ = outgoing.unbounded_send(Update::Offer { key: next, summary });
             }
+        })
+        .abort_handle(),
+    );
+
+    let checker = node.clone();
+    let outgoing = updates.clone();
+    tasks.push(
+        tokio::spawn(async move {
+            let health = checker.relay_health(ONLINE_WAIT).await;
+            let _ = outgoing.unbounded_send(Update::RelayHealth(health));
         })
         .abort_handle(),
     );
