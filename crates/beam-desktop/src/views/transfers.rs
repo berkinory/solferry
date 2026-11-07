@@ -30,6 +30,7 @@ pub fn render(state: &AppState, cx: &mut Context<MainView>) -> AnyElement {
 fn route_name(route: Route) -> &'static str {
     match route {
         Route::Local => "local network",
+        Route::Overlay => "overlay network",
         Route::Direct => "direct",
         Route::Relay => "relay",
     }

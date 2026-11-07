@@ -33,7 +33,7 @@ Entry paths use `/` separators and are relative. Receivers must reject absolute 
 
 An invite is the string `beam1` plus lowercase base32 of a `Ticket`. It holds the inviter's id, addresses, a 256-bit secret, an expiry and whether it is for one of the inviter's own devices.
 
-The joiner dials the id in the ticket, so the connection proves the inviter's identity, and sends `PairRequest` with the secret. The inviter removes the secret from memory on first use, and replies with `PairReply`. Only a hash of the secret is kept. Both sides then store each other.
+The joiner dials the id in the ticket, so the connection proves the inviter's identity, and sends `PairRequest` with the secret. The inviter removes the secret from memory on first use, and replies with `PairReply`. The joiner stores the inviter and confirms with `Finalized`, and only then does the inviter store the joiner, so a lost reply cannot leave one side paired alone. Only a hash of the secret is kept.
 
 ## Close codes
 

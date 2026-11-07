@@ -13,6 +13,7 @@ const DIRECT_HEAD_START: Duration = Duration::from_secs(4);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
     Local,
+    Overlay,
     Direct,
     Relay,
 }
@@ -41,18 +42,28 @@ impl RouteRule {
 
 fn classify(path: &Path<'_>) -> Route {
     match path.remote_addr() {
+        TransportAddr::Ip(addr) if is_overlay(addr.ip()) => Route::Overlay,
         TransportAddr::Ip(addr) if is_local(addr.ip()) => Route::Local,
         TransportAddr::Relay(_) => Route::Relay,
         _ => Route::Direct,
     }
 }
 
-pub(crate) fn is_local(ip: IpAddr) -> bool {
+/// Addresses Tailscale and similar overlays hand out. Carrier NAT uses the same IPv4 block, so
+/// these must never count as the local network when deciding who to trust.
+fn is_overlay(ip: IpAddr) -> bool {
     match ip.to_canonical() {
-        IpAddr::V4(ip) => {
-            let carrier_grade = ip.octets()[0] == 100 && (ip.octets()[1] & 0xc0) == 64;
-            ip.is_private() || ip.is_loopback() || ip.is_link_local() || carrier_grade
-        }
+        IpAddr::V4(ip) => ip.octets()[0] == 100 && (ip.octets()[1] & 0xc0) == 64,
+        IpAddr::V6(ip) => ip.segments()[..3] == [0xfd7a, 0x115c, 0xa1e0],
+    }
+}
+
+pub(crate) fn is_local(ip: IpAddr) -> bool {
+    if is_overlay(ip) {
+        return false;
+    }
+    match ip.to_canonical() {
+        IpAddr::V4(ip) => ip.is_private() || ip.is_loopback() || ip.is_link_local(),
         IpAddr::V6(ip) => ip.is_loopback() || ip.is_unique_local() || ip.is_unicast_link_local(),
     }
 }
