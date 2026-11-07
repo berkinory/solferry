@@ -9,19 +9,21 @@ use std::path::PathBuf;
 use beam_core::{IncomingOffer, Node, NodeOptions, Result, default_data_dir};
 use tokio::sync::mpsc;
 
-use crate::args::{Cli, Command};
+use crate::args::{Cli, Command, RelayCommand};
 
 pub async fn run(cli: Cli) -> Result<()> {
     let data_dir = cli.data_dir.unwrap_or_else(default_data_dir);
     match cli.command {
         Command::Status => settings::status(&data_dir).await,
         Command::Rename { name } => settings::rename(&data_dir, name),
+        Command::Relay { command: RelayCommand::Check } => settings::check_relays(&data_dir).await,
         Command::Relay { command } => settings::relay(&data_dir, command),
         Command::Send { paths, targets } => send::run(data_dir, paths, targets, cli.json).await,
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }
-        Command::Pair { ask } => device::pair(data_dir, !ask).await,
+        Command::Pair { with: Some(name), ask } => device::pair_nearby(data_dir, &name, !ask).await,
+        Command::Pair { with: None, ask } => device::pair(data_dir, !ask).await,
         Command::Join { code, ask } => device::join(data_dir, &code, !ask).await,
         Command::Devices => device::list(data_dir).await,
         Command::Forget { device } => device::forget(data_dir, &device).await,

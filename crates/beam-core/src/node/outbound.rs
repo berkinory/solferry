@@ -9,7 +9,7 @@ use iroh::{EndpointAddr, EndpointId};
 use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
-use crate::route::{Route, current_route};
+use crate::route::{self, Route, current_route};
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
 use crate::transfer::{sender, transfer_label};
 
@@ -119,6 +119,7 @@ async fn negotiate(
         return Err(Error::Protocol("resume offset exceeds file size".to_owned()));
     }
 
+    let route = current_route(connection);
     let bytes: u64 = manifest.entries.iter().map(|entry| entry.size).sum();
     let resumed: u64 = reply.offsets.iter().sum();
     let files = manifest.entries.iter().filter(|entry| !entry.is_dir).count();
@@ -128,12 +129,15 @@ async fn negotiate(
         peer_name: hello.name.clone(),
         label: transfer_label(&manifest.entries),
         direction: Direction::Sending,
-        route: current_route(connection),
+        route,
         files,
         bytes,
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
-    let final_route = sender::run(connection, &mut recv, manifest, &reply.offsets, &meter).await?;
+    let final_route = tokio::select! {
+        finished = sender::run(connection, &mut recv, manifest, &reply.offsets, &meter) => finished?,
+        () = route::report_changes(connection, manifest.id, route, &shared.events) => unreachable!(),
+    };
     Ok(SendReport {
         id: manifest.id,
         peer_name: hello.name,

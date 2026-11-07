@@ -1,8 +1,9 @@
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
-use beam_core::{Direction, Event, IncomingOffer, Node, Result};
+use beam_core::{Direction, Event, IncomingOffer, Node, PairingRequest, Result};
 use indicatif::HumanBytes;
+use iroh::EndpointId;
 
 use super::send::route_name;
 
@@ -16,6 +17,7 @@ pub async fn run(
     let (node, mut offers) = super::start(data_dir).await?;
     let destination = dir.unwrap_or_else(|| node.config().download_dir.clone());
     let mut events = node.events();
+    let mut pairings = node.pairing_requests();
     if !json {
         println!("{} is ready ({})", node.config().name, node.id().to_z32());
         println!("Saving to {}", destination.display());
@@ -26,6 +28,7 @@ pub async fn run(
                 let Some(offer) = offer else { break };
                 handle_offer(&node, offer, destination.clone(), yes).await;
             }
+            Some(request) = pairings.recv() => handle_pairing(&node, request, json).await,
             event = events.recv() => {
                 let Ok(event) = event else { continue };
                 if json {
@@ -59,11 +62,38 @@ fn report(event: &Event) {
                 route_name(*route)
             );
         }
+        Event::RouteChanged { route, .. } => println!("Now on {}", route_name(*route)),
         Event::Completed { id } => println!("Transfer {id} finished"),
         Event::Failed { id, error } => {
             eprintln!("Transfer {id}: {}", crate::explain::render(error));
         }
         _ => {}
+    }
+}
+
+async fn handle_pairing(node: &Node, request: PairingRequest, json: bool) {
+    if json {
+        request.decline();
+        return;
+    }
+    let prompt = format!(
+        "{} wants to pair. Code: {}. Is it the same on both screens? [y/N/block] ",
+        request.peer_name, request.code
+    );
+    let peer = request.peer;
+    match tokio::task::spawn_blocking(move || ask(&prompt)).await {
+        Ok(Answer::Accept) => request.accept(true),
+        Ok(Answer::Block) => {
+            request.decline();
+            block(node, peer);
+        }
+        _ => request.decline(),
+    }
+}
+
+fn block(node: &Node, peer: EndpointId) {
+    if let Err(error) = node.block(peer) {
+        eprintln!("{}", crate::explain::render(&error));
     }
 }
 
@@ -86,9 +116,7 @@ async fn handle_offer(node: &Node, offer: IncomingOffer, destination: PathBuf, y
         Ok(Answer::Accept) => offer.accept(destination),
         Ok(Answer::Block) => {
             offer.decline();
-            if let Err(error) = node.block(peer) {
-                eprintln!("{}", crate::explain::render(&error));
-            }
+            block(node, peer);
         }
         _ => offer.decline(),
     }

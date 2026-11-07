@@ -176,6 +176,41 @@ async fn known_devices_mode_refuses_strangers_until_paired() {
     assert!(destination.join("note.txt").is_file());
 }
 
+#[tokio::test(flavor = "multi_thread")]
+async fn nearby_pairing_shows_one_code_and_needs_the_other_person() {
+    let requester = peer("requester", Visibility::Everyone).await;
+    let responder = peer("responder", Visibility::Everyone).await;
+    let mut requests = responder.node.pairing_requests();
+
+    let (shown, seen) = tokio::sync::oneshot::channel();
+    let answering = tokio::spawn(async move {
+        let request = requests.recv().await.unwrap();
+        let code = seen.await.unwrap();
+        assert_eq!(request.code, code, "both screens must show the same digits");
+        request.accept(false);
+        requests
+    });
+    let device = requester
+        .node
+        .pair_nearby(responder.node.addr(), true, |code| shown.send(code.to_owned()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(device.name, "responder");
+    assert!(device.auto_accept, "the requester chose this for itself");
+
+    let mut requests = answering.await.unwrap();
+    let stored = responder.node.devices();
+    assert_eq!(stored.len(), 1);
+    assert!(!stored[0].auto_accept, "the responder chose this for itself");
+
+    let stranger = peer("stranger", Visibility::Everyone).await;
+    let declining = tokio::spawn(async move { requests.recv().await.unwrap().decline() });
+    let refused = stranger.node.pair_nearby(responder.node.addr(), true, |_| {}).await;
+    assert!(matches!(refused, Err(Error::PairingRefused)), "{refused:?}");
+    declining.await.unwrap();
+    assert_eq!(stranger.node.devices().len(), 0);
+}
+
 #[cfg(unix)]
 #[tokio::test(flavor = "multi_thread")]
 async fn never_writes_through_a_symlink_in_the_destination() {

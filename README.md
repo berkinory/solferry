@@ -31,13 +31,13 @@ Drop files on a device, or on the window to pick several devices. Closing the wi
 cargo install --path crates/beam-cli
 ```
 
-On the first device:
+On the same network, pair by comparing a code. Keep one device receiving, then on the other:
 
 ```sh
-beam pair
+beam pair --with my-laptop
 ```
 
-On the second device, paste the code it printed:
+Across networks, or to use a QR code, run `beam pair` and paste what it prints on the other device:
 
 ```sh
 beam join beam1...
@@ -56,10 +56,14 @@ Send to several devices with repeated `--to`.
 
 | | Paired | Not paired |
 |---|---|---|
-| Same network or overlay | received right away | asks you, and you can block them |
+| Same network or Tailscale | received right away | asks you, and you can block them |
 | Through a relay | received right away | refused, you never see it |
 
 To be asked for a paired device too, use `beam pair --ask`, `beam join <code> --ask` or `beam approval <device> ask`. This choice stays on your device, a pairing code cannot change it. `beam block` and `beam unblock` manage blocked devices.
+
+Tailscale devices running beam show up by themselves, next to devices on your network.
+
+To keep a server or headless machine receiving, use [deploy/systemd/beam.service](deploy/systemd/beam.service).
 
 ## Firewalls
 

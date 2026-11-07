@@ -43,3 +43,19 @@ The joiner dials the id in the ticket, so the connection proves the inviter's id
 | 1 | Peer requires pairing |
 | 2 | Protocol version mismatch |
 | 3 | Internal error |
+
+## Pairing without a code
+
+On the same network or overlay, a device can pair with no invite. Both sides must approve, and the people compare six digits.
+
+1. The requester sends `PairRequest` with an empty `secret` and `commitment = blake3(nonce_r)`.
+2. The responder sends `PairChallenge { nonce_s }`.
+3. The requester sends `PairReveal { nonce_r }`, and the responder checks the commitment.
+4. Both show a code derived from the two device ids and both nonces.
+5. The responder's user accepts, and the flow finishes with `PairReply` and `Finalized` as with an invite.
+
+Each side fixes its nonce before seeing the other's, so an attacker can't search for a key that gives two connections the same code. The approval for receiving without asking stays local to each device.
+
+## Limits before trust
+
+Hello and pairing messages are read with a 64 KiB frame limit. The pairing ALPN closes at once when no invite exists and nothing listens for requests. Unpaired devices share a pool of two connections, separate from paired ones.

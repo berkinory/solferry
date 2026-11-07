@@ -6,33 +6,15 @@ A relay lets your devices connect when their networks block direct paths. It onl
 
 You need a server with a public IP, a DNS name pointing at it with no CDN proxy, and ports 443/tcp and 7842/udp open. Without 7842/udp the relay still carries data, but devices can't open a direct path through it.
 
+Clone this repository on the server, then:
+
 ```sh
-cd deploy/relay
-RELAY_HOSTNAME=relay.example.com RELAY_EMAIL=you@example.com docker compose up -d --build
+sudo sh deploy/relay/install.sh relay.example.com you@example.com
 ```
+
+It checks DNS and ports first, starts the relay and prints the link to paste into beam. Add `--check` to run the checks and change nothing. If Traefik already holds port 443, as on Coolify, it passes the relay through Traefik without touching your other sites. On `ufw-docker` servers it opens UDP 7842 for you.
 
 Certificates come from Let's Encrypt. Each client is limited to 50 MiB/s by default. Set `RELAY_BYTES_PER_SECOND` and `RELAY_MAX_BURST_BYTES` in `compose.yaml` to change that.
-
-### Server already running Traefik or Coolify
-
-Keep your proxy on ports 80 and 443. Traefik passes the relay's TLS through untouched, so other sites are not affected:
-
-```sh
-RELAY_HOSTNAME=relay.example.com RELAY_EMAIL=you@example.com \
-  docker compose -f compose.yaml -f compose.traefik.yaml up -d --build
-```
-
-`TRAEFIK_NETWORK` and `TRAEFIK_ENTRYPOINT` default to Coolify's `coolify` and `https`. If the server uses `ufw-docker`, published ports stay closed until you allow them:
-
-```sh
-ufw-docker allow relay-relay-1 7842/udp
-```
-
-The relay creates an access token on first start and prints a link. Read it with:
-
-```sh
-docker compose logs relay | grep Paste
-```
 
 ## Use it
 
@@ -42,7 +24,7 @@ On one device, paste that link:
 beam relay add 'https://relay.example.com#token'
 ```
 
-Or paste it in Settings. Pair as usual: the pairing code carries the link, so the other device starts using the relay without any setup. File data uses a direct path when one opens and the relay otherwise. Check the result with `beam relay show`.
+Or paste it in Settings. Pair as usual: the pairing code carries the link, so the other device starts using the relay without any setup. File data uses a direct path when one opens and the relay otherwise. Run `beam relay check` to test it: it says whether the server, the token and the UDP port each work, and what to fix.
 
 ## Access
 

@@ -3,6 +3,8 @@ use thiserror::Error;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 pub const MAX_FRAME_LEN: u32 = 64 * 1024 * 1024;
+/// Limit for messages read before a peer is trusted, which are always small.
+pub const MAX_SMALL_FRAME_LEN: u32 = 64 * 1024;
 
 #[derive(Debug, Error)]
 pub enum FrameError {
@@ -34,8 +36,24 @@ where
     R: AsyncRead + Unpin,
     M: Message + Default,
 {
+    read_limited(reader, MAX_FRAME_LEN).await
+}
+
+pub async fn read_small_frame<R, M>(reader: &mut R) -> Result<M, FrameError>
+where
+    R: AsyncRead + Unpin,
+    M: Message + Default,
+{
+    read_limited(reader, MAX_SMALL_FRAME_LEN).await
+}
+
+async fn read_limited<R, M>(reader: &mut R, limit: u32) -> Result<M, FrameError>
+where
+    R: AsyncRead + Unpin,
+    M: Message + Default,
+{
     let len = reader.read_u32().await?;
-    if len > MAX_FRAME_LEN {
+    if len > limit {
         return Err(FrameError::TooLarge(len));
     }
     let mut body = vec![0; len as usize];

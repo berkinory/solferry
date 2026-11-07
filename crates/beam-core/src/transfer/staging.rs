@@ -5,10 +5,12 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use beam_proto::Entry;
 use bytes::Bytes;
+use iroh::EndpointId;
 use tokio::sync::mpsc;
 
 use super::CHUNK_SIZE;
 use super::paths::crosses_symlink;
+use super::quarantine::mark_downloaded;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::TransferId;
 
@@ -21,10 +23,13 @@ pub(crate) struct Staging {
 }
 
 impl Staging {
-    pub(crate) fn open(destination: &Path, id: TransferId) -> Result<Self> {
+    /// The sender picks the transfer id, so the peer is part of the name: nobody can continue
+    /// or poison another device's partial files by repeating its id.
+    pub(crate) fn open(destination: &Path, peer: EndpointId, id: TransferId) -> Result<Self> {
         let parent = destination.join(PARTIAL_DIR);
         prune_abandoned(&parent);
-        let root = parent.join(hex::encode(id.0));
+        let owner = blake3::Hasher::new().update(peer.as_bytes()).update(&id.0).finalize();
+        let root = parent.join(owner.to_hex().as_str());
         fs::create_dir_all(&root).at(&root)?;
         Ok(Self { root })
     }
@@ -64,6 +69,7 @@ impl Staging {
             let part = self.part(index);
             restore_modified(&part, entry.modified_ms);
             fs::rename(&part, &target).at(&target)?;
+            mark_downloaded(&target);
             delivered.push(target);
         }
         fs::remove_dir_all(&self.root).at(&self.root)?;

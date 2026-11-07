@@ -1,6 +1,9 @@
+mod confirm;
+mod health;
 mod inbound;
 mod nearby;
 mod outbound;
+mod overlay;
 mod pairing;
 
 use std::collections::HashMap;
@@ -16,6 +19,8 @@ use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
+pub use confirm::PairingRequest;
+pub use health::RelayHealth;
 pub use inbound::{IncomingOffer, OfferSummary};
 pub use nearby::NearbyDevice;
 pub use outbound::SendReport;
@@ -25,12 +30,15 @@ use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
 use crate::relay::RelayLink;
+use crate::route;
 use crate::trust::{Device, TrustStore};
 use crate::{identity, net};
 
 const EVENT_BUFFER: usize = 1024;
 const OFFER_BUFFER: usize = 16;
 const MAX_INBOUND: usize = 8;
+/// Unpaired devices get their own small pool, so they can never crowd out your own devices.
+const MAX_STRANGERS: usize = 2;
 
 #[derive(Clone, Debug)]
 pub struct NodeOptions {
@@ -52,8 +60,10 @@ pub(crate) struct Shared {
     pub(crate) events: broadcast::Sender<Event>,
     pub(crate) offers: mpsc::Sender<IncomingOffer>,
     pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
+    pair_listener: Mutex<Option<mpsc::Sender<PairingRequest>>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
+    pub(crate) stranger_slots: Arc<Semaphore>,
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
     uses_relays: bool,
 }
@@ -67,6 +77,14 @@ impl fmt::Debug for Shared {
 impl Shared {
     pub(crate) fn track(&self, id: TransferId, connection: &Connection) {
         self.active_map().insert(id, connection.clone());
+    }
+
+    fn pair_listener(&self) -> MutexGuard<'_, Option<mpsc::Sender<PairingRequest>>> {
+        self.pair_listener.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    pub(crate) fn has_invites(&self) -> bool {
+        !self.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).is_empty()
     }
 
     pub(crate) fn untrack(&self, id: TransferId) {
@@ -111,11 +129,16 @@ impl Node {
             events: broadcast::channel(EVENT_BUFFER).0,
             offers,
             invites: Mutex::new(HashMap::new()),
+            pair_listener: Mutex::new(None),
             mdns: network.mdns,
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
+            stranger_slots: Arc::new(Semaphore::new(MAX_STRANGERS)),
             active: Mutex::new(HashMap::new()),
             uses_relays,
         });
+        if !isolated {
+            overlay::answer_probes(shared.clone());
+        }
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
@@ -157,6 +180,12 @@ impl Node {
         let device = trust.resolve(query)?.clone();
         trust.remove(&device.id)?;
         Ok(device)
+    }
+
+    /// This device's address on an overlay such as Tailscale, if it joined one.
+    #[must_use]
+    pub fn overlay_address(&self) -> Option<std::net::Ipv4Addr> {
+        route::overlay_address()
     }
 
     /// Decides whether this paired device may send files without asking.

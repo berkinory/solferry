@@ -1,6 +1,7 @@
 mod manifest;
 mod meter;
 pub(crate) mod paths;
+mod quarantine;
 pub(crate) mod receiver;
 pub(crate) mod sender;
 mod session;

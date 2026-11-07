@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use beam_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    TransferId,
+    PairingRequest, RelayHealth, TransferId,
 };
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
@@ -25,6 +25,8 @@ pub enum Command {
     Cancel(TransferId),
     Answer { offer: u64, accept: bool },
     BlockOffer(u64),
+    PairNearby { addr: EndpointAddr, auto_accept: bool },
+    AnswerPairing { key: u64, accept: bool, auto_accept: bool },
     Invite { auto_accept: bool },
     Join { code: String, auto_accept: bool },
     Forget(EndpointId),
@@ -39,9 +41,12 @@ pub enum Update {
     StartFailed(Error),
     Devices(Vec<Device>),
     Blocked(Vec<EndpointId>),
+    RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
     Transfer(Event),
     Offer { key: u64, summary: OfferSummary },
+    PairingRequest { key: u64, name: String, code: String },
+    PairingCode(String),
     Invite(String),
     Paired(Device),
     PairingFailed(Error),
@@ -75,6 +80,7 @@ pub fn spawn(data_dir: PathBuf) -> (Handle, UnboundedReceiver<Update>) {
 }
 
 type Pending = Arc<Mutex<HashMap<u64, IncomingOffer>>>;
+type PendingPairings = Arc<Mutex<HashMap<u64, PairingRequest>>>;
 
 struct Session {
     node: Node,
@@ -85,6 +91,7 @@ async fn start(
     data_dir: &Path,
     updates: &UnboundedSender<Update>,
     pending: &Pending,
+    pairing: &PendingPairings,
 ) -> Option<Session> {
     let options = NodeOptions { data_dir: data_dir.to_owned(), isolated: false };
     let (node, mut offers) = match Node::start(options).await {
@@ -140,6 +147,32 @@ async fn start(
         .abort_handle(),
     );
 
+    let checker = node.clone();
+    let outgoing = updates.clone();
+    tasks.push(
+        tokio::spawn(async move {
+            let health = checker.relay_health(ONLINE_WAIT).await;
+            let _ = outgoing.unbounded_send(Update::RelayHealth(health));
+        })
+        .abort_handle(),
+    );
+
+    let mut requests = node.pairing_requests();
+    let waiting = pairing.clone();
+    let outgoing = updates.clone();
+    tasks.push(
+        tokio::spawn(async move {
+            let mut next = 0;
+            while let Some(request) = requests.recv().await {
+                next += 1;
+                let (name, code) = (request.peer_name.clone(), request.code.clone());
+                waiting.lock().await.insert(next, request);
+                let _ = outgoing.unbounded_send(Update::PairingRequest { key: next, name, code });
+            }
+        })
+        .abort_handle(),
+    );
+
     let scanner = node.clone();
     let outgoing = updates.clone();
     tasks.push(
@@ -161,7 +194,8 @@ async fn run(
     updates: UnboundedSender<Update>,
 ) {
     let pending: Pending = Arc::default();
-    let mut session = start(&data_dir, &updates, &pending).await;
+    let pairing: PendingPairings = Arc::default();
+    let mut session = start(&data_dir, &updates, &pending, &pairing).await;
     while let Some(command) = commands.next().await {
         match command {
             Command::Quit => break,
@@ -172,7 +206,11 @@ async fn run(
                 if let Err(error) = config.save(&data_dir) {
                     let _ = updates.unbounded_send(Update::StartFailed(error));
                 }
-                session = start(&data_dir, &updates, &pending).await;
+                session = start(&data_dir, &updates, &pending, &pairing).await;
+            }
+            Command::AnswerPairing { key, accept, auto_accept } => {
+                let Some(request) = pairing.lock().await.remove(&key) else { continue };
+                if accept { request.accept(auto_accept) } else { request.decline() }
             }
             Command::Answer { offer, accept } => {
                 let Some(offer) = pending.lock().await.remove(&offer) else { continue };
@@ -228,6 +266,18 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 }
             }
             Command::Cancel(id) => node.cancel(id),
+            Command::PairNearby { addr, auto_accept } => {
+                let shown = updates.clone();
+                let show = move |code: &str| {
+                    let _ = shown.unbounded_send(Update::PairingCode(code.to_owned()));
+                };
+                let result = match node.pair_nearby(addr, auto_accept, show).await {
+                    Ok(device) => Update::Paired(device),
+                    Err(error) => Update::PairingFailed(error),
+                };
+                let _ = updates.send(result).await;
+                let _ = updates.send(Update::Devices(node.devices())).await;
+            }
             Command::Invite { auto_accept } => {
                 node.online_within(ONLINE_WAIT).await;
                 let code = node.invite(auto_accept).code().to_owned();
@@ -253,8 +303,11 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 let _ = node.unblock(id);
                 let _ = updates.send(Update::Blocked(node.blocked())).await;
             }
-            Command::Answer { .. } | Command::BlockOffer(_) | Command::Apply(_) | Command::Quit => {
-            }
+            Command::Answer { .. }
+            | Command::AnswerPairing { .. }
+            | Command::BlockOffer(_)
+            | Command::Apply(_)
+            | Command::Quit => {}
         }
     });
 }

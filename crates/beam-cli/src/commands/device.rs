@@ -37,6 +37,19 @@ pub async fn pair(data_dir: PathBuf, auto_accept: bool) -> Result<()> {
     node.shutdown().await
 }
 
+pub async fn pair_nearby(data_dir: PathBuf, name: &str, auto_accept: bool) -> Result<()> {
+    let (node, _offers) = super::start(data_dir).await?;
+    let device = node.find_nearby(name, NEARBY_WINDOW).await;
+    let device = device.ok_or_else(|| Error::UnknownDevice(name.to_owned()))?;
+    let paired = node
+        .pair_nearby(device.addr, auto_accept, |code| {
+            println!("Code: {code}\nCheck that {name} shows the same code, then accept there.");
+        })
+        .await?;
+    println!("Paired with {}", paired.name);
+    node.shutdown().await
+}
+
 pub async fn join(data_dir: PathBuf, code: &str, auto_accept: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let device = node.join(code, auto_accept).await?;

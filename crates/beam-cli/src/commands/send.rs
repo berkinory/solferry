@@ -53,7 +53,6 @@ pub async fn run(
 }
 
 async fn resolve(node: &Node, targets: &[String]) -> Result<Vec<EndpointAddr>> {
-    let mut nearby = None;
     let mut addrs = Vec::with_capacity(targets.len());
     for target in targets {
         match node.find_device(target) {
@@ -63,13 +62,12 @@ async fn resolve(node: &Node, targets: &[String]) -> Result<Vec<EndpointAddr>> {
                     addrs.push(EndpointAddr::new(id));
                     continue;
                 }
-                let found = match &nearby {
-                    Some(found) => found,
-                    None => nearby.insert(node.nearby(NEARBY_WINDOW).await),
-                };
-                let device = found.iter().find(|device| device.name.as_deref() == Some(target));
+                let device = node.find_nearby(target, NEARBY_WINDOW).await;
                 let device = device.ok_or_else(|| Error::UnknownDevice(target.clone()))?;
-                addrs.push(device.addr.clone());
+                eprintln!(
+                    "{target} isn't paired, so its name is unverified. It will be asked first."
+                );
+                addrs.push(device.addr);
             }
             Err(error) => return Err(error),
         }
@@ -88,6 +86,9 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
                 bar.set_style(style.clone());
                 bar.set_length(bytes);
                 bar.set_message(peer_name);
+            }
+            Event::RouteChanged { route, .. } => {
+                bar.println(format!("Now on {}", route_name(route)));
             }
             Event::Progress { transferred, .. } => bar.set_position(transferred),
             Event::Completed { .. } | Event::Failed { .. } => bar.finish_and_clear(),

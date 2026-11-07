@@ -31,7 +31,7 @@ iroh dials by public key and picks the best path. beam has two address sources a
 
 beam prefers UDP port 53318 so stored addresses survive restarts and firewalls can allow it. If the port is taken it falls back to a random one.
 
-Overlay networks such as Tailscale are ordinary network interfaces for reaching paired devices. Admitting unpaired ones needs one check: `100.64.0.0/10` is shared with carrier NAT, so `route.rs` also requires a local tunnel interface with an overlay address. Unknown interface names fail closed.
+Overlay networks such as Tailscale are ordinary network interfaces for reaching paired devices. To list unpaired ones, `node/overlay.rs` reads the online peers from the local `tailscale` command and asks each on UDP 53319. That port listens only on the overlay address and only while visibility is `everyone`. Admitting unpaired ones needs one check: `100.64.0.0/10` is shared with carrier NAT, so `route.rs` also requires a local tunnel interface with an overlay address. Unknown interface names fail closed.
 
 ## Relays
 

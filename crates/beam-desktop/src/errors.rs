@@ -29,6 +29,7 @@ pub fn explain(error: &Error) -> Explanation {
             "Device can't be reached",
             "Open beam there. On another network, use Tailscale or add your own relay.",
         ),
+        Error::RelayCheckFailed => say("A relay is not working", "See its status in Settings."),
         Error::NotPaired => {
             say("This device only accepts paired devices", "Pair them first from Add device.")
         }

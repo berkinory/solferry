@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use beam_core::{Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, TransferId};
+use beam_core::{
+    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, RelayHealth, TransferId,
+};
 use iroh::{EndpointAddr, EndpointId};
 
 use crate::format;
@@ -45,6 +47,13 @@ pub struct Offer {
     pub summary: OfferSummary,
 }
 
+#[derive(Clone)]
+pub struct PairingPrompt {
+    pub key: u64,
+    pub name: String,
+    pub code: String,
+}
+
 #[derive(Clone, Default)]
 pub struct AppState {
     pub id: Option<EndpointId>,
@@ -56,9 +65,12 @@ pub struct AppState {
     pub transfers: Vec<Transfer>,
     pub failures: Vec<FailedSend>,
     pub offers: Vec<Offer>,
+    pub pairing_prompts: Vec<PairingPrompt>,
+    pub pairing_code: Option<String>,
     pub invite: Option<String>,
     pub pairing_error: Option<Error>,
     pub relay_error: Option<Error>,
+    pub relay_health: Vec<RelayHealth>,
     pub joining: bool,
     pub paired_count: u32,
     pub fatal: Option<Error>,
@@ -77,12 +89,21 @@ impl AppState {
             Update::StartFailed(error) => self.fatal = Some(error),
             Update::Devices(devices) => self.devices = devices,
             Update::Blocked(blocked) => self.blocked = blocked,
+            Update::RelayHealth(health) => self.relay_health = health,
             Update::Nearby(found) => self.nearby = found,
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
             Update::Invite(code) => self.invite = Some(code),
-            Update::Paired(device) => self.add_device(device),
+            Update::PairingRequest { key, name, code } => {
+                self.pairing_prompts.push(PairingPrompt { key, name, code });
+            }
+            Update::PairingCode(code) => self.pairing_code = Some(code),
+            Update::Paired(device) => {
+                self.pairing_code = None;
+                self.add_device(device);
+            }
             Update::PairingFailed(error) => {
+                self.pairing_code = None;
                 self.joining = false;
                 self.pairing_error = Some(error);
             }
@@ -126,6 +147,11 @@ impl AppState {
                         measured: None,
                     },
                 );
+            }
+            Event::RouteChanged { id, route } => {
+                if let Some(transfer) = self.transfers.iter_mut().find(|item| item.id == id) {
+                    transfer.route = route;
+                }
             }
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {

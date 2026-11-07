@@ -43,6 +43,9 @@ pub enum Command {
     },
     /// Create a pairing code for another device.
     Pair {
+        /// Pair with this nearby device by comparing a code, instead of showing a pairing code.
+        #[arg(long)]
+        with: Option<String>,
         /// Ask before taking files from this device instead of receiving them right away.
         #[arg(long)]
         ask: bool,
@@ -77,6 +80,8 @@ pub enum Command {
 pub enum RelayCommand {
     /// Show your relays.
     Show,
+    /// Test every relay and explain what to fix.
+    Check,
     /// Use your own relay server.
     Add { url: String },
     /// Stop using a relay server.

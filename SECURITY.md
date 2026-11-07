@@ -15,3 +15,5 @@ Please report vulnerabilities privately through GitHub security advisories, not 
 - A pairing code includes the inviter's relay and its access token, so joining connects you to it. Treat codes as secrets and only use codes from people you trust.
 - `device.key` is a plain file protected by file permissions. OS keychain storage is planned.
 - beam has not had an independent security audit yet.
+- Received files carry the system's download marker on macOS and Windows, so they are checked before first run.
+- Partial files belong to the device that started them, so another device can't continue or poison them.

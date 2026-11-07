@@ -80,6 +80,21 @@ pub struct PairRequest {
     pub relay_urls: Vec<String>,
     #[prost(string, repeated, tag = "4")]
     pub direct_addrs: Vec<String>,
+    /// Hash of the requester's nonce. Set instead of `secret` when pairing without an invite.
+    #[prost(bytes = "vec", tag = "5")]
+    pub commitment: Vec<u8>,
+}
+
+#[derive(Clone, PartialEq, Message)]
+pub struct PairChallenge {
+    #[prost(bytes = "vec", tag = "1")]
+    pub nonce: Vec<u8>,
+}
+
+#[derive(Clone, PartialEq, Message)]
+pub struct PairReveal {
+    #[prost(bytes = "vec", tag = "1")]
+    pub nonce: Vec<u8>,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -88,6 +103,10 @@ pub struct PairReply {
     pub accepted: bool,
     #[prost(string, tag = "2")]
     pub name: String,
+    #[prost(string, repeated, tag = "3")]
+    pub relay_urls: Vec<String>,
+    #[prost(string, repeated, tag = "4")]
+    pub direct_addrs: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Message)]

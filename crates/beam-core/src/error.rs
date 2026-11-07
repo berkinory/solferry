@@ -24,6 +24,8 @@ pub enum Error {
     NetworkStart(String),
     #[error("invalid relay url {0}")]
     InvalidRelayUrl(String),
+    #[error("a relay is not working")]
+    RelayCheckFailed,
     #[error("device is unreachable: {0}")]
     Unreachable(String),
     #[error("the device only accepts paired peers")]
