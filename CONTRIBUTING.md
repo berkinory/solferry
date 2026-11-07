@@ -2,7 +2,7 @@
 
 ## Setup
 
-You need stable Rust. Install the tools once:
+You need stable Rust. The core and CLI support Rust 1.91. The desktop app follows GPUI and needs 1.98 or newer. Install the tools once:
 
 ```sh
 cargo install just taplo-cli typos-cli cargo-nextest cargo-deny

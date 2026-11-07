@@ -28,7 +28,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.91
       - uses: Swatinem/rust-cache@v2
       - run: sudo apt-get update && sudo apt-get install -y libxkbcommon-x11-dev libwayland-dev libvulkan-dev libfreetype-dev libfontconfig-dev
-      - run: cargo check --workspace --locked
+      - run: cargo check --locked -p beam-proto -p beam-core -p beam-cli
 
   test:
     strategy:
