@@ -18,7 +18,12 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Rename { name } => settings::rename(&data_dir, name),
         Command::Relay { command: RelayCommand::Check } => settings::check_relays(&data_dir).await,
         Command::Relay { command } => settings::relay(&data_dir, command),
-        Command::Send { paths, targets } => send::run(data_dir, paths, targets, cli.json).await,
+        Command::Send { text: Some(text), targets, .. } => {
+            send::text(data_dir, text, targets).await
+        }
+        Command::Send { paths, targets, text: None } => {
+            send::run(data_dir, paths, targets, cli.json).await
+        }
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }

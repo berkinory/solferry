@@ -52,6 +52,33 @@ pub async fn run(
     failure.map_or(Ok(()), Err)
 }
 
+/// Shares text with paired devices. They copy it, or show it to copy if they ask first.
+pub async fn text(data_dir: PathBuf, text: String, targets: Vec<String>) -> Result<()> {
+    let text = if text == "-" {
+        let mut input = String::new();
+        std::io::Read::read_to_string(&mut std::io::stdin(), &mut input)
+            .map_err(|error| Error::Protocol(format!("reading stdin: {error}")))?;
+        input
+    } else {
+        text
+    };
+    let (node, _offers) = super::start(data_dir).await?;
+    let addrs = resolve(&node, &targets).await?;
+    let sends = addrs.into_iter().map(|addr| node.send_text(addr, text.clone()));
+    let mut failure = None;
+    for (target, outcome) in targets.iter().zip(join_all(sends).await) {
+        match outcome {
+            Ok(()) => println!("Shared text with {target}"),
+            Err(error) => {
+                eprintln!("{target}: {}", crate::explain::render(&error));
+                failure = Some(error);
+            }
+        }
+    }
+    node.shutdown().await?;
+    failure.map_or(Ok(()), Err)
+}
+
 async fn resolve(node: &Node, targets: &[String]) -> Result<Vec<EndpointAddr>> {
     let mut addrs = Vec::with_capacity(targets.len());
     for target in targets {
@@ -93,7 +120,7 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
             Event::Progress { transferred, .. } => bar.set_position(transferred),
             Event::Completed { .. } | Event::Failed { .. } => bar.finish_and_clear(),
             Event::Reconnecting { .. } => bar.set_message("reconnecting"),
-            Event::Started { .. } | Event::Paired { .. } => {}
+            Event::Started { .. } | Event::Paired { .. } | Event::TextReceived { .. } => {}
         }
     }
 }

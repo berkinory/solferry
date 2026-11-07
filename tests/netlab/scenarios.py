@@ -232,6 +232,7 @@ SCENARIOS = {
     "wifi-link": bad_link("delay 5ms loss 0.5% rate 300mbit"),
     "lossy-link": bad_link("delay 40ms loss 1% rate 200mbit"),
     "jitter-link": bad_link("delay 40ms 10ms loss 1% rate 200mbit"),
+    "far-link": bad_link("delay 50ms rate 1gbit limit 100000"),
     "outage-10s": outage(10),
     "outage-45s": outage(45),
     "receiver-restart": receiver_restart,

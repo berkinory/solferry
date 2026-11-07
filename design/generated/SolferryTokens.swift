@@ -61,6 +61,11 @@ enum DarkColors {
     static let primaryBorder = Color(hex: 0x6D68DB)
 }
 
+enum IdentityColors {
+    static let light = [Color(hex: 0x2563EB), Color(hex: 0x7C3AED), Color(hex: 0xDB2777), Color(hex: 0xEA580C), Color(hex: 0xB45309), Color(hex: 0x15803D), Color(hex: 0x0F766E), Color(hex: 0x0E7490)]
+    static let dark = [Color(hex: 0x60A5FA), Color(hex: 0xA78BFA), Color(hex: 0xF472B6), Color(hex: 0xFB923C), Color(hex: 0xFBBF24), Color(hex: 0x4ADE80), Color(hex: 0x2DD4BF), Color(hex: 0x22D3EE)]
+}
+
 enum SpaceTokens {
     static let xs: Double = 4
     static let sm: Double = 8

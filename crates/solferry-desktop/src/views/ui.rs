@@ -3,10 +3,11 @@ use gpui_kit::{
     AnyElement, App, BoxShadow, Div, FontWeight, Hsla, IntoElement, ParentElement, SharedString,
     Styled, black, div, point, px,
 };
+use iroh::EndpointId;
 use solferry_core::Platform;
 
 use crate::assets::{Glyph, icon};
-use crate::theme::{color, palette};
+use crate::theme::{color, identity_color, palette};
 use crate::tokens::{
     FONT_MONO, RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY,
     TYPE_CAPTION, TYPE_LABEL,
@@ -137,6 +138,17 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
         .rounded(px(RADIUS_FLOOR))
         .bg(fill)
         .child(icon(glyph, 16.).text_color(tone))
+}
+
+/// A device's tile: its platform logo in the color its key gives it.
+pub fn device_tile(id: &EndpointId, platform: Option<Platform>, cx: &App) -> Div {
+    let tone = identity_color(id, cx);
+    tinted_tile(platform_glyph(platform), tone.opacity(0.16), tone)
+}
+
+/// The start of the device's key, short enough to compare by eye.
+pub fn fingerprint(id: &EndpointId) -> String {
+    id.fmt_short().to_string()
 }
 
 pub fn platform_glyph(platform: Option<Platform>) -> Glyph {

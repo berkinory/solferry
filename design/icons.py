@@ -18,6 +18,7 @@ ICONS = {
     "blocked": "UnavailableIcon",
     "cancel": "Cancel01Icon",
     "check": "Tick02Icon",
+    "clipboard": "ClipboardIcon",
     "computer": "ComputerIcon",
     "copy": "Copy01Icon",
     "delete": "Delete02Icon",

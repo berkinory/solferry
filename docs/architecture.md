@@ -55,7 +55,9 @@ Connections use BBR. Consumer Wi-Fi and mobile links lose packets for reasons un
 
 ## Stream window
 
-Each stream has a 2 MiB receive window. noq closes a connection that exceeds 1024 gaps in one stream, and a larger window makes that reachable under heavy packet loss. See the constant in `net.rs` before changing it. The cost is throughput on high latency links, which parallel streams per file can solve later.
+Each stream has a 2 MiB receive window. noq closes a connection that exceeds 1024 gaps in one stream, and a larger window makes that reachable under heavy packet loss. See the constant in `net.rs` before changing it.
+
+One stream therefore moves at most 2 MiB per round trip, so large files travel as up to 16 segments in parallel, each on its own stream with its own hash and resume point. A file in flight can then use 32 MiB of window, more than QUIC stacks usually auto-tune to (quic-go stops at 6 MiB per stream and 15 MiB per connection), while no single stream gets large enough to hit the gap limit. On a 1 Gbit link with 100 ms round trips (`far-link` in `tests/netlab`), one 300 MiB file went from 17 MiB/s to 59 MiB/s, and on the 1% loss link from 11 MiB/s to 16 MiB/s. LAN speed is unchanged.
 
 ## Desktop
 

@@ -8,7 +8,7 @@ use gpui_kit::{
 
 use super::button::Button;
 use super::main_view::{MainView, Page};
-use super::{devices, offers, transfers, ui};
+use super::{devices, offers, texts, transfers, ui};
 use crate::assets::{Glyph, icon};
 use crate::errors::explain;
 use crate::theme::{color, palette};
@@ -202,6 +202,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let prompts: Vec<_> =
         state.pairing_prompts.iter().map(|prompt| offers::pairing_card(prompt, cx)).collect();
     let code = state.pairing_code.as_deref().map(|code| offers::pairing_code(code, cx));
+    let shared = texts::render(&state, cx);
     let send = if view.pending.is_empty() { drop_zone(cx) } else { pending_card(view, cx) };
     div()
         .flex()
@@ -211,6 +212,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .children(prompts)
         .children(code)
         .children(offers)
+        .children(shared)
         .child(send)
         .child(devices::render(&state, view, cx))
         .children(transfers::render(&state, cx))

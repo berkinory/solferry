@@ -58,7 +58,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         .flex()
                         .items_center()
                         .gap(px(10.))
-                        .child(ui::tile(ui::platform_glyph(summary.platform), cx))
+                        .child(ui::device_tile(&summary.peer, summary.platform, cx))
                         .child(
                             div()
                                 .flex()
@@ -67,7 +67,11 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                 .min_w_0()
                                 .child(ui::text(format!("{} wants to send", summary.peer_name)))
                                 .child(ui::mono(
-                                    format!("{files}, {}", format::bytes(summary.bytes)),
+                                    format!(
+                                        "{files}, {}  ·  {}",
+                                        format::bytes(summary.bytes),
+                                        ui::fingerprint(&summary.peer)
+                                    ),
                                     cx,
                                 )),
                         ),
@@ -141,7 +145,21 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
     ask(Glyph::Shield, "Pairing request", cx)
         .child(
             ui::padded_well(cx)
-                .child(ui::text(format!("{} wants to pair", prompt.name)))
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(10.))
+                        .child(ui::device_tile(&prompt.peer, prompt.platform, cx))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_col()
+                                .min_w_0()
+                                .child(ui::text(format!("{} wants to pair", prompt.name)))
+                                .child(ui::mono(ui::fingerprint(&prompt.peer), cx)),
+                        ),
+                )
                 .child(digits)
                 .child(ui::muted("Accept only if the other screen shows the same code.", cx))
                 .child(

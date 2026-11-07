@@ -3,13 +3,15 @@ use std::time::Instant;
 
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, RelayHealth, TransferId,
+    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth,
+    TransferId,
 };
 
 use crate::format;
 use crate::service::Update;
 
 const SPEED_SMOOTHING: f64 = 0.2;
+const MAX_TEXTS: usize = 3;
 
 #[derive(Clone)]
 pub enum Phase {
@@ -50,8 +52,19 @@ pub struct Offer {
 #[derive(Clone)]
 pub struct PairingPrompt {
     pub key: u64,
+    pub peer: EndpointId,
+    pub platform: Option<Platform>,
     pub name: String,
     pub code: String,
+}
+
+#[derive(Clone)]
+pub struct SharedText {
+    pub key: u64,
+    pub peer: EndpointId,
+    pub name: String,
+    pub text: String,
+    pub copied: bool,
 }
 
 #[derive(Clone, Default)]
@@ -65,6 +78,9 @@ pub struct AppState {
     pub transfers: Vec<Transfer>,
     pub failures: Vec<FailedSend>,
     pub offers: Vec<Offer>,
+    pub texts: Vec<SharedText>,
+    pub text_failure: Option<(String, Error)>,
+    texts_seen: u64,
     pub pairing_prompts: Vec<PairingPrompt>,
     pub pairing_code: Option<String>,
     pub invite: Option<String>,
@@ -103,8 +119,8 @@ impl AppState {
                 self.pairing_prompts.retain(|prompt| prompt.key != key);
             }
             Update::Invite(code) => self.invite = Some(code),
-            Update::PairingRequest { key, name, code } => {
-                self.pairing_prompts.push(PairingPrompt { key, name, code });
+            Update::PairingRequest { key, peer, platform, name, code } => {
+                self.pairing_prompts.push(PairingPrompt { key, peer, platform, name, code });
             }
             Update::PairingCode(code) => self.pairing_code = Some(code),
             Update::Paired(device) => {
@@ -115,6 +131,9 @@ impl AppState {
                 self.pairing_code = None;
                 self.joining = false;
                 self.pairing_error = Some(error);
+            }
+            Update::TextShared { name, result } => {
+                self.text_failure = result.err().map(|error| (name, error));
             }
             Update::SendFailed { name, addr, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
@@ -139,6 +158,14 @@ impl AppState {
     fn on_event(&mut self, event: Event) {
         match event {
             Event::Paired { device } => self.add_device(device),
+            Event::TextReceived { peer, peer_name, text, auto_copy } => {
+                self.texts_seen += 1;
+                let key = self.texts_seen;
+                self.texts.retain(|shared| shared.peer != peer);
+                self.texts
+                    .insert(0, SharedText { key, peer, name: peer_name, text, copied: auto_copy });
+                self.texts.truncate(MAX_TEXTS);
+            }
             Event::Started { id, peer_name, label, direction, route, bytes, .. } => {
                 self.transfers.retain(|transfer| transfer.id != id);
                 self.transfers.insert(

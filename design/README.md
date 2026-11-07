@@ -40,6 +40,10 @@ Nothing picks a radius by hand. Corners stay concentric through `outer = inner +
 
 Buttons follow one recipe: primary is lit from inside with a highlight on top and a shade below, secondary is a framed page-colored button with a hairline shadow, ghost is text until hovered, and danger is reserved for the confirm step of something that can't be undone. Destructive actions always confirm in a dialog. Every action and card header carries a Hugeicons icon, and device tiles show the device's platform logo.
 
+## Identity
+
+A device's name can be copied, its key can't. Each device gets one of eight `identity` colors and a short fingerprint, both taken from its key, so two devices with the same name still look different. Identity colors only tint device tiles and never carry meaning of their own.
+
 ## Type
 
 Inter Tight for text and Geist Mono for numbers that change, so sizes and speeds don't jitter. Medium is the heaviest weight, nothing is bold. iOS uses SF Pro. Five sizes: `caption`, `label`, `body`, `title`, and `code` for the six digits people compare while pairing.

@@ -26,6 +26,13 @@ pub enum Event {
     Paired {
         device: Device,
     },
+    /// A paired device shared copied text. `auto_copy` follows its "receive without asking" choice.
+    TextReceived {
+        peer: EndpointId,
+        peer_name: String,
+        text: String,
+        auto_copy: bool,
+    },
     Started {
         id: TransferId,
         peer: EndpointId,

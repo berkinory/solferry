@@ -10,6 +10,7 @@ use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
 use crate::route::{self, Route, current_route};
+use crate::transfer::segments;
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
 use crate::transfer::{sender, transfer_label};
 
@@ -110,18 +111,12 @@ async fn negotiate(
         Decision::InvalidOffer => return Err(Error::InvalidOffer("rejected by peer".to_owned())),
         Decision::Unspecified => return Err(Error::Protocol("empty decision".to_owned())),
     }
-    if reply.offsets.len() != manifest.entries.len() {
-        return Err(Error::Protocol("resume table does not match the offer".to_owned()));
-    }
-    let oversized =
-        reply.offsets.iter().zip(&manifest.entries).any(|(offset, entry)| *offset > entry.size);
-    if oversized {
-        return Err(Error::Protocol("resume offset exceeds file size".to_owned()));
-    }
+    let progress = segments::unflatten(&manifest.entries, &reply.offsets)
+        .ok_or_else(|| Error::Protocol("resume table does not match the offer".to_owned()))?;
 
     let route = current_route(connection);
     let bytes: u64 = manifest.entries.iter().map(|entry| entry.size).sum();
-    let resumed: u64 = reply.offsets.iter().sum();
+    let resumed = segments::total(&progress);
     let files = manifest.entries.iter().filter(|entry| !entry.is_dir).count();
     let _ = shared.events.send(Event::Started {
         id: manifest.id,
@@ -135,7 +130,7 @@ async fn negotiate(
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
     let final_route = tokio::select! {
-        finished = sender::run(connection, &mut recv, manifest, &reply.offsets, &meter) => finished?,
+        finished = sender::run(connection, &mut recv, manifest, &progress, &meter) => finished?,
         () = route::report_changes(connection, manifest.id, route, &shared.events) => unreachable!(),
     };
     Ok(SendReport {

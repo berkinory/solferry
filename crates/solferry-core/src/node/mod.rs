@@ -5,6 +5,7 @@ mod nearby;
 mod outbound;
 mod overlay;
 mod pairing;
+mod text;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -16,7 +17,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use solferry_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
+use solferry_proto::{ALPN_PAIR, ALPN_TEXT, ALPN_TRANSFER, close};
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
 pub use confirm::PairingRequest;
@@ -116,7 +117,13 @@ impl Node {
         let NodeOptions { data_dir, isolated } = options;
         identity::prepare_private_dir(&data_dir)?;
         let config = Config::load(&data_dir)?;
-        let secret = identity::load_or_create(&data_dir)?;
+        let downloads = config.download_dir.clone();
+        tokio::task::spawn_blocking(move || crate::transfer::prune_abandoned(&downloads));
+        let key_dir = data_dir.clone();
+        let secret =
+            tokio::task::spawn_blocking(move || identity::load_or_create(&key_dir, !isolated))
+                .await
+                .map_err(|error| Error::Protocol(error.to_string()))??;
         let trust = TrustStore::load(&data_dir)?;
         let relays = if isolated { Vec::new() } else { known_relays(&config, &trust)? };
         let uses_relays = !relays.is_empty();
@@ -142,6 +149,7 @@ impl Node {
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
+            .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }

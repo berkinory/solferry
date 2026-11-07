@@ -4,8 +4,8 @@ use futures::StreamExt;
 use futures::channel::mpsc::UnboundedReceiver;
 use gpui_kit::component::{Theme, TitleBar};
 use gpui_kit::{
-    App, AppContext, AsyncApp, Bounds, Entity, Global, SharedString, SystemNotification,
-    WindowBounds, px, size,
+    App, AppContext, AsyncApp, Bounds, ClipboardItem, Entity, Global, SharedString,
+    SystemNotification, WindowBounds, px, size,
 };
 use solferry_core::{Direction, Event};
 
@@ -51,6 +51,9 @@ pub fn start(service: Handle, updates: UnboundedReceiver<Update>, tray: TrayEven
 
 fn handle_update(update: Update, cx: &mut App) {
     notify(&update, cx);
+    if let Update::Transfer(Event::TextReceived { text, auto_copy: true, .. }) = &update {
+        cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
+    }
     let wants_attention = matches!(update, Update::Offer { .. });
     let state = cx.global::<Shell>().state.clone();
     state.update(cx, |state, cx| {
@@ -67,6 +70,14 @@ fn notify(update: &Update, cx: &mut App) {
     let (title, body) = match update {
         Update::Offer { summary, .. } => {
             ("Incoming files".to_owned(), format!("{} wants to send you files", summary.peer_name))
+        }
+        Update::Transfer(Event::TextReceived { peer_name, auto_copy, .. }) => {
+            let body = if *auto_copy {
+                "Copied to your clipboard".to_owned()
+            } else {
+                "Open Solferry to copy it".to_owned()
+            };
+            (format!("Text from {peer_name}"), body)
         }
         Update::PairingRequest { name, .. } => {
             ("Pairing request".to_owned(), format!("{name} wants to pair with this device"))

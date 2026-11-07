@@ -40,6 +40,7 @@ glyphs! {
     Blocked => "blocked",
     Cancel => "cancel",
     Check => "check",
+    Clipboard => "clipboard",
     Computer => "computer",
     Copy => "copy",
     Delete => "delete",

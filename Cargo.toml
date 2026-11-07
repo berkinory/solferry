@@ -29,6 +29,7 @@ gethostname = "1"
 gpui-kit = "0.9"
 hex = "0.4"
 indicatif = "0.18"
+keyring = { version = "3.6", default-features = false }
 ksni = { version = "0.3", default-features = false, features = [
   "async-io",
   "blocking",

@@ -57,6 +57,11 @@ object DarkColors {
     val primaryBorder = Color(0xFF6D68DB)
 }
 
+object IdentityColors {
+    val light = listOf(Color(0xFF2563EB), Color(0xFF7C3AED), Color(0xFFDB2777), Color(0xFFEA580C), Color(0xFFB45309), Color(0xFF15803D), Color(0xFF0F766E), Color(0xFF0E7490))
+    val dark = listOf(Color(0xFF60A5FA), Color(0xFFA78BFA), Color(0xFFF472B6), Color(0xFFFB923C), Color(0xFFFBBF24), Color(0xFF4ADE80), Color(0xFF2DD4BF), Color(0xFF22D3EE))
+}
+
 object SpaceTokens {
     const val xs = 4
     const val sm = 8

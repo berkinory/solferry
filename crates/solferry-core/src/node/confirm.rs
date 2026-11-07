@@ -28,6 +28,7 @@ const CODE_RANGE: u64 = 1_000_000;
 pub struct PairingRequest {
     pub peer: EndpointId,
     pub peer_name: String,
+    pub platform: Option<crate::Platform>,
     pub code: String,
     reply: oneshot::Sender<Option<bool>>,
 }
@@ -159,6 +160,7 @@ pub(super) async fn answer(
     let prompt = PairingRequest {
         peer,
         peer_name: clean_label(&request.name),
+        platform: crate::Platform::parse(&request.platform),
         code: pairing_code(peer, shared.endpoint.id(), &reveal.nonce, &own_nonce),
         reply,
     };

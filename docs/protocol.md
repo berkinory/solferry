@@ -14,17 +14,18 @@ sender                                receiver
                    <------------------  Hello
   Offer            ------------------>
                    <------------------  OfferReply (decision, resume offsets)
-  one unidirectional stream per file
+  one unidirectional stream per segment
   FileStart, raw bytes, 32-byte hash ->
-                   <------------------  FileResult, one per file
+                   <------------------  FileResult, one per segment
                    <------------------  Finalized
   connection close
 ```
 
 - `Hello.version` must match. A mismatch closes the connection with code 2.
 - `Offer.transfer_id` is the BLAKE3 hash of the sender id and each entry's path, size and modified time.
-- `OfferReply.offsets` has one entry per offered entry and gives the bytes the receiver already holds.
-- A file stream carries `FileStart`, the bytes from that offset to the end, then the BLAKE3 hash of the complete file.
+- Each file is split into segments derived from its size alone: at most 16, each at least 8 MiB and a whole number of MiB. An empty file has one empty segment and a directory has none.
+- `OfferReply.offsets` lists the bytes the receiver already holds for every segment of every entry, in offer order.
+- A segment stream carries `FileStart` with the file index, segment number and the absolute offset past what the receiver holds, then the bytes to the end of the segment, then the BLAKE3 hash of the complete segment.
 - `Finalized` confirms the files have moved to their destination. The sender closes after reading it.
 
 Entry paths use `/` separators and are relative. Receivers must reject absolute paths, `.` and `..` components, backslashes, control characters, Windows reserved names and duplicates.
@@ -34,6 +35,10 @@ Entry paths use `/` separators and are relative. Receivers must reject absolute 
 An invite is the string `sf1` plus lowercase base32 of a `Ticket`. It holds the inviter's id, addresses, a 256-bit secret, an expiry and whether it is for one of the inviter's own devices.
 
 The joiner dials the id in the ticket, so the connection proves the inviter's identity, and sends `PairRequest` with the secret. The inviter removes the secret from memory on first use, and replies with `PairReply`. The joiner stores the inviter and confirms with `Finalized`, and only then does the inviter store the joiner, so a lost reply cannot leave one side paired alone. Only a hash of the secret is kept.
+
+## Shared text: ALPN `solferry-text/1`
+
+The sender opens one bidirectional stream, exchanges `Hello`, sends `SharedText` and waits for `Finalized`. Only paired, unblocked devices are accepted; anyone else gets close code 1 before any stream opens. Text is at most 1 MiB and `Finalized.ok` is false past that. The receiver copies it straight to the clipboard only if it receives from that device without asking.
 
 ## Close codes
 

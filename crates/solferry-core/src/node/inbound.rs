@@ -16,6 +16,7 @@ use crate::event::{Direction, Event, TransferId};
 use crate::route::{self, current_route, shares_network};
 use crate::transfer::paths::crosses_symlink;
 use crate::transfer::receiver::{self, Plan};
+use crate::transfer::segments;
 use crate::transfer::{
     Meter, Staging, exchange_hello, remote_failure, transfer_label, validate_offer,
     within_handshake,
@@ -124,14 +125,14 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         return Err(Error::InvalidOffer("path leaves the destination".to_owned()));
     }
     let staging = Staging::open(&destination, peer, id)?;
-    let offsets = staging.offsets(&offer.entries);
+    let progress = staging.progress(&offer.entries);
     let bytes: u64 = offer.entries.iter().map(|entry| entry.size).sum();
-    let resumed: u64 = offsets.iter().sum();
+    let resumed = segments::total(&progress);
     if !has_room(&destination, bytes - resumed) {
         refuse(connection, &mut send, Decision::NoSpace).await?;
         return Err(Error::NoSpace);
     }
-    accept(&mut send, offsets.clone()).await?;
+    accept(&mut send, segments::flatten(&progress)).await?;
 
     let files = offer.entries.iter().filter(|entry| !entry.is_dir).count();
     let route = current_route(connection);
@@ -147,7 +148,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     });
     shared.track(id, connection);
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));
-    let plan = Plan { destination, entries: offer.entries, targets, offsets, staging };
+    let plan = Plan { destination, entries: offer.entries, targets, progress, staging };
     let result = tokio::select! {
         result = receiver::run(connection, &mut send, plan, meter) => result,
         () = route::report_changes(connection, id, route, &shared.events) => unreachable!(),

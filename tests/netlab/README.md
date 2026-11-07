@@ -12,6 +12,7 @@ Runs real `solferry` binaries inside Linux network namespaces. Two homes sit beh
 | `direct-throughput` | Speed on a clean direct path |
 | `offline-lan` | No internet and no servers: discovery by name and transfer |
 | `wifi-link`, `lossy-link`, `jitter-link` | Throughput under loss, delay and jitter |
+| `far-link` | A fast link with 100 ms round trips, where flow control windows decide the speed |
 | `outage-10s` | Transfer survives a short network outage |
 | `outage-45s` | Longer than the idle timeout: reconnects and resumes |
 | `receiver-restart` | Receiver is killed mid-transfer, then resumes |
