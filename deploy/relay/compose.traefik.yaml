@@ -1,0 +1,20 @@
+# For a server where Traefik, for example from Coolify, already owns ports 80 and 443.
+# Traefik passes the relay's TLS through untouched, so other sites are not affected.
+services:
+  relay:
+    ports: !override
+      - "7842:7842/udp"
+    networks:
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${TRAEFIK_NETWORK:-coolify}
+      traefik.tcp.routers.beam-relay.rule: HostSNI(`${RELAY_HOSTNAME}`)
+      traefik.tcp.routers.beam-relay.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
+      traefik.tcp.routers.beam-relay.tls.passthrough: "true"
+      traefik.tcp.services.beam-relay.loadbalancer.server.port: "8443"
+
+networks:
+  proxy:
+    name: ${TRAEFIK_NETWORK:-coolify}
+    external: true

@@ -1,15 +1,21 @@
 services:
   relay:
     build: .
+    image: beam-relay
     restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     environment:
       RELAY_HOSTNAME: ${RELAY_HOSTNAME:?}
       RELAY_EMAIL: ${RELAY_EMAIL:?}
-    sysctls:
-      net.ipv4.ip_unprivileged_port_start: 0
     ports:
-      - "80:80/tcp"
-      - "443:443/tcp"
+      - "80:8080/tcp"
+      - "443:8443/tcp"
       - "7842:7842/udp"
     volumes:
       - certs:/data
