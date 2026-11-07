@@ -18,6 +18,7 @@ use crate::errors::explain;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
 use crate::state::AppState;
+use crate::tokens::{RADIUS_LG, SPACE_LG};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Page {
@@ -31,6 +32,7 @@ pub struct MainView {
     pub page: Page,
     pub pending: Vec<PathBuf>,
     pub selected: HashSet<EndpointId>,
+    pub expanded: Option<EndpointId>,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
@@ -59,6 +61,7 @@ impl MainView {
             page: Page::Home,
             pending: Vec::new(),
             selected: HashSet::new(),
+            expanded: None,
             targets: HashMap::new(),
             code_input: cx.new(|cx| InputState::new(window, cx).placeholder("Paste a sf1 code")),
             name_input: cx.new(|cx| InputState::new(window, cx).placeholder("This device's name")),
@@ -242,25 +245,45 @@ impl MainView {
 
     fn drop_zone(cx: &mut Context<Self>) -> AnyElement {
         let theme = cx.theme();
-        let (border, hover, muted) = (theme.border, theme.accent, theme.muted_foreground);
+        let (surface, line, hover) = (theme.secondary, theme.border, theme.accent);
+        let (sun, on_sun) = (theme.primary, theme.primary_foreground);
         div()
             .id("drop-zone")
             .flex()
-            .flex_col()
             .items_center()
-            .justify_center()
-            .gap_2()
-            .h(px(132.))
-            .rounded(px(14.))
-            .border_2()
-            .border_dashed()
-            .border_color(border)
+            .gap(px(SPACE_LG))
+            .p(px(SPACE_LG))
+            .rounded(px(RADIUS_LG))
+            .bg(surface)
+            .border_1()
+            .border_color(line)
             .cursor_pointer()
             .hover(move |style| style.bg(hover))
+            .drag_over::<ExternalPaths>(move |style, _, _, _| style.border_color(sun).bg(hover))
             .on_click(cx.listener(|_, _, _, cx| Self::pick_pending(cx)))
-            .child(Icon::new(IconName::FolderOpen).size(px(26.)).text_color(muted))
-            .child(div().text_sm().child("Drop files to send"))
-            .child(ui::muted("or click to choose", cx))
+            .child(
+                div()
+                    .flex()
+                    .flex_none()
+                    .items_center()
+                    .justify_center()
+                    .size(px(44.))
+                    .rounded_full()
+                    .bg(sun)
+                    .child(Icon::new(IconName::ArrowUp).size(px(22.)).text_color(on_sun)),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .child(
+                        div()
+                            .text_sm()
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child("Drop files to send"),
+                    )
+                    .child(ui::muted("or click to choose", cx)),
+            )
             .into_any_element()
     }
 

@@ -2,10 +2,11 @@ use std::path::Path;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Sizable};
+use gpui_kit::component::switch::Switch;
+use gpui_kit::component::{Disableable, IconName, Sizable};
 use gpui_kit::{
-    AnyElement, Context, ElementId, ExternalPaths, InteractiveElement, IntoElement, ParentElement,
-    SharedString, StatefulInteractiveElement, Styled, Window, div, px,
+    AnyElement, Context, ElementId, ExternalPaths, FontWeight, InteractiveElement, IntoElement,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Window, div, px,
 };
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::NearbyDevice;
@@ -14,6 +15,7 @@ use super::main_view::MainView;
 use super::ui;
 use crate::service::{Command, Target};
 use crate::state::AppState;
+use crate::tokens::{RADIUS_MD, SPACE_MD, SPACE_SM};
 
 struct Row {
     id: EndpointId,
@@ -100,8 +102,30 @@ impl DeviceSections for gpui_kit::Div {
     }
 }
 
+fn avatar(name: &str, cx: &Context<MainView>) -> AnyElement {
+    let initial: String =
+        name.chars().next().map(|c| c.to_uppercase().collect()).unwrap_or_default();
+    let theme = cx.theme();
+    div()
+        .flex()
+        .flex_none()
+        .items_center()
+        .justify_center()
+        .size(px(36.))
+        .rounded_full()
+        .border_1()
+        .border_color(theme.border)
+        .bg(theme.background)
+        .text_color(theme.foreground)
+        .text_sm()
+        .font_weight(FontWeight::SEMIBOLD)
+        .child(initial)
+        .into_any_element()
+}
+
 fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let selected = view.selected.contains(&row.id);
+    let expanded = view.expanded == Some(row.id);
     let theme = cx.theme();
     let (border, hover) = (theme.border, theme.accent);
     let highlight = theme.primary;
@@ -109,42 +133,95 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
     let id: ElementId = SharedString::from(format!("device-{}", row.id)).into();
     let (click_id, click_target) = (row.id, row.addr.clone());
     let click_name = row.name.clone();
+    let action = match row.approval {
+        Some(_) => more_button(row.id, cx),
+        None => pair_button(row.id, row.addr, cx),
+    };
+    let details = row
+        .approval
+        .filter(|_| expanded)
+        .map(|auto_accept| device_details(row.id, auto_accept, cx));
     div()
-        .id(id)
+        .flex()
+        .flex_col()
+        .rounded(px(RADIUS_MD))
+        .border_1()
+        .border_color(if selected { highlight } else { border })
+        .bg(cx.theme().secondary)
+        .child(
+            div()
+                .id(id)
+                .flex()
+                .items_center()
+                .gap(px(SPACE_MD))
+                .p(px(SPACE_MD))
+                .rounded(px(RADIUS_MD))
+                .cursor_pointer()
+                .hover(move |style| style.bg(hover))
+                .drag_over::<ExternalPaths>(move |style, _, _, _| {
+                    style.border_color(highlight).bg(hover)
+                })
+                .on_drop(cx.listener(move |view, paths: &ExternalPaths, _, cx| {
+                    let target = Target { addr: target.addr.clone(), name: target.name.clone() };
+                    view.send_now(vec![target], paths.paths().to_vec(), cx);
+                }))
+                .on_click(cx.listener(move |view, _, _, cx| {
+                    let target = Target { addr: click_target.clone(), name: click_name.clone() };
+                    view.activate_device(click_id, target, cx);
+                }))
+                .child(avatar(&row.name, cx))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_w_0()
+                        .child(div().text_sm().child(row.name))
+                        .child(ui::muted(row.detail, cx)),
+                )
+                .child(action),
+        )
+        .children(details)
+        .into_any_element()
+}
+
+fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
+    Button::new(SharedString::from(format!("more-{id}")))
+        .ghost()
+        .small()
+        .icon(IconName::Ellipsis)
+        .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
+            cx.stop_propagation();
+            view.expanded = if view.expanded == Some(id) { None } else { Some(id) };
+            cx.notify();
+        }))
+        .into_any_element()
+}
+
+fn device_details(id: EndpointId, auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement {
+    div()
         .flex()
         .items_center()
         .justify_between()
-        .gap_2()
-        .p_3()
-        .rounded(px(10.))
-        .border_1()
-        .border_color(if selected { highlight } else { border })
-        .cursor_pointer()
-        .hover(move |style| style.bg(hover))
-        .drag_over::<ExternalPaths>(move |style, _, _, _| style.border_color(highlight).bg(hover))
-        .on_drop(cx.listener(move |view, paths: &ExternalPaths, _, cx| {
-            let target = Target { addr: target.addr.clone(), name: target.name.clone() };
-            view.send_now(vec![target], paths.paths().to_vec(), cx);
-        }))
-        .on_click(cx.listener(move |view, _, _, cx| {
-            let target = Target { addr: click_target.clone(), name: click_name.clone() };
-            view.activate_device(click_id, target, cx);
-        }))
+        .px(px(SPACE_MD))
+        .py(px(SPACE_SM))
+        .border_t_1()
+        .border_color(cx.theme().border)
         .child(
             div()
                 .flex()
-                .flex_col()
-                .child(div().text_sm().child(row.name))
-                .child(ui::muted(row.detail, cx)),
+                .items_center()
+                .gap(px(SPACE_SM))
+                .child(
+                    Switch::new(SharedString::from(format!("approval-{id}")))
+                        .checked(auto_accept)
+                        .on_click(cx.listener(move |_, enabled: &bool, _, cx| {
+                            MainView::command(Command::SetAutoAccept { id, enabled: *enabled }, cx);
+                        })),
+                )
+                .child(div().text_xs().child("Receive without asking")),
         )
-        .children(row.approval.is_none().then(|| pair_button(row.id, row.addr, cx)))
-        .children(row.approval.map(|auto_accept| {
-            div()
-                .flex()
-                .gap_1()
-                .child(approval_button(row.id, auto_accept, cx))
-                .child(forget_button(row.id, cx))
-        }))
+        .child(forget_button(id, cx))
         .into_any_element()
 }
 
@@ -154,19 +231,9 @@ fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -
         .xsmall()
         .label("Pair")
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
+            cx.stop_propagation();
             let auto_accept = !view.state.read(cx).ask_after_pairing;
             MainView::command(Command::PairNearby { addr: addr.clone(), auto_accept }, cx);
-        }))
-        .into_any_element()
-}
-
-fn approval_button(id: EndpointId, auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement {
-    Button::new(SharedString::from(format!("approval-{id}")))
-        .ghost()
-        .xsmall()
-        .label(if auto_accept { "Receives without asking" } else { "Asks first" })
-        .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
-            MainView::command(Command::SetAutoAccept { id, enabled: !auto_accept }, cx);
         }))
         .into_any_element()
 }

@@ -1,12 +1,15 @@
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::{AnyElement, Context, IntoElement, ParentElement, SharedString, Styled, div};
+use gpui_kit::{
+    AnyElement, Context, FontWeight, IntoElement, ParentElement, SharedString, Styled, div, px,
+};
 
 use super::main_view::MainView;
 use super::ui;
 use crate::format;
 use crate::state::{Offer, PairingPrompt};
+use crate::tokens::TYPE_CODE;
 
 pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
     let summary = &offer.summary;
@@ -56,12 +59,20 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         .into_any_element()
 }
 
+fn code_digits(code: &str) -> AnyElement {
+    div()
+        .text_size(px(TYPE_CODE))
+        .font_weight(FontWeight::SEMIBOLD)
+        .child(code.to_owned())
+        .into_any_element()
+}
+
 pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
     let key = prompt.key;
     ui::card(cx)
         .border_color(cx.theme().primary)
         .child(div().text_sm().child(format!("{} wants to pair", prompt.name)))
-        .child(div().text_xl().child(prompt.code.clone()))
+        .child(code_digits(&prompt.code))
         .child(ui::muted("Accept only if the other screen shows the same code.", cx))
         .child(
             div()
@@ -92,7 +103,7 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
 pub fn pairing_code(code: &str, cx: &mut Context<MainView>) -> AnyElement {
     ui::card(cx)
         .border_color(cx.theme().primary)
-        .child(div().text_xl().child(code.to_owned()))
+        .child(code_digits(code))
         .child(ui::muted("Check that the other device shows this code, then accept there.", cx))
         .into_any_element()
 }
