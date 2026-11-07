@@ -10,7 +10,7 @@ from pathlib import Path
 RELAY_TOKEN = "netlab-token"
 RELAY_X = f"https://203.0.113.1:3340/#{RELAY_TOKEN}"
 RELAY_Y = f"https://203.0.113.2:3340/#{RELAY_TOKEN}"
-NAMESPACES = ["beam-wan", "beam-rx", "beam-ry", "beam-a", "beam-b"]
+NAMESPACES = ["solferry-wan", "solferry-rx", "solferry-ry", "solferry-a", "solferry-b"]
 USER = os.environ.get("SUDO_USER") or os.environ["USER"]
 
 
@@ -37,19 +37,19 @@ def up(mode="cone"):
     for name in NAMESPACES:
         sh(f"ip netns add {name}")
         ns(name, "ip link set lo up")
-    link("beam-rx", "wan0", "beam-wan", "to-rx")
-    link("beam-ry", "wan0", "beam-wan", "to-ry")
-    link("beam-a", "eth0", "beam-rx", "lan0")
-    link("beam-b", "eth0", "beam-ry", "lan0")
-    ns("beam-wan", "ip link add br0 type bridge")
-    ns("beam-wan", "ip addr add 203.0.113.1/24 dev br0")
+    link("solferry-rx", "wan0", "solferry-wan", "to-rx")
+    link("solferry-ry", "wan0", "solferry-wan", "to-ry")
+    link("solferry-a", "eth0", "solferry-rx", "lan0")
+    link("solferry-b", "eth0", "solferry-ry", "lan0")
+    ns("solferry-wan", "ip link add br0 type bridge")
+    ns("solferry-wan", "ip addr add 203.0.113.1/24 dev br0")
     for device in ["br0", "to-rx", "to-ry"]:
-        ns("beam-wan", f"ip link set {device} up")
+        ns("solferry-wan", f"ip link set {device} up")
     for device in ["to-rx", "to-ry"]:
-        ns("beam-wan", f"ip link set {device} master br0")
+        ns("solferry-wan", f"ip link set {device} master br0")
     for router, wan_ip, lan, host in [
-        ("beam-rx", "203.0.113.10", "10.1.0", "beam-a"),
-        ("beam-ry", "203.0.113.20", "10.2.0", "beam-b"),
+        ("solferry-rx", "203.0.113.10", "10.1.0", "solferry-a"),
+        ("solferry-ry", "203.0.113.20", "10.2.0", "solferry-b"),
     ]:
         ns(router, f"ip addr add {wan_ip}/24 dev wan0")
         ns(router, f"ip addr add {lan}.1/24 dev lan0")
@@ -67,7 +67,7 @@ def up(mode="cone"):
 def make_ca(workdir):
     subprocess.run(
         ["openssl", "req", "-x509", "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1", "-nodes", "-days", "2",
-         "-keyout", workdir / "ca.key", "-out", workdir / "ca.pem", "-subj", "/CN=beam netlab",
+         "-keyout", workdir / "ca.key", "-out", workdir / "ca.pem", "-subj", "/CN=solferry netlab",
          "-addext", "basicConstraints=critical,CA:TRUE"],
         check=True, capture_output=True,
     )
@@ -88,11 +88,11 @@ def make_ca(workdir):
 def lan():
     """Two devices on one link with no route anywhere else."""
     down()
-    for name in ["beam-a", "beam-b"]:
+    for name in ["solferry-a", "solferry-b"]:
         sh(f"ip netns add {name}")
         ns(name, "ip link set lo up")
-    link("beam-a", "eth0", "beam-b", "eth0")
-    for name, address in [("beam-a", "192.168.50.2"), ("beam-b", "192.168.50.3")]:
+    link("solferry-a", "eth0", "solferry-b", "eth0")
+    for name, address in [("solferry-a", "192.168.50.2"), ("solferry-b", "192.168.50.3")]:
         ns(name, f"ip addr add {address}/24 dev eth0")
         ns(name, "ip link set eth0 up")
         ns(name, "ip route add 224.0.0.0/4 dev eth0")
@@ -100,7 +100,7 @@ def lan():
 
 def start_relays(binary, workdir):
     make_ca(workdir)
-    ns("beam-wan", "ip addr add 203.0.113.2/24 dev br0")
+    ns("solferry-wan", "ip addr add 203.0.113.2/24 dev br0")
     for name, ip in [("x", "203.0.113.1"), ("y", "203.0.113.2")]:
         config = workdir / f"relay-{name}.toml"
         config.write_text(
@@ -119,7 +119,7 @@ manual_cert_path = "{workdir}/relay.pem"
 manual_key_path = "{workdir}/relay.key"
 '''
         )
-        sh(f"ip netns exec beam-wan {binary} --config-path {config} >{workdir}/relay-{name}.log 2>&1 &")
+        sh(f"ip netns exec solferry-wan {binary} --config-path {config} >{workdir}/relay-{name}.log 2>&1 &")
     time.sleep(1)
 
 
@@ -137,7 +137,7 @@ class Host:
 
     def command(self, arguments):
         quoted = " ".join(shlex.quote(str(argument)) for argument in arguments)
-        return f"ip netns exec {self.namespace} sudo -n -u {USER} env BEAM_DATA_DIR={self.data_dir} {self.binary} {quoted}"
+        return f"ip netns exec {self.namespace} sudo -n -u {USER} env SOLFERRY_DATA_DIR={self.data_dir} {self.binary} {quoted}"
 
     def run(self, arguments, timeout=120):
         started = time.time()
@@ -155,7 +155,7 @@ def pair(inviter, joiner, workdir):
     log = workdir / "pair.log"
     process = inviter.spawn(["pair"], log)
     for _ in range(100):
-        codes = [line.strip() for line in Path(log).read_text().splitlines() if line.startswith("beam1")]
+        codes = [line.strip() for line in Path(log).read_text().splitlines() if line.startswith("sf1")]
         if codes:
             break
         time.sleep(0.2)

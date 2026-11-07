@@ -1,0 +1,40 @@
+[package]
+name = "solferry-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+solferry-proto.workspace = true
+blake3.workspace = true
+bytes.workspace = true
+data-encoding.workspace = true
+dirs.workspace = true
+fs4.workspace = true
+futures.workspace = true
+gethostname.workspace = true
+hex.workspace = true
+iroh.workspace = true
+netdev.workspace = true
+iroh-mdns-address-lookup.workspace = true
+noq-proto.workspace = true
+prost.workspace = true
+rand.workspace = true
+rustls-pki-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+xattr = "1"

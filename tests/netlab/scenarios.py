@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs beam through NAT, loss, outages and restarts. Needs passwordless sudo, Linux only."""
+"""Runs solferry through NAT, loss, outages and restarts. Needs passwordless sudo, Linux only."""
 
 import hashlib
 import json
@@ -13,7 +13,7 @@ from pathlib import Path
 import lab
 
 REPO = Path(__file__).resolve().parents[2]
-BEAM = REPO / "target/release/beam"
+SOLFERRY = REPO / "target/release/solferry"
 RELAY = sys.argv[1] if len(sys.argv) > 1 else "iroh-relay"
 
 
@@ -24,14 +24,14 @@ def digest(path):
 
 class Stage:
     def __init__(self, nat="cone", size_mib=200):
-        self.work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+        self.work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
         self.work.chmod(0o755)
         lab.up(nat)
         lab.start_relays(RELAY, self.work)
         lab.configure(self.work / "a", "alpha", [lab.RELAY_X])
         lab.configure(self.work / "b", "beta", [lab.RELAY_Y])
-        self.a = lab.Host("beam-a", self.work / "a", BEAM)
-        self.b = lab.Host("beam-b", self.work / "b", BEAM)
+        self.a = lab.Host("solferry-a", self.work / "a", SOLFERRY)
+        self.b = lab.Host("solferry-b", self.work / "b", SOLFERRY)
         rc, output, _ = lab.pair(self.a, self.b, self.work)
         if rc:
             raise RuntimeError(f"pairing failed: {output}")
@@ -89,26 +89,26 @@ def nat_symmetric_own_relay():
 
 
 def nat_no_relay():
-    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
     work.chmod(0o755)
     lab.up("cone")
     lab.configure(work / "a", "alpha", [])
     lab.configure(work / "b", "beta", [])
-    inviter, joiner = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    inviter, joiner = lab.Host("solferry-a", work / "a", SOLFERRY), lab.Host("solferry-b", work / "b", SOLFERRY)
     rc, output, seconds = lab.pair(inviter, joiner, work)
     stage = type("Unreachable", (), {"close": lambda self: (inviter.stop(), joiner.stop())})()
     return {"rc": rc, "seconds": round(seconds, 1), "tail": output.splitlines()[-2:]}, stage
 
 
 def relay_from_pairing():
-    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
     work.chmod(0o755)
     lab.up("symmetric")
     lab.start_relays(RELAY, work)
     lab.configure(work / "a", "alpha", [lab.RELAY_X])
     lab.configure(work / "b", "beta", [])
     (work / "b" / "config.json").write_text(json.dumps({"name": "beta", "relay_ca_file": str(work / "ca.pem")}))
-    sender, receiver = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    sender, receiver = lab.Host("solferry-a", work / "a", SOLFERRY), lab.Host("solferry-b", work / "b", SOLFERRY)
     rc, output, _ = lab.pair(sender, receiver, work)
     if rc:
         raise RuntimeError(f"pairing failed: {output}")
@@ -125,14 +125,14 @@ def relay_from_pairing():
 
 
 def relay_wrong_token():
-    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
     work.chmod(0o755)
     lab.up("symmetric")
     lab.start_relays(RELAY, work)
     lab.configure(work / "a", "alpha", [lab.RELAY_X.replace(lab.RELAY_TOKEN, "wrong")])
     lab.configure(work / "b", "beta", [])
     (work / "b" / "config.json").write_text(json.dumps({"name": "beta", "relay_ca_file": str(work / "ca.pem")}))
-    inviter, joiner = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    inviter, joiner = lab.Host("solferry-a", work / "a", SOLFERRY), lab.Host("solferry-b", work / "b", SOLFERRY)
     rc, output, seconds = lab.pair(inviter, joiner, work)
     stage = type("Refused", (), {"close": lambda self: (inviter.stop(), joiner.stop())})()
     return {"rc": rc, "seconds": round(seconds, 1), "tail": output.splitlines()[-2:]}, stage
@@ -141,7 +141,7 @@ def relay_wrong_token():
 def bad_link(netem):
     def run():
         stage = Stage("cone", 300)
-        for router in ["beam-rx", "beam-ry"]:
+        for router in ["solferry-rx", "solferry-ry"]:
             lab.ns(router, f"tc qdisc add dev wan0 root netem {netem}")
         stage.listen()
         rc, output, seconds = stage.send(200)
@@ -154,9 +154,9 @@ def outage(seconds_down):
     def run():
         stage = Stage("cone", 1500)
         stage.listen()
-        lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 100mbit")
-        block = lambda: lab.ns("beam-rx", "iptables -I FORWARD -j DROP")
-        unblock = lambda: lab.ns("beam-rx", "iptables -D FORWARD -j DROP")
+        lab.ns("solferry-rx", "tc qdisc add dev wan0 root netem rate 100mbit")
+        block = lambda: lab.ns("solferry-rx", "iptables -I FORWARD -j DROP")
+        unblock = lambda: lab.ns("solferry-rx", "iptables -D FORWARD -j DROP")
         in_background(4, block)
         in_background(4 + seconds_down, unblock)
         rc, output, seconds = stage.send(400)
@@ -167,7 +167,7 @@ def outage(seconds_down):
 
 def receiver_restart():
     stage = Stage("cone", 1500)
-    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
+    lab.ns("solferry-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
     stage.listen()
 
     def restart():
@@ -182,13 +182,13 @@ def receiver_restart():
 
 def address_change():
     stage = Stage("cone", 1500)
-    lab.ns("beam-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
+    lab.ns("solferry-rx", "tc qdisc add dev wan0 root netem rate 200mbit")
     stage.listen()
 
     def move():
-        lab.ns("beam-a", "ip addr add 10.1.0.77/24 dev eth0")
-        lab.ns("beam-a", "ip addr del 10.1.0.2/24 dev eth0")
-        lab.ns("beam-a", "ip route replace default via 10.1.0.1")
+        lab.ns("solferry-a", "ip addr add 10.1.0.77/24 dev eth0")
+        lab.ns("solferry-a", "ip addr del 10.1.0.2/24 dev eth0")
+        lab.ns("solferry-a", "ip route replace default via 10.1.0.1")
 
     in_background(10, move)
     rc, output, seconds = stage.send(400)
@@ -203,12 +203,12 @@ def direct_path():
 
 
 def offline_lan():
-    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
     work.chmod(0o755)
     lab.lan()
     lab.configure(work / "a", "alpha", [])
     lab.configure(work / "b", "beta", [])
-    sender, receiver = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    sender, receiver = lab.Host("solferry-a", work / "a", SOLFERRY), lab.Host("solferry-b", work / "b", SOLFERRY)
     payload = work / "payload.bin"
     with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
         target.write(source.read(500 * 1024 * 1024))
@@ -250,7 +250,7 @@ def main():
         except Exception as error:
             results[name] = {"error": repr(error)[:300]}
         print(json.dumps(results[name], ensure_ascii=False), flush=True)
-        for work in Path(tempfile.gettempdir()).glob("beam-netlab-*"):
+        for work in Path(tempfile.gettempdir()).glob("solferry-netlab-*"):
             lab.sh(f"rm -rf {work}")
     lab.down()
 

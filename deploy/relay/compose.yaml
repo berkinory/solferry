@@ -1,7 +1,7 @@
 services:
   relay:
     build: .
-    image: beam-relay
+    image: solferry-relay
     restart: unless-stopped
     read_only: true
     tmpfs:

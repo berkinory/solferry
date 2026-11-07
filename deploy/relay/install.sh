@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs a beam relay with Docker. Usage: sudo sh install.sh [--check] relay.example.com
+# Installs a solferry relay with Docker. Usage: sudo sh install.sh [--check] relay.example.com
 set -eu
 
 CHECK_ONLY=0
@@ -27,7 +27,7 @@ port_owner() {
 if ss -tlnH 2>/dev/null | grep -qE ':443\b'; then
     OWNER=$(port_owner 443)
     case "$OWNER" in
-        *beam-relay*) say "Port 443  already used by this relay" ;;
+        *solferry-relay*) say "Port 443  already used by this relay" ;;
         *traefik*)
             say "Port 443  held by Traefik ($OWNER), passing the relay through it"
             FILES="$FILES -f compose.traefik.yaml"
@@ -37,7 +37,7 @@ if ss -tlnH 2>/dev/null | grep -qE ':443\b'; then
 else
     say "Port 443  free"
 fi
-if ss -ulnH 2>/dev/null | grep -qE ':7842\b' && ! port_owner 7842 | grep -q beam-relay; then
+if ss -ulnH 2>/dev/null | grep -qE ':7842\b' && ! port_owner 7842 | grep -q solferry-relay; then
     stop "UDP port 7842 is in use."
 fi
 
@@ -50,22 +50,22 @@ cd "$HERE"
 umask 077
 printf 'RELAY_HOSTNAME=%s\n' "$HOSTNAME_ARG" > .env
 # shellcheck disable=SC2086
-docker compose -p beam-relay $FILES up -d --build
+docker compose -p solferry-relay $FILES up -d --build
 
 if command -v ufw-docker >/dev/null; then
-    ufw-docker allow beam-relay-relay-1 7842/udp || say "Could not open UDP 7842, direct paths may not work."
+    ufw-docker allow solferry-relay-relay-1 7842/udp || say "Could not open UDP 7842, direct paths may not work."
 fi
 
 for _ in 1 2 3 4 5 6 7 8 9 10; do
-    LINK=$(docker logs beam-relay-relay-1 2>&1 | grep -o 'https://[^ ]*#[0-9a-f]*' | tail -1 || true)
+    LINK=$(docker logs solferry-relay-relay-1 2>&1 | grep -o 'https://[^ ]*#[0-9a-f]*' | tail -1 || true)
     [ -n "$LINK" ] && break
     sleep 2
 done
-[ -n "${LINK:-}" ] || stop "The relay did not start. See: docker logs beam-relay-relay-1"
+[ -n "${LINK:-}" ] || stop "The relay did not start. See: docker logs solferry-relay-relay-1"
 
 say ""
-say "Done. Paste this into beam, under Settings or with beam relay add:"
+say "Done. Paste this into solferry, under Settings or with solferry relay add:"
 say ""
 say "  $LINK"
 say ""
-say "Treat it like a password. Then test it with: beam relay check"
+say "Treat it like a password. Then test it with: solferry relay check"

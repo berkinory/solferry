@@ -1,10 +1,10 @@
 # Protocol
 
-All traffic runs over iroh QUIC connections, which are mutually authenticated and encrypted with TLS 1.3. Messages are Protocol Buffers, so unknown fields are ignored and new fields do not break older clients. Definitions live in `crates/beam-proto/src/messages.rs`.
+All traffic runs over iroh QUIC connections, which are mutually authenticated and encrypted with TLS 1.3. Messages are Protocol Buffers, so unknown fields are ignored and new fields do not break older clients. Definitions live in `crates/solferry-proto/src/messages.rs`.
 
 Control messages are framed as a big-endian `u32` length followed by the message. Frames above 64 MiB are rejected before allocation.
 
-## Transfers: ALPN `beam/1`
+## Transfers: ALPN `solferry/1`
 
 The sender opens one bidirectional control stream.
 
@@ -29,9 +29,9 @@ sender                                receiver
 
 Entry paths use `/` separators and are relative. Receivers must reject absolute paths, `.` and `..` components, backslashes, control characters, Windows reserved names and duplicates.
 
-## Pairing: ALPN `beam-pair/1`
+## Pairing: ALPN `solferry-pair/1`
 
-An invite is the string `beam1` plus lowercase base32 of a `Ticket`. It holds the inviter's id, addresses, a 256-bit secret, an expiry and whether it is for one of the inviter's own devices.
+An invite is the string `sf1` plus lowercase base32 of a `Ticket`. It holds the inviter's id, addresses, a 256-bit secret, an expiry and whether it is for one of the inviter's own devices.
 
 The joiner dials the id in the ticket, so the connection proves the inviter's identity, and sends `PairRequest` with the secret. The inviter removes the secret from memory on first use, and replies with `PairReply`. The joiner stores the inviter and confirms with `Finalized`, and only then does the inviter store the joiner, so a lost reply cannot leave one side paired alone. Only a hash of the secret is kept.
 
