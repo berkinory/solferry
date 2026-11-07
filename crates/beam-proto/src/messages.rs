@@ -102,6 +102,4 @@ pub struct Ticket {
     pub relay_urls: Vec<String>,
     #[prost(uint64, tag = "5")]
     pub expires_at_ms: u64,
-    #[prost(bool, tag = "6")]
-    pub own_device: bool,
 }

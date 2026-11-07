@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use beam_core::{NearbyDevice, Relationship};
+use beam_core::NearbyDevice;
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, Sizable};
@@ -20,7 +20,7 @@ struct Row {
     addr: EndpointAddr,
     name: String,
     detail: &'static str,
-    paired: bool,
+    approval: Option<bool>,
 }
 
 fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
@@ -32,12 +32,8 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             id: device.id,
             addr: near(&device.id).map_or_else(|| device.addr(), |found| found.addr.clone()),
             name: device.name.clone(),
-            detail: match (near(&device.id).is_some(), device.relationship) {
-                (true, _) => "On this network",
-                (false, Relationship::Own) => "My device",
-                (false, Relationship::Contact) => "Contact",
-            },
-            paired: true,
+            detail: if near(&device.id).is_some() { "On this network" } else { "Paired" },
+            approval: Some(device.auto_accept),
         })
         .collect();
     let others = state
@@ -49,7 +45,7 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             addr: device.addr.clone(),
             name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
             detail: "Not paired, they will be asked first",
-            paired: false,
+            approval: None,
         })
         .collect();
     (mine, others)
@@ -137,7 +133,24 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 .child(div().text_sm().child(row.name))
                 .child(ui::muted(row.detail, cx)),
         )
-        .children(row.paired.then(|| forget_button(row.id, cx)))
+        .children(row.approval.map(|auto_accept| {
+            div()
+                .flex()
+                .gap_1()
+                .child(approval_button(row.id, auto_accept, cx))
+                .child(forget_button(row.id, cx))
+        }))
+        .into_any_element()
+}
+
+fn approval_button(id: EndpointId, auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement {
+    Button::new(SharedString::from(format!("approval-{id}")))
+        .ghost()
+        .xsmall()
+        .label(if auto_accept { "Receives without asking" } else { "Asks first" })
+        .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
+            MainView::command(Command::SetAutoAccept { id, enabled: !auto_accept }, cx);
+        }))
         .into_any_element()
 }
 

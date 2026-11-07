@@ -11,9 +11,9 @@ mod store;
 mod transfer;
 mod trust;
 
-pub use config::{Config, RelayPolicy, Visibility, default_data_dir};
+pub use config::{Config, Visibility, default_data_dir};
 pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
 pub use node::{IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, SendReport};
 pub use route::Route;
-pub use trust::{Device, Relationship};
+pub use trust::Device;

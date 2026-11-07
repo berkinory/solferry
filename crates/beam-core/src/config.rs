@@ -10,20 +10,6 @@ const APP_DIR: &str = "beam";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub enum RelayPolicy {
-    /// Servers help devices find each other, file data only takes direct paths.
-    #[default]
-    HandshakeOnly,
-    /// File data may use relays you added or that a paired device shared with you.
-    OwnRelays,
-    /// File data may fall back to any relay.
-    Always,
-    /// No servers at all: local network and overlay networks only.
-    Off,
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
 pub enum Visibility {
     #[default]
     Everyone,
@@ -35,7 +21,7 @@ pub enum Visibility {
 #[serde(default)]
 pub struct Config {
     pub name: String,
-    pub relay_policy: RelayPolicy,
+    /// Relays you run. Empty means this device never contacts a server.
     pub relays: Vec<String>,
     /// PEM file with extra root certificates, for relays behind a private CA.
     pub relay_ca_file: Option<PathBuf>,
@@ -47,7 +33,6 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             name: gethostname::gethostname().to_string_lossy().into_owned(),
-            relay_policy: RelayPolicy::default(),
             relays: Vec::new(),
             relay_ca_file: None,
             visibility: Visibility::default(),

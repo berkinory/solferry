@@ -50,6 +50,8 @@ pub struct AppState {
     pub id: Option<EndpointId>,
     pub config: Option<Config>,
     pub devices: Vec<Device>,
+    pub blocked: Vec<EndpointId>,
+    pub ask_after_pairing: bool,
     pub nearby: Vec<NearbyDevice>,
     pub transfers: Vec<Transfer>,
     pub failures: Vec<FailedSend>,
@@ -64,7 +66,8 @@ pub struct AppState {
 impl AppState {
     pub fn apply(&mut self, update: Update) {
         match update {
-            Update::Ready { id, config, devices } => {
+            Update::Ready { id, config, devices, blocked } => {
+                self.blocked = blocked;
                 self.id = Some(id);
                 self.config = Some(*config);
                 self.devices = devices;
@@ -72,6 +75,7 @@ impl AppState {
             }
             Update::StartFailed(error) => self.fatal = Some(error),
             Update::Devices(devices) => self.devices = devices,
+            Update::Blocked(blocked) => self.blocked = blocked,
             Update::Nearby(found) => self.nearby = found,
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),

@@ -21,10 +21,13 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }
-        Command::Pair { contact } => device::pair(data_dir, contact).await,
-        Command::Join { code } => device::join(data_dir, &code).await,
+        Command::Pair { ask } => device::pair(data_dir, !ask).await,
+        Command::Join { code, ask } => device::join(data_dir, &code, !ask).await,
         Command::Devices => device::list(data_dir).await,
         Command::Forget { device } => device::forget(data_dir, &device).await,
+        Command::Approval { device, mode } => device::approval(data_dir, &device, mode).await,
+        Command::Block { device } => device::block(data_dir, &device).await,
+        Command::Unblock { id } => device::unblock(data_dir, &id).await,
         Command::Nearby => device::nearby(data_dir).await,
     }
 }

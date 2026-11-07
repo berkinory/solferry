@@ -11,6 +11,7 @@ Please report vulnerabilities privately through GitHub security advisories, not 
 
 ## What it does not protect
 
-- Relays and discovery services can see IP addresses, device ids, timing and traffic volume.
+- beam contacts no server by default. A relay you or a paired device run can see IP addresses, device ids, timing and traffic volume, never file contents.
+- A pairing code includes the inviter's relay, so joining connects you to it. Only use codes from people you trust.
 - `device.key` is a plain file protected by file permissions. OS keychain storage is planned.
 - beam has not had an independent security audit yet.

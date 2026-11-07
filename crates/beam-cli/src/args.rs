@@ -43,19 +43,30 @@ pub enum Command {
     },
     /// Create a pairing code for another device.
     Pair {
-        /// The other device belongs to someone else, so its transfers stay confirmed.
+        /// Ask before taking files from this device instead of receiving them right away.
         #[arg(long)]
-        contact: bool,
+        ask: bool,
     },
     /// Redeem a pairing code from another device.
-    Join { code: String },
+    Join {
+        code: String,
+        /// Ask before taking files from this device instead of receiving them right away.
+        #[arg(long)]
+        ask: bool,
+    },
     /// List paired devices.
     Devices,
     /// Remove a paired device.
     Forget { device: String },
+    /// Choose whether a paired device needs your approval before sending files.
+    Approval { device: String, mode: ApprovalArg },
+    /// Refuse every connection from a device.
+    Block { device: String },
+    /// Allow a blocked device again.
+    Unblock { id: String },
     /// List devices on the local network.
     Nearby,
-    /// Control how relays are used.
+    /// Manage the relays you run, used to reach devices on other networks.
     Relay {
         #[command(subcommand)]
         command: RelayCommand,
@@ -64,10 +75,8 @@ pub enum Command {
 
 #[derive(Debug, Subcommand)]
 pub enum RelayCommand {
-    /// Show the relay policy and your relays.
+    /// Show your relays.
     Show,
-    /// Set how file data may use relays.
-    Policy { policy: PolicyArg },
     /// Use your own relay server.
     Add { url: String },
     /// Stop using a relay server.
@@ -75,13 +84,9 @@ pub enum RelayCommand {
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum PolicyArg {
-    /// Servers only introduce devices. File data stays direct.
-    HandshakeOnly,
-    /// File data may use relays you added.
-    OwnRelays,
-    /// File data may pass through any relay.
-    Always,
-    /// No servers. Local network and overlay networks only.
-    Off,
+pub enum ApprovalArg {
+    /// Files arrive right away.
+    Auto,
+    /// Every transfer waits for your answer.
+    Ask,
 }

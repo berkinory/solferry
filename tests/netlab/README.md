@@ -6,7 +6,8 @@ Runs real `beam` binaries inside Linux network namespaces. Two homes sit behind 
 |---|---|
 | `nat-cone` | Hole punching gives a direct connection |
 | `nat-symmetric-own-relay` | Hole punching fails, data uses your own relay |
-| `nat-symmetric-no-relay` | With `handshake-only`, data never touches a relay and the error says why |
+| `nat-no-relay` | Two NATs with no relay: pairing fails with an error that says what to do |
+| `relay-from-pairing` | Only one side set up a relay, the other gets it from the pairing code and needs no setup |
 | `direct-throughput` | Speed on a clean direct path |
 | `offline-lan` | No internet and no servers: discovery by name and transfer |
 | `wifi-link`, `lossy-link`, `jitter-link` | Throughput under loss, delay and jitter |

@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use beam_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    Relationship, TransferId,
+    TransferId,
 };
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
@@ -24,17 +24,21 @@ pub enum Command {
     Send { targets: Vec<Target>, paths: Vec<PathBuf> },
     Cancel(TransferId),
     Answer { offer: u64, accept: bool },
-    Invite(Relationship),
-    Join(String),
+    BlockOffer(u64),
+    Invite { auto_accept: bool },
+    Join { code: String, auto_accept: bool },
     Forget(EndpointId),
+    SetAutoAccept { id: EndpointId, enabled: bool },
+    Unblock(EndpointId),
     Apply(Config),
     Quit,
 }
 
 pub enum Update {
-    Ready { id: EndpointId, config: Box<Config>, devices: Vec<Device> },
+    Ready { id: EndpointId, config: Box<Config>, devices: Vec<Device>, blocked: Vec<EndpointId> },
     StartFailed(Error),
     Devices(Vec<Device>),
+    Blocked(Vec<EndpointId>),
     Nearby(Vec<NearbyDevice>),
     Transfer(Event),
     Offer { key: u64, summary: OfferSummary },
@@ -94,6 +98,7 @@ async fn start(
         id: node.id(),
         config: Box::new(node.config().clone()),
         devices: node.devices(),
+        blocked: node.blocked(),
     };
     let _ = updates.unbounded_send(ready);
 
@@ -122,7 +127,7 @@ async fn start(
         tokio::spawn(async move {
             let mut next = 0;
             while let Some(offer) = offers.recv().await {
-                if offer.summary.relationship == Some(Relationship::Own) {
+                if offer.summary.auto_accept {
                     offer.accept(downloads.clone());
                     continue;
                 }
@@ -176,6 +181,17 @@ async fn run(
                     _ => offer.decline(),
                 }
             }
+            Command::BlockOffer(offer) => {
+                let Some(offer) = pending.lock().await.remove(&offer) else { continue };
+                let peer = offer.summary.peer;
+                offer.decline();
+                if let Some(active) = &session
+                    && active.node.block(peer).is_ok()
+                {
+                    let _ = updates.unbounded_send(Update::Devices(active.node.devices()));
+                    let _ = updates.unbounded_send(Update::Blocked(active.node.blocked()));
+                }
+            }
             other => {
                 if let Some(active) = &session {
                     dispatch(&active.node, other, &updates);
@@ -212,13 +228,13 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 }
             }
             Command::Cancel(id) => node.cancel(id),
-            Command::Invite(relationship) => {
+            Command::Invite { auto_accept } => {
                 node.online_within(ONLINE_WAIT).await;
-                let _ =
-                    updates.send(Update::Invite(node.invite(relationship).code().to_owned())).await;
+                let code = node.invite(auto_accept).code().to_owned();
+                let _ = updates.send(Update::Invite(code)).await;
             }
-            Command::Join(code) => {
-                let result = match node.join(&code).await {
+            Command::Join { code, auto_accept } => {
+                let result = match node.join(&code, auto_accept).await {
                     Ok(device) => Update::Paired(device),
                     Err(error) => Update::PairingFailed(error),
                 };
@@ -229,7 +245,16 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 let _ = node.forget(&id.to_z32());
                 let _ = updates.send(Update::Devices(node.devices())).await;
             }
-            Command::Answer { .. } | Command::Apply(_) | Command::Quit => {}
+            Command::SetAutoAccept { id, enabled } => {
+                let _ = node.set_auto_accept(id, enabled);
+                let _ = updates.send(Update::Devices(node.devices())).await;
+            }
+            Command::Unblock(id) => {
+                let _ = node.unblock(id);
+                let _ = updates.send(Update::Blocked(node.blocked())).await;
+            }
+            Command::Answer { .. } | Command::BlockOffer(_) | Command::Apply(_) | Command::Quit => {
+            }
         }
     });
 }

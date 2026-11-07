@@ -1,20 +1,22 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use beam_core::{Event, Relationship, Result};
+use beam_core::{Error, Event, Node, Result};
+use iroh::EndpointId;
 use qrcode::QrCode;
 use qrcode::render::unicode::Dense1x2;
+
+use crate::args::ApprovalArg;
 
 const NEARBY_WINDOW: Duration = Duration::from_secs(4);
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 const INVITE_WAIT: Duration = Duration::from_secs(600);
 
-pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
+pub async fn pair(data_dir: PathBuf, auto_accept: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let mut events = node.events();
-    let relationship = if contact { Relationship::Contact } else { Relationship::Own };
     node.online_within(ONLINE_WAIT).await;
-    let invite = node.invite(relationship);
+    let invite = node.invite(auto_accept);
     if let Ok(code) = QrCode::new(invite.code()) {
         println!("{}", code.render::<Dense1x2>().quiet_zone(true).build());
     }
@@ -35,9 +37,9 @@ pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
     node.shutdown().await
 }
 
-pub async fn join(data_dir: PathBuf, code: &str) -> Result<()> {
+pub async fn join(data_dir: PathBuf, code: &str, auto_accept: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    let device = node.join(code).await?;
+    let device = node.join(code, auto_accept).await?;
     println!("Paired with {}", device.name);
     node.shutdown().await
 }
@@ -49,11 +51,11 @@ pub async fn list(data_dir: PathBuf) -> Result<()> {
         println!("No paired devices. Run `beam pair` to add one.");
     }
     for device in devices {
-        let kind = match device.relationship {
-            Relationship::Own => "mine",
-            Relationship::Contact => "contact",
-        };
-        println!("{:<24} {:<8} {}", device.name, kind, device.id.to_z32());
+        let approval = if device.auto_accept { "auto" } else { "ask" };
+        println!("{:<24} {:<8} {}", device.name, approval, device.id.to_z32());
+    }
+    for id in node.blocked() {
+        println!("{:<24} {:<8} {}", "blocked device", "blocked", id.to_z32());
     }
     node.shutdown().await
 }
@@ -62,6 +64,35 @@ pub async fn forget(data_dir: PathBuf, query: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let device = node.forget(query)?;
     println!("Forgot {}", device.name);
+    node.shutdown().await
+}
+
+pub async fn approval(data_dir: PathBuf, query: &str, mode: ApprovalArg) -> Result<()> {
+    let (node, _offers) = super::start(data_dir).await?;
+    let device = node.find_device(query)?;
+    node.set_auto_accept(device.id, matches!(mode, ApprovalArg::Auto))?;
+    node.shutdown().await
+}
+
+fn device_id(node: &Node, query: &str) -> Result<EndpointId> {
+    match node.find_device(query) {
+        Ok(device) => Ok(device.id),
+        Err(Error::UnknownDevice(_)) => {
+            query.parse().map_err(|_| Error::UnknownDevice(query.to_owned()))
+        }
+        Err(error) => Err(error),
+    }
+}
+
+pub async fn block(data_dir: PathBuf, query: &str) -> Result<()> {
+    let (node, _offers) = super::start(data_dir).await?;
+    node.block(device_id(&node, query)?)?;
+    node.shutdown().await
+}
+
+pub async fn unblock(data_dir: PathBuf, id: &str) -> Result<()> {
+    let (node, _offers) = super::start(data_dir).await?;
+    node.unblock(id.parse().map_err(|_| Error::UnknownDevice(id.to_owned()))?)?;
     node.shutdown().await
 }
 

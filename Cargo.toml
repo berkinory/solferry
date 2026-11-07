@@ -14,8 +14,8 @@ beam-core = { path = "crates/beam-core" }
 beam-proto = { path = "crates/beam-proto" }
 
 iroh = "1.4"
-iroh-mainline-address-lookup = "0.6"
 iroh-mdns-address-lookup = "0.6"
+netdev = "0.46"
 
 anyhow = "1"
 bytes = "1"
