@@ -2,7 +2,9 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use beam_proto::{ALPN_PAIR, PairReply, PairRequest, Ticket, read_frame, write_frame};
+use beam_proto::{
+    ALPN_PAIR, Finalized, PairReply, PairRequest, Ticket, close, read_frame, write_frame,
+};
 use data_encoding::BASE32_NOPAD;
 use iroh::endpoint::Connection;
 use iroh::protocol::{AcceptError, ProtocolHandler};
@@ -19,6 +21,7 @@ use crate::trust::{Device, Relationship};
 const INVITE_PREFIX: &str = "beam1";
 const INVITE_LIFETIME: Duration = Duration::from_secs(600);
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
+const CONFIRM_WAIT: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Debug)]
 pub struct Invite {
@@ -105,7 +108,6 @@ impl Node {
         };
         write_frame(&mut send, &request).await?;
         let reply: PairReply = read_frame(&mut recv).await?;
-        connection.close(0u32.into(), b"paired");
         if !reply.accepted {
             return Err(Error::PairingRefused);
         }
@@ -118,6 +120,8 @@ impl Node {
             paired_at_ms: now_ms(),
         };
         self.shared.trust().upsert(device.clone())?;
+        write_frame(&mut send, &Finalized { ok: true }).await?;
+        let _ = tokio::time::timeout(CONFIRM_WAIT, connection.closed()).await;
         Ok(device)
     }
 }
@@ -165,6 +169,12 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
         write_frame(&mut send, &PairReply { accepted: false, name: String::new() }).await?;
         return Err(Error::PairingRefused);
     };
+    let reply = PairReply { accepted: true, name: shared.config.name.clone() };
+    write_frame(&mut send, &reply).await?;
+    let confirmed = tokio::time::timeout(CONFIRM_WAIT, read_frame::<_, Finalized>(&mut recv)).await;
+    if !matches!(confirmed, Ok(Ok(Finalized { ok: true }))) {
+        return Err(Error::ConnectionLost);
+    }
     let device = Device {
         id: connection.remote_id(),
         name: clean_label(&request.name),
@@ -174,9 +184,7 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
         paired_at_ms: now_ms(),
     };
     shared.trust().upsert(device.clone())?;
-    let reply = PairReply { accepted: true, name: shared.config.name.clone() };
-    write_frame(&mut send, &reply).await?;
-    let _ = tokio::time::timeout(Duration::from_secs(5), connection.closed()).await;
+    connection.close(close::DONE.into(), b"paired");
     let _ = shared.events.send(Event::Paired { device });
     Ok(())
 }
