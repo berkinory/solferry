@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Duration;
 
 use beam_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
 use iroh::endpoint::Connection;
@@ -151,6 +152,11 @@ impl Node {
     /// Resolves when the endpoint can be reached through its home relay.
     pub async fn online(&self) {
         self.shared.endpoint.online().await;
+    }
+
+    /// Waits for a relay connection, but never longer than `limit`.
+    pub async fn online_within(&self, limit: Duration) {
+        let _ = tokio::time::timeout(limit, self.online()).await;
     }
 
     pub async fn shutdown(self) -> Result<()> {
