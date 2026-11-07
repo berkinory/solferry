@@ -13,7 +13,6 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Pairing nearby devices by comparing a code
 - Tailscale devices listed automatically
 - `beam relay check` and a one-command relay installer
-- Desktop notifications for received files
 - Live route updates during a transfer
 - `beam` command with JSON event output
 - Self-hosted relay deployment

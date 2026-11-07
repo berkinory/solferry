@@ -757,7 +757,6 @@ dependencies = [
  "gpui-kit",
  "iroh",
  "ksni",
- "notify-rust",
  "qrcode",
  "tokio",
  "tracing",

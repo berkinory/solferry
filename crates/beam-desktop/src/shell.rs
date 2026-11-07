@@ -68,6 +68,9 @@ fn notify(update: &Update, cx: &mut App) {
         Update::Offer { summary, .. } => {
             ("Incoming files".to_owned(), format!("{} wants to send you files", summary.peer_name))
         }
+        Update::PairingRequest { name, .. } => {
+            ("Pairing request".to_owned(), format!("{name} wants to pair with this device"))
+        }
         Update::Transfer(Event::Completed { id }) => {
             let received = state
                 .transfers

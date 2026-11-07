@@ -13,8 +13,6 @@ use iroh::{EndpointAddr, EndpointId};
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
-use crate::notify::ArrivalNotices;
-
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
 pub struct Target {
@@ -116,11 +114,9 @@ async fn start(
     let outgoing = updates.clone();
     tasks.push(
         tokio::spawn(async move {
-            let mut notices = ArrivalNotices::default();
             loop {
                 match events.recv().await {
                     Ok(event) => {
-                        notices.observe(&event);
                         let _ = outgoing.unbounded_send(Update::Transfer(event));
                     }
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
