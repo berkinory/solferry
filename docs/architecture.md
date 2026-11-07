@@ -24,7 +24,7 @@ Whether a paired device needs approval is stored per device, on the device that 
 
 ## Reaching a device
 
-iroh dials by public key and picks the best path. beam has two address sources and contacts no server unless a relay is configured:
+iroh dials by public key and picks the best path. beam has two address sources and contacts no server unless a relay is configured. Without a relay it also leaves router port mapping off, so it never opens a port on your router:
 
 - mDNS for the local network
 - relays and direct addresses stored at pairing time

@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-use iroh::endpoint::{Builder, QuicTransportConfig, presets};
+use iroh::endpoint::{Builder, PortmapperConfig, QuicTransportConfig, presets};
 use iroh::tls::CaTlsConfig;
 use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
@@ -56,6 +56,11 @@ pub(crate) async fn bind(
 fn configure(secret: SecretKey, config: &Config, relays: &[RelayUrl]) -> Result<Builder> {
     let map: RelayMap = relays.iter().cloned().collect();
     let builder = Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Custom(map));
+    let builder = if relays.is_empty() {
+        builder.portmapper_config(PortmapperConfig::Disabled)
+    } else {
+        builder
+    };
     let builder = match &config.relay_ca_file {
         Some(path) => builder.ca_tls_config(private_roots(path)?),
         None => builder,
