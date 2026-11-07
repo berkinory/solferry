@@ -12,8 +12,8 @@ use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
 use crate::net::parse_relays;
 use crate::route::{Route, RouteRule, enforce_route, wait_for_route};
-use crate::transfer::sender;
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
+use crate::transfer::{sender, transfer_label};
 
 const DIRECT_PATH_WAIT: Duration = Duration::from_secs(12);
 const FIRST_CONTACT_WINDOW: Duration = Duration::from_secs(20);
@@ -84,6 +84,7 @@ async fn attempt(
         .await
         .map_err(|error| Error::Unreachable(error.to_string()))?;
     *reached = true;
+    shared.track(manifest.id, &connection);
     let result = async {
         let (send, recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
         let rule = route_rule(shared, peer)?;
@@ -93,6 +94,7 @@ async fn attempt(
         }
     }
     .await;
+    shared.untrack(manifest.id);
     result.map_err(|error| remote_failure(&connection, error))
 }
 
@@ -145,6 +147,7 @@ async fn negotiate(
         id: manifest.id,
         peer,
         peer_name: hello.name.clone(),
+        label: transfer_label(&manifest.entries),
         direction: Direction::Sending,
         route,
         files,

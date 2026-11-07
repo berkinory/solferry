@@ -16,7 +16,10 @@ use crate::event::{Direction, Event, TransferId};
 use crate::route::{current_route, is_local};
 use crate::transfer::paths::crosses_symlink;
 use crate::transfer::receiver::{self, Plan};
-use crate::transfer::{Meter, Staging, exchange_hello, validate_offer, within_handshake};
+use crate::transfer::{
+    Meter, Staging, exchange_hello, remote_failure, transfer_label, validate_offer,
+    within_handshake,
+};
 use crate::trust::{Device, Relationship};
 
 const ANSWER_TIMEOUT: Duration = Duration::from_secs(300);
@@ -120,14 +123,19 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         id,
         peer,
         peer_name: hello.name,
+        label: transfer_label(&offer.entries),
         direction: Direction::Receiving,
         route: current_route(connection),
         files,
         bytes,
     });
+    shared.track(id, connection);
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));
     let plan = Plan { destination, entries: offer.entries, targets, offsets, staging };
-    let result = receiver::run(connection, &mut send, plan, meter).await;
+    let result = receiver::run(connection, &mut send, plan, meter)
+        .await
+        .map_err(|error| remote_failure(connection, error));
+    shared.untrack(id);
     let event = match result {
         Ok(_) => Event::Completed { id },
         Err(error) => Event::Failed { id, error },

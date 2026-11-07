@@ -26,6 +26,7 @@ pub enum Event {
         id: TransferId,
         peer: EndpointId,
         peer_name: String,
+        label: String,
         direction: Direction,
         route: Route,
         files: usize,

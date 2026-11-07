@@ -32,11 +32,15 @@ pub(crate) async fn exchange_hello(
 
 /// Prefers the reason the peer gave when it closed over the local symptom.
 pub(crate) fn remote_failure(connection: &Connection, fallback: Error) -> Error {
-    let Some(ConnectionError::ApplicationClosed(closed)) = connection.close_reason() else {
-        return fallback;
+    let closed = match connection.close_reason() {
+        Some(ConnectionError::ApplicationClosed(closed)) => closed,
+        Some(ConnectionError::LocallyClosed) => return Error::Cancelled,
+        _ => return fallback,
     };
     let code = closed.error_code.into_inner();
-    if code == u64::from(close::NOT_PAIRED) {
+    if code == u64::from(close::CANCELLED) {
+        Error::Cancelled
+    } else if code == u64::from(close::NOT_PAIRED) {
         Error::NotPaired
     } else if code == u64::from(close::BUSY) {
         Error::Busy
@@ -45,6 +49,14 @@ pub(crate) fn remote_failure(connection: &Connection, fallback: Error) -> Error 
     } else {
         fallback
     }
+}
+
+/// Short description of a transfer for progress displays.
+pub(crate) fn transfer_label(entries: &[Entry]) -> String {
+    let top = |entry: &Entry| entry.path.split('/').next().unwrap_or_default().to_owned();
+    let first = entries.first().map(top).unwrap_or_default();
+    let others = entries.iter().map(top).filter(|name| *name != first).count();
+    if others == 0 { first } else { format!("{first} and more") }
 }
 
 pub(crate) fn validate_offer(offer: &Offer) -> Result<Vec<PathBuf>> {
