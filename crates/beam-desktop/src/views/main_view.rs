@@ -8,8 +8,8 @@ use gpui_kit::component::input::InputState;
 use gpui_kit::component::{ActiveTheme, Icon, IconName, Theme, TitleBar};
 use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FontWeight, InteractiveElement,
-    IntoElement, MouseButton, ParentElement, PathPromptOptions, Render, StatefulInteractiveElement,
-    Styled, Window, div, px,
+    IntoElement, ParentElement, PathPromptOptions, Render, StatefulInteractiveElement, Styled,
+    Window, div, px,
 };
 use iroh::EndpointId;
 
@@ -173,55 +173,53 @@ impl MainView {
     }
 
     fn header(&self, cx: &mut Context<Self>) -> AnyElement {
-        let home = self.page == Page::Home;
         let name = self.state.read(cx).config.as_ref().map(|config| config.name.clone());
         TitleBar::new()
             .child(
                 div()
                     .flex()
-                    .items_center()
-                    .justify_between()
-                    .w_full()
-                    .pr_2()
-                    .child(
-                        div()
-                            .flex()
-                            .gap_2()
-                            .child(div().text_sm().font_weight(FontWeight::SEMIBOLD).child("beam"))
-                            .children(name.map(|name| ui::muted(name, cx))),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .gap_1()
-                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                            .child(
-                                Button::new("add-device")
-                                    .ghost()
-                                    .xsmall()
-                                    .icon(IconName::Plus)
-                                    .accessibility_label("Add device")
-                                    .on_click(cx.listener(|view, _, window, cx| {
-                                        view.open_page(Page::Pair, window, cx);
-                                    })),
-                            )
-                            .child(
-                                Button::new("open-settings")
-                                    .ghost()
-                                    .xsmall()
-                                    .icon(Icon::new(if home {
-                                        IconName::Settings
-                                    } else {
-                                        IconName::Close
-                                    }))
-                                    .accessibility_label(if home { "Settings" } else { "Back" })
-                                    .on_click(cx.listener(move |view, _, window, cx| {
-                                        let next = if home { Page::Settings } else { Page::Home };
-                                        view.open_page(next, window, cx);
-                                    })),
-                            ),
-                    ),
+                    .gap_2()
+                    .child(div().text_sm().font_weight(FontWeight::SEMIBOLD).child("beam"))
+                    .children(name.map(|name| ui::muted(name, cx))),
             )
+            .into_any_element()
+    }
+
+    fn toolbar(&self, cx: &mut Context<Self>) -> AnyElement {
+        let home = self.page == Page::Home;
+        let leading = if home {
+            Button::new("add-device")
+                .ghost()
+                .small()
+                .icon(IconName::Plus)
+                .label("Add device")
+                .on_click(cx.listener(|view, _, window, cx| {
+                    view.open_page(Page::Pair, window, cx);
+                }))
+        } else {
+            Button::new("go-home").ghost().small().icon(IconName::ArrowLeft).label("Back").on_click(
+                cx.listener(|view, _, window, cx| {
+                    view.open_page(Page::Home, window, cx);
+                }),
+            )
+        };
+        div()
+            .flex()
+            .items_center()
+            .justify_between()
+            .px(px(10.))
+            .pt(px(8.))
+            .child(leading)
+            .children(home.then(|| {
+                Button::new("open-settings")
+                    .ghost()
+                    .small()
+                    .icon(Icon::new(IconName::Settings))
+                    .accessibility_label("Settings")
+                    .on_click(cx.listener(|view, _, window, cx| {
+                        view.open_page(Page::Settings, window, cx);
+                    }))
+            }))
             .into_any_element()
     }
 
@@ -307,6 +305,7 @@ impl Render for MainView {
                 cx.notify();
             }))
             .child(self.header(cx))
+            .child(self.toolbar(cx))
             .child(div().id("content").flex_1().overflow_y_scroll().p(px(14.)).child(body))
     }
 }

@@ -14,7 +14,7 @@ use crate::service::Command;
 const POLICIES: [(RelayPolicy, &str, &str); 4] = [
     (RelayPolicy::HandshakeOnly, "Direct only", "Servers only introduce devices."),
     (RelayPolicy::OwnRelays, "Own relays", "Files may use relays you added."),
-    (RelayPolicy::Always, "Any relay", "Always connects, public relays can see metadata."),
+    (RelayPolicy::Always, "Any relay", "Public relays can see metadata."),
     (RelayPolicy::Off, "Offline", "No servers. Local network and overlays only."),
 ];
 const VISIBILITY: [(Visibility, &str); 3] = [
