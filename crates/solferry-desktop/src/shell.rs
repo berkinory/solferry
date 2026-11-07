@@ -11,6 +11,7 @@ use solferry_core::{Direction, Event};
 
 use crate::service::{Command, Handle, Update};
 use crate::state::AppState;
+use crate::theme;
 use crate::tray::{TrayAction, TrayEvents};
 use crate::views::MainView;
 
@@ -106,6 +107,13 @@ pub fn show_window(cx: &mut App) {
             true
         });
         Theme::sync_system_appearance(Some(window), cx);
+        theme::apply(cx);
+        window
+            .observe_window_appearance(|window, cx| {
+                Theme::sync_system_appearance(Some(window), cx);
+                theme::apply(cx);
+            })
+            .detach();
         cx.new(|cx| MainView::new(window, cx))
     });
     if let Ok((window, _)) = opened {

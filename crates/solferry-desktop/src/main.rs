@@ -6,6 +6,9 @@ mod qr;
 mod service;
 mod shell;
 mod state;
+mod theme;
+#[allow(dead_code)]
+mod tokens;
 mod tray;
 mod views;
 
