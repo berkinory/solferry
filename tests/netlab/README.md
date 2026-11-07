@@ -1,6 +1,6 @@
 # netlab
 
-Runs real `beam` binaries inside Linux network namespaces. Two homes sit behind separate NAT routers joined by a fake internet with two TLS relays. Routers drop unsolicited inbound traffic, as home routers do.
+Runs real `solferry` binaries inside Linux network namespaces. Two homes sit behind separate NAT routers joined by a fake internet with two TLS relays. Routers drop unsolicited inbound traffic, as home routers do.
 
 | Scenario | Checks |
 |---|---|
@@ -20,7 +20,7 @@ Runs real `beam` binaries inside Linux network namespaces. Two homes sit behind 
 Every scenario that delivers a file compares hashes end to end.
 
 ```sh
-cargo build --release -p beam-cli
+cargo build --release -p solferry-cli
 python3 tests/netlab/scenarios.py /path/to/iroh-relay
 python3 tests/netlab/scenarios.py /path/to/iroh-relay nat-cone offline-lan
 ```

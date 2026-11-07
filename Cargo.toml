@@ -7,11 +7,11 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.91"
 license = "MIT"
-repository = "https://github.com/berkinory/beam"
+repository = "https://github.com/berkinory/solferry"
 
 [workspace.dependencies]
-beam-core = { path = "crates/beam-core" }
-beam-proto = { path = "crates/beam-proto" }
+solferry-core = { path = "crates/solferry-core" }
+solferry-proto = { path = "crates/solferry-proto" }
 
 iroh = "1.4"
 iroh-mdns-address-lookup = "0.6"

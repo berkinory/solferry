@@ -30,7 +30,7 @@ cargo install just taplo-cli typos-cli cargo-nextest cargo-deny
 `tests/netlab` runs real binaries through NAT, packet loss, outages and restarts in Linux network namespaces. It needs passwordless sudo and an `iroh-relay` binary.
 
 ```sh
-cargo build --release -p beam-cli
+cargo build --release -p solferry-cli
 cargo install iroh-relay --features server
 python3 tests/netlab/scenarios.py iroh-relay
 ```

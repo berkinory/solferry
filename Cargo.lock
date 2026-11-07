@@ -704,76 +704,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
-name = "beam-cli"
-version = "0.1.0"
-dependencies = [
- "beam-core",
- "clap",
- "futures",
- "indicatif",
- "iroh",
- "qrcode",
- "serde_json",
- "tokio",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "beam-core"
-version = "0.1.0"
-dependencies = [
- "beam-proto",
- "blake3",
- "bytes",
- "data-encoding",
- "dirs 7.0.0",
- "fs4",
- "futures",
- "gethostname",
- "hex",
- "iroh",
- "iroh-mdns-address-lookup",
- "netdev 0.46.3",
- "noq-proto",
- "prost",
- "rand 0.10.3",
- "rustls-pki-types",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.21",
- "tokio",
- "tracing",
- "walkdir",
- "xattr",
-]
-
-[[package]]
-name = "beam-desktop"
-version = "0.1.0"
-dependencies = [
- "beam-core",
- "futures",
- "gpui-kit",
- "iroh",
- "ksni",
- "qrcode",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "tray-icon",
-]
-
-[[package]]
-name = "beam-proto"
-version = "0.1.0"
-dependencies = [
- "prost",
- "thiserror 2.0.21",
- "tokio",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8004,6 +7934,76 @@ checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "solferry-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "futures",
+ "indicatif",
+ "iroh",
+ "qrcode",
+ "serde_json",
+ "solferry-core",
+ "tokio",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "solferry-core"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "bytes",
+ "data-encoding",
+ "dirs 7.0.0",
+ "fs4",
+ "futures",
+ "gethostname",
+ "hex",
+ "iroh",
+ "iroh-mdns-address-lookup",
+ "netdev 0.46.3",
+ "noq-proto",
+ "prost",
+ "rand 0.10.3",
+ "rustls-pki-types",
+ "serde",
+ "serde_json",
+ "solferry-proto",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "walkdir",
+ "xattr",
+]
+
+[[package]]
+name = "solferry-desktop"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "gpui-kit",
+ "iroh",
+ "ksni",
+ "qrcode",
+ "solferry-core",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "tray-icon",
+]
+
+[[package]]
+name = "solferry-proto"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "thiserror 2.0.21",
+ "tokio",
 ]
 
 [[package]]

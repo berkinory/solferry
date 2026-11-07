@@ -12,9 +12,9 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Per-device approval and blocking
 - Pairing nearby devices by comparing a code
 - Tailscale devices listed automatically
-- `beam relay check` and a one-command relay installer
+- `solferry relay check` and a one-command relay installer
 - Live route updates during a transfer
-- `beam` command with JSON event output
+- `solferry` command with JSON event output
 - Self-hosted relay deployment
 - Network scenarios for NAT, loss, outages and restarts
 - Desktop app for Linux, Windows and macOS with tray, pairing and settings

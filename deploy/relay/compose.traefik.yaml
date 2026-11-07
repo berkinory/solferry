@@ -9,10 +9,10 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: ${TRAEFIK_NETWORK:-coolify}
-      traefik.tcp.routers.beam-relay.rule: HostSNI(`${RELAY_HOSTNAME}`)
-      traefik.tcp.routers.beam-relay.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
-      traefik.tcp.routers.beam-relay.tls.passthrough: "true"
-      traefik.tcp.services.beam-relay.loadbalancer.server.port: "8443"
+      traefik.tcp.routers.solferry-relay.rule: HostSNI(`${RELAY_HOSTNAME}`)
+      traefik.tcp.routers.solferry-relay.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
+      traefik.tcp.routers.solferry-relay.tls.passthrough: "true"
+      traefik.tcp.services.solferry-relay.loadbalancer.server.port: "8443"
 
 networks:
   proxy:

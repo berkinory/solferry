@@ -1,13 +1,13 @@
 # Architecture
 
-beam is one Rust core with thin clients around it. Everything hard lives in `beam-core`, so each client only draws screens and talks to its platform.
+solferry is one Rust core with thin clients around it. Everything hard lives in `solferry-core`, so each client only draws screens and talks to its platform.
 
 ```text
  CLI, desktop, Android next
               |
-          beam-core        identity, trust, discovery, transfers
+          solferry-core        identity, trust, discovery, transfers
               |
-          beam-proto       wire format
+          solferry-proto       wire format
               |
             iroh           QUIC, hole punching, relays
 ```
@@ -24,18 +24,18 @@ Whether a paired device needs approval is stored per device, on the device that 
 
 ## Reaching a device
 
-iroh dials by public key and picks the best path. beam has two address sources and contacts no server unless a relay is configured. Without a relay it also leaves router port mapping off, so it never opens a port on your router:
+iroh dials by public key and picks the best path. solferry has two address sources and contacts no server unless a relay is configured. Without a relay it also leaves router port mapping off, so it never opens a port on your router:
 
 - mDNS for the local network
 - relays and direct addresses stored at pairing time
 
-beam prefers UDP port 53318 so stored addresses survive restarts and firewalls can allow it. If the port is taken it falls back to a random one.
+solferry prefers UDP port 53318 so stored addresses survive restarts and firewalls can allow it. If the port is taken it falls back to a random one.
 
 Overlay networks such as Tailscale are ordinary network interfaces for reaching paired devices. To list unpaired ones, `node/overlay.rs` reads the online peers from the local `tailscale` command and asks each on UDP 53319. That port listens only on the overlay address and only while visibility is `everyone`. Admitting unpaired ones needs one check: `100.64.0.0/10` is shared with carrier NAT, so `route.rs` also requires a local tunnel interface with an overlay address. Unknown interface names fail closed.
 
 ## Relays
 
-A relay helps two devices punch through NAT and carries data when that fails. beam only knows relays you added and relays a paired device waits on, so there is nothing to restrict: every known relay is one somebody in the pairing chose. With none, no server is contacted at all.
+A relay helps two devices punch through NAT and carries data when that fails. solferry only knows relays you added and relays a paired device waits on, so there is nothing to restrict: every known relay is one somebody in the pairing chose. With none, no server is contacted at all.
 
 A pairing code carries the inviter's relay. The joining device starts using it and passes it back, so only one person has to set a relay up. Both sides reload these relays on start.
 
@@ -45,7 +45,7 @@ The sender scans its paths into a `Manifest`. The transfer id is a hash of the s
 
 Each file travels on its own QUIC stream, up to 16 at a time. Reading, writing and hashing run on blocking threads connected to the network tasks by bounded channels, which keeps the async runtime free and memory use flat.
 
-Received data stays in `.beam-partial/<id>/` inside the destination. Files move to their final names only after every file has been verified, so an interrupted transfer never leaves half a file in place.
+Received data stays in `.solferry-partial/<id>/` inside the destination. Files move to their final names only after every file has been verified, so an interrupted transfer never leaves half a file in place.
 
 A resumed file is hashed from the first byte on both sides, so a damaged partial file is caught and sent again. The same check covers bit rot and a source file that changes between attempts.
 
@@ -59,8 +59,8 @@ Each stream has a 2 MiB receive window. noq closes a connection that exceeds 102
 
 ## Desktop
 
-`beam-desktop` runs the core on its own thread with a tokio runtime. `service.rs` is the only bridge: the UI sends `Command`s and receives `Update`s over channels, and `state.rs` turns updates into plain data that views render. Closing the window keeps the process and tray alive, because the app exists to receive files.
+`solferry-desktop` runs the core on its own thread with a tokio runtime. `service.rs` is the only bridge: the UI sends `Command`s and receives `Update`s over channels, and `state.rs` turns updates into plain data that views render. Closing the window keeps the process and tray alive, because the app exists to receive files.
 
 ## Errors
 
-`beam_core::Error` is an exhaustive enum and is safe to match on. Clients must turn every variant into a message that says what happened and what to do next. The CLI does this in `explain.rs` with no catch-all arm, so adding a variant fails compilation until it has a message.
+`solferry_core::Error` is an exhaustive enum and is safe to match on. Clients must turn every variant into a message that says what happened and what to do next. The CLI does this in `explain.rs` with no catch-all arm, so adding a variant fails compilation until it has a message.

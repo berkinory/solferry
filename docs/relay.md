@@ -12,7 +12,7 @@ Clone this repository on the server, then:
 sudo sh deploy/relay/install.sh relay.example.com you@example.com
 ```
 
-It checks DNS and ports first, starts the relay and prints the link to paste into beam. Add `--check` to run the checks and change nothing. If Traefik already holds port 443, as on Coolify, it passes the relay through Traefik without touching your other sites. On `ufw-docker` servers it opens UDP 7842 for you.
+It checks DNS and ports first, starts the relay and prints the link to paste into solferry. Add `--check` to run the checks and change nothing. If Traefik already holds port 443, as on Coolify, it passes the relay through Traefik without touching your other sites. On `ufw-docker` servers it opens UDP 7842 for you.
 
 Certificates come from Let's Encrypt. Each client is limited to 50 MiB/s by default. Set `RELAY_BYTES_PER_SECOND` and `RELAY_MAX_BURST_BYTES` in `compose.yaml` to change that.
 
@@ -21,10 +21,10 @@ Certificates come from Let's Encrypt. Each client is limited to 50 MiB/s by defa
 On one device, paste that link:
 
 ```sh
-beam relay add 'https://relay.example.com#token'
+solferry relay add 'https://relay.example.com#token'
 ```
 
-Or paste it in Settings. Pair as usual: the pairing code carries the link, so the other device starts using the relay without any setup. File data uses a direct path when one opens and the relay otherwise. Run `beam relay check` to test it: it says whether the server, the token and the UDP port each work, and what to fix.
+Or paste it in Settings. Pair as usual: the pairing code carries the link, so the other device starts using the relay without any setup. File data uses a direct path when one opens and the relay otherwise. Run `solferry relay check` to test it: it says whether the server, the token and the UDP port each work, and what to fix.
 
 ## Access
 

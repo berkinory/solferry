@@ -20,4 +20,4 @@ deny:
 check: lint test deny
 
 build:
-    cargo build --release -p beam-cli
+    cargo build --release -p solferry-cli

@@ -1,0 +1,15 @@
+# Keeps solferry receiving on a server or headless machine.
+# Install with: cp solferry.service ~/.config/systemd/user/ && systemctl --user enable --now solferry
+[Unit]
+Description=solferry file transfer
+After=network-online.target
+
+[Service]
+ExecStart=%h/.cargo/bin/solferry receive
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
