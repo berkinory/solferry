@@ -1,6 +1,7 @@
 name: release
 
 on:
+  workflow_dispatch:
   push:
     tags: ["v*"]
 
@@ -8,8 +9,9 @@ permissions:
   contents: write
 
 jobs:
-  cli:
+  build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
@@ -19,12 +21,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --release --locked -p beam-cli --target ${{ matrix.target }}
-      - shell: bash
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-x11-dev libwayland-dev libvulkan-dev libfreetype-dev libfontconfig-dev
+      - run: cargo build --release --locked -p beam-cli -p beam-desktop --target ${{ matrix.target }}
+      - name: Package
+        shell: bash
         run: |
+          mkdir dist
           cd target/${{ matrix.target }}/release
-          if [ -f beam.exe ]; then 7z a "$GITHUB_WORKSPACE/beam-${{ matrix.target }}.zip" beam.exe
-          else tar czf "$GITHUB_WORKSPACE/beam-${{ matrix.target }}.tar.gz" beam; fi
+          if [ -f beam.exe ]; then
+            7z a "$GITHUB_WORKSPACE/dist/beam-${{ matrix.target }}.zip" beam.exe beam-desktop.exe
+          else
+            tar czf "$GITHUB_WORKSPACE/dist/beam-${{ matrix.target }}.tar.gz" beam beam-desktop
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beam-${{ matrix.target }}
+          path: dist/*
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          files: beam-${{ matrix.target }}.*
+          files: dist/*

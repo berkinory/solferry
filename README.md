@@ -4,7 +4,7 @@ Accountless, open source file transfer between your devices and the people you t
 
 There is no account and no upload step. Files go straight from one device to another, end-to-end encrypted.
 
-> Early development. The core and CLI work. Desktop and Android apps come next, iOS last.
+> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds. Android comes next, iOS last.
 
 ## Why
 
@@ -16,7 +16,15 @@ There is no account and no upload step. Files go straight from one device to ano
 | Across the internet | yes | no | yes |
 | Resume after interruption | yes | no | yes |
 
-## Quick start
+## Desktop app
+
+```sh
+cargo run --release -p beam-desktop
+```
+
+Drop files on a device, or on the window to pick several devices. Closing the window keeps beam in the tray, ready to receive.
+
+## Command line
 
 ```sh
 cargo install --path crates/beam-cli
@@ -60,8 +68,10 @@ By default servers only introduce two devices, and file data never passes throug
 | `crates/beam-proto` | Wire messages and framing |
 | `crates/beam-core` | Identity, trust, discovery, transfers |
 | `crates/beam-cli` | The `beam` command |
+| `crates/beam-desktop` | Desktop app built with GPUI |
 | `deploy/relay` | Self-hosted relay |
 | `tests/netlab` | NAT, loss and outage scenarios in Linux namespaces |
+| `tests/desktop` | Driver for real input against the desktop app |
 | `docs` | Architecture, protocol and relay guides |
 
 Read [docs/architecture.md](docs/architecture.md) to understand the code, and [CONTRIBUTING.md](CONTRIBUTING.md) to work on it.

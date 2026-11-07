@@ -5,7 +5,7 @@ use beam_core::TransferId;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::InputState;
-use gpui_kit::component::{ActiveTheme, Icon, IconName, TitleBar};
+use gpui_kit::component::{ActiveTheme, Icon, IconName, Theme, TitleBar};
 use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FontWeight, InteractiveElement,
     IntoElement, MouseButton, ParentElement, PathPromptOptions, Render, StatefulInteractiveElement,
@@ -40,6 +40,10 @@ pub struct MainView {
 impl MainView {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let state = cx.global::<Shell>().state.clone();
+        cx.observe_window_appearance(window, |_, window, cx| {
+            Theme::sync_system_appearance(Some(window), cx);
+        })
+        .detach();
         let mut paired_count = state.read(cx).paired_count;
         cx.observe(&state, move |view, state, cx| {
             let latest = state.read(cx).paired_count;

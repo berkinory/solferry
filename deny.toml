@@ -2,11 +2,7 @@
 all-features = false
 
 [advisories]
-ignore = [
-  { id = "RUSTSEC-2024-0436", reason = "paste is a compile-time macro pulled in by iroh networking" },
-  { id = "RUSTSEC-2024-0384", reason = "instant is an unmaintained shim pulled in by gpui-base" },
-  { id = "RUSTSEC-2024-0370", reason = "proc-macro-error is compile-time only, via tray-icon on platforms that use GTK" },
-]
+unmaintained = "workspace"
 
 [licenses]
 unused-allowed-license = "allow"
