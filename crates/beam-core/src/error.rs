@@ -26,8 +26,6 @@ pub enum Error {
     InvalidRelayUrl(String),
     #[error("device is unreachable: {0}")]
     Unreachable(String),
-    #[error("no direct path to the device and data relaying is disabled")]
-    NoDirectPath,
     #[error("the device only accepts paired peers")]
     NotPaired,
     #[error("the device runs protocol {theirs}, this one runs {ours}")]

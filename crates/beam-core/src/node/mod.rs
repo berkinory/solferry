@@ -12,7 +12,7 @@ use std::time::Duration;
 use beam_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
 use iroh::endpoint::Connection;
 use iroh::protocol::Router;
-use iroh::{Endpoint, EndpointAddr, EndpointId};
+use iroh::{Endpoint, EndpointAddr, EndpointId, RelayUrl};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
@@ -21,7 +21,7 @@ pub use nearby::NearbyDevice;
 pub use outbound::SendReport;
 pub use pairing::Invite;
 
-use crate::config::{Config, RelayPolicy};
+use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
 use crate::trust::{Device, TrustStore};
@@ -81,19 +81,31 @@ impl Shared {
     }
 }
 
+/// Your own relays plus the ones paired devices wait on, which is how a device reaches them.
+fn known_relays(config: &Config, trust: &TrustStore) -> Result<Vec<RelayUrl>> {
+    let mut relays = net::parse_relays(&config.relays)?;
+    let shared = trust.all().iter().flat_map(|device| &device.relays);
+    relays.extend(shared.filter_map(|url| url.parse().ok()));
+    relays.sort();
+    relays.dedup();
+    Ok(relays)
+}
+
 impl Node {
     pub async fn start(options: NodeOptions) -> Result<(Self, mpsc::Receiver<IncomingOffer>)> {
         let NodeOptions { data_dir, isolated } = options;
         identity::prepare_private_dir(&data_dir)?;
         let config = Config::load(&data_dir)?;
         let secret = identity::load_or_create(&data_dir)?;
-        let uses_relays = !isolated && config.relay_policy != RelayPolicy::Off;
-        let network = net::bind(secret, &config, isolated).await?;
+        let trust = TrustStore::load(&data_dir)?;
+        let relays = if isolated { Vec::new() } else { known_relays(&config, &trust)? };
+        let uses_relays = !relays.is_empty();
+        let network = net::bind(secret, &config, &relays, isolated).await?;
         let (offers, offer_queue) = mpsc::channel(OFFER_BUFFER);
         let shared = Arc::new(Shared {
             endpoint: network.endpoint.clone(),
             config,
-            trust: Mutex::new(TrustStore::load(&data_dir)?),
+            trust: Mutex::new(trust),
             events: broadcast::channel(EVENT_BUFFER).0,
             offers,
             invites: Mutex::new(HashMap::new()),
@@ -143,6 +155,25 @@ impl Node {
         let device = trust.resolve(query)?.clone();
         trust.remove(&device.id)?;
         Ok(device)
+    }
+
+    /// Decides whether this paired device may send files without asking.
+    pub fn set_auto_accept(&self, id: EndpointId, enabled: bool) -> Result<()> {
+        self.shared.trust().set_auto_accept(&id, enabled)
+    }
+
+    #[must_use]
+    pub fn blocked(&self) -> Vec<EndpointId> {
+        self.shared.trust().blocked().to_vec()
+    }
+
+    /// Refuses every connection from this device and forgets it if it was paired.
+    pub fn block(&self, id: EndpointId) -> Result<()> {
+        self.shared.trust().block(id)
+    }
+
+    pub fn unblock(&self, id: EndpointId) -> Result<()> {
+        self.shared.trust().unblock(&id)
     }
 
     /// Stops a running transfer. Partial data stays, so sending again resumes it.

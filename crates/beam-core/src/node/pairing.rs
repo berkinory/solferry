@@ -16,7 +16,7 @@ use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::Event;
 use crate::transfer::paths::clean_label;
-use crate::trust::{Device, Relationship};
+use crate::trust::Device;
 
 const INVITE_PREFIX: &str = "beam1";
 const INVITE_LIFETIME: Duration = Duration::from_secs(600);
@@ -38,7 +38,7 @@ impl Invite {
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct PendingInvite {
-    relationship: Relationship,
+    auto_accept: bool,
     expires_at_ms: u64,
 }
 
@@ -53,11 +53,12 @@ fn secret_key(secret: &[u8]) -> Option<[u8; 32]> {
 
 impl Node {
     /// Creates a single-use invite that a QR code or chat message can carry to another device.
-    pub fn invite(&self, relationship: Relationship) -> Invite {
+    /// `auto_accept` applies to this side only, the other device makes its own choice.
+    pub fn invite(&self, auto_accept: bool) -> Invite {
         let mut secret = [0; 32];
         rand::rng().fill_bytes(&mut secret);
         let expires_at_ms = now_ms() + u64::try_from(INVITE_LIFETIME.as_millis()).unwrap_or(0);
-        let pending = PendingInvite { relationship, expires_at_ms };
+        let pending = PendingInvite { auto_accept, expires_at_ms };
         let mut invites =
             self.shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         invites.retain(|_, invite| invite.expires_at_ms >= now_ms());
@@ -71,7 +72,6 @@ impl Node {
             direct_addrs: addr.ip_addrs().map(ToString::to_string).collect(),
             relay_urls: addr.relay_urls().map(ToString::to_string).collect(),
             expires_at_ms,
-            own_device: relationship == Relationship::Own,
         };
         let code = format!(
             "{INVITE_PREFIX}{}",
@@ -81,7 +81,7 @@ impl Node {
     }
 
     /// Redeems an invite from another device and stores the resulting trust on both sides.
-    pub async fn join(&self, code: &str) -> Result<Device> {
+    pub async fn join(&self, code: &str, auto_accept: bool) -> Result<Device> {
         let ticket = decode_ticket(code)?;
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
@@ -89,8 +89,7 @@ impl Node {
         self.online_within(ONLINE_WAIT).await;
         let relays = ticket.relay_urls.clone();
         let direct_addrs = ticket.direct_addrs.clone();
-        let relationship =
-            if ticket.own_device { Relationship::Own } else { Relationship::Contact };
+        adopt_relays(&self.shared, &relays).await;
         let addr = ticket_addr(&ticket)?;
         let id = addr.id;
         let connection = self
@@ -100,10 +99,15 @@ impl Node {
             .await
             .map_err(|error| Error::Unreachable(error.to_string()))?;
         let (mut send, mut recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
+        let mut relay_urls: Vec<String> =
+            self.addr().relay_urls().map(ToString::to_string).collect();
+        relay_urls.extend(relays.iter().cloned());
+        relay_urls.sort();
+        relay_urls.dedup();
         let request = PairRequest {
             secret: ticket.secret,
             name: self.config().name.clone(),
-            relay_urls: self.addr().relay_urls().map(ToString::to_string).collect(),
+            relay_urls,
             direct_addrs: self.addr().ip_addrs().map(ToString::to_string).collect(),
         };
         write_frame(&mut send, &request).await?;
@@ -114,7 +118,7 @@ impl Node {
         let device = Device {
             id,
             name: clean_label(&reply.name),
-            relationship,
+            auto_accept,
             relays,
             direct_addrs,
             paired_at_ms: now_ms(),
@@ -123,6 +127,13 @@ impl Node {
         write_frame(&mut send, &Finalized { ok: true }).await?;
         let _ = tokio::time::timeout(CONFIRM_WAIT, connection.closed()).await;
         Ok(device)
+    }
+}
+
+/// Starts using a relay the other device waits on, so nobody has to configure it by hand.
+async fn adopt_relays(shared: &Shared, urls: &[String]) {
+    for url in urls.iter().filter_map(|url| url.parse::<iroh::RelayUrl>().ok()) {
+        shared.endpoint.insert_relay(url.clone(), Arc::new(url.into())).await;
     }
 }
 
@@ -178,11 +189,12 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
     let device = Device {
         id: connection.remote_id(),
         name: clean_label(&request.name),
-        relationship: pending.relationship,
+        auto_accept: pending.auto_accept,
         relays: request.relay_urls,
         direct_addrs: request.direct_addrs,
         paired_at_ms: now_ms(),
     };
+    adopt_relays(shared, &device.relays).await;
     shared.trust().upsert(device.clone())?;
     connection.close(close::DONE.into(), b"paired");
     let _ = shared.events.send(Event::Paired { device });

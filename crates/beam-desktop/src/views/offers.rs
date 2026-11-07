@@ -15,9 +15,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         1 => "1 file".to_owned(),
         count => format!("{count} files"),
     };
-    let warning = summary
-        .relationship
-        .is_none()
+    let warning = (!summary.paired)
         .then(|| ui::muted("This device isn't paired. Accept only if you expected this.", cx));
     ui::card(cx)
         .border_color(cx.theme().primary)
@@ -46,6 +44,13 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         .small()
                         .label("Decline")
                         .on_click(cx.listener(move |view, _, _, cx| view.answer(key, false, cx))),
+                )
+                .child(
+                    Button::new(SharedString::from(format!("block-{key}")))
+                        .ghost()
+                        .small()
+                        .label("Block")
+                        .on_click(cx.listener(move |view, _, _, cx| view.block_offer(key, cx))),
                 ),
         )
         .into_any_element()

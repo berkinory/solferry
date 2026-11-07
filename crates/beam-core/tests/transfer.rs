@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use beam_core::{Config, Error, Event, IncomingOffer, Node, NodeOptions, Relationship, Visibility};
+use beam_core::{Config, Error, Event, IncomingOffer, Node, NodeOptions, Visibility};
 use tempfile::TempDir;
 use tokio::sync::mpsc;
 
@@ -164,11 +164,11 @@ async fn known_devices_mode_refuses_strangers_until_paired() {
     let refused = sender.node.send(receiver.node.addr(), vec![file.clone()]).await;
     assert!(matches!(refused, Err(Error::NotPaired)), "{refused:?}");
 
-    let invite = receiver.node.invite(Relationship::Own);
-    let device = sender.node.join(invite.code()).await.unwrap();
+    let invite = receiver.node.invite(true);
+    let device = sender.node.join(invite.code(), false).await.unwrap();
     assert_eq!(device.name, "receiver");
-    assert_eq!(device.relationship, Relationship::Own);
-    assert!(sender.node.join(invite.code()).await.is_err(), "invites are single use");
+    assert!(!device.auto_accept, "the joining side decides for itself");
+    assert!(sender.node.join(invite.code(), true).await.is_err(), "invites are single use");
 
     let destination = receiver.data.join("inbox");
     accept_all(receiver.offers, destination.clone());

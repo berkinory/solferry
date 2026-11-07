@@ -7,19 +7,14 @@ use crate::error::{Error, Result};
 use crate::store;
 
 const DEVICES_FILE: &str = "devices.json";
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum Relationship {
-    Own,
-    Contact,
-}
+const BLOCKED_FILE: &str = "blocked.json";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Device {
     pub id: EndpointId,
     pub name: String,
-    pub relationship: Relationship,
+    /// Set on this device only: a pairing code can never grant it.
+    pub auto_accept: bool,
     pub relays: Vec<String>,
     /// Addresses seen when pairing, so a device stays reachable without any server.
     #[serde(default)]
@@ -42,13 +37,17 @@ impl Device {
 pub(crate) struct TrustStore {
     path: PathBuf,
     devices: Vec<Device>,
+    blocked_path: PathBuf,
+    blocked: Vec<EndpointId>,
 }
 
 impl TrustStore {
     pub(crate) fn load(data_dir: &Path) -> Result<Self> {
         let path = data_dir.join(DEVICES_FILE);
         let devices = store::read_json(&path)?.unwrap_or_default();
-        Ok(Self { path, devices })
+        let blocked_path = data_dir.join(BLOCKED_FILE);
+        let blocked = store::read_json(&blocked_path)?.unwrap_or_default();
+        Ok(Self { path, devices, blocked_path, blocked })
     }
 
     pub(crate) fn all(&self) -> &[Device] {
@@ -61,8 +60,42 @@ impl TrustStore {
 
     pub(crate) fn upsert(&mut self, device: Device) -> Result<()> {
         self.devices.retain(|existing| existing.id != device.id);
+        self.unblock(&device.id)?;
         self.devices.push(device);
         store::write_json(&self.path, &self.devices)
+    }
+
+    pub(crate) fn set_auto_accept(&mut self, id: &EndpointId, enabled: bool) -> Result<()> {
+        if let Some(device) = self.devices.iter_mut().find(|device| device.id == *id) {
+            device.auto_accept = enabled;
+            store::write_json(&self.path, &self.devices)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn blocked(&self) -> &[EndpointId] {
+        &self.blocked
+    }
+
+    pub(crate) fn is_blocked(&self, id: &EndpointId) -> bool {
+        self.blocked.contains(id)
+    }
+
+    pub(crate) fn block(&mut self, id: EndpointId) -> Result<()> {
+        self.remove(&id)?;
+        if !self.is_blocked(&id) {
+            self.blocked.push(id);
+            store::write_json(&self.blocked_path, &self.blocked)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn unblock(&mut self, id: &EndpointId) -> Result<()> {
+        if self.is_blocked(id) {
+            self.blocked.retain(|blocked| blocked != id);
+            store::write_json(&self.blocked_path, &self.blocked)?;
+        }
+        Ok(())
     }
 
     pub(crate) fn remove(&mut self, id: &EndpointId) -> Result<bool> {

@@ -5,13 +5,12 @@ use std::time::Duration;
 use iroh::endpoint::{Builder, QuicTransportConfig, presets};
 use iroh::tls::CaTlsConfig;
 use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
-use iroh_mainline_address_lookup::DhtAddressLookup;
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use noq_proto::congestion::Bbr3Config;
 use rustls_pki_types::CertificateDer;
 use rustls_pki_types::pem::PemObject;
 
-use crate::config::{Config, RelayPolicy, Visibility};
+use crate::config::{Config, Visibility};
 use crate::error::{Error, Result};
 
 const MIB: u32 = 1024 * 1024;
@@ -32,17 +31,21 @@ pub(crate) struct Network {
     pub(crate) mdns: Option<MdnsAddressLookup>,
 }
 
-pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> Result<Network> {
-    let online = !isolated && config.relay_policy != RelayPolicy::Off;
+pub(crate) async fn bind(
+    secret: SecretKey,
+    config: &Config,
+    relays: &[RelayUrl],
+    isolated: bool,
+) -> Result<Network> {
     let endpoint = if isolated {
-        configure(secret.clone(), config, online)?.bind().await
+        configure(secret.clone(), config, relays)?.bind().await
     } else {
-        let fixed = configure(secret.clone(), config, online)?
+        let fixed = configure(secret.clone(), config, relays)?
             .bind_addr(PREFERRED_ADDR)
             .map_err(|error| Error::NetworkStart(error.to_string()))?;
         match fixed.bind().await {
             Ok(endpoint) => Ok(endpoint),
-            Err(_) => configure(secret, config, online)?.bind().await,
+            Err(_) => configure(secret, config, relays)?.bind().await,
         }
     }
     .map_err(|error| Error::NetworkStart(error.to_string()))?;
@@ -50,17 +53,12 @@ pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> 
     Ok(Network { endpoint, mdns })
 }
 
-fn configure(secret: SecretKey, config: &Config, online: bool) -> Result<Builder> {
-    let builder = if online {
-        let builder = Endpoint::builder(presets::N0)
-            .relay_mode(relay_mode(config)?)
-            .address_lookup(DhtAddressLookup::builder());
-        match &config.relay_ca_file {
-            Some(path) => builder.ca_tls_config(private_roots(path)?),
-            None => builder,
-        }
-    } else {
-        Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Disabled)
+fn configure(secret: SecretKey, config: &Config, relays: &[RelayUrl]) -> Result<Builder> {
+    let map: RelayMap = relays.iter().cloned().collect();
+    let builder = Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Custom(map));
+    let builder = match &config.relay_ca_file {
+        Some(path) => builder.ca_tls_config(private_roots(path)?),
+        None => builder,
     };
     Ok(builder.secret_key(secret).transport_config(transport_config()?))
 }
@@ -70,13 +68,6 @@ fn private_roots(path: &Path) -> Result<CaTlsConfig> {
         .and_then(Iterator::collect::<std::result::Result<Vec<_>, _>>)
         .map_err(|error| Error::NetworkStart(format!("{}: {error}", path.display())))?;
     Ok(CaTlsConfig::default().with_extra_roots(roots))
-}
-
-fn relay_mode(config: &Config) -> Result<RelayMode> {
-    if config.relays.is_empty() {
-        return Ok(RelayMode::Default);
-    }
-    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(&config.relays)?)))
 }
 
 pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {

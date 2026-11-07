@@ -4,18 +4,15 @@ use std::time::{Duration, Instant};
 
 use beam_proto::{ALPN_TRANSFER, Decision, Offer, OfferReply, read_frame, write_frame};
 use iroh::endpoint::{Connection, RecvStream, SendStream};
-use iroh::{EndpointAddr, EndpointId, RelayUrl};
+use iroh::{EndpointAddr, EndpointId};
 
 use super::{Node, Shared};
-use crate::config::RelayPolicy;
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
-use crate::net::parse_relays;
-use crate::route::{Route, RouteRule, enforce_route, wait_for_route};
+use crate::route::{Route, current_route};
 use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
 use crate::transfer::{sender, transfer_label};
 
-const DIRECT_PATH_WAIT: Duration = Duration::from_secs(12);
 const FIRST_CONTACT_WINDOW: Duration = Duration::from_secs(20);
 const RESUME_WINDOW: Duration = Duration::from_secs(300);
 const RETRY_BASE: Duration = Duration::from_secs(1);
@@ -87,27 +84,11 @@ async fn attempt(
     shared.track(manifest.id, &connection);
     let result = async {
         let (send, recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
-        let rule = route_rule(shared, peer)?;
-        tokio::select! {
-            report = negotiate(shared, &connection, send, recv, manifest, &rule, peer) => report,
-            violation = enforce_route(&connection, &rule) => Err(violation),
-        }
+        negotiate(shared, &connection, send, recv, manifest, peer).await
     }
     .await;
     shared.untrack(manifest.id);
     result.map_err(|error| remote_failure(&connection, error))
-}
-
-fn route_rule(shared: &Shared, peer: EndpointId) -> Result<RouteRule> {
-    let policy = shared.config.relay_policy;
-    let mut relays: Vec<RelayUrl> = Vec::new();
-    if policy == RelayPolicy::OwnRelays {
-        relays = parse_relays(&shared.config.relays)?;
-        if let Some(device) = shared.trust().get(&peer) {
-            relays.extend(parse_relays(&device.relays)?);
-        }
-    }
-    Ok(RouteRule { any_relay: policy == RelayPolicy::Always, relays })
 }
 
 async fn negotiate(
@@ -116,7 +97,6 @@ async fn negotiate(
     mut send: SendStream,
     mut recv: RecvStream,
     manifest: &Arc<Manifest>,
-    rule: &RouteRule,
     peer: EndpointId,
 ) -> Result<SendReport> {
     let hello = exchange_hello(&mut send, &mut recv, &shared.config.name).await?;
@@ -139,7 +119,6 @@ async fn negotiate(
         return Err(Error::Protocol("resume offset exceeds file size".to_owned()));
     }
 
-    let route = wait_for_route(connection, rule, DIRECT_PATH_WAIT).await?;
     let bytes: u64 = manifest.entries.iter().map(|entry| entry.size).sum();
     let resumed: u64 = reply.offsets.iter().sum();
     let files = manifest.entries.iter().filter(|entry| !entry.is_dir).count();
@@ -149,7 +128,7 @@ async fn negotiate(
         peer_name: hello.name.clone(),
         label: transfer_label(&manifest.entries),
         direction: Direction::Sending,
-        route,
+        route: current_route(connection),
         files,
         bytes,
     });

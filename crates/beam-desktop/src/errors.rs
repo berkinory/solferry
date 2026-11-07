@@ -25,12 +25,9 @@ pub fn explain(error: &Error) -> Explanation {
             "That relay address isn't valid",
             "Use a full address like https://relay.example.com.",
         ),
-        Error::Unreachable(_) => {
-            say("Device can't be reached", "Make sure beam is open on the other device.")
-        }
-        Error::NoDirectPath => say(
-            "These networks block direct connections",
-            "Use Tailscale, add your own relay, or allow public relays in Settings.",
+        Error::Unreachable(_) => say(
+            "Device can't be reached",
+            "Open beam there. On another network, use Tailscale or add your own relay.",
         ),
         Error::NotPaired => {
             say("This device only accepts paired devices", "Pair them first from Add device.")

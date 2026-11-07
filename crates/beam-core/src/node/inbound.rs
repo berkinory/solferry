@@ -13,14 +13,14 @@ use super::Shared;
 use crate::config::Visibility;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::{Direction, Event, TransferId};
-use crate::route::{current_route, is_local};
+use crate::route::{current_route, shares_network};
 use crate::transfer::paths::crosses_symlink;
 use crate::transfer::receiver::{self, Plan};
 use crate::transfer::{
     Meter, Staging, exchange_hello, remote_failure, transfer_label, validate_offer,
     within_handshake,
 };
-use crate::trust::{Device, Relationship};
+use crate::trust::Device;
 
 const ANSWER_TIMEOUT: Duration = Duration::from_secs(300);
 const REFUSAL_WAIT: Duration = Duration::from_secs(5);
@@ -29,7 +29,9 @@ const REFUSAL_WAIT: Duration = Duration::from_secs(5);
 pub struct OfferSummary {
     pub peer: EndpointId,
     pub peer_name: String,
-    pub relationship: Option<Relationship>,
+    pub paired: bool,
+    /// The user chose to take files from this device without being asked.
+    pub auto_accept: bool,
     pub files: usize,
     pub bytes: u64,
     pub first_path: String,
@@ -70,6 +72,10 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         return Err(Error::Busy);
     };
     let peer = connection.remote_id();
+    if shared.trust().is_blocked(&peer) {
+        connection.close(close::NOT_PAIRED.into(), b"pair first");
+        return Err(Error::NotPaired);
+    }
     let device = shared.trust().get(&peer).cloned();
     if device.is_none() && !admits_stranger(shared, connection) {
         connection.close(close::NOT_PAIRED.into(), b"pair first");
@@ -148,7 +154,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
 fn admits_stranger(shared: &Shared, connection: &Connection) -> bool {
     shared.config.visibility == Visibility::Everyone
         && connection.paths().iter().any(|path| match path.remote_addr() {
-            TransportAddr::Ip(addr) => is_local(addr.ip()),
+            TransportAddr::Ip(addr) => shares_network(addr.ip()),
             _ => false,
         })
 }
@@ -162,7 +168,8 @@ fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offe
     OfferSummary {
         peer,
         peer_name: device.map_or(name, |device| device.name.as_str()).to_owned(),
-        relationship: device.map(|device| device.relationship),
+        paired: device.is_some(),
+        auto_accept: device.is_some_and(|device| device.auto_accept),
         files: offer.entries.iter().filter(|entry| !entry.is_dir).count(),
         bytes: offer.entries.iter().map(|entry| entry.size).sum(),
         first_path: offer.entries.first().map(|entry| entry.path.clone()).unwrap_or_default(),

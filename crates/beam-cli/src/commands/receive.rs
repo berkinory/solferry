@@ -1,7 +1,7 @@
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
-use beam_core::{Direction, Event, IncomingOffer, Relationship, Result};
+use beam_core::{Direction, Event, IncomingOffer, Node, Result};
 use indicatif::HumanBytes;
 
 use super::send::route_name;
@@ -24,7 +24,7 @@ pub async fn run(
         tokio::select! {
             offer = offers.recv() => {
                 let Some(offer) = offer else { break };
-                handle_offer(offer, destination.clone(), yes).await;
+                handle_offer(&node, offer, destination.clone(), yes).await;
             }
             event = events.recv() => {
                 let Ok(event) = event else { continue };
@@ -67,31 +67,49 @@ fn report(event: &Event) {
     }
 }
 
-async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
+async fn handle_offer(node: &Node, offer: IncomingOffer, destination: PathBuf, yes: bool) {
     let summary = &offer.summary;
-    let own_device = summary.relationship == Some(Relationship::Own);
-    let trust = if summary.relationship.is_some() { "paired" } else { "NOT PAIRED" };
+    let trust = if summary.paired { "paired" } else { "NOT PAIRED" };
     let prompt = format!(
-        "{} ({trust}) wants to send {}, {}, starting with {}. Accept? [y/N] ",
+        "{} ({trust}) wants to send {}, {}, starting with {}. Accept? [y/N/block] ",
         summary.peer_name,
         file_count(summary.files),
         HumanBytes(summary.bytes),
         summary.first_path,
     );
-    let accepted = yes
-        || own_device
-        || tokio::task::spawn_blocking(move || ask(&prompt)).await.unwrap_or(false);
-    if accepted {
+    if yes || summary.auto_accept {
         offer.accept(destination);
-    } else {
-        offer.decline();
+        return;
+    }
+    let peer = summary.peer;
+    match tokio::task::spawn_blocking(move || ask(&prompt)).await {
+        Ok(Answer::Accept) => offer.accept(destination),
+        Ok(Answer::Block) => {
+            offer.decline();
+            if let Err(error) = node.block(peer) {
+                eprintln!("{}", crate::explain::render(&error));
+            }
+        }
+        _ => offer.decline(),
     }
 }
 
-fn ask(prompt: &str) -> bool {
+enum Answer {
+    Accept,
+    Decline,
+    Block,
+}
+
+fn ask(prompt: &str) -> Answer {
     print!("{prompt}");
     let _ = std::io::stdout().flush();
     let mut answer = String::new();
-    std::io::stdin().lock().read_line(&mut answer).is_ok()
-        && matches!(answer.trim().to_lowercase().as_str(), "y" | "yes")
+    if std::io::stdin().lock().read_line(&mut answer).is_err() {
+        return Answer::Decline;
+    }
+    match answer.trim().to_lowercase().as_str() {
+        "y" | "yes" => Answer::Accept,
+        "b" | "block" => Answer::Block,
+        _ => Answer::Decline,
+    }
 }

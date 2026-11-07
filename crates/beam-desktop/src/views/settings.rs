@@ -1,4 +1,4 @@
-use beam_core::{Config, RelayPolicy, Visibility};
+use beam_core::{Config, Visibility};
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
@@ -7,16 +7,12 @@ use gpui_kit::{
     Window, div,
 };
 
+use iroh::EndpointId;
+
 use super::main_view::{MainView, Page};
 use super::ui;
 use crate::service::Command;
 
-const POLICIES: [(RelayPolicy, &str, &str); 4] = [
-    (RelayPolicy::HandshakeOnly, "Direct only", "Servers only introduce devices."),
-    (RelayPolicy::OwnRelays, "Own relays", "Files may use relays you added."),
-    (RelayPolicy::Always, "Any relay", "Public relays can see metadata."),
-    (RelayPolicy::Off, "Offline", "No servers. Local network and overlays only."),
-];
 const VISIBILITY: [(Visibility, &str); 3] = [
     (Visibility::Everyone, "Everyone nearby"),
     (Visibility::KnownDevices, "Paired devices"),
@@ -40,15 +36,16 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let Some(config) = view.state.read(cx).config.clone() else {
         return ui::muted("Starting...", cx);
     };
+    let blocked = view.state.read(cx).blocked.clone();
     div()
         .flex()
         .flex_col()
         .gap_3()
         .child(name_section(view, cx))
         .child(folder_section(&config, cx))
-        .child(policy_section(&config, cx))
         .child(relay_section(view, &config, cx))
         .child(visibility_section(&config, cx))
+        .children(blocked_section(&blocked, cx))
         .into_any_element()
 }
 
@@ -100,30 +97,11 @@ fn choose_folder(cx: &mut Context<MainView>) {
     .detach();
 }
 
-fn policy_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    let policies: Vec<_> = POLICIES
-        .iter()
-        .map(|&(policy, title, detail)| {
-            let button = Button::new(SharedString::from(title)).small().label(title);
-            let button =
-                if config.relay_policy == policy { button.primary() } else { button.ghost() };
-            div()
-                .flex()
-                .items_center()
-                .gap_2()
-                .child(button.on_click(cx.listener(move |view, _, _, cx| {
-                    change(view, cx, |config| config.relay_policy = policy);
-                })))
-                .child(ui::muted(detail, cx))
-        })
-        .collect();
-    ui::card(cx).child(ui::section_title("Connections", cx)).children(policies).into_any_element()
-}
-
 fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     let relays: Vec<_> = config.relays.iter().map(|url| relay_row(url, cx)).collect();
     ui::card(cx)
         .child(ui::section_title("Your relays", cx))
+        .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
         .children(relays)
         .child(Input::new(&view.relay_input))
         .child(
@@ -163,9 +141,6 @@ fn add_relay(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
     change(view, cx, |config| {
         config.relays.retain(|existing| *existing != url);
         config.relays.push(url);
-        if config.relay_policy == RelayPolicy::HandshakeOnly {
-            config.relay_policy = RelayPolicy::OwnRelays;
-        }
     });
     view.relay_input.update(cx, |input, cx| input.set_value("", window, cx));
 }
@@ -184,5 +159,31 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
     ui::card(cx)
         .child(ui::section_title("Who can see this device", cx))
         .child(div().flex().gap_2().children(options))
+        .into_any_element()
+}
+
+fn blocked_section(blocked: &[EndpointId], cx: &mut Context<MainView>) -> Option<AnyElement> {
+    if blocked.is_empty() {
+        return None;
+    }
+    let rows: Vec<_> = blocked.iter().map(|&id| blocked_row(id, cx)).collect();
+    Some(ui::card(cx).child(ui::section_title("Blocked", cx)).children(rows).into_any_element())
+}
+
+fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
+    div()
+        .flex()
+        .items_center()
+        .justify_between()
+        .child(ui::muted(id.fmt_short().to_string(), cx))
+        .child(
+            Button::new(SharedString::from(format!("unblock-{id}")))
+                .ghost()
+                .xsmall()
+                .label("Unblock")
+                .on_click(cx.listener(move |_, _, _, cx| {
+                    MainView::command(Command::Unblock(id), cx);
+                })),
+        )
         .into_any_element()
 }

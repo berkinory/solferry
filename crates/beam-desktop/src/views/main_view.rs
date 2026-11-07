@@ -172,6 +172,14 @@ impl MainView {
         Self::command(Command::Answer { offer: key, accept }, cx);
     }
 
+    pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.offers.retain(|offer| offer.key != key);
+            cx.notify();
+        });
+        Self::command(Command::BlockOffer(key), cx);
+    }
+
     fn header(&self, cx: &mut Context<Self>) -> AnyElement {
         let name = self.state.read(cx).config.as_ref().map(|config| config.name.clone());
         TitleBar::new()
