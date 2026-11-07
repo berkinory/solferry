@@ -1,0 +1,66 @@
+{
+  "name": "Solferry",
+  "author": "Solferry",
+  "themes": [
+    {
+      "name": "Solferry Light",
+      "mode": "light",
+      "colors": {
+        "background": "#EDF2F3",
+        "foreground": "#10242C",
+        "border": "#CBD7DB",
+        "input.border": "#CBD7DB",
+        "ring": "#F5A300",
+        "caret": "#10242C",
+        "link": "#0F5C6E",
+        "muted.background": "#E2EAEC",
+        "muted.foreground": "#4A5F69",
+        "accent.background": "#E2EAEC",
+        "accent.foreground": "#10242C",
+        "secondary.background": "#FFFFFF",
+        "secondary.foreground": "#10242C",
+        "secondary.hover.background": "#E2EAEC",
+        "secondary.active.background": "#E2EAEC",
+        "primary.background": "#F5A300",
+        "primary.foreground": "#1A1400",
+        "primary.hover.background": "#F5A300E6",
+        "primary.active.background": "#F5A300CC",
+        "danger.background": "#BF2A35",
+        "success.background": "#14724D",
+        "warning.background": "#8F5400",
+        "title_bar.background": "#EDF2F3",
+        "title_bar.border": "#CBD7DB"
+      }
+    },
+    {
+      "name": "Solferry Dark",
+      "mode": "dark",
+      "colors": {
+        "background": "#0C171D",
+        "foreground": "#E8F0F2",
+        "border": "#2A4049",
+        "input.border": "#2A4049",
+        "ring": "#FFB81F",
+        "caret": "#E8F0F2",
+        "link": "#6CC3D5",
+        "muted.background": "#1C303A",
+        "muted.foreground": "#9AB0B9",
+        "accent.background": "#1C303A",
+        "accent.foreground": "#E8F0F2",
+        "secondary.background": "#13222A",
+        "secondary.foreground": "#E8F0F2",
+        "secondary.hover.background": "#1C303A",
+        "secondary.active.background": "#1C303A",
+        "primary.background": "#FFB81F",
+        "primary.foreground": "#1A1400",
+        "primary.hover.background": "#FFB81FE6",
+        "primary.active.background": "#FFB81FCC",
+        "danger.background": "#F4737C",
+        "success.background": "#4AD29A",
+        "warning.background": "#F2B04A",
+        "title_bar.background": "#0C171D",
+        "title_bar.border": "#2A4049"
+      }
+    }
+  ]
+}

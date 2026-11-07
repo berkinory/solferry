@@ -138,8 +138,7 @@ pub(super) async fn scan(shared: &Shared) -> Vec<NearbyDevice> {
             let Ok((length, from)) = socket.recv_from(&mut buffer).await else { return };
             let Some((id, addr, name)) = parse_answer(&buffer[..length], from) else { continue };
             if id != shared.endpoint.id() {
-                let known = shared.trust().get(&id).is_some();
-                found.push(NearbyDevice { addr, name: Some(name), known, overlay: true });
+                found.push(NearbyDevice { addr, name: Some(name), known: false, overlay: true });
             }
         }
     };

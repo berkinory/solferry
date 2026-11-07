@@ -6,6 +6,9 @@ mod qr;
 mod service;
 mod shell;
 mod state;
+mod theme;
+#[allow(dead_code)]
+mod tokens;
 mod tray;
 mod views;
 
@@ -28,6 +31,7 @@ fn main() {
         .with_assets(gpui_kit::assets::Assets)
         .run(move |cx| {
             gpui_kit::init(cx);
+            theme::install(cx);
             shell::start(handle, updates, tray, cx);
         });
 }
