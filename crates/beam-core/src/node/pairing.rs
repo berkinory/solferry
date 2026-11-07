@@ -174,9 +174,9 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
         paired_at_ms: now_ms(),
     };
     shared.trust().upsert(device.clone())?;
-    let _ = shared.events.send(Event::Paired { device });
     let reply = PairReply { accepted: true, name: shared.config.name.clone() };
     write_frame(&mut send, &reply).await?;
     let _ = tokio::time::timeout(Duration::from_secs(5), connection.closed()).await;
+    let _ = shared.events.send(Event::Paired { device });
     Ok(())
 }
