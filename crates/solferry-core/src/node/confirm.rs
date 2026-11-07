@@ -33,6 +33,12 @@ pub struct PairingRequest {
 }
 
 impl PairingRequest {
+    /// True once the answer can no longer matter: the peer left or the wait ran out.
+    #[must_use]
+    pub fn is_closed(&self) -> bool {
+        self.reply.is_closed()
+    }
+
     /// `auto_accept` decides whether this device takes files from the peer without asking.
     pub fn accept(self, auto_accept: bool) {
         let _ = self.reply.send(Some(auto_accept));
@@ -158,8 +164,11 @@ pub(super) async fn answer(
     if listener.send(prompt).await.is_err() {
         return refuse(connection, &mut send).await;
     }
-    let answer = tokio::time::timeout(ANSWER_WAIT, decision).await;
-    let Ok(Ok(Some(auto_accept))) = answer else {
+    let answer = tokio::select! {
+        answer = tokio::time::timeout(ANSWER_WAIT, decision) => answer.ok().and_then(Result::ok),
+        _ = connection.closed() => None,
+    };
+    let Some(Some(auto_accept)) = answer else {
         return refuse(connection, &mut send).await;
     };
     write_frame(&mut send, &own_reply(shared)).await?;
