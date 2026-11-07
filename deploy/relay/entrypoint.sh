@@ -2,7 +2,6 @@
 set -eu
 
 : "${RELAY_HOSTNAME:?set RELAY_HOSTNAME to the public DNS name of this server}"
-: "${RELAY_EMAIL:?set RELAY_EMAIL for Let's Encrypt notices}"
 
 TOKEN_FILE=/data/relay-token
 if [ ! -s "$TOKEN_FILE" ]; then
@@ -19,7 +18,7 @@ access.shared_token = ["$TOKEN"]
 [tls]
 https_bind_addr = "[::]:8443"
 hostname = "$RELAY_HOSTNAME"
-contact = "$RELAY_EMAIL"
+contact = "${RELAY_EMAIL:-relay@$RELAY_HOSTNAME}"
 cert_mode = "LetsEncrypt"
 cert_dir = "/data"
 
