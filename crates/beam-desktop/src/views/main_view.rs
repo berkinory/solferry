@@ -9,6 +9,7 @@ use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FontWeight, InteractiveElement, IntoElement, ParentElement,
     PathPromptOptions, Render, StatefulInteractiveElement, Styled, Window, div, px,
 };
+use beam_core::TransferId;
 use iroh::EndpointId;
 
 use super::{devices, offers, pairing, settings, transfers, ui};
@@ -134,6 +135,19 @@ impl MainView {
             }
             cx.notify();
         });
+    }
+
+    pub fn clear(&mut self, id: TransferId, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.transfers.retain(|transfer| transfer.id != id);
+            cx.notify();
+        });
+    }
+
+    pub fn show_downloads(&self, cx: &mut Context<Self>) {
+        if let Some(config) = &self.state.read(cx).config {
+            cx.reveal_path(&config.download_dir);
+        }
     }
 
     pub fn answer(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {

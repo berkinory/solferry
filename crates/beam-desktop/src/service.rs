@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use beam_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    Relationship, TransferId,
+    Relationship, RelayPolicy, TransferId,
 };
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
@@ -13,6 +13,8 @@ use iroh::{EndpointAddr, EndpointId};
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
+
+const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
 pub struct Target {
     pub addr: EndpointAddr,
@@ -116,10 +118,15 @@ async fn start(
 
     let waiting = pending.clone();
     let outgoing = updates.clone();
+    let downloads = node.config().download_dir.clone();
     tasks.push(
         tokio::spawn(async move {
             let mut next = 0;
             while let Some(offer) = offers.recv().await {
+                if offer.summary.relationship == Some(Relationship::Own) {
+                    offer.accept(downloads.clone());
+                    continue;
+                }
                 next += 1;
                 let summary = offer.summary.clone();
                 waiting.lock().await.insert(next, offer);
@@ -207,7 +214,9 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
             }
             Command::Cancel(id) => node.cancel(id),
             Command::Invite(relationship) => {
-                node.online_within(Duration::from_secs(5)).await;
+                if node.config().relay_policy != RelayPolicy::Off {
+                    node.online_within(ONLINE_WAIT).await;
+                }
                 let _ = updates.send(Update::Invite(node.invite(relationship).code().to_owned())).await;
             }
             Command::Join(code) => {

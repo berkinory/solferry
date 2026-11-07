@@ -59,7 +59,17 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
         Phase::Failed(error) => explain(error).title.to_owned(),
         _ => transfer.title.clone(),
     };
-    let (track, fill) = (cx.theme().border, cx.theme().primary);
+    let (track, fill) = (cx.theme().muted_foreground.opacity(0.2), cx.theme().primary);
+    let finished = !running;
+    let folder = (transfer.direction == Direction::Receiving
+        && matches!(transfer.phase, Phase::Done))
+    .then(|| {
+        Button::new(SharedString::from(format!("show-{id}")))
+            .ghost()
+            .xsmall()
+            .label("Show folder")
+            .on_click(cx.listener(|view, _, _, cx| view.show_downloads(cx)))
+    });
     ui::card(cx)
         .child(
             div()
@@ -81,6 +91,15 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
                         .on_click(cx.listener(move |view, _, _, cx| {
                             view.command(Command::Cancel(id), cx);
                         }))
+                }))
+                .children(finished.then(|| {
+                    div().flex().gap_1().children(folder).child(
+                        Button::new(SharedString::from(format!("clear-{id}")))
+                            .ghost()
+                            .xsmall()
+                            .label("Clear")
+                            .on_click(cx.listener(move |view, _, _, cx| view.clear(id, cx))),
+                    )
                 })),
         )
         .children(running.then(|| {

@@ -63,12 +63,18 @@ fn handle_update(update: Update, cx: &mut App) {
 }
 
 fn notify(update: &Update, cx: &mut App) {
+    let state = cx.global::<Shell>().state.read(cx);
     let (title, body) = match update {
         Update::Offer { summary, .. } => {
             ("Incoming files".to_owned(), format!("{} wants to send you files", summary.peer_name))
         }
-        Update::Transfer(Event::Started { peer_name, direction: Direction::Receiving, .. }) => {
-            ("Receiving files".to_owned(), format!("From {peer_name}"))
+        Update::Transfer(Event::Completed { id }) => {
+            let received = state
+                .transfers
+                .iter()
+                .find(|transfer| transfer.id == *id && transfer.direction == Direction::Receiving);
+            let Some(transfer) = received else { return };
+            ("Files received".to_owned(), format!("{} from {}", transfer.title, transfer.peer))
         }
         _ => return,
     };

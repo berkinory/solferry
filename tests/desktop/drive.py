@@ -58,6 +58,16 @@ def click(x, y):
     time.sleep(.2)
     call(N, path, I, "Stop")
 
+def type_text(text):
+    N, I = "org.gnome.Mutter.RemoteDesktop", "org.gnome.Mutter.RemoteDesktop.Session"
+    path = session()
+    for char in text:
+        for down in (True, False):
+            call(N, path, I, "NotifyKeyboardKeysym", GLib.Variant("(ub)", (ord(char), down)))
+        time.sleep(.004)
+    time.sleep(.2)
+    call(N, path, I, "Stop")
+
 def hide_overview():
     call("org.gnome.Shell", "/org/gnome/Shell", "org.gnome.Shell", "Eval", GLib.Variant("(s)", ("Main.overview.hide()",)))
 
@@ -66,6 +76,7 @@ if __name__ == "__main__":
     if cmd == "windows": print(json.dumps(windows(), ensure_ascii=False))
     elif cmd == "shot": print(shot(sys.argv[2]))
     elif cmd == "click": click(int(sys.argv[2]), int(sys.argv[3]))
+    elif cmd == "type": type_text(sys.argv[2])
     elif cmd == "ready": hide_overview()
     elif cmd == "drag":
         js = "Main.overview.hide(); global.get_window_actors().forEach(a=>{const w=a.meta_window; const src=(w.get_title()||'').includes('dragsrc'); w.move_frame(true, src?10:700, src?50:100);}); 'ok'"
@@ -73,4 +84,6 @@ if __name__ == "__main__":
         ws = windows(); s = next(w for w in ws if "dragsrc" in (w["t"] or ""))
         d = next(w for w in ws if w is not s)
         print("src", s, "dst", d)
-        drag((s["x"] + s["w"] // 2, s["y"] + s["h"] // 2), (d["x"] + d["w"] // 2, d["y"] + d["h"] // 2))
+        offset = sys.argv[2:4]
+        target = (d["x"] + int(offset[0]), d["y"] + int(offset[1])) if offset else (d["x"] + d["w"] // 2, d["y"] + d["h"] // 2)
+        drag((s["x"] + s["w"] // 2, s["y"] + s["h"] // 2), target)
