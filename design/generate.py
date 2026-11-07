@@ -22,6 +22,22 @@ def contrast(first, second):
     return (high + 0.05) / (low + 0.05)
 
 
+def mix(color, toward, amount):
+    first = [int(color[i : i + 2], 16) for i in (1, 3, 5)]
+    second = [int(toward[i : i + 2], 16) for i in (1, 3, 5)]
+    channels = [round(a * amount + b * (1 - amount)) for a, b in zip(first, second)]
+    return "#" + "".join(f"{channel:02X}" for channel in channels)
+
+
+def derive(tokens):
+    """Adds the primary button's fill, hover and border, mixed from primary toward its deep end."""
+    for mode, colors in tokens["color"].items():
+        for name, amount in tokens["button"][mode].items():
+            key = "primary" + name.capitalize()
+            colors[key] = mix(colors["primary"], colors["primaryDeep"], amount)
+    return tokens
+
+
 def check(tokens):
     failures = []
     for mode, colors in tokens["color"].items():
@@ -109,7 +125,7 @@ def desktop_colors(c):
         "foreground": c["ink"],
         "border": c["line"],
         "input.border": c["line"],
-        "ring": c["sun"],
+        "ring": c["primary"],
         "caret": c["ink"],
         "link": c["link"],
         "link.hover": c["link"],
@@ -122,12 +138,12 @@ def desktop_colors(c):
         "secondary.foreground": c["ink"],
         "secondary.hover.background": c["raised"],
         "secondary.active.background": c["line"],
-        "primary.background": c["sun"],
-        "primary.foreground": c["onSun"],
-        "primary.hover.background": c["sunDeep"],
-        "primary.active.background": c["sunDeep"],
-        "danger.background": c["danger"],
-        "danger.foreground": c["page"],
+        "primary.background": c["primary"],
+        "primary.foreground": c["onPrimary"],
+        "primary.hover.background": c["primaryHover"],
+        "primary.active.background": c["primaryFill"],
+        "danger.background": c["dangerFill"],
+        "danger.foreground": c["onPrimary"],
         "success.background": c["success"],
         "warning.background": c["warning"],
         "popover.background": c["page"],
@@ -137,7 +153,7 @@ def desktop_colors(c):
         "scrollbar.background": "#00000000",
         "scrollbar.thumb.background": c["line"],
         "scrollbar.thumb.hover.background": c["inkMuted"],
-        "selection.background": c["sun"] + "55",
+        "selection.background": c["primary"] + "55",
         "title_bar.background": c["page"],
         "title_bar.border": c["page"],
         "window.border": c["line"],
@@ -164,7 +180,7 @@ def desktop_theme(tokens):
 
 
 def main():
-    tokens = json.loads((HERE / "tokens.json").read_text())
+    tokens = derive(json.loads((HERE / "tokens.json").read_text()))
     check(tokens)
     (ROOT / "crates/solferry-desktop/src/tokens.rs").write_text(rust(tokens))
     (ROOT / "crates/solferry-desktop/src/theme.json").write_text(desktop_theme(tokens))

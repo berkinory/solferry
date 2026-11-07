@@ -13,12 +13,14 @@ use gpui_kit::{
 use iroh::EndpointId;
 use solferry_core::TransferId;
 
+use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
 use super::{home, pairing, relays, settings};
 use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
 use crate::state::AppState;
+use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 const COPIED_FOR: Duration = Duration::from_millis(1500);
@@ -37,7 +39,7 @@ pub struct MainView {
     pub pending: Vec<PathBuf>,
     pub selected: HashSet<EndpointId>,
     pub expanded: Option<EndpointId>,
-    pub forgetting: Option<EndpointId>,
+    pub dialog: Option<Dialog>,
     pub copied: bool,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
@@ -93,7 +95,7 @@ impl MainView {
             pending: Vec::new(),
             selected: HashSet::new(),
             expanded: None,
-            forgetting: None,
+            dialog: None,
             copied: false,
             targets: HashMap::new(),
             code_input,
@@ -117,7 +119,9 @@ impl MainView {
     }
 
     fn back(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.page != Page::Home {
+        if self.dialog.take().is_some() {
+            cx.notify();
+        } else if self.page != Page::Home {
             self.open_page(Page::Home, window, cx);
         } else if !self.pending.is_empty() {
             self.clear_pending(cx);
@@ -282,6 +286,7 @@ impl Focusable for MainView {
 
 impl Render for MainView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
         let body = match self.page {
             Page::Home => home::render(self, cx),
             Page::Pair => pairing::render(self, cx),
@@ -292,6 +297,7 @@ impl Render for MainView {
             .key_context(keys::CONTEXT)
             .track_focus(&self.focus)
             .group("window")
+            .relative()
             .flex()
             .flex_col()
             .size_full()
@@ -324,6 +330,7 @@ impl Render for MainView {
                         .overflow_y_scrollbar(),
                 ),
             )
+            .children(overlay)
     }
 }
 
@@ -332,6 +339,6 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .flex()
         .items_center()
         .gap(px(6.))
-        .child(svg().path(MARK).size(px(16.)).text_color(cx.theme().primary))
+        .child(svg().path(MARK).size(px(16.)).text_color(color(palette(cx).brand)))
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

@@ -1,17 +1,17 @@
-use gpui_kit::component::Sizable;
-use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
 use gpui_kit::{
     AnyElement, Context, Hsla, IntoElement, ParentElement, SharedString, Styled, Window, div, px,
 };
 use solferry_core::{Config, RelayHealth, RelayLink};
 
+use super::button::Button;
 use super::main_view::MainView;
 use super::settings::change;
 use super::ui;
+use crate::assets::Glyph;
 use crate::errors::explain;
 use crate::theme::{color, palette};
-use crate::tokens::{SPACE_SM, SPACE_XS};
+use crate::tokens::SPACE_XS;
 
 const GUIDE: &str = "https://github.com/berkinory/solferry/blob/main/docs/relay.md";
 
@@ -22,13 +22,14 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
     let failure = failure.map(|explanation| ui::muted(explanation.next, cx));
     let guide = Button::new("relay-guide")
         .ghost()
-        .xsmall()
+        .xs()
+        .icon(Glyph::External)
         .label("Set one up")
         .on_click(cx.listener(|_, _, _, cx| cx.open_url(GUIDE)))
         .into_any_element();
-    ui::card("Your relays", Some(guide), cx)
+    ui::card(Glyph::Relay, "Your relays", Some(guide), cx)
         .child(
-            ui::notice_well(cx)
+            ui::padded_well(cx)
                 .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
                 .children(rows)
                 .children(failure)
@@ -39,7 +40,8 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
                         .child(div().flex_1().min_w_0().child(Input::new(&view.relay_input)))
                         .child(
                             Button::new("add-relay")
-                                .outline()
+                                .sm()
+                                .icon(Glyph::Add)
                                 .label("Add")
                                 .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
                         ),
@@ -66,7 +68,8 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
     div()
         .flex()
         .items_center()
-        .gap(px(SPACE_SM))
+        .gap(px(10.))
+        .child(ui::tile(Glyph::Relay, cx))
         .child(
             div()
                 .flex()
@@ -79,8 +82,9 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
         .child(
             Button::new(SharedString::from(format!("remove-{url}")))
                 .ghost()
-                .xsmall()
-                .label("Remove")
+                .xs()
+                .icon(Glyph::Delete)
+                .tooltip("Remove")
                 .on_click(cx.listener(move |view, _, _, cx| {
                     let removed = removed.clone();
                     change(view, cx, |config| config.relays.retain(|url| *url != removed));

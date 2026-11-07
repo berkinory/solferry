@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ASSETS = Path(__file__).parent.parent / "crates/solferry-desktop/assets"
-SUN = "#FFB81F"
+BRAND = "#8580FF"
 GROUND = "#18181B"
 SCALE = 4
 SIZE = 1024
@@ -23,10 +23,10 @@ def icon():
     unit = (SIZE - 2 * MARGIN - 200) * SCALE / 64
     origin = (MARGIN + 100) * SCALE
     at = lambda value: origin + value * unit
-    draw.pieslice((at(12), at(14), at(52), at(54)), 180, 360, fill=SUN)
+    draw.pieslice((at(12), at(14), at(52), at(54)), 180, 360, fill=BRAND)
     for left, top, width in ((8, 40, 48), (16, 48, 32), (24, 56, 16)):
         bar = (at(left), at(top), at(left + width), at(top + 4))
-        draw.rounded_rectangle(bar, 2 * unit, fill=SUN)
+        draw.rounded_rectangle(bar, 2 * unit, fill=BRAND)
     return image.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
 
 

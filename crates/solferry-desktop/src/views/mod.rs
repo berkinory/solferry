@@ -1,4 +1,6 @@
+mod button;
 mod devices;
+mod dialog;
 mod home;
 pub mod keys;
 mod main_view;

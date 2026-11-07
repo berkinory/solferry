@@ -1,6 +1,4 @@
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::Sizable;
-use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
 use gpui_kit::{
     AnyElement, Context, InteractiveElement, IntoElement, ParentElement, PathPromptOptions,
@@ -9,8 +7,10 @@ use gpui_kit::{
 use iroh::EndpointId;
 use solferry_core::{Config, Visibility};
 
+use super::button::Button;
 use super::main_view::MainView;
 use super::{relays, ui};
+use crate::assets::Glyph;
 use crate::service::Command;
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS};
 
@@ -73,9 +73,9 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn device_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    ui::card("This device", None, cx)
+    ui::card(Glyph::Computer, "This device", None, cx)
         .child(
-            ui::notice_well(cx).child(Input::new(&view.name_input)).child(
+            ui::padded_well(cx).child(Input::new(&view.name_input)).child(
                 div()
                     .flex()
                     .items_center()
@@ -91,8 +91,8 @@ fn device_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) 
                     )
                     .child(
                         Button::new("choose-folder")
-                            .outline()
-                            .small()
+                            .xs()
+                            .icon(Glyph::Folder)
                             .label("Change")
                             .on_click(cx.listener(|_, _, _, cx| choose_folder(cx))),
                     ),
@@ -149,9 +149,9 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
             }
         })
         .collect();
-    ui::card("Who can see this device", None, cx)
+    ui::card(Glyph::View, "Who can see this device", None, cx)
         .child(
-            ui::notice_well(cx)
+            ui::padded_well(cx)
                 .child(
                     div()
                         .flex()
@@ -172,7 +172,7 @@ fn blocked_section(blocked: &[EndpointId], cx: &mut Context<MainView>) -> Option
     }
     let rows: Vec<_> = blocked.iter().map(|&id| blocked_row(id, cx)).collect();
     Some(
-        ui::card("Blocked", Some(ui::count(blocked.len(), cx)), cx)
+        ui::card(Glyph::Blocked, "Blocked", Some(ui::count(blocked.len(), cx)), cx)
             .child(ui::well(cx).children(rows))
             .into_any_element(),
     )
@@ -182,14 +182,13 @@ fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
     div()
         .flex()
         .items_center()
-        .justify_between()
-        .px(px(SPACE_SM))
-        .h(px(32.))
-        .child(ui::mono(id.fmt_short().to_string(), cx))
+        .gap(px(10.))
+        .p(px(7.))
+        .child(ui::tile(Glyph::Blocked, cx))
+        .child(ui::mono(id.fmt_short().to_string(), cx).flex_1())
         .child(
             Button::new(SharedString::from(format!("unblock-{id}")))
-                .ghost()
-                .xsmall()
+                .xs()
                 .label("Unblock")
                 .on_click(cx.listener(move |_, _, _, cx| {
                     MainView::command(Command::Unblock(id), cx);
