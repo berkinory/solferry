@@ -29,17 +29,10 @@ impl Meter {
             loop {
                 interval.tick().await;
                 let transferred = counter.load(Ordering::Relaxed);
-                let _ = events.send(Event::Progress {
-                    id,
-                    transferred,
-                    total,
-                });
+                let _ = events.send(Event::Progress { id, transferred, total });
             }
         });
-        Self {
-            transferred,
-            ticker: ticker.abort_handle(),
-        }
+        Self { transferred, ticker: ticker.abort_handle() }
     }
 
     pub(crate) fn add(&self, bytes: u64) {

@@ -12,7 +12,7 @@ use beam_proto::{ALPN_PAIR, ALPN_TRANSFER};
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::{Semaphore, broadcast, mpsc};
 
 pub use inbound::{IncomingOffer, OfferSummary};
 pub use nearby::NearbyDevice;
@@ -20,13 +20,14 @@ pub use outbound::SendReport;
 pub use pairing::Invite;
 
 use crate::config::Config;
-use crate::error::{Error, Result, StorageContext};
+use crate::error::{Error, Result};
 use crate::event::Event;
 use crate::trust::{Device, TrustStore};
 use crate::{identity, net};
 
 const EVENT_BUFFER: usize = 1024;
 const OFFER_BUFFER: usize = 16;
+const MAX_INBOUND: usize = 8;
 
 #[derive(Clone, Debug)]
 pub struct NodeOptions {
@@ -49,29 +50,25 @@ pub(crate) struct Shared {
     pub(crate) offers: mpsc::Sender<IncomingOffer>,
     pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
+    pub(crate) inbound_slots: Arc<Semaphore>,
 }
 
 impl fmt::Debug for Shared {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("Shared")
-            .field("id", &self.endpoint.id())
-            .finish_non_exhaustive()
+        formatter.debug_struct("Shared").field("id", &self.endpoint.id()).finish_non_exhaustive()
     }
 }
 
 impl Shared {
     pub(crate) fn trust(&self) -> MutexGuard<'_, TrustStore> {
-        self.trust
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
+        self.trust.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 }
 
 impl Node {
     pub async fn start(options: NodeOptions) -> Result<(Self, mpsc::Receiver<IncomingOffer>)> {
         let NodeOptions { data_dir, isolated } = options;
-        std::fs::create_dir_all(&data_dir).at(&data_dir)?;
+        identity::prepare_private_dir(&data_dir)?;
         let config = Config::load(&data_dir)?;
         let secret = identity::load_or_create(&data_dir)?;
         let network = net::bind(secret, &config, isolated).await?;
@@ -84,6 +81,7 @@ impl Node {
             offers,
             invites: Mutex::new(HashMap::new()),
             mdns: network.mdns,
+            inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
         });
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
@@ -134,9 +132,6 @@ impl Node {
     }
 
     pub async fn shutdown(self) -> Result<()> {
-        self.router
-            .shutdown()
-            .await
-            .map_err(|error| Error::Protocol(error.to_string()))
+        self.router.shutdown().await.map_err(|error| Error::Protocol(error.to_string()))
     }
 }

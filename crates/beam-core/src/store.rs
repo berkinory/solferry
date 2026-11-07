@@ -1,4 +1,5 @@
-use std::fs;
+use std::fs::{self, File};
+use std::io::Write;
 use std::path::Path;
 
 use serde::Serialize;
@@ -14,18 +15,15 @@ pub(crate) fn read_json<T: DeserializeOwned>(path: &Path) -> Result<Option<T>> {
     };
     serde_json::from_slice(&bytes)
         .map(Some)
-        .map_err(|source| Error::CorruptData {
-            path: path.to_owned(),
-            source: source.into(),
-        })
+        .map_err(|source| Error::CorruptData { path: path.to_owned(), source: source.into() })
 }
 
 pub(crate) fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
-    let bytes = serde_json::to_vec_pretty(value).map_err(|source| Error::CorruptData {
-        path: path.to_owned(),
-        source: source.into(),
-    })?;
+    let bytes = serde_json::to_vec_pretty(value)
+        .map_err(|source| Error::CorruptData { path: path.to_owned(), source: source.into() })?;
     let tmp = path.with_extension("tmp");
-    fs::write(&tmp, bytes).at(&tmp)?;
+    let mut file = File::create(&tmp).at(&tmp)?;
+    file.write_all(&bytes).at(&tmp)?;
+    file.sync_all().at(&tmp)?;
     fs::rename(&tmp, path).at(path)
 }

@@ -49,11 +49,7 @@ pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> 
         .bind()
         .await
         .map_err(|error| Error::NetworkStart(error.to_string()))?;
-    let mdns = if isolated {
-        None
-    } else {
-        Some(start_mdns(&endpoint, config)?)
-    };
+    let mdns = if isolated { None } else { Some(start_mdns(&endpoint, config)?) };
     Ok(Network { endpoint, mdns })
 }
 
@@ -68,21 +64,15 @@ fn relay_mode(config: &Config) -> Result<RelayMode> {
     if config.relays.is_empty() {
         return Ok(RelayMode::Default);
     }
-    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(
-        &config.relays,
-    )?)))
+    Ok(RelayMode::Custom(RelayMap::from_iter(parse_relays(&config.relays)?)))
 }
 
 pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {
-    urls.iter()
-        .map(|url| url.parse().map_err(|_| Error::InvalidRelayUrl(url.clone())))
-        .collect()
+    urls.iter().map(|url| url.parse().map_err(|_| Error::InvalidRelayUrl(url.clone()))).collect()
 }
 
 fn transport_config() -> Result<QuicTransportConfig> {
-    let idle = IDLE_TIMEOUT
-        .try_into()
-        .map_err(|_| Error::NetworkStart("idle timeout".into()))?;
+    let idle = IDLE_TIMEOUT.try_into().map_err(|_| Error::NetworkStart("idle timeout".into()))?;
     Ok(QuicTransportConfig::builder()
         .congestion_controller_factory(Arc::new(Bbr3Config::default()))
         .stream_receive_window(STREAM_WINDOW.into())
@@ -103,9 +93,8 @@ fn start_mdns(endpoint: &Endpoint, config: &Config) -> Result<MdnsAddressLookup>
         .advertise(config.visibility != Visibility::Hidden)
         .build(endpoint.id())
         .map_err(|error| Error::NetworkStart(error.to_string()))?;
-    let services = endpoint
-        .address_lookup()
-        .map_err(|error| Error::NetworkStart(error.to_string()))?;
+    let services =
+        endpoint.address_lookup().map_err(|error| Error::NetworkStart(error.to_string()))?;
     services.add(mdns.clone());
     Ok(mdns)
 }

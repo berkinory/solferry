@@ -12,6 +12,7 @@ use rand::RngCore;
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
+use crate::transfer::paths::clean_label;
 use crate::trust::{Device, Relationship};
 
 const INVITE_PREFIX: &str = "beam1";
@@ -38,17 +39,12 @@ pub(crate) struct PendingInvite {
 }
 
 fn now_ms() -> u64 {
-    let elapsed = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default();
+    let elapsed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
     u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX)
 }
 
 fn secret_key(secret: &[u8]) -> Option<[u8; 32]> {
-    secret
-        .try_into()
-        .ok()
-        .map(|bytes: [u8; 32]| *blake3::hash(&bytes).as_bytes())
+    secret.try_into().ok().map(|bytes: [u8; 32]| *blake3::hash(&bytes).as_bytes())
 }
 
 impl Node {
@@ -57,15 +53,12 @@ impl Node {
         let mut secret = [0; 32];
         rand::rng().fill_bytes(&mut secret);
         let expires_at_ms = now_ms() + u64::try_from(INVITE_LIFETIME.as_millis()).unwrap_or(0);
-        let pending = PendingInvite {
-            relationship,
-            expires_at_ms,
-        };
-        self.shared
-            .invites
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .insert(*blake3::hash(&secret).as_bytes(), pending);
+        let pending = PendingInvite { relationship, expires_at_ms };
+        let mut invites =
+            self.shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        invites.retain(|_, invite| invite.expires_at_ms >= now_ms());
+        invites.insert(*blake3::hash(&secret).as_bytes(), pending);
+        drop(invites);
 
         let addr = self.addr();
         let ticket = Ticket {
@@ -80,10 +73,7 @@ impl Node {
             "{INVITE_PREFIX}{}",
             BASE32_NOPAD.encode(&ticket.encode_to_vec()).to_lowercase()
         );
-        Invite {
-            code,
-            expires_at_ms,
-        }
+        Invite { code, expires_at_ms }
     }
 
     /// Redeems an invite from another device and stores the resulting trust on both sides.
@@ -94,11 +84,8 @@ impl Node {
         }
         let _ = tokio::time::timeout(ONLINE_WAIT, self.online()).await;
         let relays = ticket.relay_urls.clone();
-        let relationship = if ticket.own_device {
-            Relationship::Own
-        } else {
-            Relationship::Contact
-        };
+        let relationship =
+            if ticket.own_device { Relationship::Own } else { Relationship::Contact };
         let addr = ticket_addr(&ticket)?;
         let id = addr.id;
         let connection = self
@@ -107,10 +94,7 @@ impl Node {
             .connect(addr, ALPN_PAIR)
             .await
             .map_err(|error| Error::Unreachable(error.to_string()))?;
-        let (mut send, mut recv) = connection
-            .open_bi()
-            .await
-            .map_err(|_| Error::ConnectionLost)?;
+        let (mut send, mut recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
         let request = PairRequest {
             secret: ticket.secret,
             name: self.config().name.clone(),
@@ -124,7 +108,7 @@ impl Node {
         }
         let device = Device {
             id,
-            name: reply.name,
+            name: clean_label(&reply.name),
             relationship,
             relays,
             paired_at_ms: now_ms(),
@@ -135,28 +119,18 @@ impl Node {
 }
 
 fn decode_ticket(code: &str) -> Result<Ticket> {
-    let body = code
-        .trim()
-        .strip_prefix(INVITE_PREFIX)
-        .ok_or(Error::InvalidTicket)?;
-    let bytes = BASE32_NOPAD
-        .decode(body.to_uppercase().as_bytes())
-        .map_err(|_| Error::InvalidTicket)?;
+    let body = code.trim().strip_prefix(INVITE_PREFIX).ok_or(Error::InvalidTicket)?;
+    let bytes =
+        BASE32_NOPAD.decode(body.to_uppercase().as_bytes()).map_err(|_| Error::InvalidTicket)?;
     Ticket::decode(bytes.as_slice()).map_err(|_| Error::InvalidTicket)
 }
 
 fn ticket_addr(ticket: &Ticket) -> Result<EndpointAddr> {
-    let id: [u8; 32] = ticket
-        .endpoint_id
-        .as_slice()
-        .try_into()
-        .map_err(|_| Error::InvalidTicket)?;
+    let id: [u8; 32] =
+        ticket.endpoint_id.as_slice().try_into().map_err(|_| Error::InvalidTicket)?;
     let id = EndpointId::from_bytes(&id).map_err(|_| Error::InvalidTicket)?;
-    let ips = ticket
-        .direct_addrs
-        .iter()
-        .filter_map(|addr| addr.parse().ok())
-        .map(TransportAddr::Ip);
+    let ips =
+        ticket.direct_addrs.iter().filter_map(|addr| addr.parse().ok()).map(TransportAddr::Ip);
     let relays = ticket
         .relay_urls
         .iter()
@@ -178,40 +152,23 @@ impl ProtocolHandler for PairHandler {
 }
 
 async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
-    let (mut send, mut recv) = connection
-        .accept_bi()
-        .await
-        .map_err(|_| Error::ConnectionLost)?;
+    let (mut send, mut recv) = connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
     let request: PairRequest = read_frame(&mut recv).await?;
     let pending = secret_key(&request.secret).and_then(|key| {
-        shared
-            .invites
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .remove(&key)
+        shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(&key)
     });
     let Some(pending) = pending.filter(|invite| invite.expires_at_ms >= now_ms()) else {
-        write_frame(
-            &mut send,
-            &PairReply {
-                accepted: false,
-                name: String::new(),
-            },
-        )
-        .await?;
+        write_frame(&mut send, &PairReply { accepted: false, name: String::new() }).await?;
         return Err(Error::PairingRefused);
     };
     shared.trust().upsert(Device {
         id: connection.remote_id(),
-        name: request.name,
+        name: clean_label(&request.name),
         relationship: pending.relationship,
         relays: request.relay_urls,
         paired_at_ms: now_ms(),
     })?;
-    let reply = PairReply {
-        accepted: true,
-        name: shared.config.name.clone(),
-    };
+    let reply = PairReply { accepted: true, name: shared.config.name.clone() };
     write_frame(&mut send, &reply).await?;
     let _ = tokio::time::timeout(Duration::from_secs(5), connection.closed()).await;
     Ok(())

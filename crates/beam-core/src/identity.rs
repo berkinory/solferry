@@ -8,6 +8,16 @@ use crate::error::{Result, StorageContext};
 
 const KEY_FILE: &str = "device.key";
 
+pub(crate) fn prepare_private_dir(path: &Path) -> Result<()> {
+    fs::create_dir_all(path).at(path)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(path, fs::Permissions::from_mode(0o700)).at(path)?;
+    }
+    Ok(())
+}
+
 pub(crate) fn load_or_create(data_dir: &Path) -> Result<SecretKey> {
     let path = data_dir.join(KEY_FILE);
     match fs::read(&path) {

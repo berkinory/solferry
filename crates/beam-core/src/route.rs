@@ -71,11 +71,7 @@ pub(crate) async fn wait_for_route(
         if relay_allowed && settled {
             return Ok(Route::Relay);
         }
-        let next_deadline = if settled || relay_allowed {
-            DIRECT_HEAD_START
-        } else {
-            limit
-        };
+        let next_deadline = if settled || relay_allowed { DIRECT_HEAD_START } else { limit };
         let wait = next_deadline.saturating_sub(started.elapsed());
         match tokio::time::timeout(wait, snapshots.next()).await {
             Ok(Some(paths)) => match rule.evaluate(&paths) {
@@ -93,19 +89,15 @@ pub(crate) async fn wait_for_route(
 /// The route file data is using right now.
 pub(crate) fn current_route(connection: &Connection) -> Route {
     let paths = connection.paths();
-    paths
-        .iter()
-        .find(Path::is_selected)
-        .map_or(Route::Direct, |path| classify(&path))
+    paths.iter().find(Path::is_selected).map_or(Route::Direct, |path| classify(&path))
 }
 
 pub(crate) async fn enforce_route(connection: &Connection, rule: &RouteRule) -> Error {
     let mut snapshots = connection.paths_stream();
     let mut violated_at: Option<Instant> = None;
     loop {
-        let wait = violated_at.map_or(RELAY_GRACE, |since| {
-            RELAY_GRACE.saturating_sub(since.elapsed())
-        });
+        let wait =
+            violated_at.map_or(RELAY_GRACE, |since| RELAY_GRACE.saturating_sub(since.elapsed()));
         match tokio::time::timeout(wait, snapshots.next()).await {
             Ok(Some(paths)) if rule.evaluate(&paths).is_some() => violated_at = None,
             Ok(Some(_)) => violated_at = violated_at.or_else(|| Some(Instant::now())),

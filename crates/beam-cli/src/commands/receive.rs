@@ -6,45 +6,66 @@ use indicatif::HumanBytes;
 
 use super::send::route_name;
 
-pub async fn run(data_dir: PathBuf, dir: Option<PathBuf>, yes: bool, once: bool) -> Result<()> {
+pub async fn run(
+    data_dir: PathBuf,
+    dir: Option<PathBuf>,
+    yes: bool,
+    once: bool,
+    json: bool,
+) -> Result<()> {
     let (node, mut offers) = super::start(data_dir).await?;
     let destination = dir.unwrap_or_else(|| node.config().download_dir.clone());
     let mut events = node.events();
-    println!("{} is ready ({})", node.config().name, node.id().to_z32());
-    println!("Saving to {}", destination.display());
+    if !json {
+        println!("{} is ready ({})", node.config().name, node.id().to_z32());
+        println!("Saving to {}", destination.display());
+    }
     loop {
         tokio::select! {
             offer = offers.recv() => {
                 let Some(offer) = offer else { break };
                 handle_offer(offer, destination.clone(), yes).await;
             }
-            event = events.recv() => match event {
-                Ok(Event::Started { peer_name, direction: Direction::Receiving, route, files, bytes, .. }) => {
-                    println!("Receiving {files} files, {} from {peer_name} over {}", HumanBytes(bytes), route_name(route));
+            event = events.recv() => {
+                let Ok(event) = event else { continue };
+                if json {
+                    println!("{}", super::json::encode(&event));
+                } else {
+                    report(&event);
                 }
-                Ok(Event::Completed { id }) => {
-                    println!("Transfer {id} finished");
-                    if once { break }
+                if once && matches!(event, Event::Completed { .. }) {
+                    break;
                 }
-                Ok(Event::Failed { id, error }) => {
-                    eprintln!("Transfer {id}: {}", crate::explain::render(&error));
-                }
-                _ => {}
-            },
+            }
             _ = tokio::signal::ctrl_c() => break,
         }
     }
     node.shutdown().await
 }
 
+fn report(event: &Event) {
+    match event {
+        Event::Started {
+            peer_name, direction: Direction::Receiving, route, files, bytes, ..
+        } => {
+            let size = HumanBytes(*bytes);
+            println!(
+                "Receiving {files} files, {size} from {peer_name} over {}",
+                route_name(*route)
+            );
+        }
+        Event::Completed { id } => println!("Transfer {id} finished"),
+        Event::Failed { id, error } => {
+            eprintln!("Transfer {id}: {}", crate::explain::render(error));
+        }
+        _ => {}
+    }
+}
+
 async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
     let summary = &offer.summary;
     let own_device = summary.relationship == Some(Relationship::Own);
-    let trust = if summary.relationship.is_some() {
-        "paired"
-    } else {
-        "NOT PAIRED"
-    };
+    let trust = if summary.relationship.is_some() { "paired" } else { "NOT PAIRED" };
     let prompt = format!(
         "{} ({trust}) wants to send {} files, {}, starting with {}. Accept? [y/N] ",
         summary.peer_name,
@@ -54,9 +75,7 @@ async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
     );
     let accepted = yes
         || own_device
-        || tokio::task::spawn_blocking(move || ask(&prompt))
-            .await
-            .unwrap_or(false);
+        || tokio::task::spawn_blocking(move || ask(&prompt)).await.unwrap_or(false);
     if accepted {
         offer.accept(destination);
     } else {
