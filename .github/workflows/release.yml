@@ -29,10 +29,17 @@ jobs:
         run: |
           mkdir dist
           cd target/${{ matrix.target }}/release
+          ASSETS="$GITHUB_WORKSPACE/crates/solferry-desktop/assets"
           if [ -f solferry.exe ]; then
             7z a "$GITHUB_WORKSPACE/dist/solferry-${{ matrix.target }}.zip" solferry.exe solferry-desktop.exe
+          elif [ "$RUNNER_OS" = macOS ]; then
+            "$GITHUB_WORKSPACE/packaging/macos/bundle.sh" .
+            ditto -c -k --keepParent Solferry.app "$GITHUB_WORKSPACE/dist/Solferry-${{ matrix.target }}.zip"
+            tar czf "$GITHUB_WORKSPACE/dist/solferry-cli-${{ matrix.target }}.tar.gz" solferry
           else
-            tar czf "$GITHUB_WORKSPACE/dist/solferry-${{ matrix.target }}.tar.gz" solferry solferry-desktop
+            cp "$ASSETS/solferry.desktop" .
+            cp "$ASSETS/icon.png" solferry.png
+            tar czf "$GITHUB_WORKSPACE/dist/solferry-${{ matrix.target }}.tar.gz" solferry solferry-desktop solferry.desktop solferry.png
           fi
       - if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2

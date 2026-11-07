@@ -22,12 +22,36 @@ pub fn start() -> TrayEvents {
     TrayEvents { actions }
 }
 
+const ICON_SIZE: u32 = 32;
+const SUN: [u8; 3] = [0xff, 0xb8, 0x1f];
+
+/// True where the mark covers the point, in the 64 unit space of assets/mark.svg.
+fn covered(x: f32, y: f32) -> bool {
+    let (dx, dy) = (x - 32.0, y - 34.0);
+    let sun = y <= 34.0 && dx * dx + dy * dy <= 400.0;
+    let bar = |left: f32, top: f32, width: f32| {
+        x >= left && x <= left + width && y >= top && y <= top + 4.0
+    };
+    sun || bar(8.0, 40.0, 48.0) || bar(16.0, 48.0, 32.0) || bar(24.0, 56.0, 16.0)
+}
+
+/// Whether each pixel of the tray icon is part of the mark, row by row.
+fn mark_pixels() -> impl Iterator<Item = bool> {
+    let scale = 64.0 / 32.0;
+    (0..ICON_SIZE).flat_map(move |row| {
+        (0..ICON_SIZE).map(move |column| {
+            let center = |value: u32| (f32::from(u16::try_from(value).unwrap_or(0)) + 0.5) * scale;
+            covered(center(column), center(row))
+        })
+    })
+}
+
 #[cfg(target_os = "linux")]
 mod platform {
     use ksni::blocking::TrayMethods;
     use ksni::menu::{MenuItem, StandardItem};
 
-    use super::{Sender, TrayAction};
+    use super::{ICON_SIZE, SUN, Sender, TrayAction, mark_pixels};
 
     struct SolferryTray {
         actions: Sender<TrayAction>,
@@ -39,11 +63,18 @@ mod platform {
         }
 
         fn title(&self) -> String {
-            "solferry".to_owned()
+            "Solferry".to_owned()
         }
 
-        fn icon_name(&self) -> String {
-            "folder-download".to_owned()
+        fn icon_pixmap(&self) -> Vec<ksni::Icon> {
+            let data = mark_pixels()
+                .flat_map(|on| {
+                    let alpha = if on { 0xff } else { 0 };
+                    [alpha, SUN[0], SUN[1], SUN[2]]
+                })
+                .collect();
+            let side = i32::try_from(ICON_SIZE).unwrap_or(0);
+            vec![ksni::Icon { width: side, height: side, data }]
         }
 
         fn activate(&mut self, _x: i32, _y: i32) {
@@ -61,7 +92,7 @@ mod platform {
                 }
                 .into()
             };
-            vec![item("Open solferry", TrayAction::Open), item("Quit", TrayAction::Quit)]
+            vec![item("Open Solferry", TrayAction::Open), item("Quit", TrayAction::Quit)]
         }
     }
 
@@ -78,22 +109,22 @@ mod platform {
     use tray_icon::menu::{Menu, MenuEvent, MenuItem};
     use tray_icon::{Icon, TrayIconBuilder};
 
-    use super::{Sender, TrayAction};
-
-    const ICON_SIZE: u32 = 32;
+    use super::{ICON_SIZE, SUN, Sender, TrayAction, mark_pixels};
 
     pub fn start(actions: Sender<TrayAction>) {
         let menu = Menu::new();
-        let open = MenuItem::new("Open solferry", true, None);
+        let open = MenuItem::new("Open Solferry", true, None);
         let quit = MenuItem::new("Quit", true, None);
         let (open_id, quit_id) = (open.id().clone(), quit.id().clone());
         if menu.append_items(&[&open, &quit]).is_err() {
             return;
         }
-        let pixels = [0x4f, 0x8c, 0xff, 0xff].repeat((ICON_SIZE * ICON_SIZE) as usize);
+        let pixels = mark_pixels()
+            .flat_map(|on| [SUN[0], SUN[1], SUN[2], if on { 0xff } else { 0 }])
+            .collect();
         let Ok(icon) = Icon::from_rgba(pixels, ICON_SIZE, ICON_SIZE) else { return };
         let tray = TrayIconBuilder::new()
-            .with_tooltip("solferry")
+            .with_tooltip("Solferry")
             .with_icon(icon)
             .with_menu(Box::new(menu))
             .build();
