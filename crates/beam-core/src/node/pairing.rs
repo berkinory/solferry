@@ -5,12 +5,13 @@ use beam_proto::{
     ALPN_PAIR, Finalized, PairReply, PairRequest, Ticket, close, read_small_frame, write_frame,
 };
 use data_encoding::BASE32_NOPAD;
-use iroh::endpoint::Connection;
+use iroh::endpoint::{Connection, RecvStream, SendStream};
 use iroh::protocol::{AcceptError, ProtocolHandler};
 use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use prost::Message;
 use rand::Rng;
 
+use super::confirm::answer;
 use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::Event;
@@ -24,6 +25,7 @@ const INVITE_PREFIX: &str = "beam1";
 const INVITE_LIFETIME: Duration = Duration::from_secs(600);
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 const CONFIRM_WAIT: Duration = Duration::from_secs(30);
+const REFUSAL_WAIT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Debug)]
 pub struct Invite {
@@ -44,7 +46,7 @@ pub(crate) struct PendingInvite {
     expires_at_ms: u64,
 }
 
-fn now_ms() -> u64 {
+pub(super) fn now_ms() -> u64 {
     let elapsed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
     u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX)
 }
@@ -72,7 +74,7 @@ impl Node {
             endpoint_id: addr.id.as_bytes().to_vec(),
             secret: secret.to_vec(),
             direct_addrs: shareable_addrs(addr.ip_addrs().copied()),
-            relay_urls: self.relay_links(&[]),
+            relay_urls: relay_links(&self.shared, &[]),
             expires_at_ms,
         };
         let code = format!(
@@ -80,19 +82,6 @@ impl Node {
             BASE32_NOPAD.encode(&ticket.encode_to_vec()).to_lowercase()
         );
         Invite { code, expires_at_ms }
-    }
-
-    /// Relays this device waits on, with the access tokens another device needs to use them.
-    fn relay_links(&self, extra: &[String]) -> Vec<String> {
-        let trust = self.shared.trust();
-        let shared = trust.all().iter().flat_map(|device| &device.relays);
-        let known: Vec<&String> = self.config().relays.iter().chain(shared).chain(extra).collect();
-        let link_for = |url: &iroh::RelayUrl| {
-            let matches =
-                |link: &&&String| RelayLink::parse(link).is_ok_and(|link| link.url() == url);
-            known.iter().find(matches).map_or_else(|| url.to_string(), |link| (**link).clone())
-        };
-        self.addr().relay_urls().map(link_for).collect()
     }
 
     /// Redeems an invite from another device and stores the resulting trust on both sides.
@@ -114,16 +103,7 @@ impl Node {
             .await
             .map_err(|error| Error::Unreachable(error.to_string()))?;
         let (mut send, mut recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
-        let mut relay_urls = self.relay_links(&relays);
-        relay_urls.extend(relays.iter().cloned());
-        relay_urls.sort();
-        relay_urls.dedup();
-        let request = PairRequest {
-            secret: ticket.secret,
-            name: self.config().name.clone(),
-            relay_urls,
-            direct_addrs: shareable_addrs(self.addr().ip_addrs().copied()),
-        };
+        let request = PairRequest { secret: ticket.secret, ..request_from(&self.shared, &relays) };
         write_frame(&mut send, &request).await?;
         let reply: PairReply = match read_small_frame(&mut recv).await {
             Ok(reply) => reply,
@@ -145,18 +125,63 @@ impl Node {
             direct_addrs,
             paired_at_ms: now_ms(),
         };
-        self.shared.trust().upsert(device.clone())?;
-        write_frame(&mut send, &Finalized { ok: true }).await?;
-        let _ = tokio::time::timeout(CONFIRM_WAIT, connection.closed()).await;
-        Ok(device)
+        store_and_confirm(&self.shared, &connection, send, device).await
     }
 }
 
 /// Starts using a relay the other device waits on, so nobody has to configure it by hand.
-async fn adopt_relays(shared: &Shared, links: &[String]) {
+pub(super) async fn adopt_relays(shared: &Shared, links: &[String]) {
     for link in links.iter().filter_map(|link| RelayLink::parse(link).ok()) {
         shared.endpoint.insert_relay(link.url().clone(), Arc::new(link.config())).await;
     }
+}
+
+/// Relays this device waits on, with the access tokens another device needs to use them.
+fn relay_links(shared: &Shared, extra: &[String]) -> Vec<String> {
+    let trust = shared.trust();
+    let stored = trust.all().iter().flat_map(|device| &device.relays);
+    let known: Vec<&String> = shared.config.relays.iter().chain(stored).chain(extra).collect();
+    let link_for = |url: &iroh::RelayUrl| {
+        let matches = |link: &&&String| RelayLink::parse(link).is_ok_and(|link| link.url() == url);
+        known.iter().find(matches).map_or_else(|| url.to_string(), |link| (**link).clone())
+    };
+    shared.endpoint.addr().relay_urls().map(link_for).collect()
+}
+
+/// This device's half of a pairing request. `adopted` lists relays it just took from an invite.
+pub(super) fn request_from(shared: &Shared, adopted: &[String]) -> PairRequest {
+    let mut relay_urls = relay_links(shared, adopted);
+    relay_urls.extend(adopted.iter().cloned());
+    relay_urls.sort();
+    relay_urls.dedup();
+    PairRequest {
+        name: shared.config.name.clone(),
+        relay_urls,
+        direct_addrs: shareable_addrs(shared.endpoint.addr().ip_addrs().copied()),
+        ..PairRequest::default()
+    }
+}
+
+pub(super) fn own_reply(shared: &Shared) -> PairReply {
+    PairReply {
+        accepted: true,
+        name: shared.config.name.clone(),
+        relay_urls: relay_links(shared, &[]),
+        direct_addrs: shareable_addrs(shared.endpoint.addr().ip_addrs().copied()),
+    }
+}
+
+/// The joining side stores first and tells the other side, which stores and hangs up.
+pub(super) async fn store_and_confirm(
+    shared: &Shared,
+    connection: &Connection,
+    mut send: SendStream,
+    device: Device,
+) -> Result<Device> {
+    shared.trust().upsert(device.clone())?;
+    write_frame(&mut send, &Finalized { ok: true }).await?;
+    let _ = tokio::time::timeout(CONFIRM_WAIT, connection.closed()).await;
+    Ok(device)
 }
 
 fn decode_ticket(code: &str) -> Result<Ticket> {
@@ -193,25 +218,46 @@ impl ProtocolHandler for PairHandler {
 }
 
 async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
-    if !shared.has_invites() {
+    if !shared.has_invites() && shared.pair_listener().is_none() {
         connection.close(close::NOT_PAIRED.into(), b"no invite");
         return Err(Error::PairingRefused);
     }
-    let (mut send, mut recv, request) = within_handshake(async {
+    let (mut send, recv, request) = within_handshake(async {
         let (send, mut recv) = connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
         let request: PairRequest = read_small_frame(&mut recv).await?;
         Ok((send, recv, request))
     })
     .await?;
+    if request.secret.is_empty() {
+        return answer(shared, connection, send, recv, request).await;
+    }
     let pending = secret_key(&request.secret).and_then(|key| {
         shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(&key)
     });
     let Some(pending) = pending.filter(|invite| invite.expires_at_ms >= now_ms()) else {
-        write_frame(&mut send, &PairReply { accepted: false, name: String::new() }).await?;
-        return Err(Error::PairingRefused);
+        return refuse(connection, &mut send).await;
     };
-    let reply = PairReply { accepted: true, name: shared.config.name.clone() };
-    write_frame(&mut send, &reply).await?;
+    write_frame(&mut send, &own_reply(shared)).await?;
+    complete(shared, connection, send, recv, request, pending.auto_accept).await
+}
+
+/// Says no and waits for the other side to read it, so it sees a refusal and not a lost connection.
+pub(super) async fn refuse(connection: &Connection, send: &mut SendStream) -> Result<()> {
+    write_frame(send, &PairReply::default()).await?;
+    let _ = send.finish();
+    let _ = tokio::time::timeout(REFUSAL_WAIT, connection.closed()).await;
+    Err(Error::PairingRefused)
+}
+
+/// Waits for the other side to store the pairing, then stores it here too.
+pub(super) async fn complete(
+    shared: &Shared,
+    connection: &Connection,
+    _send: SendStream,
+    mut recv: RecvStream,
+    request: PairRequest,
+    auto_accept: bool,
+) -> Result<()> {
     let confirmed =
         tokio::time::timeout(CONFIRM_WAIT, read_small_frame::<_, Finalized>(&mut recv)).await;
     if !matches!(confirmed, Ok(Ok(Finalized { ok: true }))) {
@@ -220,7 +266,7 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
     let device = Device {
         id: connection.remote_id(),
         name: clean_label(&request.name),
-        auto_accept: pending.auto_accept,
+        auto_accept,
         relays: request.relay_urls,
         direct_addrs: request.direct_addrs,
         paired_at_ms: now_ms(),

@@ -172,6 +172,15 @@ impl MainView {
         Self::command(Command::Answer { offer: key, accept }, cx);
     }
 
+    pub fn answer_pairing(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
+        let auto_accept = !self.state.read(cx).ask_after_pairing;
+        self.state.update(cx, |state, cx| {
+            state.pairing_prompts.retain(|prompt| prompt.key != key);
+            cx.notify();
+        });
+        Self::command(Command::AnswerPairing { key, accept, auto_accept }, cx);
+    }
+
     pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {
         self.state.update(cx, |state, cx| {
             state.offers.retain(|offer| offer.key != key);
@@ -265,6 +274,9 @@ impl MainView {
                 .child(ui::muted(explanation.next, cx))
         });
         let offers: Vec<_> = state.offers.iter().map(|offer| offers::card(offer, cx)).collect();
+        let prompts: Vec<_> =
+            state.pairing_prompts.iter().map(|prompt| offers::pairing_card(prompt, cx)).collect();
+        let code = state.pairing_code.as_deref().map(|code| offers::pairing_code(code, cx));
         let pending = (!self.pending.is_empty()).then(|| devices::pending_bar(self, cx));
         let drop_zone = self.pending.is_empty().then(|| Self::drop_zone(cx));
         div()
@@ -272,6 +284,8 @@ impl MainView {
             .flex_col()
             .gap_3()
             .children(fatal)
+            .children(prompts)
+            .children(code)
             .children(offers)
             .children(drop_zone)
             .children(pending)

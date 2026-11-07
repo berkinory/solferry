@@ -155,7 +155,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     Ok(())
 }
 
-fn admits_stranger(shared: &Shared, connection: &Connection) -> bool {
+pub(super) fn admits_stranger(shared: &Shared, connection: &Connection) -> bool {
     shared.config.visibility == Visibility::Everyone
         && connection.paths().iter().any(|path| match path.remote_addr() {
             TransportAddr::Ip(addr) => shares_network(addr.ip()),

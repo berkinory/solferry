@@ -6,7 +6,7 @@ use gpui_kit::{AnyElement, Context, IntoElement, ParentElement, SharedString, St
 use super::main_view::MainView;
 use super::ui;
 use crate::format;
-use crate::state::Offer;
+use crate::state::{Offer, PairingPrompt};
 
 pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
     let summary = &offer.summary;
@@ -53,5 +53,46 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         .on_click(cx.listener(move |view, _, _, cx| view.block_offer(key, cx))),
                 ),
         )
+        .into_any_element()
+}
+
+pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
+    let key = prompt.key;
+    ui::card(cx)
+        .border_color(cx.theme().primary)
+        .child(div().text_sm().child(format!("{} wants to pair", prompt.name)))
+        .child(div().text_xl().child(prompt.code.clone()))
+        .child(ui::muted("Accept only if the other screen shows the same code.", cx))
+        .child(
+            div()
+                .flex()
+                .gap_2()
+                .child(
+                    Button::new(SharedString::from(format!("pair-yes-{key}")))
+                        .primary()
+                        .small()
+                        .label("Same code")
+                        .on_click(
+                            cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx)),
+                        ),
+                )
+                .child(
+                    Button::new(SharedString::from(format!("pair-no-{key}")))
+                        .ghost()
+                        .small()
+                        .label("Decline")
+                        .on_click(
+                            cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx)),
+                        ),
+                ),
+        )
+        .into_any_element()
+}
+
+pub fn pairing_code(code: &str, cx: &mut Context<MainView>) -> AnyElement {
+    ui::card(cx)
+        .border_color(cx.theme().primary)
+        .child(div().text_xl().child(code.to_owned()))
+        .child(ui::muted("Check that the other device shows this code, then accept there.", cx))
         .into_any_element()
 }

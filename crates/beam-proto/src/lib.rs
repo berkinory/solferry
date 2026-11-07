@@ -5,8 +5,8 @@ mod messages;
 
 pub use frame::{FrameError, MAX_FRAME_LEN, read_frame, read_small_frame, write_frame};
 pub use messages::{
-    Decision, Entry, FileResult, FileStart, Finalized, Hello, Offer, OfferReply, PairReply,
-    PairRequest, Ticket,
+    Decision, Entry, FileResult, FileStart, Finalized, Hello, Offer, OfferReply, PairChallenge,
+    PairReply, PairRequest, PairReveal, Ticket,
 };
 
 pub const ALPN_TRANSFER: &[u8] = b"beam/1";

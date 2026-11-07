@@ -133,12 +133,25 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 .child(div().text_sm().child(row.name))
                 .child(ui::muted(row.detail, cx)),
         )
+        .children(row.approval.is_none().then(|| pair_button(row.id, row.addr, cx)))
         .children(row.approval.map(|auto_accept| {
             div()
                 .flex()
                 .gap_1()
                 .child(approval_button(row.id, auto_accept, cx))
                 .child(forget_button(row.id, cx))
+        }))
+        .into_any_element()
+}
+
+fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -> AnyElement {
+    Button::new(SharedString::from(format!("pair-{id}")))
+        .ghost()
+        .xsmall()
+        .label("Pair")
+        .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
+            let auto_accept = !view.state.read(cx).ask_after_pairing;
+            MainView::command(Command::PairNearby { addr: addr.clone(), auto_accept }, cx);
         }))
         .into_any_element()
 }

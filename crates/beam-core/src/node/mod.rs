@@ -1,3 +1,4 @@
+mod confirm;
 mod health;
 mod inbound;
 mod nearby;
@@ -17,6 +18,7 @@ use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
+pub use confirm::PairingRequest;
 pub use health::RelayHealth;
 pub use inbound::{IncomingOffer, OfferSummary};
 pub use nearby::NearbyDevice;
@@ -56,6 +58,7 @@ pub(crate) struct Shared {
     pub(crate) events: broadcast::Sender<Event>,
     pub(crate) offers: mpsc::Sender<IncomingOffer>,
     pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
+    pair_listener: Mutex<Option<mpsc::Sender<PairingRequest>>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
     pub(crate) stranger_slots: Arc<Semaphore>,
@@ -72,6 +75,10 @@ impl fmt::Debug for Shared {
 impl Shared {
     pub(crate) fn track(&self, id: TransferId, connection: &Connection) {
         self.active_map().insert(id, connection.clone());
+    }
+
+    fn pair_listener(&self) -> MutexGuard<'_, Option<mpsc::Sender<PairingRequest>>> {
+        self.pair_listener.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub(crate) fn has_invites(&self) -> bool {
@@ -120,6 +127,7 @@ impl Node {
             events: broadcast::channel(EVENT_BUFFER).0,
             offers,
             invites: Mutex::new(HashMap::new()),
+            pair_listener: Mutex::new(None),
             mdns: network.mdns,
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
             stranger_slots: Arc::new(Semaphore::new(MAX_STRANGERS)),
