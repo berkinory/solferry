@@ -43,6 +43,10 @@ pub async fn run(
     node.shutdown().await
 }
 
+fn file_count(files: usize) -> String {
+    if files == 1 { "1 file".to_owned() } else { format!("{files} files") }
+}
+
 fn report(event: &Event) {
     match event {
         Event::Started {
@@ -50,7 +54,8 @@ fn report(event: &Event) {
         } => {
             let size = HumanBytes(*bytes);
             println!(
-                "Receiving {files} files, {size} from {peer_name} over {}",
+                "Receiving {}, {size} from {peer_name} over {}",
+                file_count(*files),
                 route_name(*route)
             );
         }
@@ -67,9 +72,9 @@ async fn handle_offer(offer: IncomingOffer, destination: PathBuf, yes: bool) {
     let own_device = summary.relationship == Some(Relationship::Own);
     let trust = if summary.relationship.is_some() { "paired" } else { "NOT PAIRED" };
     let prompt = format!(
-        "{} ({trust}) wants to send {} files, {}, starting with {}. Accept? [y/N] ",
+        "{} ({trust}) wants to send {}, {}, starting with {}. Accept? [y/N] ",
         summary.peer_name,
-        summary.files,
+        file_count(summary.files),
         HumanBytes(summary.bytes),
         summary.first_path,
     );
