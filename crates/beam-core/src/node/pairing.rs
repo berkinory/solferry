@@ -8,7 +8,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::{AcceptError, ProtocolHandler};
 use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use prost::Message;
-use rand::RngCore;
+use rand::Rng;
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
@@ -83,8 +83,9 @@ impl Node {
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
         }
-        let _ = tokio::time::timeout(ONLINE_WAIT, self.online()).await;
+        self.online_within(ONLINE_WAIT).await;
         let relays = ticket.relay_urls.clone();
+        let direct_addrs = ticket.direct_addrs.clone();
         let relationship =
             if ticket.own_device { Relationship::Own } else { Relationship::Contact };
         let addr = ticket_addr(&ticket)?;
@@ -100,6 +101,7 @@ impl Node {
             secret: ticket.secret,
             name: self.config().name.clone(),
             relay_urls: self.addr().relay_urls().map(ToString::to_string).collect(),
+            direct_addrs: self.addr().ip_addrs().map(ToString::to_string).collect(),
         };
         write_frame(&mut send, &request).await?;
         let reply: PairReply = read_frame(&mut recv).await?;
@@ -112,6 +114,7 @@ impl Node {
             name: clean_label(&reply.name),
             relationship,
             relays,
+            direct_addrs,
             paired_at_ms: now_ms(),
         };
         self.shared.trust().upsert(device.clone())?;
@@ -167,12 +170,13 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
         name: clean_label(&request.name),
         relationship: pending.relationship,
         relays: request.relay_urls,
+        direct_addrs: request.direct_addrs,
         paired_at_ms: now_ms(),
     };
     shared.trust().upsert(device.clone())?;
-    let _ = shared.events.send(Event::Paired { device });
     let reply = PairReply { accepted: true, name: shared.config.name.clone() };
     write_frame(&mut send, &reply).await?;
     let _ = tokio::time::timeout(Duration::from_secs(5), connection.closed()).await;
+    let _ = shared.events.send(Event::Paired { device });
     Ok(())
 }

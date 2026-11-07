@@ -78,6 +78,8 @@ pub struct PairRequest {
     pub name: String,
     #[prost(string, repeated, tag = "3")]
     pub relay_urls: Vec<String>,
+    #[prost(string, repeated, tag = "4")]
+    pub direct_addrs: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Message)]

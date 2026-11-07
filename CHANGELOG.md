@@ -12,3 +12,4 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - `beam` command with JSON event output
 - Self-hosted relay deployment
 - Network scenarios for NAT, loss, outages and restarts
+- Desktop app for Linux, Windows and macOS with tray, pairing and settings

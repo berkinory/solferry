@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-use iroh::endpoint::{QuicTransportConfig, presets};
+use iroh::endpoint::{Builder, QuicTransportConfig, presets};
 use iroh::tls::CaTlsConfig;
 use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
 use iroh_mainline_address_lookup::DhtAddressLookup;
@@ -15,6 +15,8 @@ use crate::config::{Config, RelayPolicy, Visibility};
 use crate::error::{Error, Result};
 
 const MIB: u32 = 1024 * 1024;
+/// A stable port keeps stored addresses valid across restarts and makes firewall rules possible.
+const PREFERRED_ADDR: &str = "0.0.0.0:53318";
 /// noq drops the connection past 1024 gaps per stream. Keeping the window under about 2400
 /// minimum-size packets makes that limit unreachable, whatever the loss pattern.
 const STREAM_WINDOW: u32 = 2 * MIB;
@@ -32,6 +34,23 @@ pub(crate) struct Network {
 
 pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> Result<Network> {
     let online = !isolated && config.relay_policy != RelayPolicy::Off;
+    let endpoint = if isolated {
+        configure(secret.clone(), config, online)?.bind().await
+    } else {
+        let fixed = configure(secret.clone(), config, online)?
+            .bind_addr(PREFERRED_ADDR)
+            .map_err(|error| Error::NetworkStart(error.to_string()))?;
+        match fixed.bind().await {
+            Ok(endpoint) => Ok(endpoint),
+            Err(_) => configure(secret, config, online)?.bind().await,
+        }
+    }
+    .map_err(|error| Error::NetworkStart(error.to_string()))?;
+    let mdns = if isolated { None } else { Some(start_mdns(&endpoint, config)?) };
+    Ok(Network { endpoint, mdns })
+}
+
+fn configure(secret: SecretKey, config: &Config, online: bool) -> Result<Builder> {
     let builder = if online {
         let builder = Endpoint::builder(presets::N0)
             .relay_mode(relay_mode(config)?)
@@ -43,14 +62,7 @@ pub(crate) async fn bind(secret: SecretKey, config: &Config, isolated: bool) -> 
     } else {
         Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Disabled)
     };
-    let endpoint = builder
-        .secret_key(secret)
-        .transport_config(transport_config()?)
-        .bind()
-        .await
-        .map_err(|error| Error::NetworkStart(error.to_string()))?;
-    let mdns = if isolated { None } else { Some(start_mdns(&endpoint, config)?) };
-    Ok(Network { endpoint, mdns })
+    Ok(builder.secret_key(secret).transport_config(transport_config()?))
 }
 
 fn private_roots(path: &Path) -> Result<CaTlsConfig> {

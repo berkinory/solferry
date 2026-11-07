@@ -21,6 +21,9 @@ pub struct Device {
     pub name: String,
     pub relationship: Relationship,
     pub relays: Vec<String>,
+    /// Addresses seen when pairing, so a device stays reachable without any server.
+    #[serde(default)]
+    pub direct_addrs: Vec<String>,
     pub paired_at_ms: u64,
 }
 
@@ -29,7 +32,9 @@ impl Device {
     #[must_use]
     pub fn addr(&self) -> EndpointAddr {
         let relays = self.relays.iter().filter_map(|url| url.parse::<RelayUrl>().ok());
-        EndpointAddr::from_parts(self.id, relays.map(TransportAddr::Relay))
+        let direct = self.direct_addrs.iter().filter_map(|addr| addr.parse().ok());
+        let addrs = relays.map(TransportAddr::Relay).chain(direct.map(TransportAddr::Ip));
+        EndpointAddr::from_parts(self.id, addrs)
     }
 }
 

@@ -21,7 +21,7 @@ pub use nearby::NearbyDevice;
 pub use outbound::SendReport;
 pub use pairing::Invite;
 
-use crate::config::Config;
+use crate::config::{Config, RelayPolicy};
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
 use crate::trust::{Device, TrustStore};
@@ -54,6 +54,7 @@ pub(crate) struct Shared {
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
+    uses_relays: bool,
 }
 
 impl fmt::Debug for Shared {
@@ -86,6 +87,7 @@ impl Node {
         identity::prepare_private_dir(&data_dir)?;
         let config = Config::load(&data_dir)?;
         let secret = identity::load_or_create(&data_dir)?;
+        let uses_relays = !isolated && config.relay_policy != RelayPolicy::Off;
         let network = net::bind(secret, &config, isolated).await?;
         let (offers, offer_queue) = mpsc::channel(OFFER_BUFFER);
         let shared = Arc::new(Shared {
@@ -98,6 +100,7 @@ impl Node {
             mdns: network.mdns,
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
             active: Mutex::new(HashMap::new()),
+            uses_relays,
         });
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
@@ -156,7 +159,9 @@ impl Node {
 
     /// Waits for a relay connection, but never longer than `limit`.
     pub async fn online_within(&self, limit: Duration) {
-        let _ = tokio::time::timeout(limit, self.online()).await;
+        if self.shared.uses_relays {
+            let _ = tokio::time::timeout(limit, self.online()).await;
+        }
     }
 
     pub async fn shutdown(self) -> Result<()> {
