@@ -56,6 +56,7 @@ fn direction_name(direction: Direction) -> &'static str {
 fn route_name(route: Route) -> &'static str {
     match route {
         Route::Local => "local",
+        Route::Overlay => "overlay",
         Route::Direct => "direct",
         Route::Relay => "relay",
     }

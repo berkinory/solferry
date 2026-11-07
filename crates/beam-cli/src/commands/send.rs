@@ -100,6 +100,7 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
 pub fn route_name(route: Route) -> &'static str {
     match route {
         Route::Local => "the local network",
+        Route::Overlay => "an overlay network",
         Route::Direct => "a direct connection",
         Route::Relay => "a relay",
     }
