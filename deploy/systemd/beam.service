@@ -1,0 +1,15 @@
+# Keeps beam receiving on a server or headless machine.
+# Install with: cp beam.service ~/.config/systemd/user/ && systemctl --user enable --now beam
+[Unit]
+Description=beam file transfer
+After=network-online.target
+
+[Service]
+ExecStart=%h/.cargo/bin/beam receive
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

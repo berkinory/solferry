@@ -10,6 +10,11 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Resumable, verified file transfers over iroh
 - Local-first networking: no servers by default, optional self-hosted relays shared through pairing
 - Per-device approval and blocking
+- Pairing nearby devices by comparing a code
+- Tailscale devices listed automatically
+- `beam relay check` and a one-command relay installer
+- Desktop notifications for received files
+- Live route updates during a transfer
 - `beam` command with JSON event output
 - Self-hosted relay deployment
 - Network scenarios for NAT, loss, outages and restarts
