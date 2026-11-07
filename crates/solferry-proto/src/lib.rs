@@ -11,7 +11,7 @@ pub use messages::{
 
 pub const ALPN_TRANSFER: &[u8] = b"solferry/1";
 pub const ALPN_PAIR: &[u8] = b"solferry-pair/1";
-pub const PROTOCOL_VERSION: u32 = 1;
+pub const PROTOCOL_VERSION: u32 = 2;
 pub const HASH_LEN: usize = 32;
 
 /// QUIC application close codes.

@@ -1,36 +1,59 @@
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use bytes::{Bytes, BytesMut};
 use futures::{StreamExt, TryStreamExt, stream};
 use iroh::endpoint::{Connection, RecvStream};
-use solferry_proto::{
-    Entry, FileResult, FileStart, Finalized, HASH_LEN, close, read_frame, write_frame,
-};
+use solferry_proto::{FileResult, FileStart, Finalized, HASH_LEN, close, read_frame, write_frame};
 use tokio::sync::mpsc;
 
+use super::segments::{Progress, segments};
 use super::{CHUNK_SIZE, Manifest, Meter};
 use crate::error::{Error, Result, StorageContext};
 use crate::route::{Route, current_route};
 
-const FILE_CONCURRENCY: usize = 16;
+/// Open streams at once: enough to fill the connection window, under the peer's stream limit.
+const STREAM_CONCURRENCY: usize = 32;
 const READ_AHEAD: usize = 4;
+
+struct Unit {
+    index: usize,
+    segment: usize,
+    range: Range<u64>,
+    held: u64,
+}
+
+fn units(manifest: &Manifest, progress: &Progress) -> Vec<Unit> {
+    manifest
+        .entries
+        .iter()
+        .enumerate()
+        .flat_map(|(index, entry)| {
+            segments(entry).into_iter().enumerate().map(move |(segment, range)| Unit {
+                index,
+                segment,
+                range,
+                held: progress[index][segment],
+            })
+        })
+        .collect()
+}
 
 pub(crate) async fn run(
     connection: &Connection,
     control: &mut RecvStream,
     manifest: &Arc<Manifest>,
-    offsets: &[u64],
+    progress: &Progress,
     meter: &Meter,
 ) -> Result<Route> {
-    let files: Vec<usize> =
-        (0..manifest.entries.len()).filter(|&index| !manifest.entries[index].is_dir).collect();
-    let count = files.len();
-    let uploads = stream::iter(files)
-        .map(|index| send_file(connection, manifest, index, offsets[index], meter))
-        .buffer_unordered(FILE_CONCURRENCY)
+    let units = units(manifest, progress);
+    let count = units.len();
+    let uploads = stream::iter(units)
+        .map(|unit| send_segment(connection, manifest, unit, meter))
+        .buffer_unordered(STREAM_CONCURRENCY)
         .try_collect::<()>();
     tokio::try_join!(uploads, confirm(control, manifest, count))?;
     let route = current_route(connection);
@@ -50,20 +73,25 @@ async fn confirm(control: &mut RecvStream, manifest: &Manifest, count: usize) ->
     if finalized.ok { Ok(()) } else { Err(Error::DeliveryFailed) }
 }
 
-async fn send_file(
+async fn send_segment(
     connection: &Connection,
     manifest: &Arc<Manifest>,
-    index: usize,
-    offset: u64,
+    unit: Unit,
     meter: &Meter,
 ) -> Result<()> {
-    let source: PathBuf = manifest.sources[index].clone();
-    let Entry { size, .. } = manifest.entries[index];
+    let source: PathBuf = manifest.sources[unit.index].clone();
+    let size = manifest.entries[unit.index].size;
+    let (range, held) = (unit.range.clone(), unit.held);
     let (chunks, mut incoming) = mpsc::channel::<Bytes>(READ_AHEAD);
-    let reader = tokio::task::spawn_blocking(move || read_source(&source, size, offset, &chunks));
+    let reader =
+        tokio::task::spawn_blocking(move || read_source(&source, size, range, held, &chunks));
 
     let mut stream = connection.open_uni().await.map_err(|_| Error::ConnectionLost)?;
-    let start = FileStart { index: u32::try_from(index).unwrap_or(u32::MAX), offset };
+    let start = FileStart {
+        index: u32::try_from(unit.index).unwrap_or(u32::MAX),
+        offset: unit.range.start + unit.held,
+        segment: u32::try_from(unit.segment).unwrap_or(u32::MAX),
+    };
     write_frame(&mut stream, &start).await?;
     while let Some(chunk) = incoming.recv().await {
         let len = chunk.len() as u64;
@@ -76,39 +104,37 @@ async fn send_file(
     stream.finish().map_err(|_| Error::ConnectionLost)
 }
 
-/// Hashes the whole file so the receiver can verify resumed data, sending only bytes past `offset`.
+/// Hashes the whole segment so the receiver can verify resumed data, sending only bytes past
+/// what it already holds.
 fn read_source(
     path: &Path,
     size: u64,
-    offset: u64,
+    range: Range<u64>,
+    held: u64,
     chunks: &mpsc::Sender<Bytes>,
 ) -> Result<blake3::Hash> {
     let mut file = File::open(path).at(path)?;
+    if file.metadata().at(path)?.len() != size {
+        return Err(Error::SourceChanged(path.to_owned()));
+    }
+    file.seek(SeekFrom::Start(range.start)).at(path)?;
     let mut hasher = blake3::Hasher::new();
     let mut position = 0u64;
-    loop {
-        let mut buffer = BytesMut::zeroed(CHUNK_SIZE);
+    let length = range.end - range.start;
+    while position < length {
+        let wanted = usize::try_from(length - position).unwrap_or(CHUNK_SIZE).min(CHUNK_SIZE);
+        let mut buffer = BytesMut::zeroed(wanted);
         let read = file.read(&mut buffer).at(path)?;
         if read == 0 {
-            break;
-        }
-        hasher.update(&buffer[..read]);
-        let start =
-            usize::try_from(offset.saturating_sub(position)).map_or(read, |skip| skip.min(read));
-        position += read as u64;
-        if position > size {
             return Err(Error::SourceChanged(path.to_owned()));
         }
-        if start < read {
-            let chunk = buffer.freeze().slice(start..read);
-            if chunks.blocking_send(chunk).is_err() {
-                return Err(Error::ConnectionLost);
-            }
+        hasher.update(&buffer[..read]);
+        let skip =
+            usize::try_from(held.saturating_sub(position)).map_or(read, |skip| skip.min(read));
+        position += read as u64;
+        if skip < read && chunks.blocking_send(buffer.freeze().slice(skip..read)).is_err() {
+            return Err(Error::ConnectionLost);
         }
     }
-    if position == size {
-        Ok(hasher.finalize())
-    } else {
-        Err(Error::SourceChanged(path.to_owned()))
-    }
+    Ok(hasher.finalize())
 }

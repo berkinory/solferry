@@ -46,6 +46,7 @@ pub enum Decision {
 pub struct OfferReply {
     #[prost(enumeration = "Decision", tag = "1")]
     pub decision: i32,
+    /// Bytes already received for each segment of each file, in offer order.
     #[prost(uint64, repeated, tag = "2")]
     pub offsets: Vec<u64>,
 }
@@ -54,8 +55,11 @@ pub struct OfferReply {
 pub struct FileStart {
     #[prost(uint32, tag = "1")]
     pub index: u32,
+    /// Where in the file this stream's bytes begin, past anything the receiver already has.
     #[prost(uint64, tag = "2")]
     pub offset: u64,
+    #[prost(uint32, tag = "3")]
+    pub segment: u32,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -64,6 +68,8 @@ pub struct FileResult {
     pub index: u32,
     #[prost(bool, tag = "2")]
     pub ok: bool,
+    #[prost(uint32, tag = "3")]
+    pub segment: u32,
 }
 
 #[derive(Clone, PartialEq, Message)]

@@ -1,4 +1,5 @@
-use std::path::{Path, PathBuf};
+use std::collections::HashSet;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -8,7 +9,8 @@ use solferry_proto::{Entry, FileResult, FileStart, Finalized, HASH_LEN, read_fra
 use tokio::sync::mpsc;
 use tokio::task::JoinSet;
 
-use super::staging::write_part;
+use super::segments::{Progress, segments};
+use super::staging::{Segment, forget, write_part};
 use super::{CHUNK_SIZE, Meter, Staging};
 use crate::error::{Error, Result};
 
@@ -20,7 +22,7 @@ pub(crate) struct Plan {
     pub(crate) destination: PathBuf,
     pub(crate) entries: Vec<Entry>,
     pub(crate) targets: Vec<PathBuf>,
-    pub(crate) offsets: Vec<u64>,
+    pub(crate) progress: Progress,
     pub(crate) staging: Staging,
 }
 
@@ -31,22 +33,26 @@ pub(crate) async fn run(
     meter: Arc<Meter>,
 ) -> Result<Vec<PathBuf>> {
     let plan = Arc::new(plan);
-    let needed = plan.entries.iter().filter(|entry| !entry.is_dir).count();
+    let needed: usize = plan.progress.iter().map(Vec::len).sum();
     let (results, mut pending) = mpsc::channel::<FileResult>(32);
     let mut files = JoinSet::new();
     let mut accepted = 0;
     let mut completed = 0;
-    let mut seen = vec![false; plan.entries.len()];
+    let mut seen = HashSet::new();
 
     while completed < needed {
         tokio::select! {
             stream = connection.accept_uni(), if accepted < needed => {
                 let mut stream = stream.map_err(|_| Error::ConnectionLost)?;
                 let start: FileStart = read_frame(&mut stream).await?;
-                let index = claim(&plan, &mut seen, &start)?;
+                let segment = claim(&plan, &mut seen, &start)?;
                 accepted += 1;
-                let (plan, meter, results) = (plan.clone(), meter.clone(), results.clone());
-                files.spawn(async move { receive_file(stream, &plan, index, &meter, &results).await });
+                let (meter, results) = (meter.clone(), results.clone());
+                let name = plan.entries[start.index as usize].path.clone();
+                let result = FileResult { index: start.index, ok: true, segment: start.segment };
+                files.spawn(async move {
+                    receive_segment(stream, segment, name, result, &meter, &results).await
+                });
             }
             Some(result) = pending.recv() => write_frame(control, &result).await?,
             Some(joined) = files.join_next() => {
@@ -79,44 +85,52 @@ pub(crate) async fn run(
     delivered
 }
 
-fn claim(plan: &Plan, seen: &mut [bool], start: &FileStart) -> Result<usize> {
-    let index = start.index as usize;
-    let valid = plan.entries.get(index).is_some_and(|entry| !entry.is_dir)
-        && plan.offsets[index] == start.offset
-        && !seen[index];
-    if !valid {
-        return Err(Error::Protocol(format!("unexpected file stream {index}")));
+/// Accepts a stream only for a segment that was offered, starting exactly where the receiver said
+/// it stopped, and only once.
+fn claim(plan: &Plan, seen: &mut HashSet<(u32, u32)>, start: &FileStart) -> Result<Segment> {
+    let (index, number) = (start.index as usize, start.segment as usize);
+    let range = plan.entries.get(index).and_then(|entry| segments(entry).get(number).cloned());
+    let held = plan.progress.get(index).and_then(|held| held.get(number)).copied();
+    let (Some(range), Some(held)) = (range, held) else {
+        return Err(Error::Protocol(format!("unexpected file stream {index}.{number}")));
+    };
+    if range.start + held != start.offset || !seen.insert((start.index, start.segment)) {
+        return Err(Error::Protocol(format!("unexpected file stream {index}.{number}")));
     }
-    seen[index] = true;
-    Ok(index)
+    Ok(Segment {
+        part: plan.staging.part(index),
+        progress: plan.staging.progress_file(index, number),
+        range,
+        held,
+    })
 }
 
-async fn receive_file(
+async fn receive_segment(
     mut stream: RecvStream,
-    plan: &Plan,
-    index: usize,
+    segment: Segment,
+    name: String,
+    result: FileResult,
     meter: &Meter,
     results: &mpsc::Sender<FileResult>,
 ) -> Result<()> {
-    let offset = plan.offsets[index];
-    let part = plan.staging.part(index);
+    let remaining = segment.range.end - segment.range.start - segment.held;
+    let segment = std::sync::Arc::new(segment);
     let (chunks, incoming) = mpsc::channel::<Bytes>(WRITE_BEHIND);
     let writer = {
-        let part = part.clone();
-        tokio::task::spawn_blocking(move || write_part(&part, offset, incoming))
+        let segment = segment.clone();
+        tokio::task::spawn_blocking(move || write_part(&segment, incoming))
     };
-    let received = pump(&mut stream, plan.entries[index].size - offset, &chunks, meter).await;
+    let received = pump(&mut stream, remaining, &chunks, meter).await;
     drop(chunks);
     let actual = writer.await.map_err(|error| Error::Protocol(error.to_string()))??;
     let expected = received?;
 
     let ok = actual == expected;
     if !ok {
-        discard(&part);
+        forget(&segment);
     }
-    let index_wire = u32::try_from(index).unwrap_or(u32::MAX);
-    let _ = results.send(FileResult { index: index_wire, ok }).await;
-    if ok { Ok(()) } else { Err(Error::HashMismatch(plan.entries[index].path.clone())) }
+    let _ = results.send(FileResult { ok, ..result }).await;
+    if ok { Ok(()) } else { Err(Error::HashMismatch(name)) }
 }
 
 async fn pump(
@@ -136,8 +150,4 @@ async fn pump(
     let mut hash = [0; HASH_LEN];
     stream.read_exact(&mut hash).await.map_err(|_| Error::ConnectionLost)?;
     Ok(blake3::Hash::from_bytes(hash))
-}
-
-fn discard(part: &Path) {
-    let _ = std::fs::remove_file(part);
 }

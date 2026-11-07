@@ -1,5 +1,6 @@
 use std::fs::{self, File, FileTimes};
 use std::io::{BufWriter, Read, Seek, SeekFrom, Write};
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, UNIX_EPOCH};
 
@@ -11,11 +12,14 @@ use tokio::sync::mpsc;
 use super::CHUNK_SIZE;
 use super::paths::crosses_symlink;
 use super::quarantine::mark_downloaded;
+use super::segments::{Progress, segments};
 use crate::error::{Error, Result, StorageContext};
 use crate::event::TransferId;
 
 const PARTIAL_DIR: &str = ".solferry-partial";
 const ABANDONED_AFTER: Duration = Duration::from_hours(7 * 24);
+/// How often a segment writer records how far it got, so a restart resumes close to where it stopped.
+const PROGRESS_STEP: u64 = 8 * 1024 * 1024;
 
 #[derive(Debug)]
 pub(crate) struct Staging {
@@ -38,12 +42,33 @@ impl Staging {
         self.root.join(index.to_string())
     }
 
-    pub(crate) fn offsets(&self, entries: &[Entry]) -> Vec<u64> {
-        let offset = |(index, entry): (usize, &Entry)| {
-            let existing = fs::metadata(self.part(index)).map_or(0, |metadata| metadata.len());
-            if entry.is_dir || existing > entry.size { 0 } else { existing }
+    pub(crate) fn progress_file(&self, index: usize, segment: usize) -> PathBuf {
+        self.root.join(format!("{index}.{segment}"))
+    }
+
+    /// What each segment already holds. Anything unreadable or impossible counts as nothing.
+    pub(crate) fn progress(&self, entries: &[Entry]) -> Progress {
+        let held = |index: usize, segment: usize, range: &Range<u64>| {
+            if !self.part(index).exists() {
+                return 0;
+            }
+            let recorded = fs::read(self.progress_file(index, segment))
+                .ok()
+                .and_then(|bytes| bytes.try_into().ok().map(u64::from_le_bytes));
+            recorded.filter(|&value| value <= range.end - range.start).unwrap_or(0)
         };
-        entries.iter().enumerate().map(offset).collect()
+        entries
+            .iter()
+            .enumerate()
+            .map(|(index, entry)| {
+                let ranges = segments(entry);
+                ranges
+                    .iter()
+                    .enumerate()
+                    .map(|(segment, range)| held(index, segment, range))
+                    .collect()
+            })
+            .collect()
     }
 
     pub(crate) fn finalize(
@@ -122,16 +147,26 @@ fn free_path(target: PathBuf) -> PathBuf {
         .unwrap_or(target)
 }
 
-/// Appends incoming chunks to a partial file and returns the hash of the complete content.
+/// One segment of a partial file: where it lives, which bytes it covers, and how many it has.
+pub(crate) struct Segment {
+    pub(crate) part: PathBuf,
+    pub(crate) progress: PathBuf,
+    pub(crate) range: Range<u64>,
+    pub(crate) held: u64,
+}
+
+/// Writes incoming chunks after the bytes the segment already holds and returns the hash of the
+/// whole segment, recording progress as it goes.
 pub(crate) fn write_part(
-    path: &Path,
-    offset: u64,
+    segment: &Segment,
     mut chunks: mpsc::Receiver<Bytes>,
 ) -> Result<blake3::Hash> {
+    let path = &segment.part;
     let mut file =
         File::options().read(true).write(true).create(true).truncate(false).open(path).at(path)?;
     let mut hasher = blake3::Hasher::new();
-    let mut prefix = (&mut file).take(offset);
+    file.seek(SeekFrom::Start(segment.range.start)).at(path)?;
+    let mut prefix = (&mut file).take(segment.held);
     let mut buffer = vec![0; CHUNK_SIZE];
     loop {
         let read = prefix.read(&mut buffer).at(path)?;
@@ -140,13 +175,35 @@ pub(crate) fn write_part(
         }
         hasher.update(&buffer[..read]);
     }
-    file.set_len(offset).at(path)?;
-    file.seek(SeekFrom::Start(offset)).at(path)?;
+    file.seek(SeekFrom::Start(segment.range.start + segment.held)).at(path)?;
     let mut writer = BufWriter::with_capacity(CHUNK_SIZE, file);
-    while let Some(chunk) = chunks.blocking_recv() {
-        writer.write_all(&chunk).at(path)?;
+    let mut held = segment.held;
+    let mut recorded = held;
+    let outcome = loop {
+        let Some(chunk) = chunks.blocking_recv() else { break Ok(()) };
+        if let Err(error) = writer.write_all(&chunk) {
+            break Err(error);
+        }
         hasher.update(&chunk);
-    }
-    writer.flush().at(path)?;
+        held += chunk.len() as u64;
+        if held - recorded >= PROGRESS_STEP {
+            if let Err(error) = writer.flush() {
+                break Err(error);
+            }
+            record(&segment.progress, held);
+            recorded = held;
+        }
+    };
+    outcome.and_then(|()| writer.flush()).at(path)?;
+    record(&segment.progress, held);
     Ok(hasher.finalize())
+}
+
+fn record(progress: &Path, held: u64) {
+    let _ = fs::write(progress, held.to_le_bytes());
+}
+
+/// Forgets what a segment held, so the next attempt sends it again from the start.
+pub(crate) fn forget(segment: &Segment) {
+    let _ = fs::remove_file(&segment.progress);
 }

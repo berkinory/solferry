@@ -3,6 +3,7 @@ mod meter;
 pub(crate) mod paths;
 mod quarantine;
 pub(crate) mod receiver;
+pub(crate) mod segments;
 pub(crate) mod sender;
 mod session;
 mod staging;
