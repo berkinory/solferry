@@ -250,6 +250,8 @@ def main():
         except Exception as error:
             results[name] = {"error": repr(error)[:300]}
         print(json.dumps(results[name], ensure_ascii=False), flush=True)
+        for work in Path(tempfile.gettempdir()).glob("beam-netlab-*"):
+            lab.sh(f"rm -rf {work}")
     lab.down()
 
 
