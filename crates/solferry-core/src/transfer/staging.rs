@@ -31,7 +31,6 @@ impl Staging {
     /// or poison another device's partial files by repeating its id.
     pub(crate) fn open(destination: &Path, peer: EndpointId, id: TransferId) -> Result<Self> {
         let parent = destination.join(PARTIAL_DIR);
-        prune_abandoned(&parent);
         let owner = blake3::Hasher::new().update(peer.as_bytes()).update(&id.0).finalize();
         let root = parent.join(owner.to_hex().as_str());
         fs::create_dir_all(&root).at(&root)?;
@@ -105,21 +104,29 @@ impl Staging {
     }
 }
 
-fn prune_abandoned(parent: &Path) {
-    let Ok(transfers) = fs::read_dir(parent) else {
+/// Removes partial transfers nobody resumed within a week, then the folder if it is left empty.
+pub(crate) fn prune_abandoned(destination: &Path) {
+    let parent = destination.join(PARTIAL_DIR);
+    let Ok(transfers) = fs::read_dir(&parent) else {
         return;
     };
     for transfer in transfers.flatten() {
-        let abandoned = transfer
-            .metadata()
-            .and_then(|metadata| metadata.modified())
-            .ok()
-            .and_then(|modified| modified.elapsed().ok())
-            .is_some_and(|age| age > ABANDONED_AFTER);
-        if abandoned {
+        if last_touched(&transfer.path()).is_some_and(|age| age > ABANDONED_AFTER) {
             let _ = fs::remove_dir_all(transfer.path());
         }
     }
+    let _ = fs::remove_dir(&parent);
+}
+
+/// Time since anything in a partial transfer was last written. Writing into a file does not
+/// touch its folder, so the files themselves decide.
+fn last_touched(transfer: &Path) -> Option<Duration> {
+    let files = fs::read_dir(transfer).ok()?.flatten().map(|file| file.path());
+    std::iter::once(transfer.to_owned())
+        .chain(files)
+        .filter_map(|path| fs::metadata(path).and_then(|metadata| metadata.modified()).ok())
+        .max()
+        .and_then(|modified| modified.elapsed().ok())
 }
 
 fn restore_modified(path: &Path, modified_ms: u64) {

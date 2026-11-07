@@ -116,6 +116,8 @@ impl Node {
         let NodeOptions { data_dir, isolated } = options;
         identity::prepare_private_dir(&data_dir)?;
         let config = Config::load(&data_dir)?;
+        let downloads = config.download_dir.clone();
+        tokio::task::spawn_blocking(move || crate::transfer::prune_abandoned(&downloads));
         let secret = identity::load_or_create(&data_dir)?;
         let trust = TrustStore::load(&data_dir)?;
         let relays = if isolated { Vec::new() } else { known_relays(&config, &trust)? };
