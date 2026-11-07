@@ -339,6 +339,7 @@ fn address(node: &solferry_core::Node, shelf: &Shelf, peer: &str) -> Option<Endp
 
 /// Takes ownership of a descriptor the app detached. Only phones hand over descriptors.
 #[cfg(unix)]
+#[expect(clippy::unnecessary_wraps, reason = "platforms without descriptors return None")]
 fn adopt(fd: i32) -> Option<std::fs::File> {
     use std::os::fd::{FromRawFd, OwnedFd};
     // SAFETY: the app detached the descriptor and hands its ownership to the bridge.
