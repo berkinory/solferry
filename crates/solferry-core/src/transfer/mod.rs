@@ -6,9 +6,11 @@ pub(crate) mod receiver;
 pub(crate) mod segments;
 pub(crate) mod sender;
 mod session;
+mod source;
 mod staging;
 
 pub(crate) use manifest::Manifest;
+pub use manifest::NamedFile;
 pub(crate) use meter::Meter;
 pub(crate) use session::{
     exchange_hello, remote_failure, transfer_label, validate_offer, within_handshake,

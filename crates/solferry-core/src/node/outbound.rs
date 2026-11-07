@@ -11,7 +11,7 @@ use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
 use crate::route::{self, Route, current_route};
 use crate::transfer::segments;
-use crate::transfer::{Manifest, Meter, exchange_hello, remote_failure};
+use crate::transfer::{Manifest, Meter, NamedFile, exchange_hello, remote_failure};
 use crate::transfer::{sender, transfer_label};
 
 const FIRST_CONTACT_WINDOW: Duration = Duration::from_secs(20);
@@ -35,12 +35,27 @@ impl Node {
         target: impl Into<EndpointAddr>,
         paths: Vec<PathBuf>,
     ) -> Result<SendReport> {
-        let target = target.into();
         let sender_id = self.id();
         let manifest = tokio::task::spawn_blocking(move || Manifest::scan(&paths, sender_id))
             .await
             .map_err(|error| Error::Protocol(error.to_string()))??;
-        let manifest = Arc::new(manifest);
+        self.deliver(target.into(), Arc::new(manifest)).await
+    }
+
+    /// Sends files that arrive with their own names, such as shared content on a phone.
+    pub async fn send_named(
+        &self,
+        target: impl Into<EndpointAddr>,
+        files: Vec<NamedFile>,
+    ) -> Result<SendReport> {
+        let sender_id = self.id();
+        let manifest = tokio::task::spawn_blocking(move || Manifest::named(files, sender_id))
+            .await
+            .map_err(|error| Error::Protocol(error.to_string()))??;
+        self.deliver(target.into(), Arc::new(manifest)).await
+    }
+
+    async fn deliver(&self, target: EndpointAddr, manifest: Arc<Manifest>) -> Result<SendReport> {
         let started = Instant::now();
         let mut delay = RETRY_BASE;
         let mut reached = false;

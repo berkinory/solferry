@@ -6,6 +6,7 @@ use iroh::EndpointId;
 use solferry_proto::Entry;
 use walkdir::WalkDir;
 
+use super::source::Source;
 use crate::error::{Error, Result};
 use crate::event::TransferId;
 
@@ -13,7 +14,7 @@ use crate::event::TransferId;
 pub(crate) struct Manifest {
     pub(crate) id: TransferId,
     pub(crate) entries: Vec<Entry>,
-    pub(crate) sources: Vec<PathBuf>,
+    pub(crate) sources: Vec<Source>,
 }
 
 impl Manifest {
@@ -27,9 +28,56 @@ impl Manifest {
         }
         items.sort_by(|a, b| a.0.path.cmp(&b.0.path));
         let id = transfer_id(sender, items.iter().map(|(entry, _)| entry));
+        let (entries, sources) =
+            items.into_iter().map(|(entry, path)| (entry, Source::Path(path))).unzip();
+        Ok(Self { id, entries, sources })
+    }
+}
+
+/// A file someone handed over already open, as a phone's share sheet does: `name` is what the
+/// receiver sees.
+#[derive(Debug)]
+pub struct NamedFile {
+    pub name: String,
+    pub file: std::fs::File,
+}
+
+impl Manifest {
+    pub(crate) fn named(files: Vec<NamedFile>, sender: EndpointId) -> Result<Self> {
+        let mut items = Vec::with_capacity(files.len());
+        for file in files {
+            let label = PathBuf::from(&file.name);
+            let metadata = file
+                .file
+                .metadata()
+                .map_err(|error| Error::Storage { path: label.clone(), source: Arc::new(error) })?;
+            let name = file.name.rsplit(['/', '\\']).next().unwrap_or_default().to_owned();
+            if name.is_empty() || metadata.is_dir() {
+                return Err(Error::UnsupportedName(label));
+            }
+            let entry = Entry {
+                path: name,
+                size: metadata.len(),
+                modified_ms: modified_ms(&metadata),
+                is_dir: false,
+            };
+            items.push((entry, Source::Open { name: label, file: Arc::new(file.file) }));
+        }
+        if items.is_empty() {
+            return Err(Error::NothingToSend);
+        }
+        let id = transfer_id(sender, items.iter().map(|(entry, _)| entry));
         let (entries, sources) = items.into_iter().unzip();
         Ok(Self { id, entries, sources })
     }
+}
+
+fn modified_ms(metadata: &std::fs::Metadata) -> u64 {
+    metadata
+        .modified()
+        .ok()
+        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+        .map_or(0, |elapsed| u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX))
 }
 
 fn collect(root: &Path, items: &mut Vec<(Entry, PathBuf)>) -> Result<()> {
@@ -56,11 +104,7 @@ fn collect(root: &Path, items: &mut Vec<(Entry, PathBuf)>) -> Result<()> {
             path: item.path().to_owned(),
             source: Arc::new(error.into()),
         })?;
-        let modified_ms = metadata
-            .modified()
-            .ok()
-            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-            .map_or(0, |elapsed| u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX));
+        let modified_ms = modified_ms(&metadata);
         let is_dir = metadata.is_dir();
         let size = if is_dir { 0 } else { metadata.len() };
         items.push((Entry { path, size, modified_ms, is_dir }, item.path().to_owned()));
