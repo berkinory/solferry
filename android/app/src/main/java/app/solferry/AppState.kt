@@ -35,7 +35,7 @@ data class PairingPrompt(val key: ULong, val peer: Identity, val name: String, v
 
 data class ReceivedText(val key: Long, val name: String, val text: String, val copied: Boolean)
 
-data class Me(val id: String, val name: String, val visibility: String)
+data class Me(val id: String, val fingerprint: String, val name: String, val visibility: String)
 
 data class AppState(
     val me: Me? = null,
@@ -56,7 +56,7 @@ data class AppState(
     val strangers get() = nearby.filter { !it.known }
 
     fun apply(update: Update, now: Long): AppState = when (update) {
-        is Update.Ready -> copy(me = Me(update.id, update.name, update.visibility), startProblem = null)
+        is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility), startProblem = null)
         is Update.StartFailed -> copy(startProblem = update.problem)
         is Update.Devices -> copy(devices = update.devices)
         is Update.Nearby -> copy(nearby = update.devices)

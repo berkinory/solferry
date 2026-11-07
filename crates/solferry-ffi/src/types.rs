@@ -149,6 +149,7 @@ impl From<Route> for TransferRoute {
 pub enum Update {
     Ready {
         id: String,
+        fingerprint: String,
         name: String,
         download_dir: String,
         visibility: String,

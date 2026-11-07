@@ -55,8 +55,8 @@ fun HomeScreen(
             LargeTopAppBar(
                 title = { Text("Solferry") },
                 actions = {
-                    IconButton(onClick = onAddDevice) { Glyph(R.drawable.ic_add, MaterialTheme.colorScheme.onSurface) }
-                    IconButton(onClick = onSettings) { Glyph(R.drawable.ic_settings, MaterialTheme.colorScheme.onSurface) }
+                    IconButton(onClick = onAddDevice) { Glyph(R.drawable.ic_add, MaterialTheme.colorScheme.onSurface, label = "Add device") }
+                    IconButton(onClick = onSettings) { Glyph(R.drawable.ic_settings, MaterialTheme.colorScheme.onSurface, label = "Settings") }
                 },
                 scrollBehavior = scroll,
             )

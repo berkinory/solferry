@@ -62,9 +62,9 @@ fun DeviceRows(
                 }
             }
             if (!picking) {
-                IconButton(onClick = { engine.shareClipboard(device.identity.id, device.name) }) { Glyph(R.drawable.ic_clipboard) }
+                IconButton(onClick = { engine.shareClipboard(device.identity.id, device.name) }) { Glyph(R.drawable.ic_clipboard, label = "Send clipboard to ${device.name}") }
                 IconButton(onClick = { menu = true }) {
-                    Glyph(R.drawable.ic_more)
+                    Glyph(R.drawable.ic_more, label = "Options for ${device.name}")
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(
                             text = { Text("Receive without asking") },
@@ -152,7 +152,7 @@ fun TransferRows(transfers: List<Transfer>, engine: Engine) {
                 }
             }
             IconButton(onClick = { if (transfer.running) engine.bridge.cancel(transfer.id) else engine.clear(transfer.id) }) {
-                Glyph(R.drawable.ic_cancel)
+                Glyph(R.drawable.ic_cancel, label = if (transfer.running) "Cancel" else "Clear")
             }
         }
     }

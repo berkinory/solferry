@@ -43,8 +43,12 @@ fun platformIcon(platform: DevicePlatform?) = when (platform) {
 }
 
 @Composable
-fun Glyph(@DrawableRes icon: Int, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant, size: Int = 20) =
-    Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(size.dp))
+fun Glyph(
+    @DrawableRes icon: Int,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    size: Int = 20,
+    label: String? = null,
+) = Icon(painterResource(icon), contentDescription = label, tint = tint, modifier = Modifier.size(size.dp))
 
 /** A device's tile: its platform logo in the color its key gives it, so copied names still differ. */
 @Composable

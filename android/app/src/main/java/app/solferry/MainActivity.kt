@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 LaunchedEffect(state.pairedCount) { if (state.pairedCount > 0) screen = Screen.Home }
+                LaunchedEffect(shared) { if (shared.isNotEmpty()) screen = Screen.Home }
                 BackHandler(enabled = screen != Screen.Home || shared.isNotEmpty()) {
                     if (screen != Screen.Home) screen = Screen.Home else shared = emptyList()
                 }

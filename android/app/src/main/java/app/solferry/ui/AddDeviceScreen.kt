@@ -62,7 +62,7 @@ fun AddDeviceScreen(
     Scaffold(topBar = {
         TopAppBar(
             title = { Text("Add device") },
-            navigationIcon = { IconButton(onClick = onBack) { Glyph(R.drawable.ic_arrow_left, MaterialTheme.colorScheme.onSurface) } },
+            navigationIcon = { IconButton(onClick = onBack) { Glyph(R.drawable.ic_arrow_left, MaterialTheme.colorScheme.onSurface, label = "Back") } },
         )
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
@@ -112,7 +112,7 @@ fun AddDeviceScreen(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = { join() }),
                         trailingIcon = {
-                            IconButton(onClick = { clipboard.getText()?.text?.let { code = it.trim() } }) { Glyph(R.drawable.ic_clipboard) }
+                            IconButton(onClick = { clipboard.getText()?.text?.let { code = it.trim() } }) { Glyph(R.drawable.ic_clipboard, label = "Paste") }
                         },
                     )
                     Button(onClick = join, enabled = !state.joining) { Text(if (state.joining) "Pairing" else "Pair") }

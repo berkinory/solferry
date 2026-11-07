@@ -59,7 +59,7 @@ fun SettingsScreen(state: AppState, engine: Engine, onBack: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(
             title = { Text("Settings") },
-            navigationIcon = { IconButton(onClick = onBack) { Glyph(R.drawable.ic_arrow_left, MaterialTheme.colorScheme.onSurface) } },
+            navigationIcon = { IconButton(onClick = onBack) { Glyph(R.drawable.ic_arrow_left, MaterialTheme.colorScheme.onSurface, label = "Back") } },
         )
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
@@ -107,7 +107,7 @@ fun SettingsScreen(state: AppState, engine: Engine, onBack: () -> Unit) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 20.dp)) {
                 Mono("Solferry 0.1.0")
                 Text("", Modifier.weight(1f))
-                Mono(me?.id?.take(10).orEmpty())
+                Mono(me?.fingerprint.orEmpty())
             }
         }
     }

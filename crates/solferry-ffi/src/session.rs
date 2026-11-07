@@ -59,6 +59,7 @@ pub async fn start(
     let config = node.config();
     listener.update(Update::Ready {
         id: crate::types::device_id(&node.id()),
+        fingerprint: node.id().fmt_short().to_string(),
         name: config.name.clone(),
         download_dir: config.download_dir.display().to_string(),
         visibility: format!("{:?}", config.visibility),
