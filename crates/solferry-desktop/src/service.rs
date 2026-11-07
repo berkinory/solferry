@@ -23,6 +23,7 @@ pub struct Target {
 
 pub enum Command {
     Send { targets: Vec<Target>, paths: Vec<PathBuf> },
+    SendText { target: Target, text: String },
     Cancel(TransferId),
     Answer { offer: u64, accept: bool },
     BlockOffer(u64),
@@ -72,6 +73,10 @@ pub enum Update {
         addr: EndpointAddr,
         paths: Vec<PathBuf>,
         error: Error,
+    },
+    TextShared {
+        name: String,
+        result: Result<(), Error>,
     },
 }
 
@@ -319,6 +324,10 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                         }
                     });
                 }
+            }
+            Command::SendText { target: Target { addr, name }, text } => {
+                let result = node.send_text(addr, text).await;
+                let _ = updates.send(Update::TextShared { name, result }).await;
             }
             Command::Cancel(id) => node.cancel(id),
             Command::PairNearby { addr, auto_accept } => {

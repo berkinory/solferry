@@ -5,6 +5,7 @@ mod nearby;
 mod outbound;
 mod overlay;
 mod pairing;
+mod text;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -16,7 +17,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use solferry_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
+use solferry_proto::{ALPN_PAIR, ALPN_TEXT, ALPN_TRANSFER, close};
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
 pub use confirm::PairingRequest;
@@ -148,6 +149,7 @@ impl Node {
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
+            .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }

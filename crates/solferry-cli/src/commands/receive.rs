@@ -62,6 +62,11 @@ fn report(event: &Event) {
                 route_name(*route)
             );
         }
+        Event::TextReceived { peer_name, text, .. } => {
+            let printable: String =
+                text.chars().filter(|c| !c.is_control() || matches!(c, '\n' | '\t')).collect();
+            println!("Text from {peer_name}:\n{printable}");
+        }
         Event::RouteChanged { route, .. } => println!("Now on {}", route_name(*route)),
         Event::Completed { id } => println!("Transfer {id} finished"),
         Event::Failed { id, error } => {

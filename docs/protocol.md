@@ -36,6 +36,10 @@ An invite is the string `sf1` plus lowercase base32 of a `Ticket`. It holds the 
 
 The joiner dials the id in the ticket, so the connection proves the inviter's identity, and sends `PairRequest` with the secret. The inviter removes the secret from memory on first use, and replies with `PairReply`. The joiner stores the inviter and confirms with `Finalized`, and only then does the inviter store the joiner, so a lost reply cannot leave one side paired alone. Only a hash of the secret is kept.
 
+## Shared text: ALPN `solferry-text/1`
+
+The sender opens one bidirectional stream, exchanges `Hello`, sends `SharedText` and waits for `Finalized`. Only paired, unblocked devices are accepted; anyone else gets close code 1 before any stream opens. Text is at most 1 MiB and `Finalized.ok` is false past that. The receiver copies it straight to the clipboard only if it receives from that device without asking.
+
 ## Close codes
 
 | Code | Meaning |

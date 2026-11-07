@@ -19,3 +19,8 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Network scenarios for NAT, loss, outages and restarts
 - Desktop app for Linux, Windows and macOS with tray, pairing and settings
 - Device platforms shared on pairing and discovery, shown as platform icons
+- Clipboard text sharing with paired devices, from the desktop and with `solferry send --text`
+- Large files sent as up to 16 parallel segments, each verified and resumable on its own
+- Identity colors and key fingerprints, so devices with the same name still look different
+- Device key kept in the macOS Keychain and Windows Credential Manager
+- Abandoned partial transfers cleared at startup

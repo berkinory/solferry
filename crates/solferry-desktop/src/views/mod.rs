@@ -8,6 +8,7 @@ mod offers;
 mod pairing;
 mod relays;
 mod settings;
+mod texts;
 mod transfers;
 mod ui;
 

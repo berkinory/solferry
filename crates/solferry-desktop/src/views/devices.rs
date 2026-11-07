@@ -165,6 +165,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
         .approval
         .filter(|_| expanded)
         .map(|auto_accept| device_details(row.id, row.name.clone(), auto_accept, cx));
+    let share = row.approval.is_some().then(|| share_button(&row, view, cx));
     let action = if row.approval.is_some() {
         more_button(row.id, cx)
     } else {
@@ -205,11 +206,29 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 .child(line),
         )
         .children(hint)
+        .children(share)
         .child(action);
     if selected || expanded {
         body = body.bg(hover);
     }
     div().flex().flex_col().child(body).children(details).into_any_element()
+}
+
+fn share_button(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+    let id = row.id;
+    let target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let shared = view.shared_with == Some(id);
+    Button::new(SharedString::from(format!("share-{id}")))
+        .ghost()
+        .xs()
+        .icon(if shared { Glyph::Check } else { Glyph::Clipboard })
+        .tooltip(if shared { "Clipboard sent" } else { "Send clipboard" })
+        .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
+            cx.stop_propagation();
+            let target = Target { addr: target.addr.clone(), name: target.name.clone() };
+            view.share_clipboard(id, target, cx);
+        }))
+        .into_any_element()
 }
 
 fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {

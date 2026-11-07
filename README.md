@@ -23,7 +23,7 @@ There is no account and no upload step. Files go straight from one device to ano
 cargo run --release -p solferry-desktop
 ```
 
-Drop files on a device, or on the window to pick several devices. Closing the window keeps Solferry in the tray, ready to receive. `Ctrl+O` (`Cmd+O` on macOS) chooses files, `Ctrl+N` adds a device and `Ctrl+,` opens settings.
+Drop files on a device, or on the window to pick several devices. Closing the window keeps Solferry in the tray, ready to receive. The clipboard button on a paired device sends the text you copied: it lands on that device's clipboard if it receives without asking, and waits there to be copied otherwise. `Ctrl+O` (`Cmd+O` on macOS) chooses files, `Ctrl+N` adds a device and `Ctrl+,` opens settings.
 
 On macOS, run it as an app so it can show notifications and ask for local network access:
 
@@ -57,7 +57,12 @@ solferry receive
 solferry send holiday-photos/ --to my-laptop
 ```
 
-Send to several devices with repeated `--to`.
+Send to several devices with repeated `--to`. Share text with a paired device's clipboard, or pipe it in with `-`:
+
+```sh
+solferry send --text "see you at 8" --to my-laptop
+git log -1 | solferry send --text - --to my-laptop
+```
 
 ## Who can send you files
 

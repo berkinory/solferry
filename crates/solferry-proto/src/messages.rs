@@ -134,3 +134,10 @@ pub struct Ticket {
     #[prost(uint64, tag = "5")]
     pub expires_at_ms: u64,
 }
+
+/// Copied text sent to a paired device, so it can land on that device's clipboard.
+#[derive(Clone, PartialEq, Message)]
+pub struct SharedText {
+    #[prost(string, tag = "1")]
+    pub text: String,
+}

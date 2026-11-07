@@ -23,8 +23,11 @@ pub enum Command {
     Rename { name: String },
     /// Send files or folders to one or more devices.
     Send {
-        #[arg(required = true)]
+        #[arg(required_unless_present = "text", conflicts_with = "text")]
         paths: Vec<PathBuf>,
+        /// Send this text to a paired device's clipboard instead of files. Use - to read stdin.
+        #[arg(long)]
+        text: Option<String>,
         /// Device name, id prefix or nearby device name. Repeat to send to several.
         #[arg(long = "to", required = true)]
         targets: Vec<String>,

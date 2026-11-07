@@ -23,7 +23,7 @@ use crate::state::AppState;
 use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
-const COPIED_FOR: Duration = Duration::from_millis(1500);
+pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const CONTENT_WIDTH: f32 = 560.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -41,6 +41,7 @@ pub struct MainView {
     pub expanded: Option<EndpointId>,
     pub dialog: Option<Dialog>,
     pub copied: bool,
+    pub shared_with: Option<EndpointId>,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
@@ -97,6 +98,7 @@ impl MainView {
             expanded: None,
             dialog: None,
             copied: false,
+            shared_with: None,
             targets: HashMap::new(),
             code_input,
             name_input,
