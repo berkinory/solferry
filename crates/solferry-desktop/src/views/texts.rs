@@ -8,11 +8,11 @@ use super::button::Button;
 use super::main_view::{COPIED_FOR, MainView};
 use super::ui;
 use crate::assets::Glyph;
-use crate::errors::explain;
 use crate::service::{Command, Target};
 use crate::state::{AppState, SharedText};
 use crate::tokens::{SPACE_SM, SPACE_XS};
 use solferry_core::Error;
+use solferry_core::explain;
 
 const PREVIEW_LINES: usize = 4;
 

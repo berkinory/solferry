@@ -8,12 +8,12 @@ use super::button::Button;
 use super::main_view::MainView;
 use super::ui;
 use crate::assets::Glyph;
-use crate::errors::explain;
 use crate::format;
 use crate::service::Command;
 use crate::state::{AppState, FailedSend, Phase, Transfer};
 use crate::theme::{color, palette, route_color};
 use crate::tokens::{SPACE_SM, SPACE_XS};
+use solferry_core::explain;
 
 pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Option<AnyElement> {
     if state.transfers.is_empty() && state.failures.is_empty() {

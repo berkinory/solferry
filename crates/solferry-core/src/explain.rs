@@ -1,5 +1,7 @@
-use solferry_core::Error;
+use crate::Error;
 
+/// What went wrong and what to do next, in words for people rather than logs.
+#[derive(Clone, Copy, Debug)]
 pub struct Explanation {
     pub title: &'static str,
     pub next: &'static str,
@@ -9,6 +11,7 @@ const fn say(title: &'static str, next: &'static str) -> Explanation {
     Explanation { title, next }
 }
 
+#[must_use]
 pub fn explain(error: &Error) -> Explanation {
     match error {
         Error::Storage { .. } => {
