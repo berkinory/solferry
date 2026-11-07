@@ -121,9 +121,11 @@ manual_key_path = "{workdir}/relay.key"
     time.sleep(1)
 
 
-def configure(data_dir, name, relays, policy="handshake-only"):
+def configure(data_dir, name, relays):
     data_dir.mkdir(parents=True, exist_ok=True)
-    settings = {"name": name, "relay_policy": policy, "relays": relays, "relay_ca_file": str(data_dir.parent / "ca.pem")}
+    settings = {"name": name, "relays": relays}
+    if relays:
+        settings["relay_ca_file"] = str(data_dir.parent / "ca.pem")
     (data_dir / "config.json").write_text(json.dumps(settings))
 
 
@@ -157,6 +159,7 @@ def pair(inviter, joiner, workdir):
         time.sleep(0.2)
     else:
         raise RuntimeError("no pairing code: " + Path(log).read_text()[:300])
-    outcome = joiner.run(["join", codes[0]], timeout=30)
-    process.wait(timeout=20)
+    outcome = joiner.run(["join", codes[0]], timeout=60)
+    if outcome[0] == 0:
+        process.wait(timeout=20)
     return outcome

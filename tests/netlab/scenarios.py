@@ -23,13 +23,13 @@ def digest(path):
 
 
 class Stage:
-    def __init__(self, nat="cone", size_mib=200, a_policy="own-relays", b_policy="own-relays"):
+    def __init__(self, nat="cone", size_mib=200):
         self.work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
         self.work.chmod(0o755)
         lab.up(nat)
         lab.start_relays(RELAY, self.work)
-        lab.configure(self.work / "a", "alpha", [lab.RELAY_X], a_policy)
-        lab.configure(self.work / "b", "beta", [lab.RELAY_Y], b_policy)
+        lab.configure(self.work / "a", "alpha", [lab.RELAY_X])
+        lab.configure(self.work / "b", "beta", [lab.RELAY_Y])
         self.a = lab.Host("beam-a", self.work / "a", BEAM)
         self.b = lab.Host("beam-b", self.work / "b", BEAM)
         rc, output, _ = lab.pair(self.a, self.b, self.work)
@@ -52,9 +52,6 @@ class Stage:
     def delivered(self):
         target = self.inbox / self.file.name
         return target.exists() and digest(target) == digest(self.file)
-
-    def use_policy(self, policy):
-        lab.configure(self.work / "a", "alpha", [lab.RELAY_X], policy)
 
     def close(self):
         self.a.stop()
@@ -91,12 +88,40 @@ def nat_symmetric_own_relay():
     return summary(rc, output, seconds, stage.delivered(), 200), stage
 
 
-def nat_symmetric_no_relay():
-    stage = Stage("symmetric")
-    stage.use_policy("handshake-only")
-    stage.listen()
-    rc, output, seconds = stage.send()
-    return summary(rc, output, seconds, stage.delivered(), 200), stage
+def nat_no_relay():
+    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work.chmod(0o755)
+    lab.up("cone")
+    lab.configure(work / "a", "alpha", [])
+    lab.configure(work / "b", "beta", [])
+    inviter, joiner = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    rc, output, seconds = lab.pair(inviter, joiner, work)
+    stage = type("Unreachable", (), {"close": lambda self: (inviter.stop(), joiner.stop())})()
+    return {"rc": rc, "seconds": round(seconds, 1), "tail": output.splitlines()[-2:]}, stage
+
+
+def relay_from_pairing():
+    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work.chmod(0o755)
+    lab.up("symmetric")
+    lab.start_relays(RELAY, work)
+    lab.configure(work / "a", "alpha", [lab.RELAY_X])
+    lab.configure(work / "b", "beta", [])
+    (work / "b" / "config.json").write_text(json.dumps({"name": "beta", "relay_ca_file": str(work / "ca.pem")}))
+    sender, receiver = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    rc, output, _ = lab.pair(sender, receiver, work)
+    if rc:
+        raise RuntimeError(f"pairing failed: {output}")
+    payload = work / "payload.bin"
+    with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
+        target.write(source.read(20 * 1024 * 1024))
+    receiver.spawn(["receive", "--dir", work / "inbox"], work / "receive.log")
+    time.sleep(3)
+    rc, output, seconds = sender.run(["send", payload, "--to", "beta"])
+    target = work / "inbox/payload.bin"
+    ok = target.exists() and digest(target) == digest(payload)
+    stage = type("Shared", (), {"close": lambda self: (sender.stop(), receiver.stop())})()
+    return summary(rc, output, seconds, ok, 20), stage
 
 
 def bad_link(netem):
@@ -158,7 +183,6 @@ def address_change():
 
 def direct_path():
     stage = Stage("cone", 2000)
-    stage.use_policy("handshake-only")
     stage.listen()
     rc, output, seconds = stage.send()
     return summary(rc, output, seconds, stage.delivered(), 2000), stage
@@ -168,8 +192,8 @@ def offline_lan():
     work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
     work.chmod(0o755)
     lab.lan()
-    lab.configure(work / "a", "alpha", [], "off")
-    lab.configure(work / "b", "beta", [], "off")
+    lab.configure(work / "a", "alpha", [])
+    lab.configure(work / "b", "beta", [])
     sender, receiver = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
     payload = work / "payload.bin"
     with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
@@ -186,7 +210,8 @@ def offline_lan():
 SCENARIOS = {
     "nat-cone": nat_cone,
     "nat-symmetric-own-relay": nat_symmetric_own_relay,
-    "nat-symmetric-no-relay": nat_symmetric_no_relay,
+    "nat-no-relay": nat_no_relay,
+    "relay-from-pairing": relay_from_pairing,
     "direct-throughput": direct_path,
     "offline-lan": offline_lan,
     "wifi-link": bad_link("delay 5ms loss 0.5% rate 300mbit"),
