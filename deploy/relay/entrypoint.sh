@@ -12,11 +12,12 @@ TOKEN=$(cat "$TOKEN_FILE")
 
 umask 077
 cat > /tmp/relay.toml <<CONFIG
-http_bind_addr = "[::]:80"
+http_bind_addr = "[::]:8080"
 enable_quic_addr_discovery = true
 access.shared_token = ["$TOKEN"]
 
 [tls]
+https_bind_addr = "[::]:8443"
 hostname = "$RELAY_HOSTNAME"
 contact = "$RELAY_EMAIL"
 cert_mode = "LetsEncrypt"
