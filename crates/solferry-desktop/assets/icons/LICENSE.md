@@ -1,8 +1,10 @@
 # Icon licenses
 
-All icons except `linux.svg` come from Hugeicons Free (`@hugeicons/core-free-icons`), MIT License, Copyright (c) Hugeicons. `design/icons.py` writes them.
+`design/icons.py` writes these files.
 
-`linux.svg` is the Tux logo from Simple Icons, CC0 1.0.
+Interface icons come from Hugeicons Free (`@hugeicons/core-free-icons`), MIT License, Copyright (c) Hugeicons.
+
+`apple.svg`, `android.svg` and `linux.svg` come from Simple Icons, CC0 1.0. The logos remain trademarks of their owners. `windows.svg` is drawn in `design/icons.py`.
 
 MIT License
 
