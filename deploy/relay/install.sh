@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs a solferry relay with Docker. Usage: sudo sh install.sh [--check] relay.example.com you@example.com
+# Installs a solferry relay with Docker. Usage: sudo sh install.sh [--check] relay.example.com
 set -eu
 
 CHECK_ONLY=0
@@ -7,8 +7,7 @@ if [ "${1:-}" = "--check" ]; then
     CHECK_ONLY=1
     shift
 fi
-HOSTNAME_ARG=${1:?usage: install.sh [--check] relay.example.com you@example.com}
-EMAIL_ARG=${2:?usage: install.sh [--check] relay.example.com you@example.com}
+HOSTNAME_ARG=${1:?usage: install.sh [--check] relay.example.com}
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 FILES="-f compose.yaml"
 
@@ -49,7 +48,7 @@ fi
 
 cd "$HERE"
 umask 077
-printf 'RELAY_HOSTNAME=%s\nRELAY_EMAIL=%s\n' "$HOSTNAME_ARG" "$EMAIL_ARG" > .env
+printf 'RELAY_HOSTNAME=%s\n' "$HOSTNAME_ARG" > .env
 # shellcheck disable=SC2086
 docker compose -p solferry-relay $FILES up -d --build
 
