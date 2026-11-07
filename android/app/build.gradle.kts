@@ -5,7 +5,7 @@ plugins {
 
 val rustOut = layout.buildDirectory.dir("generated/rust")
 
-val buildRust by tasks.registering(Exec::class) {
+val buildRust = tasks.register<Exec>("buildRust") {
     description = "Builds the Rust core for Android and generates its Kotlin bindings."
     workingDir = rootDir
     commandLine("./build-rust.sh", rustOut.get().asFile.absolutePath)
