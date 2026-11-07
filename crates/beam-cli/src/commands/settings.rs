@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use beam_core::{Config, Error, Result};
+use beam_core::{Config, Error, RelayLink, Result};
 
 use crate::args::RelayCommand;
 
@@ -10,8 +10,8 @@ pub async fn status(data_dir: &Path) -> Result<()> {
     println!("name      {}", config.name);
     println!("id        {}", node.id().to_z32());
     println!("downloads {}", config.download_dir.display());
-    let relays =
-        if config.relays.is_empty() { "none".to_owned() } else { config.relays.join(", ") };
+    let urls: Vec<String> = config.relays.iter().map(|link| address(link)).collect();
+    let relays = if urls.is_empty() { "none".to_owned() } else { urls.join(", ") };
     println!("relays    {relays}");
     node.shutdown().await
 }
@@ -27,22 +27,35 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
             if config.relays.is_empty() {
                 println!("No relays. This device only uses the local network and overlays.");
             }
-            for url in &config.relays {
-                println!("{url}");
+            for link in &config.relays {
+                println!("{}", address(link));
             }
             Ok(())
         }
         RelayCommand::Add { url } => {
-            url.parse::<iroh::RelayUrl>().map_err(|_| Error::InvalidRelayUrl(url.clone()))?;
+            let added = RelayLink::parse(&url)?;
             update(data_dir, |config| {
-                config.relays.retain(|existing| *existing != url);
+                config.relays.retain(|existing| !same_relay(existing, &added));
                 config.relays.push(url);
             })
         }
-        RelayCommand::Remove { url } => update(data_dir, |config| {
-            config.relays.retain(|existing| *existing != url);
-        }),
+        RelayCommand::Remove { url } => {
+            let removed = RelayLink::parse(&url)?;
+            update(data_dir, |config| {
+                config.relays.retain(|existing| !same_relay(existing, &removed));
+            })
+        }
     }
+}
+
+/// Tokens stay out of terminals and screenshots.
+fn address(link: &str) -> String {
+    RelayLink::parse(link)
+        .map_or_else(|_| "invalid relay".to_owned(), |link| link.url().to_string())
+}
+
+fn same_relay(link: &str, other: &RelayLink) -> bool {
+    RelayLink::parse(link).is_ok_and(|link| link.url() == other.url())
 }
 
 fn update(data_dir: &Path, change: impl FnOnce(&mut Config)) -> Result<()> {

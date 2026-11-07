@@ -1,9 +1,10 @@
 use std::path::{Path, PathBuf};
 
-use iroh::{EndpointAddr, EndpointId, RelayUrl, TransportAddr};
+use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
+use crate::relay::RelayLink;
 use crate::store;
 
 const DEVICES_FILE: &str = "devices.json";
@@ -26,9 +27,10 @@ impl Device {
     /// Dialable address: the id plus the relays this device told us about.
     #[must_use]
     pub fn addr(&self) -> EndpointAddr {
-        let relays = self.relays.iter().filter_map(|url| url.parse::<RelayUrl>().ok());
+        let relays = self.relays.iter().filter_map(|link| RelayLink::parse(link).ok());
         let direct = self.direct_addrs.iter().filter_map(|addr| addr.parse().ok());
-        let addrs = relays.map(TransportAddr::Relay).chain(direct.map(TransportAddr::Ip));
+        let relays = relays.map(|link| TransportAddr::Relay(link.url().clone()));
+        let addrs = relays.chain(direct.map(TransportAddr::Ip));
         EndpointAddr::from_parts(self.id, addrs)
     }
 }

@@ -22,7 +22,9 @@ fn advice(error: &Error) -> Advice {
             "Fix or delete that file. Paired devices may need pairing again."
         }
         Error::NetworkStart(_) => "Check that a network interface is up and try again.",
-        Error::InvalidRelayUrl(_) => "Use a full address such as https://relay.example.com.",
+        Error::InvalidRelayUrl(_) => {
+            "Paste the full link your relay printed, such as https://relay.example.com#token."
+        }
         Error::Unreachable(_) => {
             "Make sure beam is running there. On another network, use Tailscale or your own relay with `beam relay add`."
         }

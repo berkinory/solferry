@@ -124,6 +124,20 @@ def relay_from_pairing():
     return summary(rc, output, seconds, ok, 20), stage
 
 
+def relay_wrong_token():
+    work = Path(tempfile.mkdtemp(prefix="beam-netlab-"))
+    work.chmod(0o755)
+    lab.up("symmetric")
+    lab.start_relays(RELAY, work)
+    lab.configure(work / "a", "alpha", [lab.RELAY_X.replace(lab.RELAY_TOKEN, "wrong")])
+    lab.configure(work / "b", "beta", [])
+    (work / "b" / "config.json").write_text(json.dumps({"name": "beta", "relay_ca_file": str(work / "ca.pem")}))
+    inviter, joiner = lab.Host("beam-a", work / "a", BEAM), lab.Host("beam-b", work / "b", BEAM)
+    rc, output, seconds = lab.pair(inviter, joiner, work)
+    stage = type("Refused", (), {"close": lambda self: (inviter.stop(), joiner.stop())})()
+    return {"rc": rc, "seconds": round(seconds, 1), "tail": output.splitlines()[-2:]}, stage
+
+
 def bad_link(netem):
     def run():
         stage = Stage("cone", 300)
@@ -212,6 +226,7 @@ SCENARIOS = {
     "nat-symmetric-own-relay": nat_symmetric_own_relay,
     "nat-no-relay": nat_no_relay,
     "relay-from-pairing": relay_from_pairing,
+    "relay-wrong-token": relay_wrong_token,
     "direct-throughput": direct_path,
     "offline-lan": offline_lan,
     "wifi-link": bad_link("delay 5ms loss 0.5% rate 300mbit"),

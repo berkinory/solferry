@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -15,6 +14,7 @@ use rand::Rng;
 use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::Event;
+use crate::relay::RelayLink;
 use crate::transfer::paths::clean_label;
 use crate::trust::Device;
 
@@ -70,7 +70,7 @@ impl Node {
             endpoint_id: addr.id.as_bytes().to_vec(),
             secret: secret.to_vec(),
             direct_addrs: addr.ip_addrs().map(ToString::to_string).collect(),
-            relay_urls: addr.relay_urls().map(ToString::to_string).collect(),
+            relay_urls: self.relay_links(&[]),
             expires_at_ms,
         };
         let code = format!(
@@ -78,6 +78,19 @@ impl Node {
             BASE32_NOPAD.encode(&ticket.encode_to_vec()).to_lowercase()
         );
         Invite { code, expires_at_ms }
+    }
+
+    /// Relays this device waits on, with the access tokens another device needs to use them.
+    fn relay_links(&self, extra: &[String]) -> Vec<String> {
+        let trust = self.shared.trust();
+        let shared = trust.all().iter().flat_map(|device| &device.relays);
+        let known: Vec<&String> = self.config().relays.iter().chain(shared).chain(extra).collect();
+        let link_for = |url: &iroh::RelayUrl| {
+            let matches =
+                |link: &&&String| RelayLink::parse(link).is_ok_and(|link| link.url() == url);
+            known.iter().find(matches).map_or_else(|| url.to_string(), |link| (**link).clone())
+        };
+        self.addr().relay_urls().map(link_for).collect()
     }
 
     /// Redeems an invite from another device and stores the resulting trust on both sides.
@@ -99,8 +112,7 @@ impl Node {
             .await
             .map_err(|error| Error::Unreachable(error.to_string()))?;
         let (mut send, mut recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
-        let mut relay_urls: Vec<String> =
-            self.addr().relay_urls().map(ToString::to_string).collect();
+        let mut relay_urls = self.relay_links(&relays);
         relay_urls.extend(relays.iter().cloned());
         relay_urls.sort();
         relay_urls.dedup();
@@ -131,9 +143,9 @@ impl Node {
 }
 
 /// Starts using a relay the other device waits on, so nobody has to configure it by hand.
-async fn adopt_relays(shared: &Shared, urls: &[String]) {
-    for url in urls.iter().filter_map(|url| url.parse::<iroh::RelayUrl>().ok()) {
-        shared.endpoint.insert_relay(url.clone(), Arc::new(url.into())).await;
+async fn adopt_relays(shared: &Shared, links: &[String]) {
+    for link in links.iter().filter_map(|link| RelayLink::parse(link).ok()) {
+        shared.endpoint.insert_relay(link.url().clone(), Arc::new(link.config())).await;
     }
 }
 
@@ -153,8 +165,8 @@ fn ticket_addr(ticket: &Ticket) -> Result<EndpointAddr> {
     let relays = ticket
         .relay_urls
         .iter()
-        .filter_map(|url| iroh::RelayUrl::from_str(url).ok())
-        .map(TransportAddr::Relay);
+        .filter_map(|link| RelayLink::parse(link).ok())
+        .map(|link| TransportAddr::Relay(link.url().clone()));
     Ok(EndpointAddr::from_parts(id, ips.chain(relays)))
 }
 

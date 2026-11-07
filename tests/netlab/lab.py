@@ -7,8 +7,9 @@ import subprocess
 import time
 from pathlib import Path
 
-RELAY_X = "https://203.0.113.1:3340/"
-RELAY_Y = "https://203.0.113.2:3340/"
+RELAY_TOKEN = "netlab-token"
+RELAY_X = f"https://203.0.113.1:3340/#{RELAY_TOKEN}"
+RELAY_Y = f"https://203.0.113.2:3340/#{RELAY_TOKEN}"
 NAMESPACES = ["beam-wan", "beam-rx", "beam-ry", "beam-a", "beam-b"]
 USER = os.environ.get("SUDO_USER") or os.environ["USER"]
 
@@ -107,6 +108,7 @@ def start_relays(binary, workdir):
 enable_relay = true
 enable_quic_addr_discovery = true
 enable_metrics = false
+access.shared_token = ["{RELAY_TOKEN}"]
 
 [tls]
 https_bind_addr = "{ip}:3340"
