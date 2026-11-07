@@ -26,3 +26,7 @@ Devices paired after this share the relay address automatically. Adding a relay 
 ## Keep it private
 
 A relay with no authentication serves anyone who finds it. If bandwidth or exposure matters, restrict it with iroh-relay access control or a firewall.
+
+## Public relays
+
+beam uses the public n0 relays and discovery servers by default so devices can find each other. n0 offers them for development and hobby use, with rate limits and no uptime guarantee. They can see IP addresses, connection times and traffic volume, and n0 advises against using them for sensitive data. If that matters to you, run your own relay or set `beam relay policy off`. A public release of beam should move to a production relay plan first.
