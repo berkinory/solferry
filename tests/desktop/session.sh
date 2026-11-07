@@ -9,6 +9,15 @@ cat > $XDG_CONFIG_HOME/glib-2.0/settings/keyfile <<KF
 [org/gnome/shell]
 disable-user-extensions=false
 enabled-extensions=['ubuntu-appindicators@ubuntu.com']
+
+[org/gnome/mutter]
+dynamic-workspaces=false
+
+[org/gnome/desktop/interface]
+color-scheme='${BEAM_SCHEME:-default}'
+
+[org/gnome/desktop/wm/preferences]
+num-workspaces=1
 KF
 exec dbus-run-session -- bash -c '
 gnome-shell --unsafe-mode --headless --wayland --wayland-display=beam-0 --virtual-monitor 1280x800 >$XDG_RUNTIME_DIR/shell.log 2>&1 &

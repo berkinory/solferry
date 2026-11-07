@@ -2,7 +2,9 @@ use beam_core::{Direction, Route};
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::{AnyElement, Context, IntoElement, ParentElement, SharedString, Styled, div, px, relative};
+use gpui_kit::{
+    AnyElement, Context, IntoElement, ParentElement, SharedString, Styled, div, px, relative,
+};
 
 use super::main_view::MainView;
 use super::ui;
@@ -88,8 +90,8 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
                         .ghost()
                         .xsmall()
                         .label("Cancel")
-                        .on_click(cx.listener(move |view, _, _, cx| {
-                            view.command(Command::Cancel(id), cx);
+                        .on_click(cx.listener(move |_, _, _, cx| {
+                            MainView::command(Command::Cancel(id), cx);
                         }))
                 }))
                 .children(finished.then(|| {
@@ -103,9 +105,12 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
                 })),
         )
         .children(running.then(|| {
-            div().h(px(6.)).w_full().rounded(px(3.)).bg(track).child(
-                div().h_full().rounded(px(3.)).bg(fill).w(relative(transfer.fraction())),
-            )
+            div()
+                .h(px(6.))
+                .w_full()
+                .rounded(px(3.))
+                .bg(track)
+                .child(div().h_full().rounded(px(3.)).bg(fill).w(relative(transfer.fraction())))
         }))
         .child(ui::muted(status(transfer), cx))
         .into_any_element()

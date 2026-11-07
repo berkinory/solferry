@@ -1,17 +1,21 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use beam_core::{Relationship, Result};
+use beam_core::{Event, Relationship, RelayPolicy, Result};
 use qrcode::QrCode;
 use qrcode::render::unicode::Dense1x2;
 
 const NEARBY_WINDOW: Duration = Duration::from_secs(4);
+const ONLINE_WAIT: Duration = Duration::from_secs(5);
+const INVITE_WAIT: Duration = Duration::from_secs(600);
 
 pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    let known = node.devices().len();
+    let mut events = node.events();
     let relationship = if contact { Relationship::Contact } else { Relationship::Own };
-    node.online().await;
+    if node.config().relay_policy != RelayPolicy::Off {
+        node.online_within(ONLINE_WAIT).await;
+    }
     let invite = node.invite(relationship);
     if let Ok(code) = QrCode::new(invite.code()) {
         println!("{}", code.render::<Dense1x2>().quiet_zone(true).build());
@@ -20,19 +24,15 @@ pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
         "{}\n\nWaiting for the other device. The code works once, for 10 minutes.",
         invite.code()
     );
-    let mut poll = tokio::time::interval(Duration::from_millis(250));
-    let deadline = tokio::time::sleep(Duration::from_secs(600));
-    tokio::pin!(deadline);
-    loop {
-        tokio::select! {
-            _ = poll.tick() => {
-                if let Some(device) = node.devices().get(known) {
-                    println!("Paired with {}", device.name);
-                    break;
-                }
+    let paired = async {
+        loop {
+            if let Ok(Event::Paired { device }) = events.recv().await {
+                return device;
             }
-            () = &mut deadline => break,
         }
+    };
+    if let Ok(device) = tokio::time::timeout(INVITE_WAIT, paired).await {
+        println!("Paired with {}", device.name);
     }
     node.shutdown().await
 }

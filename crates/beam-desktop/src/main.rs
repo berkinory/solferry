@@ -15,7 +15,9 @@ use tracing_subscriber::EnvFilter;
 
 fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_env("BEAM_LOG").unwrap_or_else(|_| EnvFilter::new("off")))
+        .with_env_filter(
+            EnvFilter::try_from_env("BEAM_LOG").unwrap_or_else(|_| EnvFilter::new("off")),
+        )
         .with_writer(std::io::stderr)
         .init();
     let data_dir = std::env::var_os("BEAM_DATA_DIR").map_or_else(default_data_dir, Into::into);

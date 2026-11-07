@@ -1,15 +1,16 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
+use beam_core::TransferId;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::InputState;
 use gpui_kit::component::{ActiveTheme, Icon, IconName, TitleBar};
 use gpui_kit::{
-    AnyElement, AppContext, Context, Entity, ExternalPaths, FontWeight, InteractiveElement, IntoElement, ParentElement,
-    PathPromptOptions, Render, StatefulInteractiveElement, Styled, Window, div, px,
+    AnyElement, AppContext, Context, Entity, ExternalPaths, FontWeight, InteractiveElement,
+    IntoElement, MouseButton, ParentElement, PathPromptOptions, Render, StatefulInteractiveElement,
+    Styled, Window, div, px,
 };
-use beam_core::TransferId;
 use iroh::EndpointId;
 
 use super::{devices, offers, pairing, settings, transfers, ui};
@@ -39,7 +40,16 @@ pub struct MainView {
 impl MainView {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let state = cx.global::<Shell>().state.clone();
-        cx.observe(&state, |_, _, cx| cx.notify()).detach();
+        let mut paired_count = state.read(cx).paired_count;
+        cx.observe(&state, move |view, state, cx| {
+            let latest = state.read(cx).paired_count;
+            if latest != paired_count {
+                paired_count = latest;
+                view.page = Page::Home;
+            }
+            cx.notify();
+        })
+        .detach();
         Self {
             state,
             page: Page::Home,
@@ -53,7 +63,7 @@ impl MainView {
         }
     }
 
-    pub fn command(&self, command: Command, cx: &Context<Self>) {
+    pub fn command(command: Command, cx: &Context<Self>) {
         cx.global::<Shell>().service.send(command);
     }
 
@@ -67,12 +77,12 @@ impl MainView {
 
     pub fn send_now(&mut self, targets: Vec<Target>, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
         self.clear_pending(cx);
-        self.command(Command::Send { targets, paths }, cx);
+        Self::command(Command::Send { targets, paths }, cx);
     }
 
     pub fn activate_device(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
         if self.pending.is_empty() {
-            self.pick_files_for(target, cx);
+            Self::pick_files_for(target, cx);
         } else {
             if !self.selected.remove(&id) {
                 self.selected.insert(id);
@@ -82,7 +92,7 @@ impl MainView {
         }
     }
 
-    fn pick_files_for(&self, target: Target, cx: &mut Context<Self>) {
+    fn pick_files_for(target: Target, cx: &mut Context<Self>) {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
@@ -91,7 +101,7 @@ impl MainView {
         .detach();
     }
 
-    fn pick_pending(&self, cx: &mut Context<Self>) {
+    fn pick_pending(cx: &mut Context<Self>) {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
@@ -124,7 +134,7 @@ impl MainView {
         });
         if let Some(failure) = failure {
             let target = Target { addr: failure.addr, name: failure.name };
-            self.command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
+            Self::command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
         }
     }
 
@@ -155,61 +165,63 @@ impl MainView {
             state.offers.retain(|offer| offer.key != key);
             cx.notify();
         });
-        self.command(Command::Answer { offer: key, accept }, cx);
+        Self::command(Command::Answer { offer: key, accept }, cx);
     }
 
     fn header(&self, cx: &mut Context<Self>) -> AnyElement {
         let home = self.page == Page::Home;
         let name = self.state.read(cx).config.as_ref().map(|config| config.name.clone());
-        TitleBar::new().child(
-            div()
-                .flex()
-                .items_center()
-                .justify_between()
-                .w_full()
-                .pr_2()
-                .child(
-                    div()
-                        .flex()
-                        .gap_2()
-                        .child(div().text_sm().font_weight(FontWeight::SEMIBOLD).child("beam"))
-                        .children(name.map(|name| ui::muted(name, cx))),
-                )
-                .child(
-                    div()
-                        .flex()
-                        .gap_1()
-                        .child(
-                            Button::new("add-device")
-                                .ghost()
-                                .xsmall()
-                                .icon(IconName::Plus)
-                                .tooltip("Add device")
-                                .on_click(cx.listener(|view, _, window, cx| {
-                                    view.open_page(Page::Pair, window, cx);
-                                })),
-                        )
-                        .child(
-                            Button::new("open-settings")
-                                .ghost()
-                                .xsmall()
-                                .icon(Icon::new(if home {
-                                    IconName::Settings
-                                } else {
-                                    IconName::Close
-                                }))
-                                .tooltip(if home { "Settings" } else { "Back" })
-                                .on_click(cx.listener(move |view, _, window, cx| {
-                                    let next = if home { Page::Settings } else { Page::Home };
-                                    view.open_page(next, window, cx);
-                                })),
-                        ),
-                ),
-        )
-        .into_any_element()
+        TitleBar::new()
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .w_full()
+                    .pr_2()
+                    .child(
+                        div()
+                            .flex()
+                            .gap_2()
+                            .child(div().text_sm().font_weight(FontWeight::SEMIBOLD).child("beam"))
+                            .children(name.map(|name| ui::muted(name, cx))),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .gap_1()
+                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                            .child(
+                                Button::new("add-device")
+                                    .ghost()
+                                    .xsmall()
+                                    .icon(IconName::Plus)
+                                    .accessibility_label("Add device")
+                                    .on_click(cx.listener(|view, _, window, cx| {
+                                        view.open_page(Page::Pair, window, cx);
+                                    })),
+                            )
+                            .child(
+                                Button::new("open-settings")
+                                    .ghost()
+                                    .xsmall()
+                                    .icon(Icon::new(if home {
+                                        IconName::Settings
+                                    } else {
+                                        IconName::Close
+                                    }))
+                                    .accessibility_label(if home { "Settings" } else { "Back" })
+                                    .on_click(cx.listener(move |view, _, window, cx| {
+                                        let next = if home { Page::Settings } else { Page::Home };
+                                        view.open_page(next, window, cx);
+                                    })),
+                            ),
+                    ),
+            )
+            .into_any_element()
     }
 
-    fn drop_zone(&self, cx: &mut Context<Self>) -> AnyElement {
+    fn drop_zone(cx: &mut Context<Self>) -> AnyElement {
         let theme = cx.theme();
         let (border, hover, muted) = (theme.border, theme.accent, theme.muted_foreground);
         div()
@@ -226,7 +238,7 @@ impl MainView {
             .border_color(border)
             .cursor_pointer()
             .hover(move |style| style.bg(hover))
-            .on_click(cx.listener(|view, _, _, cx| view.pick_pending(cx)))
+            .on_click(cx.listener(|_, _, _, cx| Self::pick_pending(cx)))
             .child(Icon::new(IconName::FolderOpen).size(px(26.)).text_color(muted))
             .child(div().text_sm().child("Drop files to send"))
             .child(ui::muted("or click to choose", cx))
@@ -244,7 +256,7 @@ impl MainView {
         });
         let offers: Vec<_> = state.offers.iter().map(|offer| offers::card(offer, cx)).collect();
         let pending = (!self.pending.is_empty()).then(|| devices::pending_bar(self, cx));
-        let drop_zone = self.pending.is_empty().then(|| self.drop_zone(cx));
+        let drop_zone = self.pending.is_empty().then(|| Self::drop_zone(cx));
         div()
             .flex()
             .flex_col()

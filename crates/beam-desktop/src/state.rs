@@ -56,6 +56,8 @@ pub struct AppState {
     pub offers: Vec<Offer>,
     pub invite: Option<String>,
     pub pairing_error: Option<Error>,
+    pub joining: bool,
+    pub paired_count: u32,
     pub fatal: Option<Error>,
 }
 
@@ -74,13 +76,11 @@ impl AppState {
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
             Update::Invite(code) => self.invite = Some(code),
-            Update::Paired(device) => {
-                self.invite = None;
-                self.pairing_error = None;
-                self.devices.retain(|known| known.id != device.id);
-                self.devices.push(device);
+            Update::Paired(device) => self.add_device(device),
+            Update::PairingFailed(error) => {
+                self.joining = false;
+                self.pairing_error = Some(error);
             }
-            Update::PairingFailed(error) => self.pairing_error = Some(error),
             Update::SendFailed { name, addr, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
                     self.failures.push(FailedSend { name, addr, paths, error });
@@ -89,8 +89,21 @@ impl AppState {
         }
     }
 
+    fn add_device(&mut self, device: Device) {
+        self.invite = None;
+        self.pairing_error = None;
+        self.joining = false;
+        self.paired_count += 1;
+        self.devices.retain(|known| known.id != device.id);
+        for nearby in &mut self.nearby {
+            nearby.known |= nearby.addr.id == device.id;
+        }
+        self.devices.push(device);
+    }
+
     fn on_event(&mut self, event: Event) {
         match event {
+            Event::Paired { device } => self.add_device(device),
             Event::Started { id, peer_name, label, direction, route, bytes, .. } => {
                 self.transfers.retain(|transfer| transfer.id != id);
                 self.transfers.insert(
@@ -161,6 +174,7 @@ impl Transfer {
         self.phase = Phase::Active;
     }
 
+    #[expect(clippy::cast_possible_truncation, reason = "a progress ratio fits in f32")]
     pub fn fraction(&self) -> f32 {
         if self.total == 0 {
             return 1.0;

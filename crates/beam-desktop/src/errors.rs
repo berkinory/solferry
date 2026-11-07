@@ -21,9 +21,10 @@ pub fn explain(error: &Error) -> Explanation {
         Error::NetworkStart(_) => {
             say("Networking didn't start", "Check that you are connected, then restart beam.")
         }
-        Error::InvalidRelayUrl(_) => {
-            say("That relay address isn't valid", "Use a full address like https://relay.example.com.")
-        }
+        Error::InvalidRelayUrl(_) => say(
+            "That relay address isn't valid",
+            "Use a full address like https://relay.example.com.",
+        ),
         Error::Unreachable(_) => {
             say("Device can't be reached", "Make sure beam is open on the other device.")
         }
@@ -72,9 +73,7 @@ pub fn explain(error: &Error) -> Explanation {
         Error::TicketExpired => {
             say("That code expired", "Codes last 10 minutes. Create a new one.")
         }
-        Error::PairingRefused => {
-            say("The code was refused", "Codes work once. Create a new one.")
-        }
+        Error::PairingRefused => say("The code was refused", "Codes work once. Create a new one."),
         Error::UnknownDevice(_) => say("Device not found", "It may have been removed."),
         Error::AmbiguousDevice(_) => {
             say("More than one device matches", "Choose the device from the list.")

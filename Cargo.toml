@@ -29,7 +29,10 @@ gethostname = "1"
 gpui-kit = "0.9"
 hex = "0.4"
 indicatif = "0.18"
-ksni = { version = "0.3", default-features = false, features = ["async-io", "blocking"] }
+ksni = { version = "0.3", default-features = false, features = [
+  "async-io",
+  "blocking",
+] }
 
 noq-proto = "1.4"
 prost = "0.14"

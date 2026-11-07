@@ -2,11 +2,11 @@ use std::path::Path;
 
 use beam_core::{NearbyDevice, Relationship};
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::{Disableable, Sizable};
 use gpui_kit::component::button::{Button, ButtonVariants};
+use gpui_kit::component::{Disableable, Sizable};
 use gpui_kit::{
-    AnyElement, Context, ElementId, ExternalPaths, InteractiveElement, IntoElement,
-    ParentElement, SharedString, StatefulInteractiveElement, Styled, Window, div, px,
+    AnyElement, Context, ElementId, ExternalPaths, InteractiveElement, IntoElement, ParentElement,
+    SharedString, StatefulInteractiveElement, Styled, Window, div, px,
 };
 use iroh::{EndpointAddr, EndpointId};
 
@@ -146,8 +146,8 @@ fn forget_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
         .ghost()
         .xsmall()
         .label("Forget")
-        .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
-            view.command(Command::Forget(id), cx);
+        .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
+            MainView::command(Command::Forget(id), cx);
         }))
         .into_any_element()
 }
@@ -190,9 +190,6 @@ pub fn pending_bar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn file_name(path: &Path) -> String {
-    path.file_name().map_or_else(
-        || path.display().to_string(),
-        |name| name.to_string_lossy().into_owned(),
-    )
+    path.file_name()
+        .map_or_else(|| path.display().to_string(), |name| name.to_string_lossy().into_owned())
 }
-

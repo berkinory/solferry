@@ -15,9 +15,10 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         1 => "1 file".to_owned(),
         count => format!("{count} files"),
     };
-    let warning = summary.relationship.is_none().then(|| {
-        ui::muted("This device isn't paired. Accept only if you expected this.", cx)
-    });
+    let warning = summary
+        .relationship
+        .is_none()
+        .then(|| ui::muted("This device isn't paired. Accept only if you expected this.", cx));
     ui::card(cx)
         .border_color(cx.theme().primary)
         .child(div().text_sm().child(format!("{} wants to send you", summary.peer_name)))

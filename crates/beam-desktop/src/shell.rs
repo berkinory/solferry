@@ -115,4 +115,3 @@ pub fn quit(cx: &mut App) {
     cx.global::<Shell>().service.send(Command::Quit);
     cx.quit();
 }
-

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -12,7 +12,6 @@ use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
-
 
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
@@ -79,11 +78,11 @@ struct Session {
 }
 
 async fn start(
-    data_dir: &PathBuf,
+    data_dir: &Path,
     updates: &UnboundedSender<Update>,
     pending: &Pending,
 ) -> Option<Session> {
-    let options = NodeOptions { data_dir: data_dir.clone(), isolated: false };
+    let options = NodeOptions { data_dir: data_dir.to_owned(), isolated: false };
     let (node, mut offers) = match Node::start(options).await {
         Ok(started) => started,
         Err(error) => {
@@ -217,7 +216,8 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 if node.config().relay_policy != RelayPolicy::Off {
                     node.online_within(ONLINE_WAIT).await;
                 }
-                let _ = updates.send(Update::Invite(node.invite(relationship).code().to_owned())).await;
+                let _ =
+                    updates.send(Update::Invite(node.invite(relationship).code().to_owned())).await;
             }
             Command::Join(code) => {
                 let result = match node.join(&code).await {
@@ -235,4 +235,3 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
         }
     });
 }
-

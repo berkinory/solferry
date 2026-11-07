@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Drives the private GNOME session: window geometry, screenshots and real pointer drags."""
-import json, sys, time, gi
+import json, os, sys, time, gi
+HOVER = float(os.environ.get("HOVER", ".3"))
 gi.require_version("Gio", "2.0")
 from gi.repository import Gio, GLib
 bus = Gio.bus_get_sync(Gio.BusType.SESSION)
@@ -43,6 +44,7 @@ def pointer():
     return json.loads(json.loads(out))[:2]
 
 def click(x, y):
+    hide_overview()
     N, I = "org.gnome.Mutter.RemoteDesktop", "org.gnome.Mutter.RemoteDesktop.Session"
     path = session()
     for _ in range(50):
@@ -51,9 +53,12 @@ def click(x, y):
             break
         call(N, path, I, "NotifyPointerMotionRelative", GLib.Variant("(dd)", ((x - px) * .7, (y - py) * .7)))
         time.sleep(.02)
-    time.sleep(.2)
+    for dx in (4, -4, 4, -4):
+        call(N, path, I, "NotifyPointerMotionRelative", GLib.Variant("(dd)", (dx, 0)))
+        time.sleep(.08)
+    time.sleep(HOVER)
     call(N, path, I, "NotifyPointerButton", GLib.Variant("(ib)", (272, True)))
-    time.sleep(.06)
+    time.sleep(.08)
     call(N, path, I, "NotifyPointerButton", GLib.Variant("(ib)", (272, False)))
     time.sleep(.2)
     call(N, path, I, "Stop")
@@ -61,15 +66,24 @@ def click(x, y):
 def type_text(text):
     N, I = "org.gnome.Mutter.RemoteDesktop", "org.gnome.Mutter.RemoteDesktop.Session"
     path = session()
+    time.sleep(.8)
     for char in text:
         for down in (True, False):
             call(N, path, I, "NotifyKeyboardKeysym", GLib.Variant("(ub)", (ord(char), down)))
-        time.sleep(.004)
+        time.sleep(.02)
     time.sleep(.2)
     call(N, path, I, "Stop")
 
+def shell_eval(js):
+    return call("org.gnome.Shell", "/org/gnome/Shell", "org.gnome.Shell", "Eval", GLib.Variant("(s)", (js,)))[1]
+
 def hide_overview():
-    call("org.gnome.Shell", "/org/gnome/Shell", "org.gnome.Shell", "Eval", GLib.Variant("(s)", ("Main.overview.hide()",)))
+    for _ in range(40):
+        shell_eval("Main.overview.hide()")
+        time.sleep(.25)
+        if shell_eval("Main.overview.visible") == "false" and shell_eval("Main.overview.animationInProgress") == "false":
+            return
+    print("overview stayed open")
 
 if __name__ == "__main__":
     cmd = sys.argv[1]
