@@ -12,7 +12,7 @@ use std::time::Duration;
 use beam_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
 use iroh::endpoint::Connection;
 use iroh::protocol::Router;
-use iroh::{Endpoint, EndpointAddr, EndpointId, RelayUrl};
+use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
@@ -24,6 +24,7 @@ pub use pairing::Invite;
 use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
+use crate::relay::RelayLink;
 use crate::trust::{Device, TrustStore};
 use crate::{identity, net};
 
@@ -82,12 +83,13 @@ impl Shared {
 }
 
 /// Your own relays plus the ones paired devices wait on, which is how a device reaches them.
-fn known_relays(config: &Config, trust: &TrustStore) -> Result<Vec<RelayUrl>> {
-    let mut relays = net::parse_relays(&config.relays)?;
+fn known_relays(config: &Config, trust: &TrustStore) -> Result<Vec<RelayLink>> {
+    let mut relays =
+        config.relays.iter().map(|link| RelayLink::parse(link)).collect::<Result<Vec<_>>>()?;
     let shared = trust.all().iter().flat_map(|device| &device.relays);
-    relays.extend(shared.filter_map(|url| url.parse().ok()));
-    relays.sort();
-    relays.dedup();
+    relays.extend(shared.filter_map(|link| RelayLink::parse(link).ok()));
+    relays.sort_by(|a, b| a.url().cmp(b.url()));
+    relays.dedup_by(|a, b| a.url() == b.url());
     Ok(relays)
 }
 

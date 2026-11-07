@@ -23,7 +23,7 @@ pub fn explain(error: &Error) -> Explanation {
         }
         Error::InvalidRelayUrl(_) => say(
             "That relay address isn't valid",
-            "Use a full address like https://relay.example.com.",
+            "Paste the full link your relay printed, like https://relay.example.com#token.",
         ),
         Error::Unreachable(_) => say(
             "Device can't be reached",

@@ -58,6 +58,7 @@ pub struct AppState {
     pub offers: Vec<Offer>,
     pub invite: Option<String>,
     pub pairing_error: Option<Error>,
+    pub relay_error: Option<Error>,
     pub joining: bool,
     pub paired_count: u32,
     pub fatal: Option<Error>,

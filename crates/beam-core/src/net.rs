@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use iroh::endpoint::{Builder, PortmapperConfig, QuicTransportConfig, presets};
 use iroh::tls::CaTlsConfig;
-use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
+use iroh::{Endpoint, RelayMap, RelayMode, SecretKey};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use noq_proto::congestion::Bbr3Config;
 use rustls_pki_types::CertificateDer;
@@ -12,6 +12,7 @@ use rustls_pki_types::pem::PemObject;
 
 use crate::config::{Config, Visibility};
 use crate::error::{Error, Result};
+use crate::relay::RelayLink;
 
 const MIB: u32 = 1024 * 1024;
 /// A stable port keeps stored addresses valid across restarts and makes firewall rules possible.
@@ -34,7 +35,7 @@ pub(crate) struct Network {
 pub(crate) async fn bind(
     secret: SecretKey,
     config: &Config,
-    relays: &[RelayUrl],
+    relays: &[RelayLink],
     isolated: bool,
 ) -> Result<Network> {
     let endpoint = if isolated {
@@ -53,8 +54,8 @@ pub(crate) async fn bind(
     Ok(Network { endpoint, mdns })
 }
 
-fn configure(secret: SecretKey, config: &Config, relays: &[RelayUrl]) -> Result<Builder> {
-    let map: RelayMap = relays.iter().cloned().collect();
+fn configure(secret: SecretKey, config: &Config, relays: &[RelayLink]) -> Result<Builder> {
+    let map: RelayMap = relays.iter().map(RelayLink::config).collect();
     let builder = Endpoint::builder(presets::Minimal).relay_mode(RelayMode::Custom(map));
     let builder = if relays.is_empty() {
         builder.portmapper_config(PortmapperConfig::Disabled)
@@ -73,10 +74,6 @@ fn private_roots(path: &Path) -> Result<CaTlsConfig> {
         .and_then(Iterator::collect::<std::result::Result<Vec<_>, _>>)
         .map_err(|error| Error::NetworkStart(format!("{}: {error}", path.display())))?;
     Ok(CaTlsConfig::default().with_extra_roots(roots))
-}
-
-pub(crate) fn parse_relays(urls: &[String]) -> Result<Vec<RelayUrl>> {
-    urls.iter().map(|url| url.parse().map_err(|_| Error::InvalidRelayUrl(url.clone()))).collect()
 }
 
 fn transport_config() -> Result<QuicTransportConfig> {

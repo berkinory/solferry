@@ -1,4 +1,4 @@
-use beam_core::{Config, Visibility};
+use beam_core::{Config, RelayLink, Visibility};
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
@@ -11,6 +11,7 @@ use iroh::EndpointId;
 
 use super::main_view::{MainView, Page};
 use super::ui;
+use crate::errors::explain;
 use crate::service::Command;
 
 const VISIBILITY: [(Visibility, &str); 3] = [
@@ -99,10 +100,13 @@ fn choose_folder(cx: &mut Context<MainView>) {
 
 fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     let relays: Vec<_> = config.relays.iter().map(|url| relay_row(url, cx)).collect();
+    let failure = view.state.read(cx).relay_error.as_ref().map(explain);
+    let failure = failure.map(|explanation| ui::muted(explanation.next, cx));
     ui::card(cx)
         .child(ui::section_title("Your relays", cx))
         .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
         .children(relays)
+        .children(failure)
         .child(Input::new(&view.relay_input))
         .child(
             Button::new("add-relay")
@@ -115,11 +119,13 @@ fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -
 
 fn relay_row(url: &str, cx: &mut Context<MainView>) -> AnyElement {
     let removed = url.to_owned();
+    let parsed = RelayLink::parse(url);
+    let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.url().to_string());
     div()
         .flex()
         .items_center()
         .justify_between()
-        .child(ui::muted(url.to_owned(), cx))
+        .child(ui::muted(shown, cx))
         .child(
             Button::new(SharedString::from(format!("remove-{url}")))
                 .ghost()
@@ -138,6 +144,14 @@ fn add_relay(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
     if url.is_empty() {
         return;
     }
+    if let Err(error) = RelayLink::parse(&url) {
+        view.state.update(cx, |state, cx| {
+            state.relay_error = Some(error);
+            cx.notify();
+        });
+        return;
+    }
+    view.state.update(cx, |state, _| state.relay_error = None);
     change(view, cx, |config| {
         config.relays.retain(|existing| *existing != url);
         config.relays.push(url);
