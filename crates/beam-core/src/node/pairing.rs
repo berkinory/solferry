@@ -8,7 +8,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::{AcceptError, ProtocolHandler};
 use iroh::{EndpointAddr, EndpointId, TransportAddr};
 use prost::Message;
-use rand::RngCore;
+use rand::Rng;
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
