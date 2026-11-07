@@ -4,7 +4,6 @@
 mod session;
 mod types;
 
-use std::os::fd::{FromRawFd, OwnedFd};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -111,11 +110,7 @@ impl Solferry {
     pub fn send_files(&self, peer: String, files: Vec<SharedFile>) {
         let named: Vec<NamedFile> = files
             .into_iter()
-            .map(|shared| NamedFile {
-                name: shared.name,
-                // SAFETY: the app detached each descriptor and hands its ownership to the bridge.
-                file: std::fs::File::from(unsafe { OwnedFd::from_raw_fd(shared.fd) }),
-            })
+            .filter_map(|shared| Some(NamedFile { file: adopt(shared.fd)?, name: shared.name }))
             .collect();
         self.with_node(
             move |node, listener, target| async move {
@@ -340,6 +335,19 @@ fn address(node: &solferry_core::Node, shelf: &Shelf, peer: &str) -> Option<Endp
         return Some(found.addr.clone());
     }
     node.devices().into_iter().find(|device| device.id == id).map(|device| device.addr())
+}
+
+/// Takes ownership of a descriptor the app detached. Only phones hand over descriptors.
+#[cfg(unix)]
+fn adopt(fd: i32) -> Option<std::fs::File> {
+    use std::os::fd::{FromRawFd, OwnedFd};
+    // SAFETY: the app detached the descriptor and hands its ownership to the bridge.
+    Some(std::fs::File::from(unsafe { OwnedFd::from_raw_fd(fd) }))
+}
+
+#[cfg(not(unix))]
+fn adopt(_: i32) -> Option<std::fs::File> {
+    None
 }
 
 fn peer_name(node: &solferry_core::Node, target: &EndpointAddr) -> String {
