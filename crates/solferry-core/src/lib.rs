@@ -6,6 +6,7 @@ mod event;
 mod identity;
 mod net;
 mod node;
+mod platform;
 mod relay;
 mod route;
 mod store;
@@ -19,6 +20,7 @@ pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
     RelayHealth, SendReport,
 };
+pub use platform::Platform;
 pub use relay::RelayLink;
 pub use route::Route;
 pub use trust::Device;

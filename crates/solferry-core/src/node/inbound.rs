@@ -6,7 +6,7 @@ use iroh::EndpointId;
 use iroh::TransportAddr;
 use iroh::endpoint::{Connection, SendStream};
 use iroh::protocol::{AcceptError, ProtocolHandler};
-use solferry_proto::{Decision, Offer, OfferReply, close, read_frame, write_frame};
+use solferry_proto::{Decision, Hello, Offer, OfferReply, close, read_frame, write_frame};
 use tokio::sync::oneshot;
 
 use super::Shared;
@@ -35,6 +35,7 @@ pub struct OfferSummary {
     pub files: usize,
     pub bytes: u64,
     pub first_path: String,
+    pub platform: Option<crate::Platform>,
 }
 
 #[derive(Debug)]
@@ -112,7 +113,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         }
     };
 
-    let summary = summarize(peer, &hello.name, device.as_ref(), &offer);
+    let summary = summarize(peer, &hello, device.as_ref(), &offer);
     let Some(destination) = decide(shared, connection, summary).await else {
         refuse(connection, &mut send, Decision::Declined).await?;
         return Ok(());
@@ -174,10 +175,16 @@ fn transfer_id(offer: &Offer) -> Result<TransferId> {
     bytes.map(TransferId).map_err(|_| Error::InvalidOffer("malformed transfer id".to_owned()))
 }
 
-fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offer) -> OfferSummary {
+fn summarize(
+    peer: EndpointId,
+    hello: &Hello,
+    device: Option<&Device>,
+    offer: &Offer,
+) -> OfferSummary {
     OfferSummary {
         peer,
-        peer_name: device.map_or(name, |device| device.name.as_str()).to_owned(),
+        peer_name: device.map_or(hello.name.as_str(), |device| device.name.as_str()).to_owned(),
+        platform: crate::Platform::parse(&hello.platform),
         paired: device.is_some(),
         auto_accept: device.is_some_and(|device| device.auto_accept),
         files: offer.entries.iter().filter(|entry| !entry.is_dir).count(),

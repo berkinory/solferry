@@ -116,6 +116,7 @@ impl Node {
             relays: reply.relay_urls,
             direct_addrs: reply.direct_addrs,
             paired_at_ms: now_ms(),
+            platform: crate::Platform::parse(&reply.platform),
         };
         store_and_confirm(shared, &connection, send, device).await
     }

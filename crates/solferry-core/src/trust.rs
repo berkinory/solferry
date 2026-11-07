@@ -21,6 +21,8 @@ pub struct Device {
     #[serde(default)]
     pub direct_addrs: Vec<String>,
     pub paired_at_ms: u64,
+    #[serde(default)]
+    pub platform: Option<crate::Platform>,
 }
 
 impl Device {
