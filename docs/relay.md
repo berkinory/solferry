@@ -9,12 +9,12 @@ You need a server with a public IP, a DNS name pointing at it with no CDN proxy,
 Clone this repository on the server, then:
 
 ```sh
-sudo sh deploy/relay/install.sh relay.example.com you@example.com
+sudo sh deploy/relay/install.sh relay.example.com
 ```
 
 It checks DNS and ports first, starts the relay and prints the link to paste into beam. Add `--check` to run the checks and change nothing. If Traefik already holds port 443, as on Coolify, it passes the relay through Traefik without touching your other sites. On `ufw-docker` servers it opens UDP 7842 for you.
 
-Certificates come from Let's Encrypt. Each client is limited to 50 MiB/s by default. Set `RELAY_BYTES_PER_SECOND` and `RELAY_MAX_BURST_BYTES` in `compose.yaml` to change that.
+Certificates come from Let's Encrypt and need no email address. Each client is limited to 50 MiB/s by default. Set `RELAY_BYTES_PER_SECOND` and `RELAY_MAX_BURST_BYTES` in `compose.yaml` to change that.
 
 ## Use it
 
