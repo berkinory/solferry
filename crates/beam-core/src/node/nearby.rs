@@ -6,6 +6,7 @@ use iroh::{EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::DiscoveryEvent;
 
 use super::Node;
+use crate::transfer::paths::clean_label;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NearbyDevice {
@@ -27,7 +28,8 @@ impl Node {
                 match event {
                     DiscoveryEvent::Discovered { endpoint_info, .. } => {
                         let id = endpoint_info.endpoint_id;
-                        let name = endpoint_info.data.user_data().map(ToString::to_string);
+                        let name =
+                            endpoint_info.data.user_data().map(|name| clean_label(name.as_ref()));
                         let addr = endpoint_info.into_endpoint_addr();
                         let known = self.shared.trust().get(&id).is_some();
                         found.insert(id, NearbyDevice { addr, name, known });

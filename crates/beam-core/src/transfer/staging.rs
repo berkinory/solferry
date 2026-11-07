@@ -8,10 +8,12 @@ use bytes::Bytes;
 use tokio::sync::mpsc;
 
 use super::CHUNK_SIZE;
-use crate::error::{Result, StorageContext};
+use super::paths::crosses_symlink;
+use crate::error::{Error, Result, StorageContext};
 use crate::event::TransferId;
 
 const PARTIAL_DIR: &str = ".beam-partial";
+const ABANDONED_AFTER: Duration = Duration::from_hours(7 * 24);
 
 #[derive(Debug)]
 pub(crate) struct Staging {
@@ -20,7 +22,9 @@ pub(crate) struct Staging {
 
 impl Staging {
     pub(crate) fn open(destination: &Path, id: TransferId) -> Result<Self> {
-        let root = destination.join(PARTIAL_DIR).join(hex::encode(id.0));
+        let parent = destination.join(PARTIAL_DIR);
+        prune_abandoned(&parent);
+        let root = parent.join(hex::encode(id.0));
         fs::create_dir_all(&root).at(&root)?;
         Ok(Self { root })
     }
@@ -32,11 +36,7 @@ impl Staging {
     pub(crate) fn offsets(&self, entries: &[Entry]) -> Vec<u64> {
         let offset = |(index, entry): (usize, &Entry)| {
             let existing = fs::metadata(self.part(index)).map_or(0, |metadata| metadata.len());
-            if entry.is_dir || existing > entry.size {
-                0
-            } else {
-                existing
-            }
+            if entry.is_dir || existing > entry.size { 0 } else { existing }
         };
         entries.iter().enumerate().map(offset).collect()
     }
@@ -49,6 +49,9 @@ impl Staging {
     ) -> Result<Vec<PathBuf>> {
         let mut delivered = Vec::with_capacity(entries.len());
         for (index, (entry, target)) in entries.iter().zip(targets).enumerate() {
+            if crosses_symlink(destination, target) {
+                return Err(Error::InvalidOffer(format!("{} leaves the destination", entry.path)));
+            }
             let target = destination.join(target);
             if entry.is_dir {
                 fs::create_dir_all(&target).at(&target)?;
@@ -71,6 +74,23 @@ impl Staging {
     }
 }
 
+fn prune_abandoned(parent: &Path) {
+    let Ok(transfers) = fs::read_dir(parent) else {
+        return;
+    };
+    for transfer in transfers.flatten() {
+        let abandoned = transfer
+            .metadata()
+            .and_then(|metadata| metadata.modified())
+            .ok()
+            .and_then(|modified| modified.elapsed().ok())
+            .is_some_and(|age| age > ABANDONED_AFTER);
+        if abandoned {
+            let _ = fs::remove_dir_all(transfer.path());
+        }
+    }
+}
+
 fn restore_modified(path: &Path, modified_ms: u64) {
     let modified = UNIX_EPOCH + Duration::from_millis(modified_ms);
     if let Ok(file) = File::options().write(true).open(path) {
@@ -82,14 +102,8 @@ fn free_path(target: PathBuf) -> PathBuf {
     if !target.exists() {
         return target;
     }
-    let stem = target
-        .file_stem()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .into_owned();
-    let extension = target
-        .extension()
-        .map(|extension| extension.to_string_lossy().into_owned());
+    let stem = target.file_stem().unwrap_or_default().to_string_lossy().into_owned();
+    let extension = target.extension().map(|extension| extension.to_string_lossy().into_owned());
     (1..=u32::MAX)
         .map(|attempt| {
             let name = match &extension {
@@ -108,13 +122,8 @@ pub(crate) fn write_part(
     offset: u64,
     mut chunks: mpsc::Receiver<Bytes>,
 ) -> Result<blake3::Hash> {
-    let mut file = File::options()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(false)
-        .open(path)
-        .at(path)?;
+    let mut file =
+        File::options().read(true).write(true).create(true).truncate(false).open(path).at(path)?;
     let mut hasher = blake3::Hasher::new();
     let mut prefix = (&mut file).take(offset);
     let mut buffer = vec![0; CHUNK_SIZE];

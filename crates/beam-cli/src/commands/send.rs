@@ -10,10 +10,19 @@ use tokio::sync::broadcast;
 const NEARBY_WINDOW: Duration = Duration::from_secs(3);
 const BAR_TEMPLATE: &str = "{msg} [{bar:32}] {bytes}/{total_bytes} {bytes_per_sec} eta {eta}";
 
-pub async fn run(data_dir: PathBuf, paths: Vec<PathBuf>, targets: Vec<String>) -> Result<()> {
+pub async fn run(
+    data_dir: PathBuf,
+    paths: Vec<PathBuf>,
+    targets: Vec<String>,
+    json: bool,
+) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let addrs = resolve(&node, &targets).await?;
-    let progress = tokio::spawn(show_progress(node.events()));
+    let progress = if json {
+        tokio::spawn(super::json::print_events(node.events()))
+    } else {
+        tokio::spawn(show_progress(node.events()))
+    };
     let sends = addrs.into_iter().map(|addr| node.send(addr, paths.clone()));
     let mut failure = None;
     for (target, outcome) in targets.iter().zip(join_all(sends).await) {
@@ -58,9 +67,7 @@ async fn resolve(node: &Node, targets: &[String]) -> Result<Vec<EndpointAddr>> {
                     Some(found) => found,
                     None => nearby.insert(node.nearby(NEARBY_WINDOW).await),
                 };
-                let device = found
-                    .iter()
-                    .find(|device| device.name.as_deref() == Some(target));
+                let device = found.iter().find(|device| device.name.as_deref() == Some(target));
                 let device = device.ok_or_else(|| Error::UnknownDevice(target.clone()))?;
                 addrs.push(device.addr.clone());
             }
@@ -76,12 +83,7 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
     let bar = ProgressBar::hidden();
     while let Ok(event) = events.recv().await {
         match event {
-            Event::Started {
-                peer_name,
-                direction: Direction::Sending,
-                bytes,
-                ..
-            } => {
+            Event::Started { peer_name, direction: Direction::Sending, bytes, .. } => {
                 bar.set_draw_target(indicatif::ProgressDrawTarget::stderr());
                 bar.set_style(style.clone());
                 bar.set_length(bytes);

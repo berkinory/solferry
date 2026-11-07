@@ -20,6 +20,14 @@ jobs:
       - run: just lint
       - run: just deny
 
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.91
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --locked
+
   test:
     strategy:
       fail-fast: false
@@ -33,4 +41,4 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest
-      - run: cargo nextest run --workspace
+      - run: cargo nextest run --workspace --locked

@@ -20,4 +20,5 @@ pub mod close {
     pub const NOT_PAIRED: u32 = 1;
     pub const VERSION_MISMATCH: u32 = 2;
     pub const INTERNAL: u32 = 3;
+    pub const BUSY: u32 = 4;
 }

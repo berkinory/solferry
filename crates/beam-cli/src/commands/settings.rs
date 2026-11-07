@@ -37,8 +37,7 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
             };
         }),
         RelayCommand::Add { url } => {
-            url.parse::<iroh::RelayUrl>()
-                .map_err(|_| Error::InvalidRelayUrl(url.clone()))?;
+            url.parse::<iroh::RelayUrl>().map_err(|_| Error::InvalidRelayUrl(url.clone()))?;
             update(data_dir, |config| {
                 config.relays.retain(|existing| *existing != url);
                 config.relays.push(url);
@@ -54,10 +53,8 @@ pub fn relay(data_dir: &Path, command: RelayCommand) -> Result<()> {
 }
 
 fn update(data_dir: &Path, change: impl FnOnce(&mut Config)) -> Result<()> {
-    std::fs::create_dir_all(data_dir).map_err(|source| Error::Storage {
-        path: data_dir.to_owned(),
-        source: source.into(),
-    })?;
+    std::fs::create_dir_all(data_dir)
+        .map_err(|source| Error::Storage { path: data_dir.to_owned(), source: source.into() })?;
     let mut config = Config::load(data_dir)?;
     change(&mut config);
     config.save(data_dir)

@@ -29,8 +29,10 @@ fn advice(error: &Error) -> Advice {
         }
         Error::NotPaired => "Pair first: run `beam pair` there and `beam join <code>` here.",
         Error::VersionMismatch { .. } => "Update beam on both devices.",
+        Error::Busy => "Wait for its current transfers to finish and send again.",
         Error::Declined => "The other side said no. Ask them to accept and send again.",
         Error::NoSpace => "Free up space on the receiving device and send again. Progress is kept.",
+        Error::DeliveryFailed => "Check the destination folder on the receiving device.",
         Error::InvalidOffer(_) => "The other device sent something unsafe, so it was refused.",
         Error::SourceChanged(_) => "Wait until the file stops changing and send it again.",
         Error::UnsupportedName(_) => "Rename the file to valid Unicode.",

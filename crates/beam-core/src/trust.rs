@@ -28,10 +28,7 @@ impl Device {
     /// Dialable address: the id plus the relays this device told us about.
     #[must_use]
     pub fn addr(&self) -> EndpointAddr {
-        let relays = self
-            .relays
-            .iter()
-            .filter_map(|url| url.parse::<RelayUrl>().ok());
+        let relays = self.relays.iter().filter_map(|url| url.parse::<RelayUrl>().ok());
         EndpointAddr::from_parts(self.id, relays.map(TransportAddr::Relay))
     }
 }
@@ -78,9 +75,7 @@ impl TrustStore {
         let mut matches = self.devices.iter().filter(|device| {
             device.name.to_lowercase() == needle || device.id.to_z32().starts_with(&needle)
         });
-        let first = matches
-            .next()
-            .ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
+        let first = matches.next().ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
         if matches.next().is_some() {
             return Err(Error::AmbiguousDevice(query.to_owned()));
         }

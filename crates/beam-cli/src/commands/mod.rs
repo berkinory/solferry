@@ -1,4 +1,5 @@
 mod device;
+mod json;
 mod receive;
 mod send;
 mod settings;
@@ -16,8 +17,10 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Status => settings::status(&data_dir).await,
         Command::Rename { name } => settings::rename(&data_dir, name),
         Command::Relay { command } => settings::relay(&data_dir, command),
-        Command::Send { paths, targets } => send::run(data_dir, paths, targets).await,
-        Command::Receive { dir, yes, once } => receive::run(data_dir, dir, yes, once).await,
+        Command::Send { paths, targets } => send::run(data_dir, paths, targets, cli.json).await,
+        Command::Receive { dir, yes, once } => {
+            receive::run(data_dir, dir, yes, once, cli.json).await
+        }
         Command::Pair { contact } => device::pair(data_dir, contact).await,
         Command::Join { code } => device::join(data_dir, &code).await,
         Command::Devices => device::list(data_dir).await,
@@ -27,9 +30,5 @@ pub async fn run(cli: Cli) -> Result<()> {
 }
 
 async fn start(data_dir: PathBuf) -> Result<(Node, mpsc::Receiver<IncomingOffer>)> {
-    Node::start(NodeOptions {
-        data_dir,
-        isolated: false,
-    })
-    .await
+    Node::start(NodeOptions { data_dir, isolated: false }).await
 }

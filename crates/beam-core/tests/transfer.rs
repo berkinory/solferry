@@ -25,27 +25,15 @@ async fn peer(name: &str, visibility: Visibility) -> Peer {
     };
     config.save(&data).unwrap();
     let (node, offers) = start(&data).await;
-    Peer {
-        node,
-        offers,
-        data,
-        _dir: dir,
-    }
+    Peer { node, offers, data, _dir: dir }
 }
 
 async fn start(data: &Path) -> (Node, mpsc::Receiver<IncomingOffer>) {
-    Node::start(NodeOptions {
-        data_dir: data.to_owned(),
-        isolated: true,
-    })
-    .await
-    .unwrap()
+    Node::start(NodeOptions { data_dir: data.to_owned(), isolated: true }).await.unwrap()
 }
 
 fn write_random(path: &Path, size: usize) {
-    let data: Vec<u8> = (0..size)
-        .map(|i| i.wrapping_mul(2_654_435_761).to_le_bytes()[1])
-        .collect();
+    let data: Vec<u8> = (0..size).map(|i| i.wrapping_mul(2_654_435_761).to_le_bytes()[1]).collect();
     fs::write(path, data).unwrap();
 }
 
@@ -70,11 +58,7 @@ async fn delivers_a_directory_tree_intact() {
 
     let destination = receiver.data.join("inbox");
     accept_all(receiver.offers, destination.clone());
-    let report = sender
-        .node
-        .send(receiver.node.addr(), vec![root.clone()])
-        .await
-        .unwrap();
+    let report = sender.node.send(receiver.node.addr(), vec![root.clone()]).await.unwrap();
 
     assert_eq!(report.resumed_bytes, 0);
     assert_eq!(
@@ -111,21 +95,10 @@ async fn resumes_after_the_receiver_restarts() {
 
     let (restarted, offers) = start(&receiver.data).await;
     accept_all(offers, destination.clone());
-    let report = sender
-        .node
-        .send(restarted.addr(), vec![file.clone()])
-        .await
-        .unwrap();
+    let report = sender.node.send(restarted.addr(), vec![file.clone()]).await.unwrap();
 
-    assert!(
-        report.resumed_bytes > 0,
-        "resumed {} bytes",
-        report.resumed_bytes
-    );
-    assert_eq!(
-        fs::read(&file).unwrap(),
-        fs::read(destination.join("movie.bin")).unwrap()
-    );
+    assert!(report.resumed_bytes > 0, "resumed {} bytes", report.resumed_bytes);
+    assert_eq!(fs::read(&file).unwrap(), fs::read(destination.join("movie.bin")).unwrap());
 }
 
 async fn wait_for_progress(events: &mut tokio::sync::broadcast::Receiver<Event>, bytes: u64) {
@@ -138,9 +111,7 @@ async fn wait_for_progress(events: &mut tokio::sync::broadcast::Receiver<Event>,
             }
         }
     };
-    tokio::time::timeout(Duration::from_secs(30), wait)
-        .await
-        .unwrap();
+    tokio::time::timeout(Duration::from_secs(30), wait).await.unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -166,11 +137,7 @@ async fn corrupted_partial_data_is_never_delivered() {
     first.abort();
     node.shutdown().await.unwrap();
 
-    let staging = fs::read_dir(destination.join(".beam-partial"))
-        .unwrap()
-        .next()
-        .unwrap()
-        .unwrap();
+    let staging = fs::read_dir(destination.join(".beam-partial")).unwrap().next().unwrap().unwrap();
     let part = staging.path().join("0");
     let mut bytes = fs::read(&part).unwrap();
     bytes[1024] ^= 0xff;
@@ -182,15 +149,8 @@ async fn corrupted_partial_data_is_never_delivered() {
     assert!(matches!(failed, Err(Error::HashMismatch(_))), "{failed:?}");
     assert!(!destination.join("doc.bin").exists());
 
-    sender
-        .node
-        .send(restarted.addr(), vec![file.clone()])
-        .await
-        .unwrap();
-    assert_eq!(
-        fs::read(&file).unwrap(),
-        fs::read(destination.join("doc.bin")).unwrap()
-    );
+    sender.node.send(restarted.addr(), vec![file.clone()]).await.unwrap();
+    assert_eq!(fs::read(&file).unwrap(), fs::read(destination.join("doc.bin")).unwrap());
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -201,27 +161,38 @@ async fn known_devices_mode_refuses_strangers_until_paired() {
     let file = source.path().join("note.txt");
     fs::write(&file, b"hello").unwrap();
 
-    let refused = sender
-        .node
-        .send(receiver.node.addr(), vec![file.clone()])
-        .await;
+    let refused = sender.node.send(receiver.node.addr(), vec![file.clone()]).await;
     assert!(matches!(refused, Err(Error::NotPaired)), "{refused:?}");
 
     let invite = receiver.node.invite(Relationship::Own);
     let device = sender.node.join(invite.code()).await.unwrap();
     assert_eq!(device.name, "receiver");
     assert_eq!(device.relationship, Relationship::Own);
-    assert!(
-        sender.node.join(invite.code()).await.is_err(),
-        "invites are single use"
-    );
+    assert!(sender.node.join(invite.code()).await.is_err(), "invites are single use");
 
     let destination = receiver.data.join("inbox");
     accept_all(receiver.offers, destination.clone());
-    sender
-        .node
-        .send(receiver.node.addr(), vec![file])
-        .await
-        .unwrap();
+    sender.node.send(receiver.node.addr(), vec![file]).await.unwrap();
     assert!(destination.join("note.txt").is_file());
+}
+
+#[cfg(unix)]
+#[tokio::test(flavor = "multi_thread")]
+async fn never_writes_through_a_symlink_in_the_destination() {
+    let sender = peer("sender", Visibility::Everyone).await;
+    let receiver = peer("receiver", Visibility::Everyone).await;
+    let outside = TempDir::new().unwrap();
+    let destination = receiver.data.join("inbox");
+    fs::create_dir_all(&destination).unwrap();
+    std::os::unix::fs::symlink(outside.path(), destination.join("album")).unwrap();
+    let source = TempDir::new().unwrap();
+    let root = source.path().join("album");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(root.join("payload.txt"), b"data").unwrap();
+
+    accept_all(receiver.offers, destination);
+    let result = sender.node.send(receiver.node.addr(), vec![root]).await;
+
+    assert!(result.is_err());
+    assert!(!outside.path().join("payload.txt").exists());
 }

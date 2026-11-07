@@ -32,10 +32,14 @@ pub enum Error {
     NotPaired,
     #[error("the device runs protocol {theirs}, this one runs {ours}")]
     VersionMismatch { ours: u32, theirs: u32 },
+    #[error("the device is busy with other transfers")]
+    Busy,
     #[error("the transfer was declined")]
     Declined,
     #[error("the receiver is out of disk space")]
     NoSpace,
+    #[error("the receiver could not save the files")]
+    DeliveryFailed,
     #[error("the offer is invalid: {0}")]
     InvalidOffer(String),
     #[error("{0} changed while it was being sent")]
@@ -84,9 +88,6 @@ pub(crate) trait StorageContext<T> {
 
 impl<T> StorageContext<T> for std::io::Result<T> {
     fn at(self, path: impl Into<PathBuf>) -> Result<T> {
-        self.map_err(|source| Error::Storage {
-            path: path.into(),
-            source: source.into(),
-        })
+        self.map_err(|source| Error::Storage { path: path.into(), source: source.into() })
     }
 }

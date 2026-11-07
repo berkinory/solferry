@@ -48,35 +48,22 @@ impl Node {
         let mut reached = false;
         loop {
             let outcome = attempt(&self.shared, target.clone(), &manifest, &mut reached).await;
-            let window = if reached {
-                RESUME_WINDOW
-            } else {
-                FIRST_CONTACT_WINDOW
-            };
+            let window = if reached { RESUME_WINDOW } else { FIRST_CONTACT_WINDOW };
             match outcome {
                 Err(error) if error.is_retryable() && started.elapsed() < window => {
                     tracing::info!(%error, "retrying transfer");
                     let id = manifest.id;
-                    let _ = self
-                        .shared
-                        .events
-                        .send(Event::Reconnecting { id, reason: error });
+                    let _ = self.shared.events.send(Event::Reconnecting { id, reason: error });
                     tokio::time::sleep(delay).await;
                     delay = (delay * 2).min(RETRY_MAX);
                 }
                 Err(error) => {
-                    let event = Event::Failed {
-                        id: manifest.id,
-                        error: error.clone(),
-                    };
+                    let event = Event::Failed { id: manifest.id, error: error.clone() };
                     let _ = self.shared.events.send(event);
                     return Err(error);
                 }
                 Ok(report) => {
-                    let _ = self
-                        .shared
-                        .events
-                        .send(Event::Completed { id: manifest.id });
+                    let _ = self.shared.events.send(Event::Completed { id: manifest.id });
                     return Ok(report);
                 }
             }
@@ -98,10 +85,7 @@ async fn attempt(
         .map_err(|error| Error::Unreachable(error.to_string()))?;
     *reached = true;
     let result = async {
-        let (send, recv) = connection
-            .open_bi()
-            .await
-            .map_err(|_| Error::ConnectionLost)?;
+        let (send, recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
         let rule = route_rule(shared, peer)?;
         tokio::select! {
             report = negotiate(shared, &connection, send, recv, manifest, &rule, peer) => report,
@@ -121,10 +105,7 @@ fn route_rule(shared: &Shared, peer: EndpointId) -> Result<RouteRule> {
             relays.extend(parse_relays(&device.relays)?);
         }
     }
-    Ok(RouteRule {
-        any_relay: policy == RelayPolicy::Always,
-        relays,
-    })
+    Ok(RouteRule { any_relay: policy == RelayPolicy::Always, relays })
 }
 
 async fn negotiate(
@@ -137,10 +118,7 @@ async fn negotiate(
     peer: EndpointId,
 ) -> Result<SendReport> {
     let hello = exchange_hello(&mut send, &mut recv, &shared.config.name).await?;
-    let offer = Offer {
-        transfer_id: manifest.id.0.to_vec(),
-        entries: manifest.entries.clone(),
-    };
+    let offer = Offer { transfer_id: manifest.id.0.to_vec(), entries: manifest.entries.clone() };
     write_frame(&mut send, &offer).await?;
     let reply: OfferReply = read_frame(&mut recv).await?;
     match reply.decision() {
@@ -151,29 +129,18 @@ async fn negotiate(
         Decision::Unspecified => return Err(Error::Protocol("empty decision".to_owned())),
     }
     if reply.offsets.len() != manifest.entries.len() {
-        return Err(Error::Protocol(
-            "resume table does not match the offer".to_owned(),
-        ));
+        return Err(Error::Protocol("resume table does not match the offer".to_owned()));
     }
-    let oversized = reply
-        .offsets
-        .iter()
-        .zip(&manifest.entries)
-        .any(|(offset, entry)| *offset > entry.size);
+    let oversized =
+        reply.offsets.iter().zip(&manifest.entries).any(|(offset, entry)| *offset > entry.size);
     if oversized {
-        return Err(Error::Protocol(
-            "resume offset exceeds file size".to_owned(),
-        ));
+        return Err(Error::Protocol("resume offset exceeds file size".to_owned()));
     }
 
     let route = wait_for_route(connection, rule, DIRECT_PATH_WAIT).await?;
     let bytes: u64 = manifest.entries.iter().map(|entry| entry.size).sum();
     let resumed: u64 = reply.offsets.iter().sum();
-    let files = manifest
-        .entries
-        .iter()
-        .filter(|entry| !entry.is_dir)
-        .count();
+    let files = manifest.entries.iter().filter(|entry| !entry.is_dir).count();
     let _ = shared.events.send(Event::Started {
         id: manifest.id,
         peer,

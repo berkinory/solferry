@@ -221,6 +221,7 @@ dependencies = [
  "indicatif",
  "iroh",
  "qrcode",
+ "serde_json",
  "tokio",
  "tracing-subscriber",
 ]

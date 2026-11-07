@@ -70,15 +70,13 @@ pub(crate) async fn run(
 
     let finished = plan.clone();
     let delivered = tokio::task::spawn_blocking(move || {
-        finished
-            .staging
-            .finalize(&finished.destination, &finished.entries, &finished.targets)
+        finished.staging.finalize(&finished.destination, &finished.entries, &finished.targets)
     })
     .await
-    .map_err(|error| Error::Protocol(error.to_string()))??;
-    write_frame(control, &Finalized { ok: true }).await?;
+    .map_err(|error| Error::Protocol(error.to_string()))?;
+    write_frame(control, &Finalized { ok: delivered.is_ok() }).await?;
     let _ = tokio::time::timeout(CLOSE_WAIT, connection.closed()).await;
-    Ok(delivered)
+    delivered
 }
 
 fn claim(plan: &Plan, seen: &mut [bool], start: &FileStart) -> Result<usize> {
@@ -107,17 +105,9 @@ async fn receive_file(
         let part = part.clone();
         tokio::task::spawn_blocking(move || write_part(&part, offset, incoming))
     };
-    let received = pump(
-        &mut stream,
-        plan.entries[index].size - offset,
-        &chunks,
-        meter,
-    )
-    .await;
+    let received = pump(&mut stream, plan.entries[index].size - offset, &chunks, meter).await;
     drop(chunks);
-    let actual = writer
-        .await
-        .map_err(|error| Error::Protocol(error.to_string()))??;
+    let actual = writer.await.map_err(|error| Error::Protocol(error.to_string()))??;
     let expected = received?;
 
     let ok = actual == expected;
@@ -125,17 +115,8 @@ async fn receive_file(
         discard(&part);
     }
     let index_wire = u32::try_from(index).unwrap_or(u32::MAX);
-    let _ = results
-        .send(FileResult {
-            index: index_wire,
-            ok,
-        })
-        .await;
-    if ok {
-        Ok(())
-    } else {
-        Err(Error::HashMismatch(plan.entries[index].path.clone()))
-    }
+    let _ = results.send(FileResult { index: index_wire, ok }).await;
+    if ok { Ok(()) } else { Err(Error::HashMismatch(plan.entries[index].path.clone())) }
 }
 
 async fn pump(
@@ -145,26 +126,15 @@ async fn pump(
     meter: &Meter,
 ) -> Result<blake3::Hash> {
     while remaining > 0 {
-        let limit = usize::try_from(remaining)
-            .unwrap_or(CHUNK_SIZE)
-            .min(CHUNK_SIZE);
-        let chunk = stream
-            .read_chunk(limit)
-            .await
-            .map_err(|_| Error::ConnectionLost)?;
+        let limit = usize::try_from(remaining).unwrap_or(CHUNK_SIZE).min(CHUNK_SIZE);
+        let chunk = stream.read_chunk(limit).await.map_err(|_| Error::ConnectionLost)?;
         let chunk = chunk.ok_or(Error::ConnectionLost)?;
         remaining -= chunk.len() as u64;
         meter.add(chunk.len() as u64);
-        chunks
-            .send(chunk)
-            .await
-            .map_err(|_| Error::ConnectionLost)?;
+        chunks.send(chunk).await.map_err(|_| Error::ConnectionLost)?;
     }
     let mut hash = [0; HASH_LEN];
-    stream
-        .read_exact(&mut hash)
-        .await
-        .map_err(|_| Error::ConnectionLost)?;
+    stream.read_exact(&mut hash).await.map_err(|_| Error::ConnectionLost)?;
     Ok(blake3::Hash::from_bytes(hash))
 }
 

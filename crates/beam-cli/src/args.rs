@@ -3,15 +3,14 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
-#[command(
-    name = "beam",
-    version,
-    about = "Accountless file transfer between your devices"
-)]
+#[command(name = "beam", version, about = "Accountless file transfer between your devices")]
 pub struct Cli {
     /// Where the device key, settings and paired devices live.
     #[arg(long, global = true, env = "BEAM_DATA_DIR")]
     pub data_dir: Option<PathBuf>,
+    /// Print transfer events as JSON lines, for scripts and headless use.
+    #[arg(long, global = true)]
+    pub json: bool,
     #[command(subcommand)]
     pub command: Command,
 }

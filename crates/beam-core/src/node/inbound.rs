@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::Duration;
 
 use beam_proto::{Decision, Offer, OfferReply, close, read_frame, write_frame};
 use iroh::EndpointId;
@@ -13,9 +14,12 @@ use crate::config::Visibility;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::{Direction, Event, TransferId};
 use crate::route::{current_route, is_local};
+use crate::transfer::paths::crosses_symlink;
 use crate::transfer::receiver::{self, Plan};
-use crate::transfer::{Meter, Staging, exchange_hello, validate_offer};
+use crate::transfer::{Meter, Staging, exchange_hello, validate_offer, within_handshake};
 use crate::trust::{Device, Relationship};
+
+const ANSWER_TIMEOUT: Duration = Duration::from_secs(300);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OfferSummary {
@@ -57,24 +61,31 @@ impl ProtocolHandler for TransferHandler {
 }
 
 async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
+    let Ok(_slot) = shared.inbound_slots.clone().try_acquire_owned() else {
+        connection.close(close::BUSY.into(), b"busy");
+        return Err(Error::Busy);
+    };
     let peer = connection.remote_id();
     let device = shared.trust().get(&peer).cloned();
     if device.is_none() && !admits_stranger(shared, connection) {
         connection.close(close::NOT_PAIRED.into(), b"pair first");
         return Err(Error::NotPaired);
     }
-    let (mut send, mut recv) = connection
-        .accept_bi()
-        .await
-        .map_err(|_| Error::ConnectionLost)?;
-    let hello = match exchange_hello(&mut send, &mut recv, &shared.config.name).await {
+    let opening = within_handshake(async {
+        let (mut send, mut recv) =
+            connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
+        let hello = exchange_hello(&mut send, &mut recv, &shared.config.name).await?;
+        let offer: Offer = read_frame(&mut recv).await?;
+        Ok((send, hello, offer))
+    })
+    .await;
+    let (mut send, hello, offer) = match opening {
         Err(error @ Error::VersionMismatch { .. }) => {
             connection.close(close::VERSION_MISMATCH.into(), b"version");
             return Err(error);
         }
         other => other?,
     };
-    let offer: Offer = read_frame(&mut recv).await?;
     let id = transfer_id(&offer)?;
     let targets = match validate_offer(&offer) {
         Ok(targets) => targets,
@@ -90,6 +101,10 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         return Ok(());
     };
     std::fs::create_dir_all(&destination).at(&destination)?;
+    if targets.iter().any(|target| crosses_symlink(&destination, target)) {
+        reply(&mut send, Decision::InvalidOffer, Vec::new()).await?;
+        return Err(Error::InvalidOffer("path leaves the destination".to_owned()));
+    }
     let staging = Staging::open(&destination, id)?;
     let offsets = staging.offsets(&offer.entries);
     let bytes: u64 = offer.entries.iter().map(|entry| entry.size).sum();
@@ -111,13 +126,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         bytes,
     });
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));
-    let plan = Plan {
-        destination,
-        entries: offer.entries,
-        targets,
-        offsets,
-        staging,
-    };
+    let plan = Plan { destination, entries: offer.entries, targets, offsets, staging };
     let result = receiver::run(connection, &mut send, plan, meter).await;
     let event = match result {
         Ok(_) => Event::Completed { id },
@@ -129,58 +138,36 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
 
 fn admits_stranger(shared: &Shared, connection: &Connection) -> bool {
     shared.config.visibility == Visibility::Everyone
-        && connection
-            .paths()
-            .iter()
-            .any(|path| match path.remote_addr() {
-                TransportAddr::Ip(addr) => is_local(addr.ip()),
-                _ => false,
-            })
+        && connection.paths().iter().any(|path| match path.remote_addr() {
+            TransportAddr::Ip(addr) => is_local(addr.ip()),
+            _ => false,
+        })
 }
 
 fn transfer_id(offer: &Offer) -> Result<TransferId> {
     let bytes = offer.transfer_id.as_slice().try_into();
-    bytes
-        .map(TransferId)
-        .map_err(|_| Error::InvalidOffer("malformed transfer id".to_owned()))
+    bytes.map(TransferId).map_err(|_| Error::InvalidOffer("malformed transfer id".to_owned()))
 }
 
 fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offer) -> OfferSummary {
     OfferSummary {
         peer,
-        peer_name: device
-            .map_or(name, |device| device.name.as_str())
-            .to_owned(),
+        peer_name: device.map_or(name, |device| device.name.as_str()).to_owned(),
         relationship: device.map(|device| device.relationship),
         files: offer.entries.iter().filter(|entry| !entry.is_dir).count(),
         bytes: offer.entries.iter().map(|entry| entry.size).sum(),
-        first_path: offer
-            .entries
-            .first()
-            .map(|entry| entry.path.clone())
-            .unwrap_or_default(),
+        first_path: offer.entries.first().map(|entry| entry.path.clone()).unwrap_or_default(),
     }
 }
 
 async fn decide(shared: &Shared, summary: OfferSummary) -> Option<PathBuf> {
     let (reply, decision) = oneshot::channel();
-    shared
-        .offers
-        .send(IncomingOffer { summary, reply })
-        .await
-        .ok()?;
-    decision.await.ok().flatten()
+    shared.offers.send(IncomingOffer { summary, reply }).await.ok()?;
+    tokio::time::timeout(ANSWER_TIMEOUT, decision).await.ok()?.ok().flatten()
 }
 
 async fn reply(send: &mut SendStream, decision: Decision, offsets: Vec<u64>) -> Result<()> {
-    Ok(write_frame(
-        send,
-        &OfferReply {
-            decision: decision as i32,
-            offsets,
-        },
-    )
-    .await?)
+    Ok(write_frame(send, &OfferReply { decision: decision as i32, offsets }).await?)
 }
 
 fn has_room(destination: &Path, needed: u64) -> bool {

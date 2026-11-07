@@ -10,11 +10,7 @@ const NEARBY_WINDOW: Duration = Duration::from_secs(4);
 pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let known = node.devices().len();
-    let relationship = if contact {
-        Relationship::Contact
-    } else {
-        Relationship::Own
-    };
+    let relationship = if contact { Relationship::Contact } else { Relationship::Own };
     node.online().await;
     let invite = node.invite(relationship);
     if let Ok(code) = QrCode::new(invite.code()) {
