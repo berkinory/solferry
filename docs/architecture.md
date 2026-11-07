@@ -28,6 +28,8 @@ iroh dials by public key and picks the best path. beam adds three address source
 - n0 DNS and the Mainline DHT for the internet
 - relays and direct addresses stored at pairing time
 
+beam prefers UDP port 53318 so stored addresses survive restarts and firewalls can allow it. If the port is taken it falls back to a random one.
+
 Overlay networks such as Tailscale need no special code, because they are ordinary network interfaces.
 
 ## Relay policy

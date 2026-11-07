@@ -51,6 +51,10 @@ beam send holiday-photos/ --to my-laptop
 
 Send to several devices with repeated `--to`. Devices on the same network can be reached without pairing, see `beam nearby`, and each transfer asks for confirmation.
 
+## Firewalls
+
+A strict firewall can block devices from finding each other on the same network. Allow incoming UDP on port 53318.
+
 ## Relays
 
 By default servers only introduce two devices, and file data never passes through them. When two networks refuse direct connections, beam tells you instead of silently routing your files elsewhere. You then have three options:
