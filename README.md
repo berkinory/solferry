@@ -90,4 +90,4 @@ Read [docs/architecture.md](docs/architecture.md) to understand the code, and [C
 
 ## License
 
-Apache-2.0
+MIT
