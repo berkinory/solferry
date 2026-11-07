@@ -2,6 +2,7 @@
 
 mod errors;
 mod format;
+mod notify;
 mod qr;
 mod service;
 mod shell;

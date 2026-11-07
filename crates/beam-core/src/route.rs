@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr};
 
 use futures::StreamExt;
 use iroh::TransportAddr;
@@ -45,7 +45,7 @@ fn classify(path: &Path<'_>) -> Route {
 }
 
 /// Addresses Tailscale and similar overlays hand out. Carrier NAT shares the IPv4 block.
-fn is_overlay(ip: IpAddr) -> bool {
+pub(crate) fn is_overlay(ip: IpAddr) -> bool {
     match ip.to_canonical() {
         IpAddr::V4(ip) => ip.octets()[0] == 100 && (ip.octets()[1] & 0xc0) == 64,
         IpAddr::V6(ip) => ip.segments()[..3] == [0xfd7a, 0x115c, 0xa1e0],
@@ -66,17 +66,23 @@ pub(crate) fn is_public(ip: IpAddr) -> bool {
     !is_local(ip) && !is_overlay(ip)
 }
 
-fn joined_overlay() -> bool {
-    netdev::get_interfaces().iter().any(|interface| {
+/// This device's address on an overlay it joined, if any.
+pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
+    netdev::get_interfaces().iter().find_map(|interface| {
         let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-        TUNNEL_PREFIXES.iter().any(|prefix| name.starts_with(prefix))
-            && interface.ipv4.iter().any(|net| is_overlay(IpAddr::V4(net.addr())))
+        if !TUNNEL_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
+            return None;
+        }
+        interface.ipv4.iter().find_map(|net| {
+            let ip = net.addr();
+            is_overlay(ip.into()).then_some(ip)
+        })
     })
 }
 
 /// Whether an unpaired device at `ip` may ask to send files: never across a relay or the internet.
 pub(crate) fn shares_network(ip: IpAddr) -> bool {
-    is_local(ip) || (is_overlay(ip) && joined_overlay())
+    is_local(ip) || (is_overlay(ip) && overlay_address().is_some())
 }
 
 /// The route file data is using right now.

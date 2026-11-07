@@ -44,7 +44,11 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             id: device.addr.id,
             addr: device.addr.clone(),
             name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
-            detail: "Not paired, they will be asked first",
+            detail: if device.overlay {
+                "On your overlay network, they will be asked first"
+            } else {
+                "Not paired, they will be asked first"
+            },
             approval: None,
         })
         .collect();

@@ -16,6 +16,8 @@ pub async fn status(data_dir: &Path) -> Result<()> {
     let urls: Vec<String> = config.relays.iter().map(|link| address(link)).collect();
     let relays = if urls.is_empty() { "none".to_owned() } else { urls.join(", ") };
     println!("relays    {relays}");
+    let overlay = node.overlay_address().map_or("none".to_owned(), |ip| ip.to_string());
+    println!("overlay   {overlay}");
     node.shutdown().await
 }
 

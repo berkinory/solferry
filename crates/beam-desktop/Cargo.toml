@@ -12,6 +12,7 @@ futures.workspace = true
 gpui-kit.workspace = true
 iroh.workspace = true
 qrcode.workspace = true
+notify-rust = "4"
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

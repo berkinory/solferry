@@ -3,6 +3,7 @@ mod health;
 mod inbound;
 mod nearby;
 mod outbound;
+mod overlay;
 mod pairing;
 
 use std::collections::HashMap;
@@ -29,6 +30,7 @@ use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
 use crate::relay::RelayLink;
+use crate::route;
 use crate::trust::{Device, TrustStore};
 use crate::{identity, net};
 
@@ -134,6 +136,9 @@ impl Node {
             active: Mutex::new(HashMap::new()),
             uses_relays,
         });
+        if !isolated {
+            overlay::answer_probes(shared.clone());
+        }
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
@@ -175,6 +180,12 @@ impl Node {
         let device = trust.resolve(query)?.clone();
         trust.remove(&device.id)?;
         Ok(device)
+    }
+
+    /// This device's address on an overlay such as Tailscale, if it joined one.
+    #[must_use]
+    pub fn overlay_address(&self) -> Option<std::net::Ipv4Addr> {
+        route::overlay_address()
     }
 
     /// Decides whether this paired device may send files without asking.
