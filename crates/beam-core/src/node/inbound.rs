@@ -23,6 +23,7 @@ use crate::transfer::{
 use crate::trust::{Device, Relationship};
 
 const ANSWER_TIMEOUT: Duration = Duration::from_secs(300);
+const REFUSAL_WAIT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OfferSummary {
@@ -93,19 +94,19 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     let targets = match validate_offer(&offer) {
         Ok(targets) => targets,
         Err(error) => {
-            reply(&mut send, Decision::InvalidOffer, Vec::new()).await?;
+            refuse(connection, &mut send, Decision::InvalidOffer).await?;
             return Err(error);
         }
     };
 
     let summary = summarize(peer, &hello.name, device.as_ref(), &offer);
     let Some(destination) = decide(shared, summary).await else {
-        reply(&mut send, Decision::Declined, Vec::new()).await?;
+        refuse(connection, &mut send, Decision::Declined).await?;
         return Ok(());
     };
     std::fs::create_dir_all(&destination).at(&destination)?;
     if targets.iter().any(|target| crosses_symlink(&destination, target)) {
-        reply(&mut send, Decision::InvalidOffer, Vec::new()).await?;
+        refuse(connection, &mut send, Decision::InvalidOffer).await?;
         return Err(Error::InvalidOffer("path leaves the destination".to_owned()));
     }
     let staging = Staging::open(&destination, id)?;
@@ -113,10 +114,10 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     let bytes: u64 = offer.entries.iter().map(|entry| entry.size).sum();
     let resumed: u64 = offsets.iter().sum();
     if !has_room(&destination, bytes - resumed) {
-        reply(&mut send, Decision::NoSpace, Vec::new()).await?;
+        refuse(connection, &mut send, Decision::NoSpace).await?;
         return Err(Error::NoSpace);
     }
-    reply(&mut send, Decision::Accepted, offsets.clone()).await?;
+    accept(&mut send, offsets.clone()).await?;
 
     let files = offer.entries.iter().filter(|entry| !entry.is_dir).count();
     let _ = shared.events.send(Event::Started {
@@ -174,8 +175,18 @@ async fn decide(shared: &Shared, summary: OfferSummary) -> Option<PathBuf> {
     tokio::time::timeout(ANSWER_TIMEOUT, decision).await.ok()?.ok().flatten()
 }
 
-async fn reply(send: &mut SendStream, decision: Decision, offsets: Vec<u64>) -> Result<()> {
-    Ok(write_frame(send, &OfferReply { decision: decision as i32, offsets }).await?)
+async fn accept(send: &mut SendStream, offsets: Vec<u64>) -> Result<()> {
+    let decision = Decision::Accepted as i32;
+    Ok(write_frame(send, &OfferReply { decision, offsets }).await?)
+}
+
+/// Delivers a refusal and waits for the sender to read it before the connection goes away.
+async fn refuse(connection: &Connection, send: &mut SendStream, decision: Decision) -> Result<()> {
+    let refusal = OfferReply { decision: decision as i32, offsets: Vec::new() };
+    write_frame(send, &refusal).await?;
+    let _ = send.finish();
+    let _ = tokio::time::timeout(REFUSAL_WAIT, connection.closed()).await;
+    Ok(())
 }
 
 fn has_room(destination: &Path, needed: u64) -> bool {
