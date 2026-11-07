@@ -65,8 +65,9 @@ impl MainView {
             targets: HashMap::new(),
             code_input: cx.new(|cx| InputState::new(window, cx).placeholder("Paste a sf1 code")),
             name_input: cx.new(|cx| InputState::new(window, cx).placeholder("This device's name")),
-            relay_input: cx
-                .new(|cx| InputState::new(window, cx).placeholder("https://relay.example.com")),
+            relay_input: cx.new(|cx| {
+                InputState::new(window, cx).placeholder("https://relay.example.com#token")
+            }),
         }
     }
 

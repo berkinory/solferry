@@ -3,7 +3,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
 use gpui_kit::{
     AnyElement, Context, IntoElement, ParentElement, PathPromptOptions, SharedString, Styled,
-    Window, div,
+    Window, div, px,
 };
 use solferry_core::{Config, RelayHealth, RelayLink, Visibility};
 
@@ -13,6 +13,7 @@ use super::main_view::{MainView, Page};
 use super::ui;
 use crate::errors::explain;
 use crate::service::Command;
+use crate::tokens::SPACE_SM;
 
 const VISIBILITY: [(Visibility, &str); 3] = [
     (Visibility::Everyone, "Everyone nearby"),
@@ -50,33 +51,44 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .into_any_element()
 }
 
+fn field_row(field: AnyElement, action: Button) -> impl IntoElement {
+    div()
+        .flex()
+        .items_center()
+        .gap(px(SPACE_SM))
+        .child(div().flex_1().min_w_0().child(field))
+        .child(action)
+}
+
 fn name_section(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     ui::card(cx)
         .child(ui::section_title("Device name", cx))
-        .child(Input::new(&view.name_input))
-        .child(Button::new("save-name").small().label("Save").on_click(cx.listener(
-            |view, _, _, cx| {
-                let name = view.name_input.read(cx).value().trim().to_owned();
-                if !name.is_empty() {
-                    change(view, cx, |config| config.name = name);
-                    view.page = Page::Home;
-                    cx.notify();
-                }
-            },
-        )))
+        .child(field_row(
+            Input::new(&view.name_input).into_any_element(),
+            Button::new("save-name").small().label("Save").on_click(cx.listener(
+                |view, _, _, cx| {
+                    let name = view.name_input.read(cx).value().trim().to_owned();
+                    if !name.is_empty() {
+                        change(view, cx, |config| config.name = name);
+                        view.page = Page::Home;
+                        cx.notify();
+                    }
+                },
+            )),
+        ))
         .into_any_element()
 }
 
 fn folder_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     ui::card(cx)
         .child(ui::section_title("Save files to", cx))
-        .child(ui::muted(config.download_dir.display().to_string(), cx))
-        .child(
+        .child(field_row(
+            ui::muted(config.download_dir.display().to_string(), cx),
             Button::new("choose-folder")
                 .small()
                 .label("Change")
                 .on_click(cx.listener(|_, _, _, cx| choose_folder(cx))),
-        )
+        ))
         .into_any_element()
 }
 
@@ -108,13 +120,13 @@ fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -
         .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
         .children(relays)
         .children(failure)
-        .child(Input::new(&view.relay_input))
-        .child(
+        .child(field_row(
+            Input::new(&view.relay_input).into_any_element(),
             Button::new("add-relay")
                 .small()
                 .label("Add")
                 .on_click(cx.listener(|view, _, window, cx| add_relay(view, window, cx))),
-        )
+        ))
         .into_any_element()
 }
 
@@ -127,12 +139,19 @@ fn relay_row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> A
         .and_then(|link| health.iter().find(|health| health.url == *link.url()));
     let status = found.map_or("", relay_status);
     let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.url().to_string());
-    let shown = if status.is_empty() { shown } else { format!("{shown}: {status}") };
     div()
         .flex()
         .items_center()
-        .justify_between()
-        .child(ui::muted(shown, cx))
+        .gap(px(SPACE_SM))
+        .child(
+            div()
+                .flex()
+                .flex_col()
+                .flex_1()
+                .min_w_0()
+                .child(div().text_sm().truncate().child(shown))
+                .children((!status.is_empty()).then(|| ui::muted(status, cx))),
+        )
         .child(
             Button::new(SharedString::from(format!("remove-{url}")))
                 .ghost()

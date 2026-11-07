@@ -2,15 +2,15 @@ use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
-use gpui_kit::{
-    AnyElement, ClipboardItem, Context, IntoElement, ParentElement, SharedString, Styled, div,
-};
+use gpui_kit::component::switch::Switch;
+use gpui_kit::{AnyElement, ClipboardItem, Context, IntoElement, ParentElement, Styled, div, px};
 
 use super::main_view::MainView;
 use super::ui;
 use crate::errors::explain;
 use crate::qr;
 use crate::service::Command;
+use crate::tokens::SPACE_SM;
 
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
@@ -29,12 +29,12 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex_col()
         .gap_3()
         .children(error)
+        .child(approval_toggle(state.ask_after_pairing, cx))
         .child(
             ui::card(cx)
                 .child(div().text_sm().child("Add a device"))
-                .child(ui::muted("Show a code here, then enter it on the other device.", cx))
-                .child(approval_toggle(state.ask_after_pairing, cx))
-                .child(Button::new("invite").primary().small().label("Show code").on_click(
+                .child(ui::muted("Nearby devices can pair from the home screen. For anything else, show a code and enter it there.", cx))
+                .child(Button::new("invite").small().label("Show code").on_click(
                     cx.listener(move |_, _, _, cx| {
                         MainView::command(Command::Invite { auto_accept }, cx);
                     }),
@@ -45,7 +45,6 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             ui::card(cx)
                 .child(div().text_sm().child("Have a code?"))
                 .child(Input::new(&view.code_input))
-                .child(approval_toggle(state.ask_after_pairing, cx))
                 .child(
                     Button::new("join")
                         .primary()
@@ -67,17 +66,20 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn approval_toggle(ask: bool, cx: &mut Context<MainView>) -> AnyElement {
-    let label = if ask { "Ask before receiving" } else { "Receive without asking" };
-    Button::new(SharedString::from("pairing-approval"))
-        .ghost()
-        .small()
-        .label(label)
-        .on_click(cx.listener(move |view, _, _, cx| {
-            view.state.update(cx, |state, cx| {
-                state.ask_after_pairing = !ask;
-                cx.notify();
-            });
-        }))
+    div()
+        .flex()
+        .items_center()
+        .gap(px(SPACE_SM))
+        .child(Switch::new("pairing-approval").checked(!ask).on_click(cx.listener(
+            |view, enabled: &bool, _, cx| {
+                let ask = !*enabled;
+                view.state.update(cx, |state, cx| {
+                    state.ask_after_pairing = ask;
+                    cx.notify();
+                });
+            },
+        )))
+        .child(div().text_xs().child("Receive from this device without asking"))
         .into_any_element()
 }
 
