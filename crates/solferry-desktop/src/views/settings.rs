@@ -1,24 +1,35 @@
+use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
 use gpui_kit::{
-    AnyElement, Context, IntoElement, ParentElement, PathPromptOptions, SharedString, Styled,
-    Window, div, px,
+    AnyElement, Context, InteractiveElement, IntoElement, ParentElement, PathPromptOptions,
+    SharedString, StatefulInteractiveElement, Styled, Window, div, px,
 };
-use solferry_core::{Config, RelayHealth, RelayLink, Visibility};
-
 use iroh::EndpointId;
+use solferry_core::{Config, Visibility};
 
-use super::main_view::{MainView, Page};
-use super::ui;
-use crate::errors::explain;
+use super::main_view::MainView;
+use super::{relays, ui};
 use crate::service::Command;
-use crate::tokens::SPACE_SM;
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const VISIBILITY: [(Visibility, &str); 3] = [
-    (Visibility::Everyone, "Everyone nearby"),
-    (Visibility::KnownDevices, "Paired devices"),
-    (Visibility::Hidden, "Hidden"),
+const VISIBILITY: [(Visibility, &str, &str); 3] = [
+    (
+        Visibility::Everyone,
+        "Everyone",
+        "Anyone on your network can see this device and ask to send.",
+    ),
+    (
+        Visibility::KnownDevices,
+        "Paired",
+        "Others can see this device, but only paired devices can send.",
+    ),
+    (
+        Visibility::Hidden,
+        "Hidden",
+        "This device doesn't show up nearby. Paired devices can still send.",
+    ),
 ];
 
 pub fn load_inputs(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
@@ -28,67 +39,65 @@ pub fn load_inputs(view: &MainView, window: &mut Window, cx: &mut Context<MainVi
     }
 }
 
-fn change(view: &MainView, cx: &mut Context<MainView>, edit: impl FnOnce(&mut Config)) {
+pub fn change(view: &MainView, cx: &mut Context<MainView>, edit: impl FnOnce(&mut Config)) {
     let Some(mut config) = view.state.read(cx).config.clone() else { return };
     edit(&mut config);
     MainView::command(Command::Apply(config), cx);
 }
 
+pub fn commit_name(view: &MainView, cx: &mut Context<MainView>) {
+    let name = view.name_input.read(cx).value().trim().to_owned();
+    let unchanged = view.state.read(cx).config.as_ref().is_none_or(|config| config.name == name);
+    if !name.is_empty() && !unchanged {
+        change(view, cx, |config| config.name = name);
+    }
+}
+
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let Some(config) = view.state.read(cx).config.clone() else {
-        return ui::muted("Starting...", cx);
+    let state = view.state.read(cx);
+    let Some(config) = state.config.clone() else {
+        return ui::muted("Starting...", cx).into_any_element();
     };
-    let blocked = view.state.read(cx).blocked.clone();
+    let blocked = state.blocked.clone();
+    let id = state.id;
     div()
         .flex()
         .flex_col()
-        .gap_3()
-        .child(name_section(view, cx))
-        .child(folder_section(&config, cx))
-        .child(relay_section(view, &config, cx))
-        .child(visibility_section(&config, cx))
-        .children(blocked_section(&blocked, cx))
-        .into_any_element()
-}
-
-fn field_row(field: AnyElement, action: Button) -> impl IntoElement {
-    div()
-        .flex()
-        .items_center()
         .gap(px(SPACE_SM))
-        .child(div().flex_1().min_w_0().child(field))
-        .child(action)
-}
-
-fn name_section(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    ui::card(cx)
-        .child(ui::section_title("Device name", cx))
-        .child(field_row(
-            Input::new(&view.name_input).into_any_element(),
-            Button::new("save-name").small().label("Save").on_click(cx.listener(
-                |view, _, _, cx| {
-                    let name = view.name_input.read(cx).value().trim().to_owned();
-                    if !name.is_empty() {
-                        change(view, cx, |config| config.name = name);
-                        view.page = Page::Home;
-                        cx.notify();
-                    }
-                },
-            )),
-        ))
+        .child(device_section(view, &config, cx))
+        .child(visibility_section(&config, cx))
+        .child(relays::section(view, &config, cx))
+        .children(blocked_section(&blocked, cx))
+        .child(about(id, cx))
         .into_any_element()
 }
 
-fn folder_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    ui::card(cx)
-        .child(ui::section_title("Save files to", cx))
-        .child(field_row(
-            ui::muted(config.download_dir.display().to_string(), cx),
-            Button::new("choose-folder")
-                .small()
-                .label("Change")
-                .on_click(cx.listener(|_, _, _, cx| choose_folder(cx))),
-        ))
+fn device_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
+    ui::card("This device", None, cx)
+        .child(
+            ui::notice_well(cx).child(Input::new(&view.name_input)).child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(SPACE_SM))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .flex_1()
+                            .min_w_0()
+                            .child(ui::muted("Save files to", cx))
+                            .child(ui::text(config.download_dir.display().to_string()).truncate()),
+                    )
+                    .child(
+                        Button::new("choose-folder")
+                            .outline()
+                            .small()
+                            .label("Change")
+                            .on_click(cx.listener(|_, _, _, cx| choose_folder(cx))),
+                    ),
+            ),
+        )
         .into_any_element()
 }
 
@@ -110,104 +119,50 @@ fn choose_folder(cx: &mut Context<MainView>) {
     .detach();
 }
 
-fn relay_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    let health = view.state.read(cx).relay_health.clone();
-    let relays: Vec<_> = config.relays.iter().map(|url| relay_row(url, &health, cx)).collect();
-    let failure = view.state.read(cx).relay_error.as_ref().map(explain);
-    let failure = failure.map(|explanation| ui::muted(explanation.next, cx));
-    ui::card(cx)
-        .child(ui::section_title("Your relays", cx))
-        .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
-        .children(relays)
-        .children(failure)
-        .child(field_row(
-            Input::new(&view.relay_input).into_any_element(),
-            Button::new("add-relay")
-                .small()
-                .label("Add")
-                .on_click(cx.listener(|view, _, window, cx| add_relay(view, window, cx))),
-        ))
-        .into_any_element()
-}
-
-fn relay_row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElement {
-    let removed = url.to_owned();
-    let parsed = RelayLink::parse(url);
-    let found = parsed
-        .as_ref()
-        .ok()
-        .and_then(|link| health.iter().find(|health| health.url == *link.url()));
-    let status = found.map_or("", relay_status);
-    let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.url().to_string());
-    div()
-        .flex()
-        .items_center()
-        .gap(px(SPACE_SM))
-        .child(
-            div()
-                .flex()
-                .flex_col()
-                .flex_1()
-                .min_w_0()
-                .child(div().text_sm().truncate().child(shown))
-                .children((!status.is_empty()).then(|| ui::muted(status, cx))),
-        )
-        .child(
-            Button::new(SharedString::from(format!("remove-{url}")))
-                .ghost()
-                .xsmall()
-                .label("Remove")
-                .on_click(cx.listener(move |view, _, _, cx| {
-                    let removed = removed.clone();
-                    change(view, cx, |config| config.relays.retain(|url| *url != removed));
-                })),
-        )
-        .into_any_element()
-}
-
-fn relay_status(health: &RelayHealth) -> &'static str {
-    match (health.reachable, health.accepted, health.direct_paths) {
-        (false, ..) => "can't reach the server",
-        (true, false, _) => "refused, check the link",
-        (true, true, false) => "connected, UDP 7842 is blocked",
-        (true, true, true) => "connected",
-    }
-}
-
-fn add_relay(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
-    let url = view.relay_input.read(cx).value().trim().to_owned();
-    if url.is_empty() {
-        return;
-    }
-    if let Err(error) = RelayLink::parse(&url) {
-        view.state.update(cx, |state, cx| {
-            state.relay_error = Some(error);
-            cx.notify();
-        });
-        return;
-    }
-    view.state.update(cx, |state, _| state.relay_error = None);
-    change(view, cx, |config| {
-        config.relays.retain(|existing| *existing != url);
-        config.relays.push(url);
-    });
-    view.relay_input.update(cx, |input, cx| input.set_value("", window, cx));
-}
-
 fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
+    let theme = cx.theme();
+    let (track, chosen, hover) = (theme.secondary, theme.background, theme.accent);
+    let muted = theme.muted_foreground;
+    let current = VISIBILITY.iter().find(|option| option.0 == config.visibility);
     let options: Vec<_> = VISIBILITY
         .iter()
-        .map(|&(mode, title)| {
-            let button = Button::new(SharedString::from(title)).small().label(title);
-            let button = if config.visibility == mode { button.primary() } else { button.ghost() };
-            button.on_click(cx.listener(move |view, _, _, cx| {
-                change(view, cx, |config| config.visibility = mode);
-            }))
+        .map(|&(mode, title, _)| {
+            let selected = config.visibility == mode;
+            let option = div()
+                .id(SharedString::from(title))
+                .flex()
+                .flex_1()
+                .items_center()
+                .justify_center()
+                .h(px(28.))
+                .rounded(px(RADIUS_CONTROL))
+                .text_size(px(13.))
+                .cursor_pointer()
+                .child(title)
+                .on_click(cx.listener(move |view, _, _, cx| {
+                    change(view, cx, |config| config.visibility = mode);
+                }));
+            if selected {
+                option.bg(chosen)
+            } else {
+                option.text_color(muted).hover(move |style| style.bg(hover))
+            }
         })
         .collect();
-    ui::card(cx)
-        .child(ui::section_title("Who can see this device", cx))
-        .child(div().flex().gap_2().children(options))
+    ui::card("Who can see this device", None, cx)
+        .child(
+            ui::notice_well(cx)
+                .child(
+                    div()
+                        .flex()
+                        .gap(px(SPACE_XS))
+                        .p(px(SPACE_XS))
+                        .rounded(px(RADIUS_FIELD))
+                        .bg(track)
+                        .children(options),
+                )
+                .children(current.map(|option| ui::muted(option.2, cx))),
+        )
         .into_any_element()
 }
 
@@ -216,7 +171,11 @@ fn blocked_section(blocked: &[EndpointId], cx: &mut Context<MainView>) -> Option
         return None;
     }
     let rows: Vec<_> = blocked.iter().map(|&id| blocked_row(id, cx)).collect();
-    Some(ui::card(cx).child(ui::section_title("Blocked", cx)).children(rows).into_any_element())
+    Some(
+        ui::card("Blocked", Some(ui::count(blocked.len(), cx)), cx)
+            .child(ui::well(cx).children(rows))
+            .into_any_element(),
+    )
 }
 
 fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
@@ -224,7 +183,9 @@ fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .items_center()
         .justify_between()
-        .child(ui::muted(id.fmt_short().to_string(), cx))
+        .px(px(SPACE_SM))
+        .h(px(32.))
+        .child(ui::mono(id.fmt_short().to_string(), cx))
         .child(
             Button::new(SharedString::from(format!("unblock-{id}")))
                 .ghost()
@@ -234,5 +195,17 @@ fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
                     MainView::command(Command::Unblock(id), cx);
                 })),
         )
+        .into_any_element()
+}
+
+fn about(id: Option<EndpointId>, cx: &mut Context<MainView>) -> AnyElement {
+    let short = id.map(|id| id.fmt_short().to_string()).unwrap_or_default();
+    div()
+        .flex()
+        .justify_between()
+        .px(px(SPACE_MD))
+        .py(px(SPACE_XS))
+        .child(ui::mono(format!("Solferry {}", env!("CARGO_PKG_VERSION")), cx))
+        .child(ui::mono(short, cx))
         .into_any_element()
 }

@@ -1,28 +1,37 @@
-use std::path::Path;
-
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, IconName, Sizable};
+use gpui_kit::component::{Icon, IconName, Sizable};
 use gpui_kit::{
-    AnyElement, Context, ElementId, ExternalPaths, FontWeight, InteractiveElement, IntoElement,
+    AnyElement, App, Context, ElementId, ExternalPaths, Hsla, InteractiveElement, IntoElement,
     ParentElement, SharedString, StatefulInteractiveElement, Styled, Window, div, px,
+    transparent_black,
 };
 use iroh::{EndpointAddr, EndpointId};
-use solferry_core::NearbyDevice;
+use solferry_core::{NearbyDevice, Route};
 
-use super::main_view::MainView;
+use super::main_view::{MainView, Page};
 use super::ui;
 use crate::service::{Command, Target};
 use crate::state::AppState;
-use crate::tokens::{RADIUS_MD, SPACE_MD, SPACE_SM};
+use crate::theme::route_color;
+use crate::tokens::{RADIUS_CONTROL, SPACE_SM, SPACE_XS, TYPE_CAPTION};
 
 struct Row {
     id: EndpointId,
     addr: EndpointAddr,
     name: String,
     detail: &'static str,
+    route: Option<Route>,
     approval: Option<bool>,
+}
+
+fn near_detail(device: &NearbyDevice) -> (&'static str, Route) {
+    if device.overlay {
+        ("On your overlay network", Route::Overlay)
+    } else {
+        ("On this network", Route::Local)
+    }
 }
 
 fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
@@ -30,27 +39,28 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
     let mine = state
         .devices
         .iter()
-        .map(|device| Row {
-            id: device.id,
-            addr: near(&device.id).map_or_else(|| device.addr(), |found| found.addr.clone()),
-            name: device.name.clone(),
-            detail: if near(&device.id).is_some() { "On this network" } else { "Paired" },
-            approval: Some(device.auto_accept),
+        .map(|device| {
+            let found = near(&device.id);
+            Row {
+                id: device.id,
+                addr: found.map_or_else(|| device.addr(), |found| found.addr.clone()),
+                name: device.name.clone(),
+                detail: found.map_or("Paired", |found| near_detail(found).0),
+                route: found.map(|found| near_detail(found).1),
+                approval: Some(device.auto_accept),
+            }
         })
         .collect();
     let others = state
         .nearby
         .iter()
-        .filter(|device: &&NearbyDevice| !device.known)
+        .filter(|device| !device.known)
         .map(|device| Row {
             id: device.addr.id,
             addr: device.addr.clone(),
             name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
-            detail: if device.overlay {
-                "On your overlay network, they will be asked first"
-            } else {
-                "Not paired, they will be asked first"
-            },
+            detail: if device.overlay { "Overlay, not paired" } else { "Not paired" },
+            route: None,
             approval: None,
         })
         .collect();
@@ -59,176 +69,220 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
 
 pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = rows(state);
-    let empty = mine.is_empty() && others.is_empty();
-    div()
-        .flex()
-        .flex_col()
-        .gap_2()
-        .when_some_rows("Devices", mine, view, cx)
-        .when_some_rows("Nearby", others, view, cx)
-        .children(empty.then(|| {
-            ui::card(cx).child(ui::muted(
-                "No devices yet. Open solferry on another device, or add one with a code.",
-                cx,
-            ))
-        }))
+    if mine.is_empty() && others.is_empty() {
+        return empty(cx);
+    }
+    let section = |title: &'static str, rows: Vec<Row>, cx: &mut Context<MainView>| {
+        (!rows.is_empty()).then(|| {
+            let count = ui::count(rows.len(), cx);
+            let elements: Vec<_> = rows.into_iter().map(|row| device_row(row, view, cx)).collect();
+            ui::card(title, Some(count), cx).child(ui::well(cx).children(elements))
+        })
+    };
+    let paired = section("Devices", mine, cx);
+    let nearby = section("Nearby", others, cx);
+    div().flex().flex_col().gap(px(SPACE_SM)).children(paired).children(nearby).into_any_element()
+}
+
+fn empty(cx: &mut Context<MainView>) -> AnyElement {
+    ui::frame(cx)
+        .child(
+            ui::well(cx)
+                .items_center()
+                .gap(px(SPACE_SM))
+                .py(px(28.))
+                .child(ui::text("No devices yet"))
+                .child(
+                    ui::muted("Open Solferry on another device on this network.", cx)
+                        .text_center()
+                        .max_w(px(280.)),
+                )
+                .child(div().pt(px(SPACE_XS)).child(
+                    Button::new("empty-add").outline().small().label("Add with a code").on_click(
+                        cx.listener(|view, _, window, cx| {
+                            view.open_page(Page::Pair, window, cx);
+                        }),
+                    ),
+                )),
+        )
         .into_any_element()
 }
 
-trait DeviceSections {
-    fn when_some_rows(
-        self,
-        title: &'static str,
-        rows: Vec<Row>,
-        view: &MainView,
-        cx: &mut Context<MainView>,
-    ) -> Self;
-}
-
-impl DeviceSections for gpui_kit::Div {
-    fn when_some_rows(
-        self,
-        title: &'static str,
-        rows: Vec<Row>,
-        view: &MainView,
-        cx: &mut Context<MainView>,
-    ) -> Self {
-        if rows.is_empty() {
-            return self;
-        }
-        let elements: Vec<AnyElement> =
-            rows.into_iter().map(|row| device_row(row, view, cx)).collect();
-        self.child(ui::section_title(title, cx)).children(elements)
+fn tile(name: &str, selected: bool, cx: &App) -> AnyElement {
+    if selected {
+        let theme = cx.theme();
+        ui::tile(cx)
+            .bg(theme.primary)
+            .child(Icon::new(IconName::Check).size(px(16.)).text_color(theme.primary_foreground))
+            .into_any_element()
+    } else {
+        ui::initial(name, cx).into_any_element()
     }
 }
 
-fn avatar(name: &str, cx: &Context<MainView>) -> AnyElement {
-    let initial: String =
-        name.chars().next().map(|c| c.to_uppercase().collect()).unwrap_or_default();
-    let theme = cx.theme();
-    div()
-        .flex()
-        .flex_none()
-        .items_center()
-        .justify_center()
-        .size(px(36.))
-        .rounded_full()
-        .border_1()
-        .border_color(theme.border)
-        .bg(theme.background)
-        .text_color(theme.foreground)
-        .text_sm()
-        .font_weight(FontWeight::SEMIBOLD)
-        .child(initial)
-        .into_any_element()
+fn detail(row: &Row, cx: &App) -> AnyElement {
+    let color: Option<Hsla> = row.route.map(|route| route_color(route, cx));
+    color.map_or_else(
+        || ui::muted(row.detail, cx).into_any_element(),
+        |color| ui::status(color, row.detail, cx).into_any_element(),
+    )
 }
 
 fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+    let picking = !view.pending.is_empty();
     let selected = view.selected.contains(&row.id);
     let expanded = view.expanded == Some(row.id);
     let theme = cx.theme();
-    let (border, hover) = (theme.border, theme.accent);
-    let highlight = theme.primary;
-    let target = Target { addr: row.addr.clone(), name: row.name.clone() };
-    let id: ElementId = SharedString::from(format!("device-{}", row.id)).into();
-    let (click_id, click_target) = (row.id, row.addr.clone());
-    let click_name = row.name.clone();
-    let action = match row.approval {
-        Some(_) => more_button(row.id, cx),
-        None => pair_button(row.id, row.addr, cx),
-    };
+    let (hover, highlight) = (theme.accent, theme.primary);
+    let group = SharedString::from(format!("row-{}", row.id));
+    let id: ElementId = group.clone().into();
+    let drop_target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let click_target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let device = row.id;
+    let hint = (!picking && row.approval.is_some()).then(|| {
+        div().flex_none().opacity(0.).group_hover(group.clone(), |style| style.opacity(1.)).child(
+            Icon::new(IconName::ArrowUp).size(px(14.)).text_color(cx.theme().muted_foreground),
+        )
+    });
     let details = row
         .approval
         .filter(|_| expanded)
-        .map(|auto_accept| device_details(row.id, auto_accept, cx));
+        .map(|auto_accept| device_details(row.id, &row.name, auto_accept, view, cx));
+    let action = if row.approval.is_some() {
+        more_button(row.id, cx)
+    } else {
+        pair_button(row.id, row.addr.clone(), cx)
+    };
+    let shown = tile(&row.name, selected, cx);
+    let line = detail(&row, cx);
     div()
         .flex()
         .flex_col()
-        .rounded(px(RADIUS_MD))
-        .border_1()
-        .border_color(if selected { highlight } else { border })
-        .bg(cx.theme().secondary)
         .child(
             div()
                 .id(id)
+                .group(group)
                 .flex()
                 .items_center()
-                .gap(px(SPACE_MD))
-                .p(px(SPACE_MD))
-                .rounded(px(RADIUS_MD))
+                .gap(px(10.))
+                .p(px(7.))
+                .rounded(px(RADIUS_CONTROL))
+                .border_1()
+                .border_color(transparent_black())
                 .cursor_pointer()
+                .when_bg(selected || expanded, hover)
                 .hover(move |style| style.bg(hover))
                 .drag_over::<ExternalPaths>(move |style, _, _, _| {
                     style.border_color(highlight).bg(hover)
                 })
                 .on_drop(cx.listener(move |view, paths: &ExternalPaths, _, cx| {
-                    let target = Target { addr: target.addr.clone(), name: target.name.clone() };
+                    cx.stop_propagation();
+                    let target =
+                        Target { addr: drop_target.addr.clone(), name: drop_target.name.clone() };
                     view.send_now(vec![target], paths.paths().to_vec(), cx);
                 }))
                 .on_click(cx.listener(move |view, _, _, cx| {
-                    let target = Target { addr: click_target.clone(), name: click_name.clone() };
-                    view.activate_device(click_id, target, cx);
+                    let target =
+                        Target { addr: click_target.addr.clone(), name: click_target.name.clone() };
+                    view.activate_device(device, target, cx);
                 }))
-                .child(avatar(&row.name, cx))
+                .child(shown)
                 .child(
                     div()
                         .flex()
                         .flex_col()
                         .flex_1()
                         .min_w_0()
-                        .child(div().text_sm().child(row.name))
-                        .child(ui::muted(row.detail, cx)),
+                        .child(ui::text(row.name).truncate())
+                        .child(line),
                 )
+                .children(hint)
                 .child(action),
         )
         .children(details)
         .into_any_element()
 }
 
+trait WhenBg {
+    fn when_bg(self, on: bool, color: Hsla) -> Self;
+}
+
+impl<E: Styled> WhenBg for E {
+    fn when_bg(self, on: bool, color: Hsla) -> Self {
+        if on { self.bg(color) } else { self }
+    }
+}
+
 fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
     Button::new(SharedString::from(format!("more-{id}")))
         .ghost()
-        .small()
+        .xsmall()
         .icon(IconName::Ellipsis)
+        .accessibility_label("Device options")
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
             cx.stop_propagation();
+            view.forgetting = None;
             view.expanded = if view.expanded == Some(id) { None } else { Some(id) };
             cx.notify();
         }))
         .into_any_element()
 }
 
-fn device_details(id: EndpointId, auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement {
-    div()
-        .flex()
-        .items_center()
-        .justify_between()
-        .px(px(SPACE_MD))
+fn device_details(
+    id: EndpointId,
+    name: &str,
+    auto_accept: bool,
+    view: &MainView,
+    cx: &mut Context<MainView>,
+) -> AnyElement {
+    let inset = || div().flex().items_center().justify_between().pl(px(50.)).pr(px(SPACE_SM));
+    let toggle = inset()
         .py(px(SPACE_SM))
-        .border_t_1()
-        .border_color(cx.theme().border)
+        .text_size(px(TYPE_CAPTION))
+        .child(ui::muted("Receive without asking", cx))
         .child(
-            div()
-                .flex()
-                .items_center()
-                .gap(px(SPACE_SM))
-                .child(
-                    Switch::new(SharedString::from(format!("approval-{id}")))
-                        .checked(auto_accept)
-                        .on_click(cx.listener(move |_, enabled: &bool, _, cx| {
-                            MainView::command(Command::SetAutoAccept { id, enabled: *enabled }, cx);
-                        })),
-                )
-                .child(div().text_xs().child("Receive without asking")),
+            Switch::new(SharedString::from(format!("approval-{id}")))
+                .checked(auto_accept)
+                .accessibility_label("Receive without asking")
+                .on_click(cx.listener(move |_, enabled: &bool, _, cx| {
+                    MainView::command(Command::SetAutoAccept { id, enabled: *enabled }, cx);
+                })),
+        );
+    let forget = if view.forgetting == Some(id) {
+        inset()
+            .gap(px(SPACE_SM))
+            .pb(px(SPACE_XS))
+            .child(ui::muted(format!("Forget {name}? You'd have to pair again."), cx).flex_1())
+            .child(
+                Button::new(SharedString::from(format!("forget-yes-{id}")))
+                    .danger()
+                    .small()
+                    .label("Forget")
+                    .on_click(cx.listener(move |view, _, _, cx| {
+                        view.forgetting = None;
+                        view.expanded = None;
+                        MainView::command(Command::Forget(id), cx);
+                    })),
+            )
+    } else {
+        inset().pb(px(SPACE_XS)).child(ui::muted("Remove this device", cx)).child(
+            Button::new(SharedString::from(format!("forget-{id}")))
+                .ghost()
+                .xsmall()
+                .label("Forget")
+                .on_click(cx.listener(move |view, _, _, cx| {
+                    view.forgetting = Some(id);
+                    cx.notify();
+                })),
         )
-        .child(forget_button(id, cx))
-        .into_any_element()
+    };
+    div().flex().flex_col().child(toggle).child(forget).into_any_element()
 }
 
 fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -> AnyElement {
     Button::new(SharedString::from(format!("pair-{id}")))
-        .ghost()
-        .xsmall()
+        .outline()
+        .small()
         .label("Pair")
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
             cx.stop_propagation();
@@ -236,57 +290,4 @@ fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -
             MainView::command(Command::PairNearby { addr: addr.clone(), auto_accept }, cx);
         }))
         .into_any_element()
-}
-
-fn forget_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
-    Button::new(SharedString::from(format!("forget-{id}")))
-        .ghost()
-        .xsmall()
-        .label("Forget")
-        .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
-            MainView::command(Command::Forget(id), cx);
-        }))
-        .into_any_element()
-}
-
-pub fn pending_bar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let count = view.pending.len();
-    let chosen = view.selected.len();
-    let summary = match count {
-        1 => file_name(&view.pending[0]),
-        _ => format!("{count} items"),
-    };
-    ui::card(cx)
-        .child(div().text_sm().child(format!("Ready to send {summary}")))
-        .child(ui::muted("Choose devices, then send.", cx))
-        .child(
-            div()
-                .flex()
-                .gap_2()
-                .child(
-                    Button::new("send-selected")
-                        .primary()
-                        .small()
-                        .disabled(chosen == 0)
-                        .label(if chosen > 1 {
-                            format!("Send to {chosen} devices")
-                        } else {
-                            "Send".to_owned()
-                        })
-                        .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx))),
-                )
-                .child(
-                    Button::new("clear-pending")
-                        .ghost()
-                        .small()
-                        .label("Cancel")
-                        .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx))),
-                ),
-        )
-        .into_any_element()
-}
-
-fn file_name(path: &Path) -> String {
-    path.file_name()
-        .map_or_else(|| path.display().to_string(), |name| name.to_string_lossy().into_owned())
 }

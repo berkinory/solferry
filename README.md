@@ -23,7 +23,14 @@ There is no account and no upload step. Files go straight from one device to ano
 cargo run --release -p solferry-desktop
 ```
 
-Drop files on a device, or on the window to pick several devices. Closing the window keeps solferry in the tray, ready to receive.
+Drop files on a device, or on the window to pick several devices. Closing the window keeps Solferry in the tray, ready to receive. `Ctrl+O` (`Cmd+O` on macOS) chooses files, `Ctrl+N` adds a device and `Ctrl+,` opens settings.
+
+On macOS, run it as an app so it can show notifications and ask for local network access:
+
+```sh
+just bundle-macos
+open target/release/Solferry.app
+```
 
 ## Command line
 

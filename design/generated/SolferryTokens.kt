@@ -4,41 +4,47 @@ package app.solferry.design
 import androidx.compose.ui.graphics.Color
 
 object LightColors {
-    val canvas = Color(0xFFEDF2F3)
-    val surface = Color(0xFFFFFFFF)
-    val surfaceRaised = Color(0xFFE2EAEC)
-    val line = Color(0xFFCBD7DB)
-    val ink = Color(0xFF10242C)
-    val inkMuted = Color(0xFF4A5F69)
+    val page = Color(0xFFFFFFFF)
+    val well = Color(0xFFF5F5F6)
+    val raised = Color(0xFFEBEBED)
+    val control = Color(0xFFE7E7E9)
+    val line = Color(0xFFE3E3E4)
+    val ink = Color(0xFF18181B)
+    val inkMuted = Color(0xFF66666E)
     val sun = Color(0xFFF5A300)
+    val sunDeep = Color(0xFFD98F00)
     val onSun = Color(0xFF1A1400)
-    val harbor = Color(0xFF0F5C6E)
-    val success = Color(0xFF14724D)
-    val warning = Color(0xFF8F5400)
-    val danger = Color(0xFFBF2A35)
-    val routeLocal = Color(0xFF0F5C6E)
-    val routeOverlay = Color(0xFF3D4FB5)
-    val routeDirect = Color(0xFF14724D)
-    val routeRelay = Color(0xFF8F5400)
+    val link = Color(0xFF1D4ED8)
+    val success = Color(0xFF047857)
+    val warning = Color(0xFFA34700)
+    val danger = Color(0xFFB91C1C)
+    val dangerWell = Color(0xFFFDF0F0)
+    val routeLocal = Color(0xFF1D4ED8)
+    val routeOverlay = Color(0xFF6D28D9)
+    val routeDirect = Color(0xFF047857)
+    val routeRelay = Color(0xFFA34700)
 }
 
 object DarkColors {
-    val canvas = Color(0xFF0C171D)
-    val surface = Color(0xFF13222A)
-    val surfaceRaised = Color(0xFF1C303A)
-    val line = Color(0xFF2A4049)
-    val ink = Color(0xFFE8F0F2)
-    val inkMuted = Color(0xFF9AB0B9)
+    val page = Color(0xFF18181B)
+    val well = Color(0xFF101012)
+    val raised = Color(0xFF222225)
+    val control = Color(0xFF27272A)
+    val line = Color(0xFF2F2F32)
+    val ink = Color(0xFFECECEF)
+    val inkMuted = Color(0xFFA1A1AA)
     val sun = Color(0xFFFFB81F)
+    val sunDeep = Color(0xFFE8A300)
     val onSun = Color(0xFF1A1400)
-    val harbor = Color(0xFF6CC3D5)
-    val success = Color(0xFF4AD29A)
-    val warning = Color(0xFFF2B04A)
-    val danger = Color(0xFFF4737C)
-    val routeLocal = Color(0xFF6CC3D5)
-    val routeOverlay = Color(0xFFA3AEF5)
-    val routeDirect = Color(0xFF4AD29A)
-    val routeRelay = Color(0xFFF2B04A)
+    val link = Color(0xFF60A5FA)
+    val success = Color(0xFF34D399)
+    val warning = Color(0xFFFBBF24)
+    val danger = Color(0xFFF87171)
+    val dangerWell = Color(0xFF1F1113)
+    val routeLocal = Color(0xFF60A5FA)
+    val routeOverlay = Color(0xFFA78BFA)
+    val routeDirect = Color(0xFF34D399)
+    val routeRelay = Color(0xFFFBBF24)
 }
 
 object SpaceTokens {
@@ -51,13 +57,16 @@ object SpaceTokens {
 }
 
 object RadiusTokens {
-    const val sm = 6
-    const val md = 10
-    const val lg = 16
+    const val floor = 6
+    const val control = 10
+    const val field = 14
+    const val well = 18
+    const val card = 22
 }
 
 object TypeTokens {
     const val caption = 12
+    const val label = 13
     const val body = 14
     const val title = 18
     const val code = 28

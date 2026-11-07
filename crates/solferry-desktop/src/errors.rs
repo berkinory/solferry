@@ -15,11 +15,11 @@ pub fn explain(error: &Error) -> Explanation {
             say("Couldn't read or write a file", "Check the folder, permissions and free space.")
         }
         Error::CorruptData { .. } => say(
-            "solferry's settings are damaged",
-            "Delete the damaged file in solferry's data folder. You may need to pair devices again.",
+            "Solferry's settings are damaged",
+            "Delete the damaged file in Solferry's data folder. You may need to pair devices again.",
         ),
         Error::NetworkStart(_) => {
-            say("Networking didn't start", "Check that you are connected, then restart solferry.")
+            say("Networking didn't start", "Check that you are connected, then restart Solferry.")
         }
         Error::InvalidRelayUrl(_) => say(
             "That relay address isn't valid",
@@ -27,14 +27,14 @@ pub fn explain(error: &Error) -> Explanation {
         ),
         Error::Unreachable(_) => say(
             "Device can't be reached",
-            "Open solferry there. On another network, use Tailscale or add your own relay.",
+            "Open Solferry there. On another network, use Tailscale or add your own relay.",
         ),
         Error::RelayCheckFailed => say("A relay is not working", "See its status in Settings."),
         Error::NotPaired => {
             say("This device only accepts paired devices", "Pair them first from Add device.")
         }
         Error::VersionMismatch { .. } => {
-            say("solferry versions don't match", "Update solferry on both devices.")
+            say("Solferry versions don't match", "Update Solferry on both devices.")
         }
         Error::Busy => {
             say("The other device is busy", "Wait for its transfers to finish, then try again.")
@@ -48,7 +48,7 @@ pub fn explain(error: &Error) -> Explanation {
             say("The files couldn't be saved", "Check the download folder on the receiving device.")
         }
         Error::InvalidOffer(_) => {
-            say("Unsafe transfer refused", "The other device offered files solferry can't accept.")
+            say("Unsafe transfer refused", "The other device offered files Solferry can't accept.")
         }
         Error::SourceChanged(_) => {
             say("A file changed during sending", "Wait until it stops changing and try again.")
@@ -77,7 +77,7 @@ pub fn explain(error: &Error) -> Explanation {
             say("More than one device matches", "Choose the device from the list.")
         }
         Error::Protocol(_) => say(
-            "Something went wrong in solferry",
+            "Something went wrong in Solferry",
             "This is a bug. Please report it with the details.",
         ),
     }

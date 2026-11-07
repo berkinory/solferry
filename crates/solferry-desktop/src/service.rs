@@ -13,6 +13,7 @@ use solferry_core::{
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
+const PROMPT_SWEEP: Duration = Duration::from_secs(1);
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
 pub struct Target {
@@ -45,7 +46,9 @@ pub enum Update {
     Nearby(Vec<NearbyDevice>),
     Transfer(Event),
     Offer { key: u64, summary: OfferSummary },
+    OfferGone(u64),
     PairingRequest { key: u64, name: String, code: String },
+    PairingGone(u64),
     PairingCode(String),
     Invite(String),
     Paired(Device),
@@ -85,6 +88,35 @@ type PendingPairings = Arc<Mutex<HashMap<u64, PairingRequest>>>;
 struct Session {
     node: Node,
     tasks: Vec<AbortHandle>,
+}
+
+/// Drops prompts whose peer left or whose wait ran out, so nobody answers a request that is gone.
+fn sweep_prompts(
+    offers: Pending,
+    requests: PendingPairings,
+    updates: UnboundedSender<Update>,
+) -> AbortHandle {
+    tokio::spawn(async move {
+        let mut sweep = tokio::time::interval(PROMPT_SWEEP);
+        loop {
+            sweep.tick().await;
+            offers.lock().await.retain(|key, offer| {
+                let open = !offer.is_closed();
+                if !open {
+                    let _ = updates.unbounded_send(Update::OfferGone(*key));
+                }
+                open
+            });
+            requests.lock().await.retain(|key, request| {
+                let open = !request.is_closed();
+                if !open {
+                    let _ = updates.unbounded_send(Update::PairingGone(*key));
+                }
+                open
+            });
+        }
+    })
+    .abort_handle()
 }
 
 async fn start(
@@ -172,6 +204,8 @@ async fn start(
         })
         .abort_handle(),
     );
+
+    tasks.push(sweep_prompts(pending.clone(), pairing.clone(), updates.clone()));
 
     let scanner = node.clone();
     let outgoing = updates.clone();
