@@ -37,6 +37,22 @@ def snake(name):
     return re.sub(r"([A-Z])", r"_\1", name).upper()
 
 
+def radii(tokens):
+    corner = tokens["corner"]
+    well = corner["control"] + corner["gutter"]
+    return {
+        "floor": corner["floor"],
+        "control": corner["control"],
+        "field": corner["control"] + corner["frame"],
+        "well": well,
+        "card": well + corner["frame"],
+    }
+
+
+def scales(tokens):
+    return {"space": tokens["space"], "radius": radii(tokens), "type": tokens["type"]}
+
+
 def rust(tokens):
     lines = [f"// {HEADER}", "", "pub struct Palette {"]
     names = list(tokens["color"]["light"])
@@ -46,8 +62,11 @@ def rust(tokens):
         lines.append(f"pub const {mode.upper()}: Palette = Palette {{")
         lines += [f"    {snake(n).lower()}: 0x{colors[n][1:3].lower()}_{colors[n][3:].lower()}," for n in names]
         lines += ["};", ""]
-    for group in ("space", "radius", "type"):
-        for name, value in tokens[group].items():
+    for name, value in tokens["font"].items():
+        lines.append(f'pub const FONT_{name.upper()}: &str = "{value}";')
+    lines.append("")
+    for group, values in scales(tokens).items():
+        for name, value in values.items():
             lines.append(f"pub const {group.upper()}_{name.upper()}: f32 = {value}.0;")
     return "\n".join(lines) + "\n"
 
@@ -58,9 +77,9 @@ def kotlin(tokens):
         lines.append(f"object {mode.capitalize()}Colors {{")
         lines += [f"    val {n} = Color(0xFF{v[1:]})" for n, v in colors.items()]
         lines += ["}", ""]
-    for group in ("space", "radius", "type", "motion"):
+    for group, values in {**scales(tokens), "motion": tokens["motion"]}.items():
         lines.append(f"object {group.capitalize()}Tokens {{")
-        lines += [f"    const val {n} = {v}" for n, v in tokens[group].items()]
+        lines += [f"    const val {n} = {v}" for n, v in values.items()]
         lines += ["}", ""]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -77,43 +96,70 @@ def swift(tokens):
         lines.append(f"enum {mode.capitalize()}Colors {{")
         lines += [f"    static let {n} = Color(hex: 0x{v[1:]})" for n, v in colors.items()]
         lines += ["}", ""]
-    for group in ("space", "radius", "type", "motion"):
+    for group, values in {**scales(tokens), "motion": tokens["motion"]}.items():
         lines.append(f"enum {group.capitalize()}Tokens {{")
-        lines += [f"    static let {n}: Double = {v}" for n, v in tokens[group].items()]
+        lines += [f"    static let {n}: Double = {v}" for n, v in values.items()]
         lines += ["}", ""]
     return "\n".join(lines).rstrip() + "\n"
 
 
+def desktop_colors(c):
+    return {
+        "background": c["page"],
+        "foreground": c["ink"],
+        "border": c["line"],
+        "input.border": c["line"],
+        "ring": c["sun"],
+        "caret": c["ink"],
+        "link": c["link"],
+        "link.hover": c["link"],
+        "link.active": c["link"],
+        "muted.background": c["raised"],
+        "muted.foreground": c["inkMuted"],
+        "accent.background": c["raised"],
+        "accent.foreground": c["ink"],
+        "secondary.background": c["control"],
+        "secondary.foreground": c["ink"],
+        "secondary.hover.background": c["raised"],
+        "secondary.active.background": c["line"],
+        "primary.background": c["sun"],
+        "primary.foreground": c["onSun"],
+        "primary.hover.background": c["sunDeep"],
+        "primary.active.background": c["sunDeep"],
+        "danger.background": c["danger"],
+        "danger.foreground": c["page"],
+        "success.background": c["success"],
+        "warning.background": c["warning"],
+        "popover.background": c["page"],
+        "popover.foreground": c["ink"],
+        "switch.background": c["line"],
+        "switch.thumb.background": c["page"],
+        "scrollbar.background": "#00000000",
+        "scrollbar.thumb.background": c["line"],
+        "scrollbar.thumb.hover.background": c["inkMuted"],
+        "selection.background": c["sun"] + "55",
+        "title_bar.background": c["page"],
+        "title_bar.border": c["page"],
+        "window.border": c["line"],
+    }
+
+
 def desktop_theme(tokens):
     themes = []
-    for mode, c in tokens["color"].items():
-        colors = {
-            "background": c["canvas"],
-            "foreground": c["ink"],
-            "border": c["line"],
-            "input.border": c["line"],
-            "ring": c["sun"],
-            "caret": c["ink"],
-            "link": c["harbor"],
-            "muted.background": c["surfaceRaised"],
-            "muted.foreground": c["inkMuted"],
-            "accent.background": c["surfaceRaised"],
-            "accent.foreground": c["ink"],
-            "secondary.background": c["surface"],
-            "secondary.foreground": c["ink"],
-            "secondary.hover.background": c["surfaceRaised"],
-            "secondary.active.background": c["surfaceRaised"],
-            "primary.background": c["sun"],
-            "primary.foreground": c["onSun"],
-            "primary.hover.background": c["sun"] + "E6",
-            "primary.active.background": c["sun"] + "CC",
-            "danger.background": c["danger"],
-            "success.background": c["success"],
-            "warning.background": c["warning"],
-            "title_bar.background": c["canvas"],
-            "title_bar.border": c["line"],
-        }
-        themes.append({"name": f"Solferry {mode.capitalize()}", "mode": mode, "colors": colors})
+    for mode, colors in tokens["color"].items():
+        themes.append(
+            {
+                "name": f"Solferry {mode.capitalize()}",
+                "mode": mode,
+                "font.family": tokens["font"]["sans"],
+                "mono_font.family": tokens["font"]["mono"],
+                "mono_font.size": tokens["type"]["caption"],
+                "radius": tokens["corner"]["control"],
+                "radius.lg": radii(tokens)["field"],
+                "shadow": False,
+                "colors": desktop_colors(colors),
+            }
+        )
     return json.dumps({"name": "Solferry", "author": "Solferry", "themes": themes}, indent=2) + "\n"
 
 

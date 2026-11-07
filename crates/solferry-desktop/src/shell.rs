@@ -95,10 +95,10 @@ pub fn show_window(cx: &mut App) {
     {
         return;
     }
-    let bounds = Bounds::centered(None, size(px(440.), px(680.)), cx);
+    let bounds = Bounds::centered(None, size(px(440.), px(720.)), cx);
     let mut options = TitleBar::window_options();
     options.window_bounds = Some(WindowBounds::Windowed(bounds));
-    options.window_min_size = Some(size(px(380.), px(520.)));
+    options.window_min_size = Some(size(px(360.), px(480.)));
     options.app_id = Some("solferry".to_owned());
     let opened = gpui_kit::open_window(options, cx, |window, cx| {
         window.on_window_should_close(cx, |_, cx| {

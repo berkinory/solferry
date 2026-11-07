@@ -8,41 +8,47 @@ extension Color {
 }
 
 enum LightColors {
-    static let canvas = Color(hex: 0xEDF2F3)
-    static let surface = Color(hex: 0xFFFFFF)
-    static let surfaceRaised = Color(hex: 0xE2EAEC)
-    static let line = Color(hex: 0xCBD7DB)
-    static let ink = Color(hex: 0x10242C)
-    static let inkMuted = Color(hex: 0x4A5F69)
+    static let page = Color(hex: 0xFFFFFF)
+    static let well = Color(hex: 0xF5F5F6)
+    static let raised = Color(hex: 0xEBEBED)
+    static let control = Color(hex: 0xE7E7E9)
+    static let line = Color(hex: 0xE3E3E4)
+    static let ink = Color(hex: 0x18181B)
+    static let inkMuted = Color(hex: 0x66666E)
     static let sun = Color(hex: 0xF5A300)
+    static let sunDeep = Color(hex: 0xD98F00)
     static let onSun = Color(hex: 0x1A1400)
-    static let harbor = Color(hex: 0x0F5C6E)
-    static let success = Color(hex: 0x14724D)
-    static let warning = Color(hex: 0x8F5400)
-    static let danger = Color(hex: 0xBF2A35)
-    static let routeLocal = Color(hex: 0x0F5C6E)
-    static let routeOverlay = Color(hex: 0x3D4FB5)
-    static let routeDirect = Color(hex: 0x14724D)
-    static let routeRelay = Color(hex: 0x8F5400)
+    static let link = Color(hex: 0x1D4ED8)
+    static let success = Color(hex: 0x047857)
+    static let warning = Color(hex: 0xA34700)
+    static let danger = Color(hex: 0xB91C1C)
+    static let dangerWell = Color(hex: 0xFDF0F0)
+    static let routeLocal = Color(hex: 0x1D4ED8)
+    static let routeOverlay = Color(hex: 0x6D28D9)
+    static let routeDirect = Color(hex: 0x047857)
+    static let routeRelay = Color(hex: 0xA34700)
 }
 
 enum DarkColors {
-    static let canvas = Color(hex: 0x0C171D)
-    static let surface = Color(hex: 0x13222A)
-    static let surfaceRaised = Color(hex: 0x1C303A)
-    static let line = Color(hex: 0x2A4049)
-    static let ink = Color(hex: 0xE8F0F2)
-    static let inkMuted = Color(hex: 0x9AB0B9)
+    static let page = Color(hex: 0x18181B)
+    static let well = Color(hex: 0x101012)
+    static let raised = Color(hex: 0x222225)
+    static let control = Color(hex: 0x27272A)
+    static let line = Color(hex: 0x2F2F32)
+    static let ink = Color(hex: 0xECECEF)
+    static let inkMuted = Color(hex: 0xA1A1AA)
     static let sun = Color(hex: 0xFFB81F)
+    static let sunDeep = Color(hex: 0xE8A300)
     static let onSun = Color(hex: 0x1A1400)
-    static let harbor = Color(hex: 0x6CC3D5)
-    static let success = Color(hex: 0x4AD29A)
-    static let warning = Color(hex: 0xF2B04A)
-    static let danger = Color(hex: 0xF4737C)
-    static let routeLocal = Color(hex: 0x6CC3D5)
-    static let routeOverlay = Color(hex: 0xA3AEF5)
-    static let routeDirect = Color(hex: 0x4AD29A)
-    static let routeRelay = Color(hex: 0xF2B04A)
+    static let link = Color(hex: 0x60A5FA)
+    static let success = Color(hex: 0x34D399)
+    static let warning = Color(hex: 0xFBBF24)
+    static let danger = Color(hex: 0xF87171)
+    static let dangerWell = Color(hex: 0x1F1113)
+    static let routeLocal = Color(hex: 0x60A5FA)
+    static let routeOverlay = Color(hex: 0xA78BFA)
+    static let routeDirect = Color(hex: 0x34D399)
+    static let routeRelay = Color(hex: 0xFBBF24)
 }
 
 enum SpaceTokens {
@@ -55,13 +61,16 @@ enum SpaceTokens {
 }
 
 enum RadiusTokens {
-    static let sm: Double = 6
-    static let md: Double = 10
-    static let lg: Double = 16
+    static let floor: Double = 6
+    static let control: Double = 10
+    static let field: Double = 14
+    static let well: Double = 18
+    static let card: Double = 22
 }
 
 enum TypeTokens {
     static let caption: Double = 12
+    static let label: Double = 13
     static let body: Double = 14
     static let title: Double = 18
     static let code: Double = 28

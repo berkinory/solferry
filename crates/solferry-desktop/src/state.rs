@@ -98,6 +98,10 @@ impl AppState {
             Update::Nearby(found) => self.nearby = found,
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
+            Update::OfferGone(key) => self.offers.retain(|offer| offer.key != key),
+            Update::PairingGone(key) => {
+                self.pairing_prompts.retain(|prompt| prompt.key != key);
+            }
             Update::Invite(code) => self.invite = Some(code),
             Update::PairingRequest { key, name, code } => {
                 self.pairing_prompts.push(PairingPrompt { key, name, code });
@@ -195,6 +199,10 @@ impl AppState {
 }
 
 impl Transfer {
+    pub fn running(&self) -> bool {
+        matches!(self.phase, Phase::Active | Phase::Reconnecting)
+    }
+
     fn record(&mut self, transferred: u64, total: u64) {
         let now = Instant::now();
         if let Some((at, before)) = self.measured {

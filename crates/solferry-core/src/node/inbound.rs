@@ -44,6 +44,12 @@ pub struct IncomingOffer {
 }
 
 impl IncomingOffer {
+    /// True once the answer can no longer matter: the sender left or the wait ran out.
+    #[must_use]
+    pub fn is_closed(&self) -> bool {
+        self.reply.is_closed()
+    }
+
     pub fn accept(self, destination: PathBuf) {
         let _ = self.reply.send(Some(destination));
     }
@@ -107,7 +113,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     };
 
     let summary = summarize(peer, &hello.name, device.as_ref(), &offer);
-    let Some(destination) = decide(shared, summary).await else {
+    let Some(destination) = decide(shared, connection, summary).await else {
         refuse(connection, &mut send, Decision::Declined).await?;
         return Ok(());
     };
@@ -180,10 +186,17 @@ fn summarize(peer: EndpointId, name: &str, device: Option<&Device>, offer: &Offe
     }
 }
 
-async fn decide(shared: &Shared, summary: OfferSummary) -> Option<PathBuf> {
+async fn decide(
+    shared: &Shared,
+    connection: &Connection,
+    summary: OfferSummary,
+) -> Option<PathBuf> {
     let (reply, decision) = oneshot::channel();
     shared.offers.send(IncomingOffer { summary, reply }).await.ok()?;
-    tokio::time::timeout(ANSWER_TIMEOUT, decision).await.ok()?.ok().flatten()
+    tokio::select! {
+        answer = tokio::time::timeout(ANSWER_TIMEOUT, decision) => answer.ok()?.ok().flatten(),
+        _ = connection.closed() => None,
+    }
 }
 
 async fn accept(send: &mut SendStream, offsets: Vec<u64>) -> Result<()> {

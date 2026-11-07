@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=solferry
+Name=Solferry
 Comment=Send files between your devices
 Exec=solferry-desktop
-Icon=folder-download
+Icon=solferry
 Terminal=false
 Categories=Network;FileTransfer;
 StartupWMClass=solferry

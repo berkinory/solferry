@@ -21,3 +21,7 @@ check: lint test deny
 
 build:
     cargo build --release -p solferry-cli
+
+bundle-macos:
+    cargo build --release -p solferry-desktop
+    packaging/macos/bundle.sh target/release

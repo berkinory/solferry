@@ -1,5 +1,6 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
+mod assets;
 mod errors;
 mod format;
 mod qr;
@@ -25,13 +26,13 @@ fn main() {
         .init();
     let data_dir = std::env::var_os("SOLFERRY_DATA_DIR").map_or_else(default_data_dir, Into::into);
     let (handle, updates) = service::spawn(data_dir);
-    let tray = tray::start();
-    gpui_kit::application()
-        .with_quit_mode(QuitMode::Explicit)
-        .with_assets(gpui_kit::assets::Assets)
-        .run(move |cx| {
-            gpui_kit::init(cx);
-            theme::install(cx);
-            shell::start(handle, updates, tray, cx);
-        });
+    let app =
+        gpui_kit::application().with_quit_mode(QuitMode::Explicit).with_assets(assets::Assets);
+    app.on_reopen(shell::show_window);
+    app.run(move |cx| {
+        gpui_kit::init(cx);
+        theme::install(cx);
+        views::keys::install(cx);
+        shell::start(handle, updates, tray::start(), cx);
+    });
 }
