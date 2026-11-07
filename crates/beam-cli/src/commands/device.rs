@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use beam_core::{Event, Relationship, RelayPolicy, Result};
+use beam_core::{Event, Relationship, Result};
 use qrcode::QrCode;
 use qrcode::render::unicode::Dense1x2;
 
@@ -13,9 +13,7 @@ pub async fn pair(data_dir: PathBuf, contact: bool) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let mut events = node.events();
     let relationship = if contact { Relationship::Contact } else { Relationship::Own };
-    if node.config().relay_policy != RelayPolicy::Off {
-        node.online_within(ONLINE_WAIT).await;
-    }
+    node.online_within(ONLINE_WAIT).await;
     let invite = node.invite(relationship);
     if let Ok(code) = QrCode::new(invite.code()) {
         println!("{}", code.render::<Dense1x2>().quiet_zone(true).build());

@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use beam_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    Relationship, RelayPolicy, TransferId,
+    Relationship, TransferId,
 };
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
@@ -213,9 +213,7 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
             }
             Command::Cancel(id) => node.cancel(id),
             Command::Invite(relationship) => {
-                if node.config().relay_policy != RelayPolicy::Off {
-                    node.online_within(ONLINE_WAIT).await;
-                }
+                node.online_within(ONLINE_WAIT).await;
                 let _ =
                     updates.send(Update::Invite(node.invite(relationship).code().to_owned())).await;
             }

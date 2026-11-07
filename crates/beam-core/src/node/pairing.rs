@@ -83,7 +83,7 @@ impl Node {
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
         }
-        let _ = tokio::time::timeout(ONLINE_WAIT, self.online()).await;
+        self.online_within(ONLINE_WAIT).await;
         let relays = ticket.relay_urls.clone();
         let direct_addrs = ticket.direct_addrs.clone();
         let relationship =
