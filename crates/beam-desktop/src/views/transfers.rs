@@ -43,9 +43,17 @@ fn status(transfer: &Transfer) -> String {
         Phase::Failed(error) => explain(error).next.to_owned(),
         Phase::Reconnecting => format!("{done} of {total}, reconnecting"),
         Phase::Active => {
-            let speed = format::bytes(format::whole(transfer.speed));
-            let left = transfer.seconds_left().map(format::duration).unwrap_or_default();
-            format!("{done} of {total}, {speed}/s, {left} left, {}", route_name(transfer.route))
+            let route = route_name(transfer.route);
+            match transfer.seconds_left() {
+                Some(left) => {
+                    let speed = format::bytes(format::whole(transfer.speed));
+                    format!(
+                        "{done} of {total}, {speed}/s, {} left, {route}",
+                        format::duration(left)
+                    )
+                }
+                None => format!("{done} of {total}, waiting, {route}"),
+            }
         }
     }
 }
