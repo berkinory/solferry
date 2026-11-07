@@ -30,6 +30,7 @@ fn advice(error: &Error) -> Advice {
         Error::NotPaired => "Pair first: run `beam pair` there and `beam join <code>` here.",
         Error::VersionMismatch { .. } => "Update beam on both devices.",
         Error::Busy => "Wait for its current transfers to finish and send again.",
+        Error::Cancelled => "Send again to continue from where it stopped.",
         Error::Declined => "The other side said no. Ask them to accept and send again.",
         Error::NoSpace => "Free up space on the receiving device and send again. Progress is kept.",
         Error::DeliveryFailed => "Check the destination folder on the receiving device.",

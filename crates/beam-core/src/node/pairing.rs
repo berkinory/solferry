@@ -12,6 +12,7 @@ use rand::RngCore;
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
+use crate::event::Event;
 use crate::transfer::paths::clean_label;
 use crate::trust::{Device, Relationship};
 
@@ -161,13 +162,15 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
         write_frame(&mut send, &PairReply { accepted: false, name: String::new() }).await?;
         return Err(Error::PairingRefused);
     };
-    shared.trust().upsert(Device {
+    let device = Device {
         id: connection.remote_id(),
         name: clean_label(&request.name),
         relationship: pending.relationship,
         relays: request.relay_urls,
         paired_at_ms: now_ms(),
-    })?;
+    };
+    shared.trust().upsert(device.clone())?;
+    let _ = shared.events.send(Event::Paired { device });
     let reply = PairReply { accepted: true, name: shared.config.name.clone() };
     write_frame(&mut send, &reply).await?;
     let _ = tokio::time::timeout(Duration::from_secs(5), connection.closed()).await;

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=beam
+Comment=Send files between your devices
+Exec=beam-desktop
+Icon=folder-download
+Terminal=false
+Categories=Network;FileTransfer;
+StartupWMClass=beam

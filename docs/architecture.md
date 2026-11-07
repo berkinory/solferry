@@ -3,7 +3,7 @@
 beam is one Rust core with thin clients around it. Everything hard lives in `beam-core`, so each client only draws screens and talks to its platform.
 
 ```text
- CLI today, desktop and Android next
+ CLI, desktop, Android next
               |
           beam-core        identity, trust, discovery, transfers
               |
@@ -60,6 +60,10 @@ Connections use BBR. Consumer Wi-Fi and mobile links lose packets for reasons un
 ## Stream window
 
 Each stream has a 2 MiB receive window. noq closes a connection that exceeds 1024 gaps in one stream, and a larger window makes that reachable under heavy packet loss. See the constant in `net.rs` before changing it. The cost is throughput on high latency links, which parallel streams per file can solve later.
+
+## Desktop
+
+`beam-desktop` runs the core on its own thread with a tokio runtime. `service.rs` is the only bridge: the UI sends `Command`s and receives `Update`s over channels, and `state.rs` turns updates into plain data that views render. Closing the window keeps the process and tray alive, because the app exists to receive files.
 
 ## Errors
 

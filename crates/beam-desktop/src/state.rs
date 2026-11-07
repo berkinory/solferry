@@ -1,0 +1,189 @@
+use std::path::PathBuf;
+use std::time::Instant;
+
+use beam_core::{Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, TransferId};
+use iroh::{EndpointAddr, EndpointId};
+
+use crate::format;
+use crate::service::Update;
+
+const SPEED_SMOOTHING: f64 = 0.2;
+
+#[derive(Clone)]
+pub enum Phase {
+    Active,
+    Reconnecting,
+    Done,
+    Failed(Error),
+}
+
+#[derive(Clone)]
+pub struct Transfer {
+    pub id: TransferId,
+    pub title: String,
+    pub peer: String,
+    pub direction: Direction,
+    pub route: beam_core::Route,
+    pub transferred: u64,
+    pub total: u64,
+    pub speed: f64,
+    pub phase: Phase,
+    measured: Option<(Instant, u64)>,
+}
+
+#[derive(Clone)]
+pub struct FailedSend {
+    pub name: String,
+    pub addr: EndpointAddr,
+    pub paths: Vec<PathBuf>,
+    pub error: Error,
+}
+
+#[derive(Clone)]
+pub struct Offer {
+    pub key: u64,
+    pub summary: OfferSummary,
+}
+
+#[derive(Clone, Default)]
+pub struct AppState {
+    pub id: Option<EndpointId>,
+    pub config: Option<Config>,
+    pub devices: Vec<Device>,
+    pub nearby: Vec<NearbyDevice>,
+    pub transfers: Vec<Transfer>,
+    pub failures: Vec<FailedSend>,
+    pub offers: Vec<Offer>,
+    pub invite: Option<String>,
+    pub pairing_error: Option<Error>,
+    pub joining: bool,
+    pub paired_count: u32,
+    pub fatal: Option<Error>,
+}
+
+impl AppState {
+    pub fn apply(&mut self, update: Update) {
+        match update {
+            Update::Ready { id, config, devices } => {
+                self.id = Some(id);
+                self.config = Some(*config);
+                self.devices = devices;
+                self.fatal = None;
+            }
+            Update::StartFailed(error) => self.fatal = Some(error),
+            Update::Devices(devices) => self.devices = devices,
+            Update::Nearby(found) => self.nearby = found,
+            Update::Transfer(event) => self.on_event(event),
+            Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
+            Update::Invite(code) => self.invite = Some(code),
+            Update::Paired(device) => self.add_device(device),
+            Update::PairingFailed(error) => {
+                self.joining = false;
+                self.pairing_error = Some(error);
+            }
+            Update::SendFailed { name, addr, paths, error } => {
+                if !matches!(error, Error::Cancelled) {
+                    self.failures.push(FailedSend { name, addr, paths, error });
+                }
+            }
+        }
+    }
+
+    fn add_device(&mut self, device: Device) {
+        self.invite = None;
+        self.pairing_error = None;
+        self.joining = false;
+        self.paired_count += 1;
+        self.devices.retain(|known| known.id != device.id);
+        for nearby in &mut self.nearby {
+            nearby.known |= nearby.addr.id == device.id;
+        }
+        self.devices.push(device);
+    }
+
+    fn on_event(&mut self, event: Event) {
+        match event {
+            Event::Paired { device } => self.add_device(device),
+            Event::Started { id, peer_name, label, direction, route, bytes, .. } => {
+                self.transfers.retain(|transfer| transfer.id != id);
+                self.transfers.insert(
+                    0,
+                    Transfer {
+                        id,
+                        title: label,
+                        peer: peer_name,
+                        direction,
+                        route,
+                        transferred: 0,
+                        total: bytes,
+                        speed: 0.0,
+                        phase: Phase::Active,
+                        measured: None,
+                    },
+                );
+            }
+            Event::Progress { id, transferred, total } => {
+                if let Some(transfer) = self.transfer(id) {
+                    transfer.record(transferred, total);
+                }
+            }
+            Event::Reconnecting { id, .. } => {
+                if let Some(transfer) = self.transfer(id) {
+                    transfer.phase = Phase::Reconnecting;
+                }
+            }
+            Event::Completed { id } => {
+                if let Some(transfer) = self.transfer(id) {
+                    transfer.transferred = transfer.total;
+                    transfer.phase = Phase::Done;
+                }
+            }
+            Event::Failed { id, error } => self.fail(id, error),
+        }
+    }
+
+    fn fail(&mut self, id: TransferId, error: Error) {
+        if matches!(error, Error::Cancelled) {
+            self.transfers.retain(|transfer| transfer.id != id);
+        } else if let Some(transfer) = self.transfer(id) {
+            match transfer.direction {
+                Direction::Receiving => transfer.phase = Phase::Failed(error),
+                Direction::Sending => self.transfers.retain(|transfer| transfer.id != id),
+            }
+        }
+    }
+
+    fn transfer(&mut self, id: TransferId) -> Option<&mut Transfer> {
+        self.transfers.iter_mut().find(|transfer| transfer.id == id)
+    }
+}
+
+impl Transfer {
+    fn record(&mut self, transferred: u64, total: u64) {
+        let now = Instant::now();
+        if let Some((at, before)) = self.measured {
+            let elapsed = now.duration_since(at).as_secs_f64();
+            if elapsed > 0.0 {
+                let sample = format::precise(transferred.saturating_sub(before)) / elapsed;
+                self.speed += (sample - self.speed) * SPEED_SMOOTHING;
+            }
+        }
+        self.measured = Some((now, transferred));
+        self.transferred = transferred;
+        self.total = total;
+        self.phase = Phase::Active;
+    }
+
+    #[expect(clippy::cast_possible_truncation, reason = "a progress ratio fits in f32")]
+    pub fn fraction(&self) -> f32 {
+        if self.total == 0 {
+            return 1.0;
+        }
+        (format::precise(self.transferred) / format::precise(self.total)) as f32
+    }
+
+    pub fn seconds_left(&self) -> Option<f64> {
+        (self.speed > 1.0)
+            .then(|| format::precise(self.total.saturating_sub(self.transferred)) / self.speed)
+    }
+}

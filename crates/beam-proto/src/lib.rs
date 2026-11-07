@@ -21,4 +21,5 @@ pub mod close {
     pub const VERSION_MISMATCH: u32 = 2;
     pub const INTERNAL: u32 = 3;
     pub const BUSY: u32 = 4;
+    pub const CANCELLED: u32 = 5;
 }

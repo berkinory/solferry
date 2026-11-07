@@ -10,11 +10,17 @@ pub async fn print_events(mut events: broadcast::Receiver<Event>) {
 
 pub fn encode(event: &Event) -> Value {
     match event {
-        Event::Started { id, peer, peer_name, direction, route, files, bytes } => json!({
+        Event::Paired { device } => json!({
+            "event": "paired",
+            "peer": device.id.to_z32(),
+            "peer_name": device.name,
+        }),
+        Event::Started { id, peer, peer_name, label, direction, route, files, bytes } => json!({
             "event": "started",
             "id": id.to_string(),
             "peer": peer.to_z32(),
             "peer_name": peer_name,
+            "label": label,
             "direction": direction_name(*direction),
             "route": route_name(*route),
             "files": files,

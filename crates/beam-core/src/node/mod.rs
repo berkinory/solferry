@@ -7,8 +7,10 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Duration;
 
-use beam_proto::{ALPN_PAIR, ALPN_TRANSFER};
+use beam_proto::{ALPN_PAIR, ALPN_TRANSFER, close};
+use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
@@ -21,7 +23,7 @@ pub use pairing::Invite;
 
 use crate::config::Config;
 use crate::error::{Error, Result};
-use crate::event::Event;
+use crate::event::{Event, TransferId};
 use crate::trust::{Device, TrustStore};
 use crate::{identity, net};
 
@@ -51,6 +53,7 @@ pub(crate) struct Shared {
     pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
+    pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
 }
 
 impl fmt::Debug for Shared {
@@ -60,6 +63,18 @@ impl fmt::Debug for Shared {
 }
 
 impl Shared {
+    pub(crate) fn track(&self, id: TransferId, connection: &Connection) {
+        self.active_map().insert(id, connection.clone());
+    }
+
+    pub(crate) fn untrack(&self, id: TransferId) {
+        self.active_map().remove(&id);
+    }
+
+    fn active_map(&self) -> MutexGuard<'_, HashMap<TransferId, Connection>> {
+        self.active.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
     pub(crate) fn trust(&self) -> MutexGuard<'_, TrustStore> {
         self.trust.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
@@ -82,6 +97,7 @@ impl Node {
             invites: Mutex::new(HashMap::new()),
             mdns: network.mdns,
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
+            active: Mutex::new(HashMap::new()),
         });
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
@@ -126,9 +142,21 @@ impl Node {
         Ok(device)
     }
 
+    /// Stops a running transfer. Partial data stays, so sending again resumes it.
+    pub fn cancel(&self, id: TransferId) {
+        if let Some(connection) = self.shared.active_map().remove(&id) {
+            connection.close(close::CANCELLED.into(), b"cancelled");
+        }
+    }
+
     /// Resolves when the endpoint can be reached through its home relay.
     pub async fn online(&self) {
         self.shared.endpoint.online().await;
+    }
+
+    /// Waits for a relay connection, but never longer than `limit`.
+    pub async fn online_within(&self, limit: Duration) {
+        let _ = tokio::time::timeout(limit, self.online()).await;
     }
 
     pub async fn shutdown(self) -> Result<()> {

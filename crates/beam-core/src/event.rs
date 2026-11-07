@@ -4,6 +4,7 @@ use iroh::EndpointId;
 
 use crate::error::Error;
 use crate::route::Route;
+use crate::trust::Device;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TransferId(pub(crate) [u8; 32]);
@@ -22,10 +23,14 @@ pub enum Direction {
 
 #[derive(Clone, Debug)]
 pub enum Event {
+    Paired {
+        device: Device,
+    },
     Started {
         id: TransferId,
         peer: EndpointId,
         peer_name: String,
+        label: String,
         direction: Direction,
         route: Route,
         files: usize,

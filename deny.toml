@@ -2,9 +2,7 @@
 all-features = false
 
 [advisories]
-ignore = [
-  { id = "RUSTSEC-2024-0436", reason = "paste is a compile-time macro pulled in by iroh networking" },
-]
+unmaintained = "workspace"
 
 [licenses]
 unused-allowed-license = "allow"

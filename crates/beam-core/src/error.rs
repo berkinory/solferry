@@ -34,6 +34,8 @@ pub enum Error {
     VersionMismatch { ours: u32, theirs: u32 },
     #[error("the device is busy with other transfers")]
     Busy,
+    #[error("the transfer was cancelled")]
+    Cancelled,
     #[error("the transfer was declined")]
     Declined,
     #[error("the receiver is out of disk space")]
