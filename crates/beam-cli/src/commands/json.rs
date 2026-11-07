@@ -26,6 +26,11 @@ pub fn encode(event: &Event) -> Value {
             "files": files,
             "bytes": bytes,
         }),
+        Event::RouteChanged { id, route } => json!({
+            "event": "route_changed",
+            "id": id.to_string(),
+            "route": route_name(*route),
+        }),
         Event::Progress { id, transferred, total } => json!({
             "event": "progress",
             "id": id.to_string(),

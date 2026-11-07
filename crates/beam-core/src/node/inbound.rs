@@ -13,7 +13,7 @@ use super::Shared;
 use crate::config::Visibility;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::{Direction, Event, TransferId};
-use crate::route::{current_route, shares_network};
+use crate::route::{self, current_route, shares_network};
 use crate::transfer::paths::crosses_symlink;
 use crate::transfer::receiver::{self, Plan};
 use crate::transfer::{
@@ -67,10 +67,6 @@ impl ProtocolHandler for TransferHandler {
 }
 
 async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
-    let Ok(_slot) = shared.inbound_slots.clone().try_acquire_owned() else {
-        connection.close(close::BUSY.into(), b"busy");
-        return Err(Error::Busy);
-    };
     let peer = connection.remote_id();
     if shared.trust().is_blocked(&peer) {
         connection.close(close::NOT_PAIRED.into(), b"pair first");
@@ -81,6 +77,11 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         connection.close(close::NOT_PAIRED.into(), b"pair first");
         return Err(Error::NotPaired);
     }
+    let slots = if device.is_some() { &shared.inbound_slots } else { &shared.stranger_slots };
+    let Ok(_slot) = slots.clone().try_acquire_owned() else {
+        connection.close(close::BUSY.into(), b"busy");
+        return Err(Error::Busy);
+    };
     let opening = within_handshake(async {
         let (mut send, mut recv) =
             connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
@@ -115,7 +116,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         refuse(connection, &mut send, Decision::InvalidOffer).await?;
         return Err(Error::InvalidOffer("path leaves the destination".to_owned()));
     }
-    let staging = Staging::open(&destination, id)?;
+    let staging = Staging::open(&destination, peer, id)?;
     let offsets = staging.offsets(&offer.entries);
     let bytes: u64 = offer.entries.iter().map(|entry| entry.size).sum();
     let resumed: u64 = offsets.iter().sum();
@@ -126,22 +127,25 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     accept(&mut send, offsets.clone()).await?;
 
     let files = offer.entries.iter().filter(|entry| !entry.is_dir).count();
+    let route = current_route(connection);
     let _ = shared.events.send(Event::Started {
         id,
         peer,
         peer_name: hello.name,
         label: transfer_label(&offer.entries),
         direction: Direction::Receiving,
-        route: current_route(connection),
+        route,
         files,
         bytes,
     });
     shared.track(id, connection);
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));
     let plan = Plan { destination, entries: offer.entries, targets, offsets, staging };
-    let result = receiver::run(connection, &mut send, plan, meter)
-        .await
-        .map_err(|error| remote_failure(connection, error));
+    let result = tokio::select! {
+        result = receiver::run(connection, &mut send, plan, meter) => result,
+        () = route::report_changes(connection, id, route, &shared.events) => unreachable!(),
+    }
+    .map_err(|error| remote_failure(connection, error));
     shared.untrack(id);
     let event = match result {
         Ok(_) => Event::Completed { id },

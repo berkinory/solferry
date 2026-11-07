@@ -1,11 +1,31 @@
 use std::net::IpAddr;
 
+use futures::StreamExt;
 use iroh::TransportAddr;
 use iroh::endpoint::{Connection, Path};
+use tokio::sync::broadcast;
+
+use crate::event::{Event, TransferId};
 
 /// Interface name prefixes of overlay clients. Unknown names fail closed: carrier interfaces use
 /// the same addresses, and paired devices do not depend on this check.
 const TUNNEL_PREFIXES: [&str; 5] = ["tailscale", "utun", "tun", "wg", "zt"];
+
+/// Interface name prefixes of containers and virtual machines. Their addresses mean nothing to
+/// another device, and leaving them out keeps pairing codes short enough for a QR code.
+const VIRTUAL_PREFIXES: [&str; 11] = [
+    "docker",
+    "br-",
+    "virbr",
+    "veth",
+    "vmnet",
+    "vboxnet",
+    "podman",
+    "cni",
+    "flannel",
+    "lxc",
+    "vethernet",
+];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
@@ -59,4 +79,37 @@ pub(crate) fn shares_network(ip: IpAddr) -> bool {
 pub(crate) fn current_route(connection: &Connection) -> Route {
     let paths = connection.paths();
     paths.iter().find(Path::is_selected).map_or(Route::Direct, |path| classify(&path))
+}
+
+/// Tells listeners when a running transfer moves, for example from a relay to a direct path.
+/// Runs until the caller drops it, and borrows so a dead connection can still close.
+pub(crate) async fn report_changes(
+    connection: &Connection,
+    id: TransferId,
+    mut route: Route,
+    events: &broadcast::Sender<Event>,
+) {
+    let mut snapshots = connection.paths_stream();
+    while let Some(paths) = snapshots.next().await {
+        let selected = paths.iter().find(Path::is_selected).map(|path| classify(&path));
+        if let Some(current) = selected.filter(|current| *current != route) {
+            route = current;
+            let _ = events.send(Event::RouteChanged { id, route });
+        }
+    }
+    std::future::pending::<()>().await;
+}
+
+/// This device's own addresses that are worth giving to another device.
+pub(crate) fn shareable_addrs(addrs: impl Iterator<Item = std::net::SocketAddr>) -> Vec<String> {
+    let interfaces = netdev::get_interfaces();
+    let is_virtual = |ip: IpAddr| {
+        interfaces.iter().any(|interface| {
+            let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
+            VIRTUAL_PREFIXES.iter().any(|prefix| name.starts_with(prefix))
+                && (interface.ipv4.iter().any(|net| IpAddr::V4(net.addr()) == ip)
+                    || interface.ipv6.iter().any(|net| IpAddr::V6(net.addr()) == ip))
+        })
+    };
+    addrs.filter(|addr| !is_virtual(addr.ip())).map(|addr| addr.to_string()).collect()
 }

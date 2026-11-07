@@ -36,6 +36,10 @@ pub enum Event {
         files: usize,
         bytes: u64,
     },
+    RouteChanged {
+        id: TransferId,
+        route: Route,
+    },
     Progress {
         id: TransferId,
         transferred: u64,

@@ -59,6 +59,7 @@ fn report(event: &Event) {
                 route_name(*route)
             );
         }
+        Event::RouteChanged { route, .. } => println!("Now on {}", route_name(*route)),
         Event::Completed { id } => println!("Transfer {id} finished"),
         Event::Failed { id, error } => {
             eprintln!("Transfer {id}: {}", crate::explain::render(error));

@@ -2,7 +2,9 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use beam_proto::{Entry, HASH_LEN, Hello, Offer, PROTOCOL_VERSION, close, read_frame, write_frame};
+use beam_proto::{
+    Entry, HASH_LEN, Hello, Offer, PROTOCOL_VERSION, close, read_small_frame, write_frame,
+};
 use iroh::endpoint::{Connection, ConnectionError, RecvStream, SendStream};
 
 use super::paths::{clean_label, sanitize};
@@ -23,7 +25,7 @@ pub(crate) async fn exchange_hello(
 ) -> Result<Hello> {
     let hello = Hello { version: PROTOCOL_VERSION, name: name.to_owned(), capabilities: 0 };
     write_frame(send, &hello).await?;
-    let theirs: Hello = read_frame(recv).await?;
+    let theirs: Hello = read_small_frame(recv).await?;
     if theirs.version != PROTOCOL_VERSION {
         return Err(Error::VersionMismatch { ours: PROTOCOL_VERSION, theirs: theirs.version });
     }

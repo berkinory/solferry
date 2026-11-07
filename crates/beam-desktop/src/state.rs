@@ -127,6 +127,11 @@ impl AppState {
                     },
                 );
             }
+            Event::RouteChanged { id, route } => {
+                if let Some(transfer) = self.transfers.iter_mut().find(|item| item.id == id) {
+                    transfer.route = route;
+                }
+            }
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {
                     transfer.record(transferred, total);

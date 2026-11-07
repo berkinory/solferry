@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use beam_proto::{
-    ALPN_PAIR, Finalized, PairReply, PairRequest, Ticket, close, read_frame, write_frame,
+    ALPN_PAIR, Finalized, PairReply, PairRequest, Ticket, close, read_small_frame, write_frame,
 };
 use data_encoding::BASE32_NOPAD;
 use iroh::endpoint::Connection;
@@ -15,7 +15,9 @@ use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::Event;
 use crate::relay::RelayLink;
+use crate::route::shareable_addrs;
 use crate::transfer::paths::clean_label;
+use crate::transfer::{remote_failure, within_handshake};
 use crate::trust::Device;
 
 const INVITE_PREFIX: &str = "beam1";
@@ -69,7 +71,7 @@ impl Node {
         let ticket = Ticket {
             endpoint_id: addr.id.as_bytes().to_vec(),
             secret: secret.to_vec(),
-            direct_addrs: addr.ip_addrs().map(ToString::to_string).collect(),
+            direct_addrs: shareable_addrs(addr.ip_addrs().copied()),
             relay_urls: self.relay_links(&[]),
             expires_at_ms,
         };
@@ -120,10 +122,18 @@ impl Node {
             secret: ticket.secret,
             name: self.config().name.clone(),
             relay_urls,
-            direct_addrs: self.addr().ip_addrs().map(ToString::to_string).collect(),
+            direct_addrs: shareable_addrs(self.addr().ip_addrs().copied()),
         };
         write_frame(&mut send, &request).await?;
-        let reply: PairReply = read_frame(&mut recv).await?;
+        let reply: PairReply = match read_small_frame(&mut recv).await {
+            Ok(reply) => reply,
+            Err(error) => {
+                return Err(match remote_failure(&connection, error.into()) {
+                    Error::NotPaired => Error::PairingRefused,
+                    other => other,
+                });
+            }
+        };
         if !reply.accepted {
             return Err(Error::PairingRefused);
         }
@@ -183,8 +193,16 @@ impl ProtocolHandler for PairHandler {
 }
 
 async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
-    let (mut send, mut recv) = connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
-    let request: PairRequest = read_frame(&mut recv).await?;
+    if !shared.has_invites() {
+        connection.close(close::NOT_PAIRED.into(), b"no invite");
+        return Err(Error::PairingRefused);
+    }
+    let (mut send, mut recv, request) = within_handshake(async {
+        let (send, mut recv) = connection.accept_bi().await.map_err(|_| Error::ConnectionLost)?;
+        let request: PairRequest = read_small_frame(&mut recv).await?;
+        Ok((send, recv, request))
+    })
+    .await?;
     let pending = secret_key(&request.secret).and_then(|key| {
         shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(&key)
     });
@@ -194,7 +212,8 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
     };
     let reply = PairReply { accepted: true, name: shared.config.name.clone() };
     write_frame(&mut send, &reply).await?;
-    let confirmed = tokio::time::timeout(CONFIRM_WAIT, read_frame::<_, Finalized>(&mut recv)).await;
+    let confirmed =
+        tokio::time::timeout(CONFIRM_WAIT, read_small_frame::<_, Finalized>(&mut recv)).await;
     if !matches!(confirmed, Ok(Ok(Finalized { ok: true }))) {
         return Err(Error::ConnectionLost);
     }

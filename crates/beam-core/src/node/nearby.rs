@@ -4,6 +4,7 @@ use std::time::Duration;
 use futures::StreamExt;
 use iroh::{EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::DiscoveryEvent;
+use tokio::sync::mpsc;
 
 use super::Node;
 use crate::transfer::paths::clean_label;
@@ -21,6 +22,30 @@ impl Node {
         let mut latest = Vec::new();
         let _ = tokio::time::timeout(window, self.follow_nearby(|found| latest = found)).await;
         latest
+    }
+
+    /// Waits for a device with this name, returning as soon as it shows up.
+    pub async fn find_nearby(&self, name: &str, window: Duration) -> Option<NearbyDevice> {
+        let (found, mut updates) = mpsc::unbounded_channel();
+        let follow = self.follow_nearby(move |devices| {
+            let _ = found.send(devices);
+        });
+        let search = async {
+            tokio::pin!(follow);
+            loop {
+                tokio::select! {
+                    () = &mut follow => return None,
+                    Some(devices) = updates.recv() => {
+                        let mut devices = devices.into_iter();
+                        let wanted = devices.find(|device| device.name.as_deref() == Some(name));
+                        if wanted.is_some() {
+                            return wanted;
+                        }
+                    }
+                }
+            }
+        };
+        tokio::time::timeout(window, search).await.ok().flatten()
     }
 
     /// Calls `changed` with the full list whenever a nearby device appears or disappears.

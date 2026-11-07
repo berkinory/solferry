@@ -31,6 +31,8 @@ use crate::{identity, net};
 const EVENT_BUFFER: usize = 1024;
 const OFFER_BUFFER: usize = 16;
 const MAX_INBOUND: usize = 8;
+/// Unpaired devices get their own small pool, so they can never crowd out your own devices.
+const MAX_STRANGERS: usize = 2;
 
 #[derive(Clone, Debug)]
 pub struct NodeOptions {
@@ -54,6 +56,7 @@ pub(crate) struct Shared {
     pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
+    pub(crate) stranger_slots: Arc<Semaphore>,
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
     uses_relays: bool,
 }
@@ -67,6 +70,10 @@ impl fmt::Debug for Shared {
 impl Shared {
     pub(crate) fn track(&self, id: TransferId, connection: &Connection) {
         self.active_map().insert(id, connection.clone());
+    }
+
+    pub(crate) fn has_invites(&self) -> bool {
+        !self.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).is_empty()
     }
 
     pub(crate) fn untrack(&self, id: TransferId) {
@@ -113,6 +120,7 @@ impl Node {
             invites: Mutex::new(HashMap::new()),
             mdns: network.mdns,
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
+            stranger_slots: Arc::new(Semaphore::new(MAX_STRANGERS)),
             active: Mutex::new(HashMap::new()),
             uses_relays,
         });
