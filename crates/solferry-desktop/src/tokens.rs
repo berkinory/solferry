@@ -81,6 +81,11 @@ pub const DARK: Palette = Palette {
     primary_border: 0x6d_68db,
 };
 
+pub const IDENTITY_LIGHT: [u32; 8] =
+    [0x25_63eb, 0x7c_3aed, 0xdb_2777, 0xea_580c, 0xb4_5309, 0x15_803d, 0x0f_766e, 0x0e_7490];
+pub const IDENTITY_DARK: [u32; 8] =
+    [0x60_a5fa, 0xa7_8bfa, 0xf4_72b6, 0xfb_923c, 0xfb_bf24, 0x4a_de80, 0x2d_d4bf, 0x22_d3ee];
+
 pub const FONT_SANS: &str = "Inter Tight";
 pub const FONT_MONO: &str = "Geist Mono";
 

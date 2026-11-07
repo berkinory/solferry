@@ -3,7 +3,8 @@ use std::time::Instant;
 
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, RelayHealth, TransferId,
+    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth,
+    TransferId,
 };
 
 use crate::format;
@@ -50,6 +51,8 @@ pub struct Offer {
 #[derive(Clone)]
 pub struct PairingPrompt {
     pub key: u64,
+    pub peer: EndpointId,
+    pub platform: Option<Platform>,
     pub name: String,
     pub code: String,
 }
@@ -103,8 +106,8 @@ impl AppState {
                 self.pairing_prompts.retain(|prompt| prompt.key != key);
             }
             Update::Invite(code) => self.invite = Some(code),
-            Update::PairingRequest { key, name, code } => {
-                self.pairing_prompts.push(PairingPrompt { key, name, code });
+            Update::PairingRequest { key, peer, platform, name, code } => {
+                self.pairing_prompts.push(PairingPrompt { key, peer, platform, name, code });
             }
             Update::PairingCode(code) => self.pairing_code = Some(code),
             Update::Paired(device) => {

@@ -126,13 +126,13 @@ fn empty(cx: &mut Context<MainView>) -> AnyElement {
         .into_any_element()
 }
 
-fn tile(platform: Option<Platform>, selected: bool, cx: &App) -> AnyElement {
+fn tile(id: &EndpointId, platform: Option<Platform>, selected: bool, cx: &App) -> AnyElement {
     if selected {
         let palette = palette(cx);
         ui::tinted_tile(Glyph::Check, color(palette.primary_fill), color(palette.on_primary))
             .into_any_element()
     } else {
-        ui::tile(ui::platform_glyph(platform), cx).into_any_element()
+        ui::device_tile(id, platform, cx).into_any_element()
     }
 }
 
@@ -170,7 +170,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
     } else {
         pair_button(row.id, row.addr.clone(), cx)
     };
-    let shown = tile(row.platform, selected, cx);
+    let shown = tile(&row.id, row.platform, selected, cx);
     let line = detail(&row, cx);
     let mut body = div()
         .id(id)
@@ -236,6 +236,9 @@ fn device_details(
     div()
         .flex()
         .flex_col()
+        .child(
+            line().child(ui::muted("Key", cx)).child(ui::mono(ui::fingerprint(&id), cx).pr(px(4.))),
+        )
         .child(
             line().child(ui::muted("Receive without asking", cx)).child(
                 Switch::new(SharedString::from(format!("approval-{id}")))

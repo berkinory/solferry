@@ -8,7 +8,7 @@ use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    PairingRequest, RelayHealth, TransferId,
+    PairingRequest, Platform, RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -38,22 +38,41 @@ pub enum Command {
 }
 
 pub enum Update {
-    Ready { id: EndpointId, config: Box<Config>, devices: Vec<Device>, blocked: Vec<EndpointId> },
+    Ready {
+        id: EndpointId,
+        config: Box<Config>,
+        devices: Vec<Device>,
+        blocked: Vec<EndpointId>,
+    },
     StartFailed(Error),
     Devices(Vec<Device>),
     Blocked(Vec<EndpointId>),
     RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
     Transfer(Event),
-    Offer { key: u64, summary: OfferSummary },
+    Offer {
+        key: u64,
+        summary: OfferSummary,
+    },
     OfferGone(u64),
-    PairingRequest { key: u64, name: String, code: String },
+    PairingRequest {
+        key: u64,
+        peer: EndpointId,
+        platform: Option<Platform>,
+        name: String,
+        code: String,
+    },
     PairingGone(u64),
     PairingCode(String),
     Invite(String),
     Paired(Device),
     PairingFailed(Error),
-    SendFailed { name: String, addr: EndpointAddr, paths: Vec<PathBuf>, error: Error },
+    SendFailed {
+        name: String,
+        addr: EndpointAddr,
+        paths: Vec<PathBuf>,
+        error: Error,
+    },
 }
 
 pub struct Handle {
@@ -198,8 +217,10 @@ async fn start(
             while let Some(request) = requests.recv().await {
                 next += 1;
                 let (name, code) = (request.peer_name.clone(), request.code.clone());
+                let (peer, platform) = (request.peer, request.platform);
                 waiting.lock().await.insert(next, request);
-                let _ = outgoing.unbounded_send(Update::PairingRequest { key: next, name, code });
+                let prompt = Update::PairingRequest { key: next, peer, platform, name, code };
+                let _ = outgoing.unbounded_send(prompt);
             }
         })
         .abort_handle(),

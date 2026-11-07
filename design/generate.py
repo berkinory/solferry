@@ -3,6 +3,7 @@
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -78,6 +79,11 @@ def rust(tokens):
         lines.append(f"pub const {mode.upper()}: Palette = Palette {{")
         lines += [f"    {snake(n).lower()}: 0x{colors[n][1:3].lower()}_{colors[n][3:].lower()}," for n in names]
         lines += ["};", ""]
+    for mode, colors in tokens["identity"].items():
+        lines.append(f"pub const IDENTITY_{mode.upper()}: [u32; {len(colors)}] = [")
+        lines += [f"    0x{color[1:3].lower()}_{color[3:].lower()}," for color in colors]
+        lines.append("];")
+    lines.append("")
     for name, value in tokens["font"].items():
         lines.append(f'pub const FONT_{name.upper()}: &str = "{value}";')
     lines.append("")
@@ -93,6 +99,11 @@ def kotlin(tokens):
         lines.append(f"object {mode.capitalize()}Colors {{")
         lines += [f"    val {n} = Color(0xFF{v[1:]})" for n, v in colors.items()]
         lines += ["}", ""]
+    lines.append("object IdentityColors {")
+    for mode, colors in tokens["identity"].items():
+        values = ", ".join(f"Color(0xFF{color[1:]})" for color in colors)
+        lines.append(f"    val {mode} = listOf({values})")
+    lines += ["}", ""]
     for group, values in {**scales(tokens), "motion": tokens["motion"]}.items():
         lines.append(f"object {group.capitalize()}Tokens {{")
         lines += [f"    const val {n} = {v}" for n, v in values.items()]
@@ -112,6 +123,11 @@ def swift(tokens):
         lines.append(f"enum {mode.capitalize()}Colors {{")
         lines += [f"    static let {n} = Color(hex: 0x{v[1:]})" for n, v in colors.items()]
         lines += ["}", ""]
+    lines.append("enum IdentityColors {")
+    for mode, colors in tokens["identity"].items():
+        values = ", ".join(f"Color(hex: 0x{color[1:]})" for color in colors)
+        lines.append(f"    static let {mode} = [{values}]")
+    lines += ["}", ""]
     for group, values in {**scales(tokens), "motion": tokens["motion"]}.items():
         lines.append(f"enum {group.capitalize()}Tokens {{")
         lines += [f"    static let {n}: Double = {v}" for n, v in values.items()]
@@ -182,7 +198,9 @@ def desktop_theme(tokens):
 def main():
     tokens = derive(json.loads((HERE / "tokens.json").read_text()))
     check(tokens)
-    (ROOT / "crates/solferry-desktop/src/tokens.rs").write_text(rust(tokens))
+    rust_tokens = ROOT / "crates/solferry-desktop/src/tokens.rs"
+    rust_tokens.write_text(rust(tokens))
+    subprocess.run(["rustfmt", "--edition", "2024", str(rust_tokens)], check=True, cwd=ROOT)
     (ROOT / "crates/solferry-desktop/src/theme.json").write_text(desktop_theme(tokens))
     (HERE / "generated/SolferryTokens.kt").write_text(kotlin(tokens))
     (HERE / "generated/SolferryTokens.swift").write_text(swift(tokens))
