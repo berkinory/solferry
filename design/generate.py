@@ -44,7 +44,7 @@ def rust(tokens):
     lines += ["}", ""]
     for mode, colors in tokens["color"].items():
         lines.append(f"pub const {mode.upper()}: Palette = Palette {{")
-        lines += [f"    {snake(n).lower()}: 0x{colors[n][1:].lower()}," for n in names]
+        lines += [f"    {snake(n).lower()}: 0x{colors[n][1:3].lower()}_{colors[n][3:].lower()}," for n in names]
         lines += ["};", ""]
     for group in ("space", "radius", "type"):
         for name, value in tokens[group].items():
@@ -84,10 +84,44 @@ def swift(tokens):
     return "\n".join(lines).rstrip() + "\n"
 
 
+def desktop_theme(tokens):
+    themes = []
+    for mode, c in tokens["color"].items():
+        colors = {
+            "background": c["canvas"],
+            "foreground": c["ink"],
+            "border": c["line"],
+            "input.border": c["line"],
+            "ring": c["sun"],
+            "caret": c["ink"],
+            "link": c["harbor"],
+            "muted.background": c["surfaceRaised"],
+            "muted.foreground": c["inkMuted"],
+            "accent.background": c["surfaceRaised"],
+            "accent.foreground": c["ink"],
+            "secondary.background": c["surface"],
+            "secondary.foreground": c["ink"],
+            "secondary.hover.background": c["surfaceRaised"],
+            "secondary.active.background": c["surfaceRaised"],
+            "primary.background": c["sun"],
+            "primary.foreground": c["onSun"],
+            "primary.hover.background": c["sun"] + "E6",
+            "primary.active.background": c["sun"] + "CC",
+            "danger.background": c["danger"],
+            "success.background": c["success"],
+            "warning.background": c["warning"],
+            "title_bar.background": c["canvas"],
+            "title_bar.border": c["line"],
+        }
+        themes.append({"name": f"Solferry {mode.capitalize()}", "mode": mode, "colors": colors})
+    return json.dumps({"name": "Solferry", "author": "Solferry", "themes": themes}, indent=2) + "\n"
+
+
 def main():
     tokens = json.loads((HERE / "tokens.json").read_text())
     check(tokens)
     (ROOT / "crates/solferry-desktop/src/tokens.rs").write_text(rust(tokens))
+    (ROOT / "crates/solferry-desktop/src/theme.json").write_text(desktop_theme(tokens))
     (HERE / "generated/SolferryTokens.kt").write_text(kotlin(tokens))
     (HERE / "generated/SolferryTokens.swift").write_text(swift(tokens))
 

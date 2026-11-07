@@ -12,6 +12,7 @@ use crate::errors::explain;
 use crate::format;
 use crate::service::Command;
 use crate::state::{AppState, FailedSend, Phase, Transfer};
+use crate::theme;
 
 pub fn render(state: &AppState, cx: &mut Context<MainView>) -> AnyElement {
     let empty = state.transfers.is_empty() && state.failures.is_empty();
@@ -36,6 +37,19 @@ fn route_name(route: Route) -> &'static str {
     }
 }
 
+fn route_badge(route: Route, cx: &mut Context<MainView>) -> AnyElement {
+    let color = theme::route_color(route, cx);
+    div()
+        .flex()
+        .items_center()
+        .gap_1()
+        .text_xs()
+        .text_color(color)
+        .child(div().size_2().rounded_full().bg(color))
+        .child(route_name(route))
+        .into_any_element()
+}
+
 fn status(transfer: &Transfer) -> String {
     let done = format::bytes(transfer.transferred);
     let total = format::bytes(transfer.total);
@@ -43,19 +57,13 @@ fn status(transfer: &Transfer) -> String {
         Phase::Done => format!("{total}, finished"),
         Phase::Failed(error) => explain(error).next.to_owned(),
         Phase::Reconnecting => format!("{done} of {total}, reconnecting"),
-        Phase::Active => {
-            let route = route_name(transfer.route);
-            match transfer.seconds_left() {
-                Some(left) => {
-                    let speed = format::bytes(format::whole(transfer.speed));
-                    format!(
-                        "{done} of {total}, {speed}/s, {} left, {route}",
-                        format::duration(left)
-                    )
-                }
-                None => format!("{done} of {total}, waiting, {route}"),
+        Phase::Active => match transfer.seconds_left() {
+            Some(left) => {
+                let speed = format::bytes(format::whole(transfer.speed));
+                format!("{done} of {total}, {speed}/s, {} left", format::duration(left))
             }
-        }
+            None => format!("{done} of {total}, waiting"),
+        },
     }
 }
 
@@ -92,6 +100,7 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
                         .flex()
                         .flex_col()
                         .child(div().text_sm().child(title))
+                        .children(running.then(|| route_badge(transfer.route, cx)))
                         .child(ui::muted(format!("{verb} {}", transfer.peer), cx)),
                 )
                 .children(running.then(|| {

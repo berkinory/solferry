@@ -31,6 +31,7 @@ fn main() {
         .with_assets(gpui_kit::assets::Assets)
         .run(move |cx| {
             gpui_kit::init(cx);
+            theme::install(cx);
             shell::start(handle, updates, tray, cx);
         });
 }

@@ -69,8 +69,7 @@ impl Node {
                         let name =
                             endpoint_info.data.user_data().map(|name| clean_label(name.as_ref()));
                         let addr = endpoint_info.into_endpoint_addr();
-                        let known = self.shared.trust().get(&id).is_some();
-                        found.insert(id, NearbyDevice { addr, name, known, overlay: false });
+                        found.insert(id, NearbyDevice { addr, name, known: false, overlay: false });
                     }
                     Some(DiscoveryEvent::Expired { endpoint_id }) => {
                         found.remove(&endpoint_id);
@@ -88,7 +87,12 @@ impl Node {
             }
             let trust = self.shared.trust();
             let visible = found.values().filter(|device| !trust.is_blocked(&device.addr.id));
-            let visible: Vec<NearbyDevice> = visible.cloned().collect();
+            let visible: Vec<NearbyDevice> = visible
+                .map(|device| NearbyDevice {
+                    known: trust.get(&device.addr.id).is_some(),
+                    ..device.clone()
+                })
+                .collect();
             drop(trust);
             changed(visible);
         }
