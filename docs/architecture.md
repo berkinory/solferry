@@ -26,7 +26,7 @@ iroh dials by public key and picks the best path. beam adds three address source
 
 - mDNS for the local network
 - n0 DNS and the Mainline DHT for the internet
-- relays stored at pairing time
+- relays and direct addresses stored at pairing time
 
 Overlay networks such as Tailscale need no special code, because they are ordinary network interfaces.
 
