@@ -1,6 +1,6 @@
 # beam
 
-Accountless, open source file transfer between your devices and the people you trust. It finds the fastest path by itself: the local network, Tailscale or a similar overlay, or a direct connection across the internet.
+Accountless, open source file transfer between your devices and the people you trust. It works on the local network and over Tailscale or a similar overlay, with no server involved. Run your own relay and it reaches across the internet too.
 
 There is no account and no upload step. Files go straight from one device to another, end-to-end encrypted.
 
@@ -13,7 +13,8 @@ There is no account and no upload step. Files go straight from one device to ano
 | Open source | yes | yes | no |
 | No account | yes | yes | no |
 | Same network | yes | yes | yes |
-| Across the internet | yes | no | yes |
+| Tailscale and overlays | yes | yes | no |
+| Across the internet | with your own relay | no | yes |
 | Resume after interruption | yes | no | yes |
 
 ## Desktop app
@@ -49,7 +50,16 @@ beam receive
 beam send holiday-photos/ --to my-laptop
 ```
 
-Send to several devices with repeated `--to`. Devices on the same network can be reached without pairing, see `beam nearby`, and each transfer asks for confirmation.
+Send to several devices with repeated `--to`.
+
+## Who can send you files
+
+| | Paired | Not paired |
+|---|---|---|
+| Same network or overlay | received right away | asks you, and you can block them |
+| Through a relay | received right away | refused, you never see it |
+
+To be asked for a paired device too, use `beam pair --ask`, `beam join <code> --ask` or `beam approval <device> ask`. This choice stays on your device, a pairing code cannot change it. `beam block` and `beam unblock` manage blocked devices.
 
 ## Firewalls
 
@@ -57,13 +67,7 @@ A strict firewall can block devices from finding each other on the same network.
 
 ## Relays
 
-By default servers only introduce two devices, and file data never passes through them. When two networks refuse direct connections, beam tells you instead of silently routing your files elsewhere. You then have three options:
-
-- Use Tailscale or a similar overlay network.
-- Run your own relay, see [docs/relay.md](docs/relay.md). Adding it allows your data through that relay only.
-- Allow public relays with `beam relay policy always`.
-
-`beam relay policy off` removes servers completely, which leaves the local network and overlay networks.
+beam ships with no servers and contacts none by default. To reach devices on other networks, use Tailscale or a similar overlay, or run your own relay, see [docs/relay.md](docs/relay.md). One person sets it up and everyone they pair with uses it automatically.
 
 ## Repository
 
