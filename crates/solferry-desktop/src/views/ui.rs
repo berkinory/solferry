@@ -1,11 +1,14 @@
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    AnyElement, App, Div, FontWeight, IntoElement, ParentElement, SharedString, Styled, div, px,
+    AnyElement, App, BoxShadow, Div, FontWeight, Hsla, IntoElement, ParentElement, SharedString,
+    Styled, black, div, point, px,
 };
+use solferry_core::Platform;
 
+use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{
-    FONT_MONO, RADIUS_CARD, RADIUS_CONTROL, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY,
+    FONT_MONO, RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY,
     TYPE_CAPTION, TYPE_LABEL,
 };
 
@@ -19,10 +22,35 @@ pub fn frame(cx: &App) -> Div {
         .rounded(px(RADIUS_CARD))
         .border_1()
         .border_color(cx.theme().border)
+        .bg(cx.theme().background)
+        .shadow(vec![BoxShadow {
+            color: black().opacity(0.06),
+            offset: point(px(0.), px(1.)),
+            blur_radius: px(2.),
+            spread_radius: px(0.),
+            inset: false,
+        }])
 }
 
+pub fn shadow(tone: Hsla, y: f32, blur: f32, spread: f32, inset: bool) -> BoxShadow {
+    BoxShadow {
+        color: tone,
+        offset: point(px(0.), px(y)),
+        blur_radius: px(blur),
+        spread_radius: px(spread),
+        inset,
+    }
+}
+
+/// Set into the frame by shade and a soft inner shadow, with no line of its own.
 pub fn well(cx: &App) -> Div {
+    let (depth, rim) = if cx.theme().is_dark() {
+        (black().opacity(0.45), gpui_kit::white().opacity(0.03))
+    } else {
+        (black().opacity(0.05), black().opacity(0.035))
+    };
     div()
+        .shadow(vec![shadow(depth, 1., 2., 0., true), shadow(rim, 0., 0., 1., true)])
         .flex()
         .flex_col()
         .gap(px(SPACE_XS))
@@ -31,45 +59,52 @@ pub fn well(cx: &App) -> Div {
         .bg(color(palette(cx).well))
 }
 
-pub fn card(title: impl Into<SharedString>, aside: Option<AnyElement>, cx: &App) -> Div {
+pub fn header(glyph: Glyph, title: impl Into<SharedString>, tone: Hsla, cx: &App) -> Div {
+    div()
+        .flex()
+        .items_center()
+        .gap(px(SPACE_SM))
+        .min_w_0()
+        .text_size(px(TYPE_LABEL))
+        .font_weight(FontWeight::MEDIUM)
+        .text_color(cx.theme().foreground.opacity(0.8))
+        .child(icon(glyph, 16.).text_color(tone))
+        .child(title.into())
+}
+
+/// A frame with an icon and title over the well that holds its rows.
+pub fn card(glyph: Glyph, title: &str, aside: Option<AnyElement>, cx: &App) -> Div {
+    titled(header(glyph, title.to_owned(), cx.theme().muted_foreground, cx), aside, cx)
+}
+
+pub fn titled(heading: Div, aside: Option<AnyElement>, cx: &App) -> Div {
     frame(cx).child(
         div()
             .flex()
             .items_center()
             .justify_between()
-            .h(px(32.))
+            .h(px(34.))
             .pl(px(SPACE_MD))
-            .pr(px(SPACE_SM))
-            .text_size(px(TYPE_LABEL))
-            .font_weight(FontWeight::MEDIUM)
-            .text_color(cx.theme().foreground.opacity(0.8))
-            .child(title.into())
+            .pr(px(SPACE_XS))
+            .child(heading)
             .children(aside),
     )
 }
 
 pub fn count(value: usize, cx: &App) -> AnyElement {
-    mono(value.to_string(), cx).into_any_element()
+    mono(value.to_string(), cx).pr(px(SPACE_SM)).into_any_element()
 }
 
-/// A card that wants a decision or reports a failure, marked by its frame.
-pub fn notice(line: u32, cx: &App) -> Div {
-    frame(cx).border_color(color(line))
-}
-
-pub fn notice_well(cx: &App) -> Div {
+pub fn padded_well(cx: &App) -> Div {
     well(cx).gap(px(SPACE_SM)).p(px(SPACE_MD))
 }
 
-pub fn failure(title: impl Into<SharedString>, next: impl Into<SharedString>, cx: &App) -> Div {
+pub fn failure(title: &str, next: impl Into<SharedString>, cx: &App) -> Div {
     let palette = palette(cx);
-    notice(palette.danger, cx).child(
-        notice_well(cx)
-            .gap(px(2.))
-            .bg(color(palette.danger_well))
-            .child(text(title))
-            .child(muted(next, cx)),
-    )
+    let danger = color(palette.danger);
+    titled(header(Glyph::Alert, title.to_owned(), danger, cx), None, cx)
+        .border_color(danger.opacity(0.5))
+        .child(padded_well(cx).bg(color(palette.danger_well)).child(muted(next, cx)))
 }
 
 pub fn text(value: impl Into<SharedString>) -> Div {
@@ -88,31 +123,37 @@ pub fn mono(value: impl Into<SharedString>, cx: &App) -> Div {
         .child(value.into())
 }
 
-pub fn tile(cx: &App) -> Div {
+pub fn tile(glyph: Glyph, cx: &App) -> Div {
+    tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground)
+}
+
+pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
     div()
         .flex()
         .flex_none()
         .items_center()
         .justify_center()
         .size(px(32.))
-        .rounded(px(RADIUS_CONTROL))
-        .bg(cx.theme().secondary)
-        .text_color(cx.theme().muted_foreground)
-        .text_size(px(TYPE_LABEL))
-        .font_weight(FontWeight::MEDIUM)
+        .rounded(px(RADIUS_FLOOR))
+        .bg(fill)
+        .child(icon(glyph, 16.).text_color(tone))
 }
 
-pub fn initial(name: &str, cx: &App) -> Div {
-    let letter: String =
-        name.chars().next().map(|c| c.to_uppercase().collect()).unwrap_or_default();
-    tile(cx).child(letter)
+pub fn platform_glyph(platform: Option<Platform>) -> Glyph {
+    match platform {
+        Some(Platform::Macos | Platform::Ios) => Glyph::Apple,
+        Some(Platform::Windows) => Glyph::Windows,
+        Some(Platform::Linux) => Glyph::Linux,
+        Some(Platform::Android) => Glyph::Android,
+        None => Glyph::Computer,
+    }
 }
 
-pub fn dot(value: gpui_kit::Hsla) -> Div {
+pub fn dot(value: Hsla) -> Div {
     div().flex_none().size(px(6.)).rounded_full().bg(value)
 }
 
 /// Muted text after a colored dot, for anything that has a state.
-pub fn status(value: gpui_kit::Hsla, label: impl Into<SharedString>, cx: &App) -> Div {
+pub fn status(value: Hsla, label: impl Into<SharedString>, cx: &App) -> Div {
     div().flex().items_center().gap(px(6.)).min_w_0().child(dot(value)).child(muted(label, cx))
 }

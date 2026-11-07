@@ -7,6 +7,7 @@ use iroh_mdns_address_lookup::DiscoveryEvent;
 use tokio::sync::mpsc;
 
 use super::{Node, overlay};
+use crate::platform::split_label;
 use crate::transfer::paths::clean_label;
 
 const OVERLAY_SCAN_EVERY: Duration = Duration::from_secs(20);
@@ -18,6 +19,7 @@ pub struct NearbyDevice {
     pub known: bool,
     /// Found on an overlay network instead of the local one.
     pub overlay: bool,
+    pub platform: Option<crate::Platform>,
 }
 
 impl Node {
@@ -66,10 +68,17 @@ impl Node {
                 event = events.next() => match event {
                     Some(DiscoveryEvent::Discovered { endpoint_info, .. }) => {
                         let id = endpoint_info.endpoint_id;
-                        let name =
-                            endpoint_info.data.user_data().map(|name| clean_label(name.as_ref()));
+                        let (platform, name) = endpoint_info.data.user_data().map_or(
+                            (None, None),
+                            |data| {
+                                let (platform, name) = split_label(data.as_ref());
+                                (platform, Some(clean_label(name)))
+                            },
+                        );
                         let addr = endpoint_info.into_endpoint_addr();
-                        found.insert(id, NearbyDevice { addr, name, known: false, overlay: false });
+                        let device =
+                            NearbyDevice { addr, name, known: false, overlay: false, platform };
+                        found.insert(id, device);
                     }
                     Some(DiscoveryEvent::Expired { endpoint_id }) => {
                         found.remove(&endpoint_id);

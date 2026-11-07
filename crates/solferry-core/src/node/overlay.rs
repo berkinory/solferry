@@ -50,7 +50,7 @@ fn answer_for(shared: &Shared) -> Vec<u8> {
     let port = shared.endpoint.bound_sockets().first().map_or(0, SocketAddr::port);
     let mut answer = shared.endpoint.id().as_bytes().to_vec();
     answer.extend_from_slice(&port.to_be_bytes());
-    answer.extend_from_slice(shared.config.name.as_bytes());
+    answer.extend_from_slice(crate::platform::label(&shared.config.name).as_bytes());
     answer.truncate(MAX_ANSWER);
     answer
 }
@@ -138,7 +138,9 @@ pub(super) async fn scan(shared: &Shared) -> Vec<NearbyDevice> {
             let Ok((length, from)) = socket.recv_from(&mut buffer).await else { return };
             let Some((id, addr, name)) = parse_answer(&buffer[..length], from) else { continue };
             if id != shared.endpoint.id() {
-                found.push(NearbyDevice { addr, name: Some(name), known: false, overlay: true });
+                let (platform, name) = crate::platform::split_label(&name);
+                let name = Some(name.to_owned());
+                found.push(NearbyDevice { addr, name, known: false, overlay: true, platform });
             }
         }
     };

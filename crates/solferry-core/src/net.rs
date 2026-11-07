@@ -103,7 +103,7 @@ fn transport_config() -> Result<QuicTransportConfig> {
 
 fn start_mdns(endpoint: &Endpoint, config: &Config) -> Result<MdnsAddressLookup> {
     let name: String = config.name.chars().take(MDNS_NAME_LIMIT).collect();
-    if let Ok(user_data) = name.parse() {
+    if let Ok(user_data) = crate::platform::label(&name).parse() {
         endpoint.set_user_data_for_address_lookup(Some(user_data));
     }
     let mdns = MdnsAddressLookup::builder()

@@ -23,7 +23,12 @@ pub(crate) async fn exchange_hello(
     recv: &mut RecvStream,
     name: &str,
 ) -> Result<Hello> {
-    let hello = Hello { version: PROTOCOL_VERSION, name: name.to_owned(), capabilities: 0 };
+    let hello = Hello {
+        version: PROTOCOL_VERSION,
+        name: name.to_owned(),
+        capabilities: 0,
+        platform: crate::platform::current_code(),
+    };
     write_frame(send, &hello).await?;
     let theirs: Hello = read_small_frame(recv).await?;
     if theirs.version != PROTOCOL_VERSION {

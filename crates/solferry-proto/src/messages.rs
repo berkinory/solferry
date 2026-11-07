@@ -8,6 +8,8 @@ pub struct Hello {
     pub name: String,
     #[prost(uint64, tag = "3")]
     pub capabilities: u64,
+    #[prost(string, tag = "4")]
+    pub platform: String,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -83,6 +85,8 @@ pub struct PairRequest {
     /// Hash of the requester's nonce. Set instead of `secret` when pairing without an invite.
     #[prost(bytes = "vec", tag = "5")]
     pub commitment: Vec<u8>,
+    #[prost(string, tag = "6")]
+    pub platform: String,
 }
 
 #[derive(Clone, PartialEq, Message)]
@@ -107,6 +111,8 @@ pub struct PairReply {
     pub relay_urls: Vec<String>,
     #[prost(string, repeated, tag = "4")]
     pub direct_addrs: Vec<String>,
+    #[prost(string, tag = "5")]
+    pub platform: String,
 }
 
 #[derive(Clone, PartialEq, Message)]

@@ -1,22 +1,23 @@
 use std::path::Path;
 
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Icon, IconName, Sizable};
 use gpui_kit::{
     AnyElement, Context, ExternalPaths, InteractiveElement, IntoElement, ParentElement,
-    SharedString, StatefulInteractiveElement, Styled, div, px,
+    SharedString, StatefulInteractiveElement, Styled, div, px, transparent_black,
 };
 
+use super::button::Button;
 use super::main_view::{MainView, Page};
 use super::{devices, offers, transfers, ui};
+use crate::assets::{Glyph, icon};
 use crate::errors::explain;
-use crate::tokens::{RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS};
+use crate::theme::{color, palette};
+use crate::tokens::{RADIUS_CONTROL, SPACE_MD, SPACE_SM, SPACE_XS};
 
 const SHOWN_FILES: usize = 3;
 
 pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let row = div().flex().flex_none().items_center().justify_between().h(px(36.)).px(px(SPACE_SM));
+    let row = div().flex().flex_none().items_center().justify_between().h(px(40.)).px(px(SPACE_SM));
     if view.page != Page::Home {
         let title = if view.page == Page::Pair { "Add device" } else { "Settings" };
         return row
@@ -25,13 +26,12 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             .child(
                 Button::new("go-home")
                     .ghost()
-                    .small()
-                    .icon(IconName::ArrowLeft)
-                    .accessibility_label("Back")
+                    .xs()
+                    .icon(Glyph::ArrowLeft)
                     .tooltip("Back")
-                    .on_click(cx.listener(|view, _, window, cx| {
-                        view.open_page(Page::Home, window, cx);
-                    })),
+                    .on_click(
+                        cx.listener(|view, _, window, cx| view.open_page(Page::Home, window, cx)),
+                    ),
             )
             .child(ui::text(title))
             .into_any_element();
@@ -44,12 +44,12 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .flex()
                 .flex_none()
                 .items_center()
-                .gap(px(SPACE_XS))
+                .gap(px(2.))
                 .child(
                     Button::new("add-device")
                         .ghost()
-                        .xsmall()
-                        .icon(IconName::Plus)
+                        .xs()
+                        .icon(Glyph::Add)
                         .label("Add device")
                         .on_click(cx.listener(|view, _, window, cx| {
                             view.open_page(Page::Pair, window, cx);
@@ -58,9 +58,8 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .child(
                     Button::new("open-settings")
                         .ghost()
-                        .xsmall()
-                        .icon(Icon::new(IconName::Settings))
-                        .accessibility_label("Settings")
+                        .xs()
+                        .icon(Glyph::Settings)
                         .tooltip("Settings")
                         .on_click(cx.listener(|view, _, window, cx| {
                             view.open_page(Page::Settings, window, cx);
@@ -72,7 +71,8 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 
 fn drop_zone(cx: &mut Context<MainView>) -> AnyElement {
     let theme = cx.theme();
-    let (hover, sun, on_sun) = (theme.accent, theme.primary, theme.primary_foreground);
+    let palette = palette(cx);
+    let (hover, ring) = (theme.accent, color(palette.primary));
     ui::frame(cx)
         .child(
             ui::well(cx)
@@ -83,18 +83,25 @@ fn drop_zone(cx: &mut Context<MainView>) -> AnyElement {
                 .h(px(84.))
                 .px(px(14.))
                 .border_1()
-                .border_color(gpui_kit::transparent_black())
+                .border_color(transparent_black())
                 .cursor_pointer()
                 .hover(move |style| style.bg(hover))
                 .group_drag_over::<ExternalPaths>("window", move |style| {
-                    style.border_color(sun).bg(hover)
+                    style.border_color(ring).bg(hover)
                 })
                 .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx)))
                 .child(
-                    ui::tile(cx)
+                    div()
+                        .flex()
+                        .flex_none()
+                        .items_center()
+                        .justify_center()
                         .size(px(40.))
-                        .bg(sun)
-                        .child(Icon::new(IconName::ArrowUp).size(px(18.)).text_color(on_sun)),
+                        .rounded(px(RADIUS_CONTROL))
+                        .bg(color(palette.primary_fill))
+                        .border_1()
+                        .border_color(color(palette.primary_border))
+                        .child(icon(Glyph::Send, 18.).text_color(color(palette.on_primary))),
                 )
                 .child(
                     div()
@@ -113,21 +120,21 @@ fn file_name(path: &Path) -> String {
 }
 
 fn pending_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement {
-    let icon = if path.is_dir() { IconName::Folder } else { IconName::File };
+    let glyph = if path.is_dir() { Glyph::Folder } else { Glyph::File };
     div()
         .flex()
         .items_center()
         .gap(px(SPACE_SM))
         .pl(px(SPACE_SM))
         .h(px(30.))
-        .child(Icon::new(icon).size(px(14.)).text_color(cx.theme().muted_foreground))
+        .child(icon(glyph, 16.).text_color(cx.theme().muted_foreground))
         .child(ui::text(file_name(path)).flex_1().min_w_0().truncate())
         .child(
             Button::new(SharedString::from(format!("unpick-{index}")))
                 .ghost()
-                .xsmall()
-                .icon(IconName::Close)
-                .accessibility_label("Remove")
+                .xs()
+                .icon(Glyph::Cancel)
+                .tooltip("Remove")
                 .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx))),
         )
         .into_any_element()
@@ -153,25 +160,24 @@ fn pending_card(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             if chosen == 1 { "Send".to_owned() } else { format!("Send to {chosen} devices") };
         Button::new("send-selected")
             .primary()
-            .flex_1()
+            .grow()
+            .icon(Glyph::Send)
             .label(label)
             .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
             .into_any_element()
     };
-    ui::card("Ready to send", Some(ui::count(total, cx)), cx)
+    ui::card(Glyph::Upload, "Ready to send", Some(ui::count(total, cx)), cx)
         .child(
-            ui::well(cx).gap(px(0.)).rounded(px(RADIUS_WELL)).children(rows).children(more).child(
+            ui::well(cx).gap(px(0.)).children(rows).children(more).child(
                 div()
                     .flex()
+                    .items_center()
                     .gap(px(SPACE_XS))
                     .pt(px(SPACE_SM))
-                    .items_center()
                     .child(send)
                     .child(
                         Button::new("add-more")
-                            .ghost()
-                            .icon(IconName::Plus)
-                            .accessibility_label("Add more")
+                            .icon(Glyph::Add)
                             .tooltip("Add more")
                             .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx))),
                     )

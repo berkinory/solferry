@@ -1,10 +1,11 @@
-use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::{AnyElement, ClipboardItem, Context, IntoElement, ParentElement, Styled, div, px};
 
+use super::button::Button;
 use super::main_view::MainView;
 use super::ui;
+use crate::assets::Glyph;
 use crate::errors::explain;
 use crate::qr;
 use crate::service::Command;
@@ -35,15 +36,16 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         Some(code) => invite(code, view.copied, cx),
         None => invite_prompt(auto_accept, cx),
     };
+    let join_label = if state.joining { "Pairing..." } else { "Pair" };
     div()
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
         .children(error)
-        .child(ui::card("Show a code", None, cx).child(ui::notice_well(cx).child(code)))
+        .child(ui::card(Glyph::Qr, "Show a code", None, cx).child(ui::padded_well(cx).child(code)))
         .child(
-            ui::card("Enter a code", None, cx).child(
-                ui::notice_well(cx).child(
+            ui::card(Glyph::Key, "Enter a code", None, cx).child(
+                ui::padded_well(cx).child(
                     div()
                         .flex()
                         .gap(px(SPACE_XS))
@@ -51,14 +53,17 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                         .child(
                             Button::new("join")
                                 .primary()
-                                .label("Pair")
-                                .loading(state.joining)
+                                .sm()
+                                .label(join_label)
                                 .on_click(cx.listener(|view, _, _, cx| join(view, cx))),
                         ),
                 ),
             ),
         )
-        .child(ui::frame(cx).child(ui::notice_well(cx).child(approval_toggle(auto_accept, cx))))
+        .child(
+            ui::card(Glyph::Shield, "Trust", None, cx)
+                .child(ui::padded_well(cx).child(approval_toggle(auto_accept, cx))),
+        )
         .into_any_element()
 }
 
@@ -72,11 +77,11 @@ fn invite_prompt(auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement {
             "Nearby devices pair from the home screen. For anything else, show a code here and enter it there.",
             cx,
         ))
-        .child(Button::new("invite").outline().label("Show code").on_click(cx.listener(
-            move |_, _, _, cx| {
+        .child(Button::new("invite").sm().icon(Glyph::Qr).label("Show code").on_click(
+            cx.listener(move |_, _, _, cx| {
                 MainView::command(Command::Invite { auto_accept }, cx);
-            },
-        )))
+            }),
+        ))
         .into_any_element()
 }
 
@@ -110,6 +115,7 @@ fn approval_toggle(auto_accept: bool, cx: &mut Context<MainView>) -> AnyElement 
 
 fn invite(code: &str, copied: bool, cx: &mut Context<MainView>) -> AnyElement {
     let text = code.to_owned();
+    let (glyph, label) = if copied { (Glyph::Check, "Copied") } else { (Glyph::Copy, "Copy code") };
     div()
         .flex()
         .flex_col()
@@ -117,14 +123,11 @@ fn invite(code: &str, copied: bool, cx: &mut Context<MainView>) -> AnyElement {
         .gap(px(SPACE_SM))
         .children(qr::code(code))
         .child(ui::muted("Works once, for 10 minutes.", cx))
-        .child(
-            Button::new("copy-code")
-                .outline()
-                .label(if copied { "Copied" } else { "Copy code" })
-                .on_click(cx.listener(move |view, _, _, cx| {
-                    cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
-                    view.show_copied(cx);
-                })),
-        )
+        .child(Button::new("copy-code").sm().icon(glyph).label(label).on_click(cx.listener(
+            move |view, _, _, cx| {
+                cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
+                view.show_copied(cx);
+            },
+        )))
         .into_any_element()
 }

@@ -13,8 +13,10 @@ use solferry_proto::{
 
 use super::confirm::answer;
 use super::{Node, Shared};
+use crate::Platform;
 use crate::error::{Error, Result};
 use crate::event::Event;
+use crate::platform::current_code;
 use crate::relay::RelayLink;
 use crate::route::shareable_addrs;
 use crate::transfer::paths::clean_label;
@@ -124,6 +126,7 @@ impl Node {
             relays,
             direct_addrs,
             paired_at_ms: now_ms(),
+            platform: Platform::parse(&reply.platform),
         };
         store_and_confirm(&self.shared, &connection, send, device).await
     }
@@ -158,6 +161,7 @@ pub(super) fn request_from(shared: &Shared, adopted: &[String]) -> PairRequest {
         name: shared.config.name.clone(),
         relay_urls,
         direct_addrs: shareable_addrs(shared.endpoint.addr().ip_addrs().copied()),
+        platform: current_code(),
         ..PairRequest::default()
     }
 }
@@ -168,6 +172,7 @@ pub(super) fn own_reply(shared: &Shared) -> PairReply {
         name: shared.config.name.clone(),
         relay_urls: relay_links(shared, &[]),
         direct_addrs: shareable_addrs(shared.endpoint.addr().ip_addrs().copied()),
+        platform: current_code(),
     }
 }
 
@@ -270,6 +275,7 @@ pub(super) async fn complete(
         relays: request.relay_urls,
         direct_addrs: request.direct_addrs,
         paired_at_ms: now_ms(),
+        platform: Platform::parse(&request.platform),
     };
     adopt_relays(shared, &device.relays).await;
     shared.trust().upsert(device.clone())?;

@@ -1,11 +1,13 @@
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::{
-    AnyElement, Context, FontWeight, IntoElement, ParentElement, SharedString, Styled, div, px,
+    AnyElement, Context, Div, FontWeight, IntoElement, ParentElement, SharedString, Styled, div, px,
 };
 
+use super::button::Button;
+use super::dialog::Dialog;
 use super::main_view::MainView;
 use super::ui;
+use crate::assets::Glyph;
 use crate::format;
 use crate::state::{Offer, PairingPrompt};
 use crate::theme::{color, palette};
@@ -15,8 +17,15 @@ const DIGIT_WIDTH: f32 = 34.0;
 const DIGIT_HEIGHT: f32 = 44.0;
 const DIGIT_SIZE: f32 = 20.0;
 
-fn sun_card(cx: &mut Context<MainView>) -> gpui_kit::Div {
-    ui::notice(palette(cx).sun, cx)
+/// A card asking for a decision, marked by a primary frame and icon.
+fn ask(glyph: Glyph, title: &str, cx: &mut Context<MainView>) -> Div {
+    let primary = color(palette(cx).primary);
+    ui::titled(ui::header(glyph, title.to_owned(), primary, cx), None, cx)
+        .border_color(primary.opacity(0.55))
+}
+
+fn actions() -> Div {
+    div().flex().gap(px(SPACE_XS)).pt(px(SPACE_XS))
 }
 
 pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
@@ -30,21 +39,26 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         ui::muted("Not paired. Accept only if you expected this.", cx)
             .text_color(color(palette(cx).warning))
     });
+    let name = summary.peer_name.clone();
     let block = (!summary.paired).then(|| {
         Button::new(SharedString::from(format!("block-{key}")))
             .ghost()
+            .sm()
             .label("Block")
-            .on_click(cx.listener(move |view, _, _, cx| view.block_offer(key, cx)))
+            .on_click(cx.listener(move |view, _, _, cx| {
+                view.dialog = Some(Dialog::Block { key, name: name.clone() });
+                cx.notify();
+            }))
     });
-    sun_card(cx)
+    ask(Glyph::Download, "Incoming files", cx)
         .child(
-            ui::notice_well(cx)
+            ui::padded_well(cx)
                 .child(
                     div()
                         .flex()
                         .items_center()
                         .gap(px(10.))
-                        .child(ui::initial(&summary.peer_name, cx))
+                        .child(ui::tile(ui::platform_glyph(summary.platform), cx))
                         .child(
                             div()
                                 .flex()
@@ -61,12 +75,12 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                 .child(ui::muted(summary.first_path.clone(), cx).truncate())
                 .children(warning)
                 .child(
-                    div()
-                        .flex()
-                        .gap(px(SPACE_XS))
+                    actions()
                         .child(
                             Button::new(SharedString::from(format!("accept-{key}")))
                                 .primary()
+                                .sm()
+                                .icon(Glyph::Check)
                                 .label("Accept")
                                 .on_click(
                                     cx.listener(move |view, _, _, cx| view.answer(key, true, cx)),
@@ -74,7 +88,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         )
                         .child(
                             Button::new(SharedString::from(format!("decline-{key}")))
-                                .ghost()
+                                .sm()
                                 .label("Decline")
                                 .on_click(
                                     cx.listener(move |view, _, _, cx| view.answer(key, false, cx)),
@@ -94,7 +108,9 @@ fn digit(value: char, cx: &mut Context<MainView>) -> AnyElement {
         .w(px(DIGIT_WIDTH))
         .h(px(DIGIT_HEIGHT))
         .rounded(px(RADIUS_FLOOR))
-        .bg(cx.theme().secondary)
+        .bg(cx.theme().background)
+        .border_1()
+        .border_color(cx.theme().border)
         .font_family(FONT_MONO)
         .text_size(px(DIGIT_SIZE))
         .font_weight(FontWeight::MEDIUM)
@@ -122,19 +138,19 @@ fn code_digits(code: &str, cx: &mut Context<MainView>) -> AnyElement {
 pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
     let key = prompt.key;
     let digits = code_digits(&prompt.code, cx);
-    sun_card(cx)
+    ask(Glyph::Shield, "Pairing request", cx)
         .child(
-            ui::notice_well(cx)
+            ui::padded_well(cx)
                 .child(ui::text(format!("{} wants to pair", prompt.name)))
                 .child(digits)
                 .child(ui::muted("Accept only if the other screen shows the same code.", cx))
                 .child(
-                    div()
-                        .flex()
-                        .gap(px(SPACE_XS))
+                    actions()
                         .child(
                             Button::new(SharedString::from(format!("pair-yes-{key}")))
                                 .primary()
+                                .sm()
+                                .icon(Glyph::Check)
                                 .label("Same code")
                                 .on_click(cx.listener(move |view, _, _, cx| {
                                     view.answer_pairing(key, true, cx);
@@ -142,7 +158,7 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
                         )
                         .child(
                             Button::new(SharedString::from(format!("pair-no-{key}")))
-                                .ghost()
+                                .sm()
                                 .label("Decline")
                                 .on_click(cx.listener(move |view, _, _, cx| {
                                     view.answer_pairing(key, false, cx);
@@ -155,12 +171,10 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
 
 pub fn pairing_code(code: &str, cx: &mut Context<MainView>) -> AnyElement {
     let digits = code_digits(code, cx);
-    sun_card(cx)
-        .child(
-            ui::notice_well(cx)
-                .child(ui::text("Check this code on the other device"))
-                .child(digits)
-                .child(ui::muted("Then accept there.", cx)),
-        )
+    ask(Glyph::Shield, "Compare codes", cx)
+        .child(ui::padded_well(cx).child(digits).child(ui::muted(
+            "Check that the other device shows this code, then accept there.",
+            cx,
+        )))
         .into_any_element()
 }
