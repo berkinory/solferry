@@ -3,7 +3,6 @@ import SwiftUI
 struct HomeScreen: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
-    @Binding var staged: [URL]
     let pick: (PairedDevice?) -> Void
 
     var body: some View {
@@ -18,22 +17,9 @@ struct HomeScreen: View {
                 if let code = state.pairingCode { CompareCard(code: code) }
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 ForEach(state.texts) { TextCard(shared: $0) }
-                if !staged.isEmpty {
-                    StagedCard(count: staged.count) { staged = [] }
-                } else if !state.devices.isEmpty {
-                    SendZone { pick(nil) }
-                }
+                SendZone { pick(nil) }
                 if state.devices.isEmpty, state.strangers.isEmpty { RadarHero() }
-                if !state.devices.isEmpty {
-                    DeviceCard(state: state, picking: !staged.isEmpty) { device in
-                        if staged.isEmpty {
-                            pick(device)
-                        } else {
-                            engine.send(staged, to: device.identity.id)
-                            staged = []
-                        }
-                    }
-                }
+                if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
                 if !state.devices.isEmpty || !state.strangers.isEmpty { NearbyCard(nearby: state.strangers) }
                 if !state.transfers.isEmpty { TransferCard(transfers: state.transfers) }
             }
@@ -41,19 +27,28 @@ struct HomeScreen: View {
             .padding(.vertical, SpaceTokens.xs)
         }
         .background(palette.page.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                HStack(spacing: 6) {
-                    Text("Solferry").font(.titleText)
-                    Muted(state.me?.name ?? "").lineLimit(1)
-                }
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top, spacing: 0) { HomeBar(name: state.me?.name ?? "") }
+    }
+}
+
+/// The brand on the left and this device's name in the middle of the bar.
+private struct HomeBar: View {
+    @Environment(\.palette) private var palette
+    let name: String
+
+    var body: some View {
+        ZStack {
+            HStack(spacing: 6) {
+                Icon(.mark, tint: palette.brand, size: 20)
+                Text("Solferry").font(.titleText)
+                Spacer()
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(value: Route.settings) { Icon(.settings, size: 20) }
-                    .accessibilityLabel("Settings")
-            }
+            Muted(name).lineLimit(1).padding(.horizontal, 104)
         }
+        .padding(.horizontal, SpaceTokens.lg)
+        .frame(height: 44)
+        .background(palette.page)
     }
 }
 
@@ -71,27 +66,8 @@ private struct SendZone: View {
                         .overlay(controlShape.strokeBorder(palette.primaryBorder))
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Send files")
-                        Muted("Choose what to send, then tap a device")
+                        Muted("Choose what to send, then who gets it")
                     }
-                }
-            }
-        }
-    }
-}
-
-private struct StagedCard: View {
-    let count: Int
-    let onClear: () -> Void
-
-    var body: some View {
-        Card(glyph: .upload, title: "Ready to send") {
-            Count(value: count)
-        } content: {
-            PaddedWell {
-                HStack {
-                    Muted(count == 1 ? "Tap a device to send this file." : "Tap a device to send these files.")
-                    Spacer()
-                    ActionButton(label: "Cancel", kind: .ghost, scale: .small, action: onClear)
                 }
             }
         }

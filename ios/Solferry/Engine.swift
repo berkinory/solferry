@@ -79,11 +79,14 @@ final class Engine {
         UIPasteboard.general.string = text
     }
 
-    func send(_ urls: [URL], to peer: String) {
+    func send(_ urls: [URL], to peers: [String]) {
         let bridge = bridge!
         Task.detached {
-            let files = urls.compactMap(Outbox.open)
-            if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
+            for peer in peers {
+                let files = urls.compactMap(Outbox.open)
+                if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
+            }
+            Outbox.discard(urls)
         }
     }
 

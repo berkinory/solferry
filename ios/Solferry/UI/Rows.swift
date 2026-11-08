@@ -46,7 +46,7 @@ private struct DeviceRow: View {
     let device: PairedDevice
     let near: Nearby?
     let online: Bool?
-    let picking: Bool
+    let lastTransfer: UInt64?
     let onPick: (PairedDevice) -> Void
 
     var body: some View {
@@ -60,21 +60,18 @@ private struct DeviceRow: View {
                         status
                     }
                     Spacer(minLength: 0)
-                    if picking { Icon(.send, tint: palette.primary, size: 18) }
                 }
                 .contentShape(Rectangle())
                 .onTapGesture { onPick(device) }
                 .accessibilityAddTraits(.isButton)
-                if !picking {
-                    HStack(spacing: 2) {
-                        ClipboardButton { engine.bridge.sendText(peer: device.identity.id, text: $0) }
-                        ActionButton(glyph: .more, kind: .ghost, scale: .small, description: "Options for \(device.name)") {
-                            withAnimation(.easeOut(duration: MotionTokens.standard / 1000)) { open.toggle() }
-                        }
+                HStack(spacing: 2) {
+                    ClipboardButton { engine.bridge.sendText(peer: device.identity.id, text: $0) }
+                    ActionButton(glyph: .more, kind: .ghost, scale: .small, description: "Options for \(device.name)") {
+                        withAnimation(.easeOut(duration: MotionTokens.standard / 1000)) { open.toggle() }
                     }
                 }
             }
-            if open, !picking { details }
+            if open { details }
         }
         .confirm(
             "Forget \(device.name)?",
@@ -100,7 +97,6 @@ private struct DeviceRow: View {
 
     private var details: some View {
         VStack(spacing: 0) {
-            Detail(label: "Key") { Mono(device.identity.fingerprint) }
             Detail(label: "Receive without asking") {
                 Toggle(
                     "Receive without asking",
@@ -111,8 +107,8 @@ private struct DeviceRow: View {
                 )
                 .labelsHidden()
             }
-            Detail(label: "Remove this device") {
-                ActionButton(label: "Forget", glyph: .delete, scale: .small) { forgetting = true }
+            Detail(label: lastTransfer.map { "Last transfer \(ago($0))" } ?? "Paired \(ago(device.pairedAtMs))") {
+                ActionButton(label: "Forget", glyph: .delete, kind: .danger, scale: .small) { forgetting = true }
             }
         }
         .transition(.opacity.combined(with: .move(edge: .top)))
@@ -121,7 +117,6 @@ private struct DeviceRow: View {
 
 struct DeviceCard: View {
     let state: AppState
-    let picking: Bool
     let onPick: (PairedDevice) -> Void
 
     var body: some View {
@@ -134,7 +129,7 @@ struct DeviceCard: View {
                         device: device,
                         near: state.nearby.first { $0.identity.id == device.identity.id },
                         online: state.reachable?.contains(device.identity.id),
-                        picking: picking,
+                        lastTransfer: state.history.first { $0.peer == device.identity.id && $0.completed }?.finishedMs,
                         onPick: onPick
                     )
                 }
@@ -169,7 +164,7 @@ struct NearbyCard: View {
                             StatusLine(device.overlay ? "Overlay, not paired" : "Not paired")
                         }
                         Spacer(minLength: 0)
-                        ActionButton(label: "Pair", scale: .small) { engine.bridge.pairNearby(peer: device.identity.id) }
+                        ActionButton(label: "Pair", glyph: .link, scale: .small) { engine.bridge.pairNearby(peer: device.identity.id) }
                     }
                 }
             }

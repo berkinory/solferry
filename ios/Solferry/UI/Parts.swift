@@ -1,8 +1,9 @@
 import SwiftUI
 
 enum Glyph: String {
-    case alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
-    case external, folder, key, linux, more, nearby, qr, relay, send, settings, shield, transfers, upload, view, windows
+    case add, alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
+    case external, file, folder, history, home, key, link, linux, mark, more, nearby, qr, relay, send, settings, shield
+    case transfers, upload, view, windows
 }
 
 func platformGlyph(_ platform: DevicePlatform?) -> Glyph {
@@ -139,6 +140,19 @@ extension View {
         } message: {
             Text(message)
         }
+    }
+}
+
+/// How long ago a moment was, in the largest unit that still reads naturally.
+func ago(_ ms: UInt64) -> String {
+    let minutes = max(0, Int(Date().timeIntervalSince1970 / 60) - Int(ms / 60000))
+    switch minutes {
+    case 0: return "just now"
+    case 1 ..< 60: return "\(minutes) min ago"
+    case 60 ..< 1440: return "\(minutes / 60) h ago"
+    case 1440 ..< 2880: return "yesterday"
+    case 2880 ..< 43200: return "\(minutes / 1440) days ago"
+    default: return "\(minutes / 43200) months ago"
     }
 }
 

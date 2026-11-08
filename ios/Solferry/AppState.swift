@@ -77,6 +77,7 @@ struct AppState {
     var relayProblem: Problem?
     var blocked: [Identity] = []
     var transfers: [Transfer] = []
+    var history: [HistoryEntry] = []
     var offers: [Incoming] = []
     var pairings: [PairingPrompt] = []
     var pairingCode: String?
@@ -98,6 +99,7 @@ struct AppState {
             startProblem = nil
         case let .startFailed(problem): startProblem = problem
         case let .devices(list): devices = list
+        case let .history(entries): history = entries
         case let .nearby(list): nearby = list
         case let .reachable(ids): reachable = Set(ids)
         case let .relays(list):

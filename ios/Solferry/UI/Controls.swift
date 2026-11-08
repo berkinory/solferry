@@ -10,7 +10,7 @@ enum ButtonScale {
     var height: Double { self == .medium ? 44 : 36 }
 }
 
-private struct ActionStyle: ButtonStyle {
+struct ActionStyle: ButtonStyle {
     @Environment(\.palette) private var palette
     @Environment(\.isEnabled) private var enabled
     let kind: ButtonKind

@@ -4,7 +4,7 @@ import SwiftUI
 struct Palette {
     let night: Bool
     let page, well, raised, control, line, ink, inkMuted: Color
-    let primary, primaryFill, primaryHover, primaryBorder, primaryDeep, onPrimary: Color
+    let primary, brand, primaryFill, primaryHover, primaryBorder, primaryDeep, onPrimary: Color
     let success, warning, danger, dangerFill, dangerWell: Color
     let routeLocal, routeOverlay, routeDirect, routeRelay: Color
     let identity: [Color]
@@ -22,7 +22,7 @@ struct Palette {
         night: false,
         page: LightColors.page, well: LightColors.well, raised: LightColors.raised, control: LightColors.control,
         line: LightColors.line, ink: LightColors.ink, inkMuted: LightColors.inkMuted,
-        primary: LightColors.primary, primaryFill: LightColors.primaryFill, primaryHover: LightColors.primaryHover,
+        primary: LightColors.primary, brand: LightColors.brand, primaryFill: LightColors.primaryFill, primaryHover: LightColors.primaryHover,
         primaryBorder: LightColors.primaryBorder, primaryDeep: LightColors.primaryDeep, onPrimary: LightColors.onPrimary,
         success: LightColors.success, warning: LightColors.warning, danger: LightColors.danger,
         dangerFill: LightColors.dangerFill, dangerWell: LightColors.dangerWell,
@@ -35,7 +35,7 @@ struct Palette {
         night: true,
         page: DarkColors.page, well: DarkColors.well, raised: DarkColors.raised, control: DarkColors.control,
         line: DarkColors.line, ink: DarkColors.ink, inkMuted: DarkColors.inkMuted,
-        primary: DarkColors.primary, primaryFill: DarkColors.primaryFill, primaryHover: DarkColors.primaryHover,
+        primary: DarkColors.primary, brand: DarkColors.brand, primaryFill: DarkColors.primaryFill, primaryHover: DarkColors.primaryHover,
         primaryBorder: DarkColors.primaryBorder, primaryDeep: DarkColors.primaryDeep, onPrimary: DarkColors.onPrimary,
         success: DarkColors.success, warning: DarkColors.warning, danger: DarkColors.danger,
         dangerFill: DarkColors.dangerFill, dangerWell: DarkColors.dangerWell,

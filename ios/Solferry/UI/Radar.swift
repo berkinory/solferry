@@ -71,11 +71,10 @@ struct RadarHero: View {
                     NavigationLink(value: Route.addDevice) {
                         HStack(spacing: 6) {
                             Icon(.qr, size: 18)
-                            Text("Can't see it? Pair with a code").font(.buttonText)
+                            Text("Pair with code")
                         }
-                        .frame(minHeight: 36)
                     }
-                    .foregroundStyle(.secondary)
+                    .buttonStyle(ActionStyle(kind: .secondary, iconOnly: false, scale: .small))
                     .padding(.top, SpaceTokens.xs)
                 }
                 .frame(maxWidth: .infinity)
