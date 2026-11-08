@@ -15,7 +15,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +35,7 @@ import app.solferry.design.MotionTokens
 import app.solferry.ui.AddDeviceScreen
 import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
-import app.solferry.ui.SendScreen
+import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
 import app.solferry.ui.SolferryTheme
 import app.solferry.ui.Tab
@@ -45,7 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
 
-private enum class Screen { Home, History, Settings, AddDevice, Send }
+private enum class Screen { Home, History, Settings, AddDevice }
 
 private const val PRESENCE_EVERY_MS = 20_000L
 
@@ -71,7 +70,6 @@ class MainActivity : ComponentActivity() {
                 val state by engine.state.collectAsStateWithLifecycle()
                 var screen by rememberSaveable { mutableStateOf(Screen.Home) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
-                val leave = { shared = emptyList(); screen = Screen.Home }
                 val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
                     if (uris.isEmpty()) return@rememberLauncherForActivityResult
                     val device = target
@@ -83,20 +81,16 @@ class MainActivity : ComponentActivity() {
                         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
-                LaunchedEffect(state.pairedCount) { if (state.pairedCount > 0 && screen != Screen.Send) screen = Screen.Home }
-                LaunchedEffect(shared) { if (shared.isNotEmpty()) screen = Screen.Send }
+                LaunchedEffect(state.pairedCount) { if (state.pairedCount > 0 && shared.isEmpty()) screen = Screen.Home }
                 LaunchedEffect(state.offers.size + state.pairings.size) {
-                    if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && screen != Screen.Send) screen = Screen.Home
+                    if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && shared.isEmpty()) screen = Screen.Home
                 }
-                BackHandler(enabled = screen != Screen.Home) { leave() }
+                BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
                 Box(Modifier.fillMaxSize()) {
                     AnimatedContent(
                         screen,
                         Modifier.fillMaxSize(),
-                        transitionSpec = {
-                            val enter = if (targetState == Screen.Send) slideInVertically(tween(MotionTokens.slow)) { it / 3 } + fadeIn(tween(MotionTokens.standard)) else fadeIn(tween(MotionTokens.standard))
-                            enter togetherWith fadeOut(tween(MotionTokens.quick))
-                        },
+                        transitionSpec = { fadeIn(tween(MotionTokens.standard)) togetherWith fadeOut(tween(MotionTokens.quick)) },
                     ) { shown ->
                         when (shown) {
                             Screen.Home -> HomeScreen(
@@ -107,17 +101,18 @@ class MainActivity : ComponentActivity() {
                             Screen.History -> HistoryScreen(state, engine)
                             Screen.Settings -> SettingsScreen(state, engine)
                             Screen.AddDevice -> AddDeviceScreen(state, engine) { screen = Screen.Home }
-                            Screen.Send -> SendScreen(
-                                state,
-                                files = remember(shared) { shared.map(engine::describe) },
-                                onRemove = { file -> shared = shared - file.uri; if (shared.isEmpty()) screen = Screen.Home },
-                                onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
-                                onDone = { leave() },
-                                onBack = { leave() },
-                            )
                         }
                     }
-                    if (screen in listOf(Screen.Home, Screen.History, Screen.Settings)) {
+                    if (shared.isNotEmpty()) {
+                        SendSheet(
+                            state,
+                            files = remember(shared) { shared.map(engine::describe) },
+                            onRemove = { file -> shared = shared - file.uri },
+                            onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
+                            onClose = { shared = emptyList() },
+                        )
+                    }
+                    if (screen != Screen.AddDevice) {
                         TabBar(
                             listOf(
                                 Tab("Home", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },

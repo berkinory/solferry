@@ -20,15 +20,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,34 +45,64 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.PickedFile
 import app.solferry.R
 import app.solferry.design.MotionTokens
+import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.Identity
 
-private enum class Launch { Idle, Launching, Sent }
+private enum class Launch { Idle, Flying, Sending, Sent }
 
 private data class Target(val identity: Identity, val name: String, val detail: String)
 
-private const val LAUNCH_MS = 420L
+private const val FLY_MS = 380L
+private const val SENDING_MS = 900L
 private const val SENT_MS = 1000L
 private const val FLOW_MS = 1100
 private const val DOTS = 5
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SendScreen(
+fun SendSheet(
+    state: AppState,
+    files: List<PickedFile>,
+    onRemove: (PickedFile) -> Unit,
+    onSend: (Set<String>) -> Unit,
+    onClose: () -> Unit,
+) {
+    val palette = LocalPalette.current
+    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    val close: () -> Unit = { scope.launch { sheet.hide() }.invokeOnCompletion { onClose() } }
+    ModalBottomSheet(
+        onDismissRequest = onClose,
+        sheetState = sheet,
+        containerColor = palette.page,
+        contentColor = palette.ink,
+        shape = RoundedCornerShape(topStart = RadiusTokens.card.dp, topEnd = RadiusTokens.card.dp),
+    ) {
+        SendContent(state, files, onRemove, onSend, close)
+    }
+}
+
+@Composable
+private fun SendContent(
     state: AppState,
     files: List<PickedFile>,
     onRemove: (PickedFile) -> Unit,
     onSend: (Set<String>) -> Unit,
     onDone: () -> Unit,
-    onBack: () -> Unit,
-) = Page("Send", onBack) {
+) = Column(
+    Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
+    verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
+) {
     var chosen by remember { mutableStateOf(emptySet<String>()) }
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { appeared = true }
@@ -77,6 +116,7 @@ fun SendScreen(
         Target(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), device.name, detail)
     }
     val others = state.strangers.map { Target(it.identity, it.name ?: "Unnamed device", "Not paired") }
+    Text("Send", Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
     Column {
         files.forEachIndexed { index, file -> FileRow(file, index, appeared) { onRemove(file) } }
     }
@@ -142,32 +182,36 @@ private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) 
     var launch by remember { mutableStateOf(Launch.Idle) }
     LaunchedEffect(launch) {
         when (launch) {
-            Launch.Launching -> { delay(LAUNCH_MS); launch = Launch.Sent }
+            Launch.Flying -> { delay(FLY_MS); launch = Launch.Sending }
+            Launch.Sending -> { delay(SENDING_MS); launch = Launch.Sent }
             Launch.Sent -> { delay(SENT_MS); onDone() }
             Launch.Idle -> {}
         }
     }
     val sent = launch == Launch.Sent
     val width by animateDpAsState(if (sent) 148.dp else 210.dp, tween(MotionTokens.slow))
-    val fill by animateColorAsState(if (sent) palette.success else palette.primaryFill, tween(MotionTokens.slow))
+    val fill by animateColorAsState(if (sent) palette.successFill else palette.primaryFill, tween(MotionTokens.slow))
     val fly by animateFloatAsState(if (launch == Launch.Idle) 0f else 1f, tween(380, easing = FastOutLinearInEasing))
     val enabled = chosen > 0 && launch == Launch.Idle
     val label = when {
         sent -> "Sent"
-        launch == Launch.Launching -> "Sending"
+        launch == Launch.Sending -> "Sending"
         chosen > 1 -> "Send to $chosen devices"
         else -> "Send"
     }
     val density = LocalDensity.current
     Box(
         Modifier.width(width).height(56.dp).graphicsLayer { alpha = if (chosen > 0 || sent) 1f else 0.5f }.clip(FieldShape)
-            .background(fill).clickable(enabled = enabled) { onLaunch(); launch = Launch.Launching },
+            .background(fill).clickable(enabled = enabled) { onLaunch(); launch = Launch.Flying },
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-            AnimatedContent(sent, transitionSpec = { (fadeIn() + scaleIn()) togetherWith fadeOut() }) { done ->
-                if (done) {
+            val symbol = if (launch == Launch.Flying) Launch.Idle else launch
+            AnimatedContent(symbol, transitionSpec = { (fadeIn() + scaleIn()) togetherWith fadeOut() }) { shown ->
+                if (shown == Launch.Sent) {
                     Glyph(R.drawable.ic_check, palette.onPrimary, 22)
+                } else if (shown == Launch.Sending) {
+                    CircularProgressIndicator(Modifier.size(20.dp), color = palette.onPrimary, strokeWidth = 2.dp)
                 } else {
                     Box(
                         Modifier.graphicsLayer {
@@ -194,10 +238,10 @@ private fun TargetRow(target: Target, chosen: Boolean, onToggle: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        if (chosen) Tile(R.drawable.ic_check, palette.primaryFill, palette.onPrimary) else DeviceTile(target.identity)
+        if (chosen) Tile(R.drawable.ic_check, palette.primaryFill, palette.onPrimary) else DeviceTile(target.identity, target.detail != "Offline" && target.detail != "Paired")
         Column(Modifier.weight(1f)) {
             Text(target.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            StatusLine(target.detail, if (target.detail == "Online") palette.success else null)
+            StatusLine(target.detail, if (target.detail == "Online") palette.successFill else null)
         }
     }
 }

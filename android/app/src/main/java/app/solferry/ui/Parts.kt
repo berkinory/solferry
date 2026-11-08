@@ -1,9 +1,16 @@
 package app.solferry.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -78,12 +85,18 @@ fun Tile(@DrawableRes icon: Int, fill: Color, tone: Color) = Box(
     contentAlignment = Alignment.Center,
 ) { Glyph(icon, tone, 18) }
 
-/** A device's tile: its platform logo in the color its key gives it, so copied names still differ. */
+/** A device's tile: its platform logo in its own color while it is there, gray while it isn't. */
 @Composable
-fun DeviceTile(identity: Identity) {
+fun DeviceTile(identity: Identity, online: Boolean = true) {
     val palette = LocalPalette.current
-    val tone = palette.identity[identity.tone.toInt() % palette.identity.size]
-    Tile(platformIcon(identity.platform), tone.copy(alpha = 0.16f), tone)
+    val tone = when (identity.platform) {
+        DevicePlatform.MACOS, DevicePlatform.IOS -> palette.platformApple
+        DevicePlatform.ANDROID -> palette.platformAndroid
+        DevicePlatform.WINDOWS -> palette.platformWindows
+        DevicePlatform.LINUX -> palette.platformLinux
+        null -> palette.inkMuted
+    }
+    if (online) Tile(platformIcon(identity.platform), tone.copy(alpha = 0.16f), tone) else Tile(platformIcon(identity.platform), palette.control, palette.inkMuted)
 }
 
 @Composable
@@ -118,8 +131,6 @@ fun Toolbar(content: @Composable RowScope.() -> Unit) = Row(
 
 data class Tab(val label: String, @DrawableRes val icon: Int, val selected: Boolean, val onSelect: () -> Unit)
 
-private val TabWidth = 84.dp
-
 /** Room scrolling content leaves so nothing ends up under the floating bar. */
 @Composable
 fun tabClearance() = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp
@@ -141,28 +152,28 @@ fun fileIcon(name: String) = when (name.substringAfterLast('.', "").lowercase())
     else -> R.drawable.ic_file
 }
 
-/** The app's three places, floating where a thumb reaches them. */
+/** The app's three places: a floating toolbar where the current one opens up to show its name. */
 @Composable
 fun TabBar(tabs: List<Tab>, modifier: Modifier = Modifier) {
     val palette = LocalPalette.current
-    val index = tabs.indexOfFirst { it.selected }.coerceAtLeast(0)
-    val slide by animateDpAsState(TabWidth * index, tween(MotionTokens.slow))
-    Box(
-        modifier.navigationBarsPadding().padding(bottom = SpaceTokens.sm.dp)
-            .dropShadow(CircleShape, Shadow(radius = 24.dp, color = Color.Black.copy(alpha = 0.3f), offset = DpOffset(0.dp, 8.dp)))
-            .background(palette.page, CircleShape).border(1.dp, palette.line, CircleShape).padding(4.dp),
+    Row(
+        modifier.navigationBarsPadding().padding(bottom = SpaceTokens.md.dp)
+            .dropShadow(CircleShape, Shadow(radius = 16.dp, color = Color.Black.copy(alpha = 0.28f), offset = DpOffset(0.dp, 6.dp)))
+            .background(palette.raised, CircleShape).padding(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        Box(Modifier.offset(x = slide).size(TabWidth, 52.dp).background(palette.raised, CircleShape))
-        Row {
-            tabs.forEach { tab ->
-                val tone by animateColorAsState(if (tab.selected) palette.primary else palette.inkMuted, tween(MotionTokens.standard))
-                Column(
-                    Modifier.size(TabWidth, 52.dp).clip(CircleShape).selectable(tab.selected, role = Role.Tab, onClick = tab.onSelect),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Glyph(tab.icon, tone, 20)
-                    Text(tab.label, style = MaterialTheme.typography.labelSmall, color = tone, maxLines = 1)
+        tabs.forEach { tab ->
+            val width by animateDpAsState(if (tab.selected) 128.dp else 60.dp, spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = 0.8f))
+            val fill by animateColorAsState(if (tab.selected) palette.primaryFill else Color.Transparent, tween(MotionTokens.standard))
+            val tone by animateColorAsState(if (tab.selected) palette.onPrimary else palette.inkMuted, tween(MotionTokens.standard))
+            Row(
+                Modifier.width(width).height(52.dp).clip(CircleShape).background(fill).selectable(tab.selected, role = Role.Tab, onClick = tab.onSelect),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Glyph(tab.icon, tone, 22, if (tab.selected) null else tab.label)
+                AnimatedVisibility(tab.selected, enter = fadeIn() + expandHorizontally(), exit = fadeOut() + shrinkHorizontally()) {
+                    Text(tab.label, Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.labelLarge, color = tone, maxLines = 1)
                 }
             }
         }
@@ -211,11 +222,11 @@ fun ago(ms: Long): String {
     val minutes = (System.currentTimeMillis() - ms).coerceAtLeast(0) / 60_000
     return when {
         minutes < 1 -> "just now"
-        minutes < 60 -> "$minutes min ago"
-        minutes < 1440 -> "${minutes / 60} h ago"
+        minutes < 60 -> "${minutes}m ago"
+        minutes < 1440 -> "${minutes / 60}h ago"
         minutes < 2880 -> "yesterday"
-        minutes < 43_200 -> "${minutes / 1440} days ago"
-        else -> "${minutes / 43_200} months ago"
+        minutes < 43_200 -> "${minutes / 1440}d ago"
+        else -> "${minutes / 43_200}mo ago"
     }
 }
 

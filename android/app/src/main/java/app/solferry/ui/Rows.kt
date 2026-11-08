@@ -64,11 +64,14 @@ private fun RowBody(onClick: (() -> Unit)?, highlighted: Boolean = false, conten
 }
 
 @Composable
-private fun Detail(label: String, trailing: @Composable () -> Unit) = Row(
+private fun Detail(label: String, moment: String? = null, trailing: @Composable () -> Unit) = Row(
     Modifier.fillMaxWidth().height(46.dp).padding(start = 58.dp, end = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(4.dp),
 ) {
-    Muted(label, Modifier.weight(1f))
+    Muted(label)
+    moment?.let { Muted(it, color = LocalPalette.current.inkMuted.copy(alpha = 0.6f)) }
+    Spacer(Modifier.weight(1f))
     trailing()
 }
 
@@ -86,11 +89,11 @@ private fun DeviceRow(
     var forgetting by remember { mutableStateOf(false) }
     Column {
         RowBody({ onPick(device) }, highlighted = open) {
-            DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform))
+            DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), near != null || online == true)
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 when {
-                    near != null || online == true -> StatusLine("Online", palette.success)
+                    near != null || online == true -> StatusLine("Online", palette.successFill)
                     online == null -> StatusLine("Paired")
                     else -> StatusLine("Offline", palette.inkMuted.copy(alpha = 0.5f))
                 }
@@ -115,7 +118,7 @@ private fun DeviceRow(
                 Detail("Receive without asking") {
                     Toggle(device.autoAccept, { engine.bridge.setAutoAccept(device.identity.id, it) }, "Receive without asking")
                 }
-                Detail(lastTransfer?.let { "Last transfer ${ago(it)}" } ?: "Paired ${ago(device.pairedAtMs.toLong())}") {
+                Detail(if (lastTransfer != null) "Last transfer" else "Paired", ago(lastTransfer ?: device.pairedAtMs.toLong())) {
                     Button({ forgetting = true }, label = "Forget", icon = R.drawable.ic_delete, kind = ButtonKind.Danger, size = ButtonSize.Sm)
                 }
             }
@@ -194,7 +197,7 @@ private fun TransferRow(transfer: Transfer, engine: Engine) {
                         Caption(if (reconnecting) "reconnecting" else "${bytes(transfer.bytesPerSecond.toLong())}/s")
                     }
                 }
-                Phase.Done -> Caption(bytes(transfer.total), color = palette.success)
+                Phase.Done -> Caption(bytes(transfer.total), color = palette.successFill)
                 Phase.Failed -> Muted(transfer.problem?.next.orEmpty(), color = palette.danger)
             }
         }

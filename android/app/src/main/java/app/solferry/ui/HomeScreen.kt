@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -40,7 +39,7 @@ fun HomeScreen(
     onPickFiles: (PairedDevice?) -> Unit,
     onUseCode: () -> Unit,
 ) = Column(Modifier.fillMaxSize()) {
-    HomeBar(state.me?.name.orEmpty())
+    HomeBar()
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = tabClearance()),
@@ -65,19 +64,16 @@ fun HomeScreen(
     }
 }
 
-/** The brand on the left and this device's name in the middle of the bar. */
 @Composable
-private fun HomeBar(name: String) {
+private fun HomeBar() {
     val palette = LocalPalette.current
-    Box(Modifier.fillMaxWidth().statusBarsPadding().height(52.dp).padding(horizontal = SpaceTokens.lg.dp)) {
-        Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Glyph(R.drawable.ic_mark, palette.brand, 20)
-            Text("Solferry", style = MaterialTheme.typography.titleMedium)
-        }
-        Text(
-            name, Modifier.align(Alignment.Center).padding(horizontal = 104.dp),
-            style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis,
-        )
+    Row(
+        Modifier.fillMaxWidth().statusBarsPadding().height(52.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+    ) {
+        Glyph(R.drawable.ic_mark, palette.brand, 20)
+        Text("Solferry", style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -85,7 +81,7 @@ private fun HomeBar(name: String) {
 private fun SendZone(onClick: () -> Unit) {
     val palette = LocalPalette.current
     Frame {
-        Well(Modifier.height(168.dp), padding = 14.dp, onClick = onClick) {
+        Well(Modifier.height(148.dp), padding = 14.dp, onClick = onClick) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.width(140.dp).height(64.dp), contentAlignment = Alignment.Center) {
                     FanTile(R.drawable.ic_type_image, (-46).dp)
