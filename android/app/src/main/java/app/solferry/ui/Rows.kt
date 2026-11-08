@@ -129,7 +129,7 @@ private fun DeviceRow(
     }
     if (forgetting) {
         ConfirmDialog(
-            "Forget ${device.name}?", "It won't send or receive until you pair again.", "Forget",
+            "Forget ${device.name}?", "It goes back to being an unpaired device until you pair again.", "Forget",
             onConfirm = { forgetting = false; engine.bridge.forget(device.identity.id) },
             onDismiss = { forgetting = false },
         )

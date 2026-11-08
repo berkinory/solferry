@@ -28,7 +28,7 @@ fn copy(dialog: &Dialog) -> Copy {
     match dialog {
         Dialog::Forget { name, .. } => Copy {
             title: format!("Forget {name}?"),
-            body: "It won't send or receive until you pair again.",
+            body: "It goes back to being an unpaired device until you pair again.",
             action: "Forget",
         },
         Dialog::Block { name, .. } => Copy {
