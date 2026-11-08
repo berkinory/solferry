@@ -1,0 +1,232 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5F0000000000000000000001 /* SolferryTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0000000000000000000011 /* SolferryTokens.swift */; };
+		5F0000000000000000000002 /* solferry_ffi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F0000000000000000000012 /* solferry_ffi.swift */; };
+		5F0000000000000000000003 /* SolferryFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F0000000000000000000013 /* SolferryFFI.xcframework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		5F0000000000000000000011 /* SolferryTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SolferryTokens.swift; path = ../design/generated/SolferryTokens.swift; sourceTree = SOURCE_ROOT; };
+		5F0000000000000000000012 /* solferry_ffi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = solferry_ffi.swift; path = Generated/solferry_ffi.swift; sourceTree = SOURCE_ROOT; };
+		5F0000000000000000000013 /* SolferryFFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SolferryFFI.xcframework; path = Generated/SolferryFFI.xcframework; sourceTree = SOURCE_ROOT; };
+		5F0000000000000000000014 /* Solferry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Solferry.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F0000000000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5F0000000000000000000021 /* Solferry */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Solferry; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5F0000000000000000000031 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F0000000000000000000003 /* SolferryFFI.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5F0000000000000000000041 = {
+			isa = PBXGroup;
+			children = (
+				5F0000000000000000000021 /* Solferry */,
+				5F0000000000000000000015 /* Info.plist */,
+				5F0000000000000000000011 /* SolferryTokens.swift */,
+				5F0000000000000000000012 /* solferry_ffi.swift */,
+				5F0000000000000000000013 /* SolferryFFI.xcframework */,
+				5F0000000000000000000042 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5F0000000000000000000042 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5F0000000000000000000014 /* Solferry.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5F0000000000000000000051 /* Solferry */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5F0000000000000000000072 /* Build configuration list for PBXNativeTarget "Solferry" */;
+			buildPhases = (
+				5F0000000000000000000061 /* Sources */,
+				5F0000000000000000000031 /* Frameworks */,
+				5F0000000000000000000062 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5F0000000000000000000021 /* Solferry */,
+			);
+			name = Solferry;
+			productName = Solferry;
+			productReference = 5F0000000000000000000014 /* Solferry.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5F0000000000000000000052 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+			};
+			buildConfigurationList = 5F0000000000000000000071 /* Build configuration list for PBXProject "Solferry" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5F0000000000000000000041;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5F0000000000000000000042 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5F0000000000000000000051 /* Solferry */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5F0000000000000000000062 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5F0000000000000000000061 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F0000000000000000000001 /* SolferryTokens.swift in Sources */,
+				5F0000000000000000000002 /* solferry_ffi.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5F0000000000000000000081 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5F0000000000000000000082 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5F0000000000000000000083 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "$(inherited) -lresolv -framework SystemConfiguration -framework Security";
+				PRODUCT_BUNDLE_IDENTIFIER = app.solferry;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5F0000000000000000000084 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = "$(inherited) -lresolv -framework SystemConfiguration -framework Security";
+				PRODUCT_BUNDLE_IDENTIFIER = app.solferry;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5F0000000000000000000071 /* Build configuration list for PBXProject "Solferry" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F0000000000000000000081 /* Debug */,
+				5F0000000000000000000082 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5F0000000000000000000072 /* Build configuration list for PBXNativeTarget "Solferry" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F0000000000000000000083 /* Debug */,
+				5F0000000000000000000084 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5F0000000000000000000052 /* Project object */;
+}
