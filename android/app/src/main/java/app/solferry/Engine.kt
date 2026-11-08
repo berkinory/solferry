@@ -24,7 +24,8 @@ import kotlin.concurrent.thread
 
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
 class Engine(private val context: Context) : Listener {
-    private val mutable = MutableStateFlow(AppState())
+    private val settings = context.getSharedPreferences("solferry", Context.MODE_PRIVATE)
+    private val mutable = MutableStateFlow(AppState(standby = settings.getBoolean(STANDBY, false)))
     val state: StateFlow<AppState> = mutable
     private val main = Handler(Looper.getMainLooper())
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
@@ -63,7 +64,16 @@ class Engine(private val context: Context) : Listener {
             }
             else -> {}
         }
-        Keepalive.sync(context, state.value.transfers)
+        Keepalive.sync(context, state.value.transfers, state.value.standby)
+    }
+
+    /** Call from the foreground: Android refuses to start the service from anywhere else. */
+    fun resumeStandby() = StandbyService.sync(context, state.value.standby)
+
+    fun setStandby(on: Boolean) {
+        settings.edit().putBoolean(STANDBY, on).apply()
+        mutable.update { it.copy(standby = on) }
+        StandbyService.sync(context, on)
     }
 
     private fun saveFailed(name: String) = mutable.update {
@@ -145,6 +155,7 @@ class Engine(private val context: Context) : Listener {
             ?: "${Build.MANUFACTURER} ${Build.MODEL}"
 
     private companion object {
+        const val STANDBY = "standby"
         val emptyClipboard = uniffi.solferry_ffi.Problem("Your clipboard has no text", "Copy some text, then send it again.")
     }
 }

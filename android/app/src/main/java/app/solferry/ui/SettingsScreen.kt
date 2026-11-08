@@ -76,6 +76,14 @@ fun SettingsScreen(state: AppState, engine: Engine, onBack: () -> Unit) = Page("
             Muted(reaches.first { it.first == current }.third)
         }
     }
+    Card(R.drawable.ic_download, "Receive in the background") {
+        PaddedWell {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Muted("Stay reachable while Solferry is closed. Shows a notification and uses more battery.", Modifier.weight(1f))
+                Toggle(state.standby, { engine.setStandby(it) }, "Receive in the background")
+            }
+        }
+    }
     RelayCard(state, engine)
     if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {

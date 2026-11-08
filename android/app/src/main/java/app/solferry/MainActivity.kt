@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         shared = sharedUris(intent)
         val engine = (application as SolferryApp).engine
+        engine.resumeStandby()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {

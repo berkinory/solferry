@@ -16,12 +16,14 @@ import androidx.core.content.ContextCompat
 object Notifier {
     const val ASKS = "asks"
     const val TRANSFERS = "transfers"
+    const val STANDBY = "standby"
     private var next = 100
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(ASKS, "Requests and arrivals", NotificationManager.IMPORTANCE_HIGH))
         manager.createNotificationChannel(NotificationChannel(TRANSFERS, "Transfers in progress", NotificationManager.IMPORTANCE_LOW))
+        manager.createNotificationChannel(NotificationChannel(STANDBY, "Receiving in the background", NotificationManager.IMPORTANCE_MIN))
     }
 
     fun opener(context: Context): PendingIntent = PendingIntent.getActivity(
@@ -40,6 +42,16 @@ object Notifier {
             .setContentIntent(opener(context))
             .build()
 
+    fun standby(context: Context): Notification =
+        NotificationCompat.Builder(context, STANDBY)
+            .setSmallIcon(R.drawable.ic_launcher_mark)
+            .setContentTitle("Ready to receive")
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setShowWhen(false)
+            .setContentIntent(opener(context))
+            .build()
+
     fun offer(context: Context, name: String) = show(context, "Incoming files", "$name wants to send you files")
 
     fun pairing(context: Context, name: String) = show(context, "Pairing request", "$name wants to pair with this device")
@@ -50,10 +62,16 @@ object Notifier {
     fun received(context: Context, label: String, name: String) =
         show(context, "Files received", "$label from $name, in Downloads/Solferry")
 
+    private fun allowed(context: Context) =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    /** Swaps what an ongoing notification says, for a service that is already running. */
+    fun replace(context: Context, id: Int, notification: Notification) {
+        if (allowed(context)) NotificationManagerCompat.from(context).notify(id, notification)
+    }
+
     private fun show(context: Context, title: String, body: String) {
-        val allowed = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED
-        if (!allowed) return
+        if (!allowed(context)) return
         val notification = NotificationCompat.Builder(context, ASKS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
             .setContentTitle(title)

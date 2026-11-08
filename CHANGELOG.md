@@ -12,6 +12,7 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Per-device approval and blocking
 - Pairing nearby devices by comparing a code
 - Tailscale devices listed automatically
+- Android option to keep receiving while the app is closed
 - `solferry relay check` and a one-command relay installer
 - Live route updates during a transfer
 - `solferry` command with JSON event output

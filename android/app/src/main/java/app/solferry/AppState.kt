@@ -56,6 +56,7 @@ data class AppState(
     val joining: Boolean = false,
     val texts: List<ReceivedText> = emptyList(),
     val problems: List<Pair<String, Problem>> = emptyList(),
+    val standby: Boolean = false,
     val pairedCount: Int = 0,
 ) {
     val strangers get() = nearby.filter { !it.known }
