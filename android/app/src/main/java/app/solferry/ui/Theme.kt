@@ -1,34 +1,47 @@
 package app.solferry.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import app.solferry.R
 import app.solferry.design.DarkColors
 import app.solferry.design.IdentityColors
 import app.solferry.design.LightColors
-import app.solferry.design.RadiusTokens
+import app.solferry.design.TypeTokens
 import uniffi.solferry_ffi.TransferRoute
 
-/** The design tokens the app reads directly, on top of Material's color scheme. */
+/** The design tokens the app reads directly. */
 data class Palette(
+    val night: Boolean,
+    val page: Color,
     val well: Color,
+    val raised: Color,
     val control: Color,
+    val line: Color,
     val ink: Color,
     val inkMuted: Color,
     val primary: Color,
     val primaryFill: Color,
+    val primaryHover: Color,
+    val primaryBorder: Color,
+    val primaryDeep: Color,
     val onPrimary: Color,
     val success: Color,
     val warning: Color,
     val danger: Color,
+    val dangerFill: Color,
     val dangerWell: Color,
     val routes: Map<TransferRoute, Color>,
     val identity: List<Color>,
@@ -36,7 +49,8 @@ data class Palette(
 
 private val light = with(LightColors) {
     Palette(
-        well, control, ink, inkMuted, primary, primaryFill, onPrimary, success, warning, danger, dangerWell,
+        false, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
+        primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,
@@ -47,7 +61,8 @@ private val light = with(LightColors) {
 
 private val dark = with(DarkColors) {
     Palette(
-        well, control, ink, inkMuted, primary, primaryFill, onPrimary, success, warning, danger, dangerWell,
+        true, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
+        primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,
@@ -58,33 +73,45 @@ private val dark = with(DarkColors) {
 
 val LocalPalette = staticCompositionLocalOf { light }
 
-private fun corner(radius: Number) = RoundedCornerShape(radius.toFloat().dp)
+private val sans = FontFamily(
+    Font(R.font.inter_tight_regular, FontWeight.Normal),
+    Font(R.font.inter_tight_medium, FontWeight.Medium),
+)
+
+val MonoFamily = FontFamily(
+    Font(R.font.geist_mono_regular, FontWeight.Normal),
+    Font(R.font.geist_mono_medium, FontWeight.Medium),
+)
+
+/** A phone reads one step larger than the desktop's dense scale. */
+private const val PHONE_STEP = 1
+
+private fun style(size: Int, weight: FontWeight = FontWeight.Normal) =
+    TextStyle(fontFamily = sans, fontSize = size.sp, lineHeight = (size * 1.35f).sp, fontWeight = weight, letterSpacing = 0.sp)
+
+private val type = Typography(
+    titleLarge = style(TypeTokens.title, FontWeight.Medium),
+    titleMedium = style(TypeTokens.body + PHONE_STEP, FontWeight.Medium),
+    bodyLarge = style(TypeTokens.body + PHONE_STEP),
+    bodyMedium = style(TypeTokens.label + PHONE_STEP),
+    bodySmall = style(TypeTokens.caption),
+    labelLarge = style(TypeTokens.body, FontWeight.Medium),
+    labelMedium = style(TypeTokens.label, FontWeight.Medium),
+)
 
 @Composable
 fun SolferryTheme(content: @Composable () -> Unit) {
     val night = isSystemInDarkTheme()
-    val tokens = if (night) DarkColors.run {
-        darkColorScheme(
+    val palette = if (night) dark else light
+    val scheme = with(palette) {
+        (if (night) darkColorScheme() else lightColorScheme()).copy(
             primary = primaryFill, onPrimary = onPrimary, background = page, onBackground = ink,
-            surface = page, onSurface = ink, onSurfaceVariant = inkMuted, surfaceContainerLowest = well,
-            surfaceContainerLow = well, surfaceContainer = raised, surfaceContainerHigh = raised,
-            surfaceContainerHighest = control, secondaryContainer = control, onSecondaryContainer = ink,
-            outline = line, outlineVariant = line, error = danger,
-        )
-    } else LightColors.run {
-        lightColorScheme(
-            primary = primaryFill, onPrimary = onPrimary, background = page, onBackground = ink,
-            surface = page, onSurface = ink, onSurfaceVariant = inkMuted, surfaceContainerLowest = page,
-            surfaceContainerLow = well, surfaceContainer = well, surfaceContainerHigh = raised,
-            surfaceContainerHighest = control, secondaryContainer = control, onSecondaryContainer = ink,
-            outline = line, outlineVariant = line, error = danger,
+            surface = page, onSurface = ink, onSurfaceVariant = inkMuted, outline = line, error = danger,
         )
     }
-    val shapes = Shapes(
-        extraSmall = corner(RadiusTokens.floor), small = corner(RadiusTokens.control),
-        medium = corner(RadiusTokens.field), large = corner(RadiusTokens.well), extraLarge = corner(RadiusTokens.card),
-    )
-    CompositionLocalProvider(LocalPalette provides if (night) dark else light) {
-        MaterialTheme(colorScheme = tokens, shapes = shapes, content = content)
+    CompositionLocalProvider(LocalPalette provides palette) {
+        MaterialTheme(colorScheme = scheme, typography = type) {
+            Surface(color = palette.page, contentColor = palette.ink, content = content)
+        }
     }
 }

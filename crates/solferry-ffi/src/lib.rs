@@ -162,6 +162,20 @@ impl Solferry {
         );
     }
 
+    pub fn accept_always(&self, key: u64) {
+        let offer = lock(&self.shelf.offers).remove(&key);
+        self.with_node(
+            move |node, listener, _| async move {
+                if let Some(offer) = offer {
+                    let destination = node.config().download_dir.clone();
+                    let _ = offer.accept_always(&node, destination);
+                    listener.update(devices(&node));
+                }
+            },
+            None,
+        );
+    }
+
     pub fn block_offer(&self, key: u64) {
         let offer = lock(&self.shelf.offers).remove(&key);
         self.with_node(
@@ -176,20 +190,20 @@ impl Solferry {
         );
     }
 
-    pub fn answer_pairing(&self, key: u64, accept: bool, auto_accept: bool) {
+    pub fn answer_pairing(&self, key: u64, accept: bool) {
         if let Some(request) = lock(&self.shelf.pairings).remove(&key) {
-            if accept { request.accept(auto_accept) } else { request.decline() }
+            if accept { request.accept() } else { request.decline() }
         }
     }
 
-    pub fn pair_nearby(&self, peer: String, auto_accept: bool) {
+    pub fn pair_nearby(&self, peer: String) {
         self.with_node(
             move |node, listener, target| async move {
                 let Some(target) = target else { return };
                 let shown = listener.clone();
                 let show =
                     move |code: &str| shown.update(Update::PairingCode { code: code.to_owned() });
-                match node.pair_nearby(target, auto_accept, show).await {
+                match node.pair_nearby(target, show).await {
                     Ok(device) => listener.update(Update::Paired { device: (&device).into() }),
                     Err(error) => {
                         listener.update(Update::PairingFailed { problem: (&error).into() });
@@ -201,27 +215,37 @@ impl Solferry {
         );
     }
 
-    pub fn invite(&self, auto_accept: bool) {
+    pub fn invite(&self) {
         self.with_node(
             move |node, listener, _| async move {
                 node.online_within(std::time::Duration::from_secs(5)).await;
-                listener
-                    .update(Update::Invite { code: node.invite(auto_accept).code().to_owned() });
+                listener.update(Update::Invite { code: node.invite().code().to_owned() });
             },
             None,
         );
     }
 
-    pub fn join(&self, code: String, auto_accept: bool) {
+    pub fn join(&self, code: String) {
         self.with_node(
             move |node, listener, _| async move {
-                match node.join(&code, auto_accept).await {
+                match node.join(&code).await {
                     Ok(device) => listener.update(Update::Paired { device: (&device).into() }),
                     Err(error) => {
                         listener.update(Update::PairingFailed { problem: (&error).into() });
                     }
                 }
                 listener.update(devices(&node));
+            },
+            None,
+        );
+    }
+
+    /// Asks every paired device whether it is there. Apps call this only while on screen.
+    pub fn check_presence(&self) {
+        self.with_node(
+            move |node, listener, _| async move {
+                let ids = node.reachable().await.iter().map(device_id).collect();
+                listener.update(Update::Reachable { ids });
             },
             None,
         );
