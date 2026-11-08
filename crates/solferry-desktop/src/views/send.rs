@@ -1,19 +1,26 @@
 use std::path::Path;
+use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    AnyElement, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
-    StatefulInteractiveElement, Styled, div, px,
+    Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
+    ease_out_quint, percentage, point, px,
 };
 
-use super::button::Button;
 use super::devices::{self, Row};
-use super::main_view::MainView;
+use super::main_view::{MainView, SendPhase};
 use super::{radar, ui};
-use crate::assets::{Glyph, icon};
+use crate::assets::{Glyph, file_glyph, icon};
 use crate::format;
 use crate::service::Target;
-use crate::tokens::{RADIUS_CONTROL, SPACE_SM, SPACE_XS};
+use crate::theme::{color, palette};
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
+
+const BUTTON_WIDTH: f32 = 210.0;
+const SENT_WIDTH: f32 = 148.0;
+const DOTS: usize = 5;
+const FLOW: Duration = Duration::from_millis(1100);
 
 fn file_name(path: &Path) -> String {
     path.file_name()
@@ -21,27 +28,44 @@ fn file_name(path: &Path) -> String {
 }
 
 fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement {
-    let glyph = if path.is_dir() { Glyph::Folder } else { Glyph::File };
+    let name = file_name(path);
+    let glyph = if path.is_dir() { Glyph::Folder } else { file_glyph(&name) };
     let size = std::fs::metadata(path)
         .ok()
         .filter(std::fs::Metadata::is_file)
         .map(|meta| format::bytes(meta.len()));
+    let danger = color(palette(cx).danger);
+    let step = index as f32;
     div()
         .flex()
         .items_center()
         .gap(px(SPACE_SM))
-        .pl(px(SPACE_SM))
-        .h(px(32.))
-        .child(icon(glyph, 16.).text_color(cx.theme().muted_foreground))
-        .child(ui::text(file_name(path)).flex_1().min_w_0().truncate())
-        .children(size.map(|size| ui::mono(size, cx)))
+        .h(px(36.))
+        .px(px(SPACE_SM))
+        .child(icon(glyph, 20.).text_color(cx.theme().muted_foreground))
+        .child(ui::text(name).flex_1().min_w_0().truncate())
+        .children(size.map(|size| ui::muted(size, cx)))
         .child(
-            Button::new(SharedString::from(format!("unpick-{index}")))
-                .ghost()
-                .xs()
-                .icon(Glyph::Cancel)
-                .tooltip("Remove")
-                .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx))),
+            div()
+                .id(SharedString::from(format!("unpick-{index}")))
+                .flex()
+                .items_center()
+                .justify_center()
+                .size(px(28.))
+                .rounded(px(RADIUS_CONTROL))
+                .cursor_pointer()
+                .hover(|style| style.opacity(0.7))
+                .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx)))
+                .child(icon(Glyph::Delete, 16.).text_color(danger)),
+        )
+        .with_animation(
+            SharedString::from(format!("file-in-{index}")),
+            Animation::new(Duration::from_millis(320 + 45 * index as u64))
+                .with_easing(ease_out_quint()),
+            move |row, delta| {
+                let shown = ((delta * (1. + step * 0.14)) - step * 0.14).clamp(0., 1.);
+                row.opacity(shown).ml(px((1. - shown) * -14.))
+            },
         )
         .into_any_element()
 }
@@ -79,46 +103,125 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
     body.into_any_element()
 }
 
+/// Dots running from the files down to the devices, lit once there is somewhere to go.
+fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
+    let tone = if live { color(palette(cx).primary) } else { cx.theme().muted_foreground };
+    let dots: Vec<_> = (0..DOTS)
+        .map(|index| {
+            let offset = index as f32 / DOTS as f32;
+            div()
+                .size(px(5.))
+                .rounded_full()
+                .bg(tone)
+                .with_animation(
+                    SharedString::from(format!("flow-{index}")),
+                    Animation::new(FLOW).repeat(),
+                    move |dot, delta| {
+                        let wave = (delta - offset).rem_euclid(1.);
+                        dot.opacity(0.15 + 0.85 * (1. - wave).powi(2))
+                    },
+                )
+                .into_any_element()
+        })
+        .collect();
+    div()
+        .flex()
+        .flex_col()
+        .items_center()
+        .gap(px(5.))
+        .py(px(SPACE_SM))
+        .children(dots)
+        .into_any_element()
+}
+
+fn cursor_at(delta: f32) -> Transformation {
+    Transformation::rotate(percentage(0.25))
+        .with_translation(point(px(delta * 34.), px(delta * -34.)))
+}
+
+fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+    let palette = palette(cx);
+    let chosen = view.selected.len();
+    let phase = view.send_phase;
+    let label = match (phase, chosen) {
+        (SendPhase::Sent, _) => "Sent".to_owned(),
+        (SendPhase::Launching, _) => "Sending".to_owned(),
+        (_, 0 | 1) => "Send".to_owned(),
+        (_, many) => format!("Send to {many} devices"),
+    };
+    let on_primary = color(palette.on_primary);
+    let symbol: AnyElement = match phase {
+        SendPhase::Idle => icon(Glyph::Cursor, 20.)
+            .text_color(on_primary)
+            .with_transformation(cursor_at(0.))
+            .into_any_element(),
+        SendPhase::Launching => icon(Glyph::Cursor, 20.)
+            .text_color(on_primary)
+            .with_animation(
+                "cursor-launch",
+                Animation::new(Duration::from_millis(380)),
+                |glyph, delta| glyph.with_transformation(cursor_at(delta * delta)),
+            )
+            .into_any_element(),
+        SendPhase::Sent => icon(Glyph::Check, 20.).text_color(on_primary).into_any_element(),
+    };
+    let fill =
+        if phase == SendPhase::Sent { color(palette.success) } else { color(palette.primary_fill) };
+    let button = div()
+        .id("send-selected")
+        .flex()
+        .items_center()
+        .justify_center()
+        .gap(px(SPACE_SM))
+        .w(px(BUTTON_WIDTH))
+        .h(px(54.))
+        .rounded(px(RADIUS_FIELD))
+        .bg(fill)
+        .overflow_hidden()
+        .text_color(on_primary)
+        .font_weight(FontWeight::MEDIUM)
+        .child(symbol)
+        .child(label);
+    let button: AnyElement = match phase {
+        SendPhase::Sent => button
+            .with_animation(
+                "send-morph",
+                Animation::new(Duration::from_millis(300)).with_easing(ease_out_quint()),
+                |morph, delta| morph.w(px(BUTTON_WIDTH + (SENT_WIDTH - BUTTON_WIDTH) * delta)),
+            )
+            .into_any_element(),
+        _ if chosen == 0 => button.opacity(0.5).into_any_element(),
+        SendPhase::Idle => button
+            .cursor_pointer()
+            .hover(|style| style.opacity(0.92))
+            .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
+            .into_any_element(),
+        SendPhase::Launching => button.into_any_element(),
+    };
+    div().flex().justify_center().pt(px(SPACE_LG)).child(button).into_any_element()
+}
+
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = devices::rows(view.state.read(cx));
     let files: Vec<_> =
         view.pending.iter().enumerate().map(|(index, path)| file_row(index, path, cx)).collect();
-    let add = Button::new("add-more")
-        .ghost()
-        .xs()
-        .icon(Glyph::Add)
-        .label("Add")
-        .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx)))
-        .into_any_element();
     let targets: Vec<_> = mine.iter().chain(&others).map(|row| target_row(row, view, cx)).collect();
     let well = if targets.is_empty() {
         ui::well(cx).child(radar::scanning(cx))
     } else {
         ui::well(cx).children(targets)
     };
-    let chosen = view.selected.len();
-    let action = if chosen == 0 {
-        ui::muted("Choose who gets these", cx).py(px(SPACE_SM)).text_center().into_any_element()
-    } else {
-        let label =
-            if chosen == 1 { "Send".to_owned() } else { format!("Send to {chosen} devices") };
-        Button::new("send-selected")
-            .primary()
-            .grow()
-            .icon(Glyph::Send)
-            .label(label)
-            .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
-            .into_any_element()
-    };
     div()
         .flex()
         .flex_col()
-        .gap(px(SPACE_SM))
-        .child(
-            ui::card(Glyph::File, "Files", Some(add), cx)
-                .child(ui::well(cx).gap(px(0.)).children(files)),
+        .child(div().flex().flex_col().children(files))
+        .child(connector(!view.selected.is_empty(), cx))
+        .child(ui::frame(cx).child(well))
+        .child(send_button(view, cx))
+        .with_animation(
+            "send-rise",
+            Animation::new(Duration::from_millis(280)).with_easing(ease_out_quint()),
+            |page, delta| page.opacity(delta).mt(px((1. - delta) * 18.)),
         )
-        .child(ui::card(Glyph::Devices, "Send to", None, cx).child(well))
-        .child(div().flex().flex_col().pt(px(SPACE_XS)).child(action))
         .into_any_element()
 }

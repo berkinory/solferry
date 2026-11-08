@@ -6,7 +6,7 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Theme, TitleBar};
 use gpui_kit::{
-    AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
+    AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
     InteractiveElement, IntoElement, ParentElement, PathPromptOptions, Render, Styled, Window, div,
     px, svg,
 };
@@ -15,7 +15,7 @@ use solferry_core::TransferId;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
-use super::{history, home, pairing, relays, send, settings};
+use super::{history, home, nav, pairing, relays, send, settings};
 use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
@@ -24,7 +24,16 @@ use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
+const LAUNCH_FOR: Duration = Duration::from_millis(420);
+const SENT_FOR: Duration = Duration::from_millis(1000);
 const CONTENT_WIDTH: f32 = 560.0;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum SendPhase {
+    Idle,
+    Launching,
+    Sent,
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Page {
@@ -42,6 +51,9 @@ pub struct MainView {
     pub selected: HashSet<EndpointId>,
     pub expanded: Option<EndpointId>,
     pub dialog: Option<Dialog>,
+    pub send_phase: SendPhase,
+    pub nav_from: Page,
+    pub nav_moves: usize,
     pub copied: bool,
     pub shared_with: Option<EndpointId>,
     targets: HashMap<EndpointId, Target>,
@@ -100,6 +112,9 @@ impl MainView {
             selected: HashSet::new(),
             expanded: None,
             dialog: None,
+            send_phase: SendPhase::Idle,
+            nav_from: Page::Home,
+            nav_moves: 0,
             copied: false,
             shared_with: None,
             targets: HashMap::new(),
@@ -115,6 +130,10 @@ impl MainView {
     }
 
     pub fn open_page(&mut self, page: Page, window: &mut Window, cx: &mut Context<Self>) {
+        if page != self.page {
+            self.nav_from = self.page;
+            self.nav_moves += 1;
+        }
         self.page = page;
         if page == Page::Settings {
             settings::load_inputs(self, window, cx);
@@ -176,11 +195,29 @@ impl MainView {
         cx.notify();
     }
 
+    /// Hands the files over at once, then lets the button finish its animation before leaving.
     pub fn send_selected(&mut self, cx: &mut Context<Self>) {
+        if self.send_phase != SendPhase::Idle {
+            return;
+        }
         let chosen: Vec<EndpointId> = self.selected.iter().copied().collect();
         let targets = chosen.iter().filter_map(|id| self.targets.remove(id)).collect();
-        let paths = std::mem::take(&mut self.pending);
-        self.send_now(targets, paths, cx);
+        Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
+        self.send_phase = SendPhase::Launching;
+        cx.notify();
+        cx.spawn(async move |view, cx| {
+            cx.background_executor().timer(LAUNCH_FOR).await;
+            let _ = view.update(cx, |view, cx| {
+                view.send_phase = SendPhase::Sent;
+                cx.notify();
+            });
+            cx.background_executor().timer(SENT_FOR).await;
+            let _ = view.update(cx, |view, cx| {
+                view.send_phase = SendPhase::Idle;
+                view.clear_pending(cx);
+            });
+        })
+        .detach();
     }
 
     pub fn clear_pending(&mut self, cx: &mut Context<Self>) {
@@ -307,6 +344,8 @@ impl Focusable for MainView {
 impl Render for MainView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
+        let pushed = matches!(self.page, Page::Pair | Page::Send);
+        let tabs = (!pushed).then(|| nav::render(self, cx));
         let body = match self.page {
             Page::Home => home::render(self, cx),
             Page::History => history::render(self, cx),
@@ -337,8 +376,8 @@ impl Render for MainView {
             .on_drop(cx.listener(|view, paths: &ExternalPaths, _, cx| {
                 view.stage(paths.paths().to_vec(), cx);
             }))
-            .child(TitleBar::new().child(brand(cx)))
-            .child(home::toolbar(self, cx))
+            .child(TitleBar::new().child(brand(cx)).child(device_name(self, cx)))
+            .children(pushed.then(|| home::toolbar(self, cx)))
             .child(
                 div().flex_1().min_h_0().child(
                     div()
@@ -346,12 +385,25 @@ impl Render for MainView {
                         .size_full()
                         .p(px(SPACE_SM))
                         .pt(px(4.))
+                        .pb(px(if pushed { SPACE_SM } else { nav::CLEARANCE }))
                         .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
                         .overflow_y_scrollbar(),
                 ),
             )
+            .children(tabs)
             .children(overlay)
     }
+}
+
+fn device_name(view: &MainView, cx: &Context<MainView>) -> AnyElement {
+    let name =
+        view.state.read(cx).config.as_ref().map(|config| config.name.clone()).unwrap_or_default();
+    div()
+        .pr(px(SPACE_SM))
+        .text_size(px(TYPE_LABEL))
+        .text_color(cx.theme().muted_foreground)
+        .child(name)
+        .into_any_element()
 }
 
 fn brand(cx: &Context<MainView>) -> impl IntoElement {

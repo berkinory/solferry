@@ -5,6 +5,7 @@ mod history;
 mod home;
 pub mod keys;
 mod main_view;
+mod nav;
 mod offers;
 mod pairing;
 mod radar;

@@ -9,8 +9,8 @@ use solferry_core::Platform;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, identity_color, palette};
 use crate::tokens::{
-    FONT_MONO, RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY,
-    TYPE_CAPTION, TYPE_LABEL,
+    RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY, TYPE_CAPTION,
+    TYPE_LABEL,
 };
 
 /// One line and 3px of padding, so what it holds sits exactly 4px inside it.
@@ -93,7 +93,7 @@ pub fn titled(heading: Div, aside: Option<AnyElement>, cx: &App) -> Div {
 }
 
 pub fn count(value: usize, cx: &App) -> AnyElement {
-    mono(value.to_string(), cx).pr(px(SPACE_SM)).into_any_element()
+    caption(value.to_string(), cx).pr(px(SPACE_SM)).into_any_element()
 }
 
 pub fn padded_well(cx: &App) -> Div {
@@ -116,12 +116,8 @@ pub fn muted(value: impl Into<SharedString>, cx: &App) -> Div {
     div().text_size(px(TYPE_LABEL)).text_color(cx.theme().muted_foreground).child(value.into())
 }
 
-pub fn mono(value: impl Into<SharedString>, cx: &App) -> Div {
-    div()
-        .font_family(FONT_MONO)
-        .text_size(px(TYPE_CAPTION))
-        .text_color(cx.theme().muted_foreground)
-        .child(value.into())
+pub fn caption(value: impl Into<SharedString>, cx: &App) -> Div {
+    div().text_size(px(TYPE_CAPTION)).text_color(cx.theme().muted_foreground).child(value.into())
 }
 
 pub fn tile(glyph: Glyph, cx: &App) -> Div {

@@ -90,8 +90,8 @@ fn numbers(transfer: &Transfer, cx: &mut Context<MainView>) -> Option<AnyElement
             .flex()
             .justify_between()
             .gap(px(SPACE_SM))
-            .child(ui::mono(format!("{done} / {total}"), cx))
-            .child(ui::mono(right, cx))
+            .child(ui::caption(format!("{done} / {total}"), cx))
+            .child(ui::caption(right, cx))
             .into_any_element(),
     )
 }

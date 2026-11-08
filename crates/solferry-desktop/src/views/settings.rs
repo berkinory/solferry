@@ -185,7 +185,7 @@ fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
         .gap(px(10.))
         .p(px(7.))
         .child(ui::tile(Glyph::Blocked, cx))
-        .child(ui::mono(id.fmt_short().to_string(), cx).flex_1())
+        .child(ui::caption(id.fmt_short().to_string(), cx).flex_1())
         .child(
             Button::new(SharedString::from(format!("unblock-{id}")))
                 .xs()
@@ -204,7 +204,7 @@ fn about(id: Option<EndpointId>, cx: &mut Context<MainView>) -> AnyElement {
         .justify_between()
         .px(px(SPACE_MD))
         .py(px(SPACE_XS))
-        .child(ui::mono(format!("Solferry {}", env!("CARGO_PKG_VERSION")), cx))
-        .child(ui::mono(short, cx))
+        .child(ui::caption(format!("Solferry {}", env!("CARGO_PKG_VERSION")), cx))
+        .child(ui::caption(short, cx))
         .into_any_element()
 }

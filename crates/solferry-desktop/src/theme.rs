@@ -8,11 +8,9 @@ use solferry_core::Route;
 use crate::tokens::{DARK, IDENTITY_DARK, IDENTITY_LIGHT, LIGHT, Palette};
 
 const THEMES: &str = include_str!("theme.json");
-const FONTS: [&[u8]; 4] = [
+const FONTS: [&[u8]; 2] = [
     include_bytes!("../assets/fonts/InterTight-Regular.ttf"),
     include_bytes!("../assets/fonts/InterTight-Medium.ttf"),
-    include_bytes!("../assets/fonts/GeistMono-Regular.ttf"),
-    include_bytes!("../assets/fonts/GeistMono-Medium.ttf"),
 ];
 
 /// Embeds the fonts and registers the generated themes, so every later appearance change loads them.

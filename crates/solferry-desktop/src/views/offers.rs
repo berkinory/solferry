@@ -11,7 +11,7 @@ use crate::assets::Glyph;
 use crate::format;
 use crate::state::{Offer, PairingPrompt};
 use crate::theme::{color, palette};
-use crate::tokens::{FONT_MONO, RADIUS_FLOOR, SPACE_SM, SPACE_XS};
+use crate::tokens::{RADIUS_FLOOR, SPACE_SM, SPACE_XS};
 
 const DIGIT_WIDTH: f32 = 34.0;
 const DIGIT_HEIGHT: f32 = 44.0;
@@ -73,7 +73,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                 .flex_1()
                                 .min_w_0()
                                 .child(ui::text(format!("{} wants to send", summary.peer_name)))
-                                .child(ui::mono(
+                                .child(ui::caption(
                                     format!(
                                         "{files}, {}  ·  {}",
                                         format::bytes(summary.bytes),
@@ -123,7 +123,6 @@ fn digit(value: char, cx: &mut Context<MainView>) -> AnyElement {
         .bg(cx.theme().background)
         .border_1()
         .border_color(cx.theme().border)
-        .font_family(FONT_MONO)
         .text_size(px(DIGIT_SIZE))
         .font_weight(FontWeight::MEDIUM)
         .child(value.to_string())
@@ -165,7 +164,7 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
                                 .flex_col()
                                 .min_w_0()
                                 .child(ui::text(format!("{} wants to pair", prompt.name)))
-                                .child(ui::mono(ui::fingerprint(&prompt.peer), cx)),
+                                .child(ui::caption(ui::fingerprint(&prompt.peer), cx)),
                         ),
                 )
                 .child(digits)

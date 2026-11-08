@@ -6,7 +6,7 @@ use gpui_kit::{
     transparent_black,
 };
 use iroh::{EndpointAddr, EndpointId};
-use solferry_core::{NearbyDevice, Platform, Route};
+use solferry_core::{NearbyDevice, Platform};
 
 use super::button::Button;
 use super::dialog::Dialog;
@@ -16,11 +16,10 @@ use crate::assets::{Glyph, icon};
 use crate::format;
 use crate::service::{Command, Target};
 use crate::state::AppState;
-use crate::theme::{color, palette, route_color};
+use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, SPACE_SM};
 
 pub enum Dot {
-    Route(Route),
     Online,
     Offline,
 }
@@ -36,23 +35,14 @@ pub struct Row {
     paired_at_ms: u64,
 }
 
-fn near_detail(device: &NearbyDevice) -> (&'static str, Route) {
-    if device.overlay {
-        ("On your overlay network", Route::Overlay)
-    } else {
-        ("On this network", Route::Local)
-    }
-}
-
 /// What a paired device's line says: where it was seen nearby, else whether it answered.
 fn presence(
     found: Option<&NearbyDevice>,
     id: &EndpointId,
     state: &AppState,
 ) -> (&'static str, Option<Dot>) {
-    if let Some(found) = found {
-        let (detail, route) = near_detail(found);
-        return (detail, Some(Dot::Route(route)));
+    if found.is_some() {
+        return ("Online", Some(Dot::Online));
     }
     match &state.reachable {
         None => ("Paired", None),
@@ -90,7 +80,7 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             addr: device.addr.clone(),
             name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
             platform: device.platform,
-            detail: if device.overlay { "Overlay, not paired" } else { "Not paired" },
+            detail: "Not paired",
             dot: None,
             approval: None,
             paired_at_ms: 0,
@@ -132,7 +122,6 @@ pub fn tile(id: &EndpointId, platform: Option<Platform>, selected: bool, cx: &Ap
 
 pub fn detail(row: &Row, cx: &App) -> AnyElement {
     let tone: Option<Hsla> = row.dot.as_ref().map(|dot| match dot {
-        Dot::Route(route) => route_color(*route, cx),
         Dot::Online => color(palette(cx).success),
         Dot::Offline => cx.theme().muted_foreground.opacity(0.5),
     });

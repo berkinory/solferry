@@ -37,7 +37,6 @@ pub struct Button {
     glyph: Option<Glyph>,
     variant: Variant,
     size: Size,
-    grow: bool,
     tooltip: Option<SharedString>,
     on_click: Option<Handler>,
 }
@@ -50,7 +49,6 @@ impl Button {
             glyph: None,
             variant: Variant::Secondary,
             size: Size::Md,
-            grow: false,
             tooltip: None,
             on_click: None,
         }
@@ -88,11 +86,6 @@ impl Button {
 
     pub fn sm(mut self) -> Self {
         self.size = Size::Sm;
-        self
-    }
-
-    pub fn grow(mut self) -> Self {
-        self.grow = true;
         self
     }
 
@@ -180,9 +173,6 @@ impl RenderOnce for Button {
             .cursor_pointer()
             .hover(move |style| style.bg(hover).text_color(hover_text));
         button = if square { button.w(px(height)) } else { button.px(px(padding)) };
-        if self.grow {
-            button = button.flex_1();
-        }
         if let Some(fill) = look.fill {
             button = button.bg(fill);
         }
