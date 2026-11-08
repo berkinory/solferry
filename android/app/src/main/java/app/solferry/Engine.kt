@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import uniffi.solferry_ffi.Listener
+import uniffi.solferry_ffi.Problem
 import uniffi.solferry_ffi.Reach
 import uniffi.solferry_ffi.SharedFile
 import uniffi.solferry_ffi.Solferry
@@ -30,6 +31,12 @@ class Engine(private val context: Context) : Listener {
     private val multicast = context.getSystemService(WifiManager::class.java)
         .createMulticastLock("solferry").apply { setReferenceCounted(false); acquire() }
     val bridge = Solferry(File(context.filesDir, "solferry").path, received.path, deviceName(), this)
+
+    init {
+        thread(name = "solferry-recover") {
+            if (!Exporter.recover(context, received)) main.post { saveFailed("Downloads") }
+        }
+    }
 
     override fun update(update: Update) {
         val now = System.nanoTime()
@@ -48,13 +55,19 @@ class Engine(private val context: Context) : Listener {
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
-                    thread(name = "solferry-export") { Exporter.export(context, received) }
-                    Notifier.received(context, done.label, done.peerName)
+                    thread(name = "solferry-export") {
+                        val saved = Exporter.export(context, received)
+                        main.post { if (saved) Notifier.received(context, done.label, done.peerName) else saveFailed(done.peerName) }
+                    }
                 }
             }
             else -> {}
         }
         Keepalive.sync(context, state.value.transfers)
+    }
+
+    private fun saveFailed(name: String) = mutable.update {
+        it.copy(problems = it.problems + (name to Problem("Couldn't save to Downloads", "Free up some space and reopen Solferry.")))
     }
 
     fun copy(text: String) {
