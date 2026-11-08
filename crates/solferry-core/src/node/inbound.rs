@@ -9,7 +9,7 @@ use iroh::protocol::{AcceptError, ProtocolHandler};
 use solferry_proto::{Decision, Hello, Offer, OfferReply, close, read_frame, write_frame};
 use tokio::sync::oneshot;
 
-use super::Shared;
+use super::{Node, Shared};
 use crate::config::Visibility;
 use crate::error::{Error, Result, StorageContext};
 use crate::event::{Direction, Event, TransferId};
@@ -54,6 +54,13 @@ impl IncomingOffer {
 
     pub fn accept(self, destination: PathBuf) {
         let _ = self.reply.send(Some(destination));
+    }
+
+    /// Takes these files and every later offer from this device without asking again.
+    pub fn accept_always(self, node: &Node, destination: PathBuf) -> Result<()> {
+        node.set_auto_accept(self.summary.peer, true)?;
+        self.accept(destination);
+        Ok(())
     }
 
     pub fn decline(self) {

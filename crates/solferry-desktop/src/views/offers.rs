@@ -50,6 +50,13 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                 cx.notify();
             }))
     });
+    let always = summary.paired.then(|| {
+        Button::new(SharedString::from(format!("always-{key}")))
+            .sm()
+            .label("Always accept")
+            .tooltip(format!("Stop asking for files from {}", summary.peer_name))
+            .on_click(cx.listener(move |view, _, _, cx| view.accept_always(key, cx)))
+    });
     ask(Glyph::Download, "Incoming files", cx)
         .child(
             ui::padded_well(cx)
@@ -90,6 +97,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                     cx.listener(move |view, _, _, cx| view.answer(key, true, cx)),
                                 ),
                         )
+                        .children(always)
                         .child(
                             Button::new(SharedString::from(format!("decline-{key}")))
                                 .sm()

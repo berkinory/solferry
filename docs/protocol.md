@@ -40,6 +40,11 @@ The joiner dials the id in the ticket, so the connection proves the inviter's id
 
 The sender opens one bidirectional stream, exchanges `Hello`, sends `SharedText` and waits for `Finalized`. Only paired, unblocked devices are accepted; anyone else gets close code 1 before any stream opens. Text is at most 1 MiB and `Finalized.ok` is false past that. The receiver copies it straight to the clipboard only if it receives from that device without asking.
 
+
+## Presence: ALPN `solferry-presence/1`
+
+A device checks whether its paired devices are there by connecting on this ALPN. The finished handshake is the answer, the responder closes at once and no stream is opened.
+
 ## Close codes
 
 | Code | Meaning |

@@ -11,6 +11,7 @@ mod theme;
 mod tokens;
 mod tray;
 mod views;
+mod watch;
 
 use gpui_kit::QuitMode;
 use solferry_core::default_data_dir;

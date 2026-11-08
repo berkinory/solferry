@@ -56,9 +56,9 @@ enum DarkColors {
     static let routeOverlay = Color(hex: 0xA78BFA)
     static let routeDirect = Color(hex: 0x34D399)
     static let routeRelay = Color(hex: 0xFBBF24)
-    static let primaryFill = Color(hex: 0x645FCC)
-    static let primaryHover = Color(hex: 0x6D68DB)
-    static let primaryBorder = Color(hex: 0x6D68DB)
+    static let primaryFill = Color(hex: 0x3630DB)
+    static let primaryHover = Color(hex: 0x3A33E8)
+    static let primaryBorder = Color(hex: 0x3A33E8)
 }
 
 enum IdentityColors {

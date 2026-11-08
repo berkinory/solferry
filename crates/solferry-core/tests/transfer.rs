@@ -165,11 +165,11 @@ async fn known_devices_mode_refuses_strangers_until_paired() {
     let refused = sender.node.send(receiver.node.addr(), vec![file.clone()]).await;
     assert!(matches!(refused, Err(Error::NotPaired)), "{refused:?}");
 
-    let invite = receiver.node.invite(true);
-    let device = sender.node.join(invite.code(), false).await.unwrap();
+    let invite = receiver.node.invite();
+    let device = sender.node.join(invite.code()).await.unwrap();
     assert_eq!(device.name, "receiver");
-    assert!(!device.auto_accept, "the joining side decides for itself");
-    assert!(sender.node.join(invite.code(), true).await.is_err(), "invites are single use");
+    assert!(!device.auto_accept, "pairing alone never skips the question");
+    assert!(sender.node.join(invite.code()).await.is_err(), "invites are single use");
 
     let destination = receiver.data.join("inbox");
     accept_all(receiver.offers, destination.clone());
@@ -188,25 +188,25 @@ async fn nearby_pairing_shows_one_code_and_needs_the_other_person() {
         let request = requests.recv().await.unwrap();
         let code = seen.await.unwrap();
         assert_eq!(request.code, code, "both screens must show the same digits");
-        request.accept(false);
+        request.accept();
         requests
     });
     let device = requester
         .node
-        .pair_nearby(responder.node.addr(), true, |code| shown.send(code.to_owned()).unwrap())
+        .pair_nearby(responder.node.addr(), |code| shown.send(code.to_owned()).unwrap())
         .await
         .unwrap();
     assert_eq!(device.name, "responder");
-    assert!(device.auto_accept, "the requester chose this for itself");
+    assert!(!device.auto_accept, "pairing alone never skips the question");
 
     let mut requests = answering.await.unwrap();
     let stored = responder.node.devices();
     assert_eq!(stored.len(), 1);
-    assert!(!stored[0].auto_accept, "the responder chose this for itself");
+    assert!(!stored[0].auto_accept, "pairing alone never skips the question");
 
     let stranger = peer("stranger", Visibility::Everyone).await;
     let declining = tokio::spawn(async move { requests.recv().await.unwrap().decline() });
-    let refused = stranger.node.pair_nearby(responder.node.addr(), true, |_| {}).await;
+    let refused = stranger.node.pair_nearby(responder.node.addr(), |_| {}).await;
     assert!(matches!(refused, Err(Error::PairingRefused)), "{refused:?}");
     declining.await.unwrap();
     assert_eq!(stranger.node.devices().len(), 0);

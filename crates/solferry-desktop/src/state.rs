@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -73,8 +74,9 @@ pub struct AppState {
     pub config: Option<Config>,
     pub devices: Vec<Device>,
     pub blocked: Vec<EndpointId>,
-    pub ask_after_pairing: bool,
     pub nearby: Vec<NearbyDevice>,
+    /// Paired devices that answered the last check. `None` until the first one finishes.
+    pub reachable: Option<HashSet<EndpointId>>,
     pub transfers: Vec<Transfer>,
     pub failures: Vec<FailedSend>,
     pub offers: Vec<Offer>,
@@ -112,6 +114,7 @@ impl AppState {
             Update::Blocked(blocked) => self.blocked = blocked,
             Update::RelayHealth(health) => self.relay_health = health,
             Update::Nearby(found) => self.nearby = found,
+            Update::Reachable(reachable) => self.reachable = Some(reachable),
             Update::Transfer(event) => self.on_event(event),
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
             Update::OfferGone(key) => self.offers.retain(|offer| offer.key != key),
@@ -149,6 +152,9 @@ impl AppState {
         self.joining = false;
         self.paired_count += 1;
         self.devices.retain(|known| known.id != device.id);
+        if let Some(reachable) = &mut self.reachable {
+            reachable.insert(device.id);
+        }
         for nearby in &mut self.nearby {
             nearby.known |= nearby.addr.id == device.id;
         }

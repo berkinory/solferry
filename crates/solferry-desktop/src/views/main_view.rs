@@ -253,13 +253,20 @@ impl MainView {
         Self::command(Command::Answer { offer: key, accept }, cx);
     }
 
+    pub fn accept_always(&mut self, key: u64, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.offers.retain(|offer| offer.key != key);
+            cx.notify();
+        });
+        Self::command(Command::AcceptAlways(key), cx);
+    }
+
     pub fn answer_pairing(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
-        let auto_accept = !self.state.read(cx).ask_after_pairing;
         self.state.update(cx, |state, cx| {
             state.pairing_prompts.retain(|prompt| prompt.key != key);
             cx.notify();
         });
-        Self::command(Command::AnswerPairing { key, accept, auto_accept }, cx);
+        Self::command(Command::AnswerPairing { key, accept }, cx);
     }
 
     pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {

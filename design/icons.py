@@ -32,7 +32,7 @@ ICONS = {
     "folder-open": "FolderOpenIcon",
     "key": "Key01Icon",
     "more": "MoreHorizontalIcon",
-    "nearby": "Wifi01Icon",
+    "nearby": "HotspotIcon",
     "qr": "QrCodeIcon",
     "relay": "ServerStack01Icon",
     "send": "ArrowUp02Icon",

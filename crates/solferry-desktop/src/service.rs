@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -13,7 +13,8 @@ use solferry_core::{
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
-const PROMPT_SWEEP: Duration = Duration::from_secs(1);
+use crate::watch;
+
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
 pub struct Target {
@@ -26,11 +27,12 @@ pub enum Command {
     SendText { target: Target, text: String },
     Cancel(TransferId),
     Answer { offer: u64, accept: bool },
+    AcceptAlways(u64),
     BlockOffer(u64),
-    PairNearby { addr: EndpointAddr, auto_accept: bool },
-    AnswerPairing { key: u64, accept: bool, auto_accept: bool },
-    Invite { auto_accept: bool },
-    Join { code: String, auto_accept: bool },
+    PairNearby { addr: EndpointAddr },
+    AnswerPairing { key: u64, accept: bool },
+    Invite,
+    Join { code: String },
     Forget(EndpointId),
     SetAutoAccept { id: EndpointId, enabled: bool },
     Unblock(EndpointId),
@@ -50,6 +52,7 @@ pub enum Update {
     Blocked(Vec<EndpointId>),
     RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
+    Reachable(HashSet<EndpointId>),
     Transfer(Event),
     Offer {
         key: u64,
@@ -106,41 +109,12 @@ pub fn spawn(data_dir: PathBuf) -> (Handle, UnboundedReceiver<Update>) {
     (Handle { commands }, update_queue)
 }
 
-type Pending = Arc<Mutex<HashMap<u64, IncomingOffer>>>;
-type PendingPairings = Arc<Mutex<HashMap<u64, PairingRequest>>>;
+pub type Pending = Arc<Mutex<HashMap<u64, IncomingOffer>>>;
+pub type PendingPairings = Arc<Mutex<HashMap<u64, PairingRequest>>>;
 
 struct Session {
     node: Node,
     tasks: Vec<AbortHandle>,
-}
-
-/// Drops prompts whose peer left or whose wait ran out, so nobody answers a request that is gone.
-fn sweep_prompts(
-    offers: Pending,
-    requests: PendingPairings,
-    updates: UnboundedSender<Update>,
-) -> AbortHandle {
-    tokio::spawn(async move {
-        let mut sweep = tokio::time::interval(PROMPT_SWEEP);
-        loop {
-            sweep.tick().await;
-            offers.lock().await.retain(|key, offer| {
-                let open = !offer.is_closed();
-                if !open {
-                    let _ = updates.unbounded_send(Update::OfferGone(*key));
-                }
-                open
-            });
-            requests.lock().await.retain(|key, request| {
-                let open = !request.is_closed();
-                if !open {
-                    let _ = updates.unbounded_send(Update::PairingGone(*key));
-                }
-                open
-            });
-        }
-    })
-    .abort_handle()
 }
 
 async fn start(
@@ -231,7 +205,7 @@ async fn start(
         .abort_handle(),
     );
 
-    tasks.push(sweep_prompts(pending.clone(), pairing.clone(), updates.clone()));
+    tasks.push(watch::sweep_prompts(pending.clone(), pairing.clone(), updates.clone()));
 
     let scanner = node.clone();
     let outgoing = updates.clone();
@@ -245,6 +219,7 @@ async fn start(
         })
         .abort_handle(),
     );
+    tasks.push(watch::follow_presence(node.clone(), updates.clone()));
     Some(Session { node, tasks })
 }
 
@@ -268,9 +243,19 @@ async fn run(
                 }
                 session = start(&data_dir, &updates, &pending, &pairing).await;
             }
-            Command::AnswerPairing { key, accept, auto_accept } => {
+            Command::AnswerPairing { key, accept } => {
                 let Some(request) = pairing.lock().await.remove(&key) else { continue };
-                if accept { request.accept(auto_accept) } else { request.decline() }
+                if accept { request.accept() } else { request.decline() }
+            }
+            Command::AcceptAlways(offer) => {
+                let Some(offer) = pending.lock().await.remove(&offer) else { continue };
+                let Some(active) = &session else {
+                    offer.decline();
+                    continue;
+                };
+                let downloads = active.node.config().download_dir.clone();
+                let _ = offer.accept_always(&active.node, downloads);
+                let _ = updates.unbounded_send(Update::Devices(active.node.devices()));
             }
             Command::Answer { offer, accept } => {
                 let Some(offer) = pending.lock().await.remove(&offer) else { continue };
@@ -330,25 +315,25 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 let _ = updates.send(Update::TextShared { name, result }).await;
             }
             Command::Cancel(id) => node.cancel(id),
-            Command::PairNearby { addr, auto_accept } => {
+            Command::PairNearby { addr } => {
                 let shown = updates.clone();
                 let show = move |code: &str| {
                     let _ = shown.unbounded_send(Update::PairingCode(code.to_owned()));
                 };
-                let result = match node.pair_nearby(addr, auto_accept, show).await {
+                let result = match node.pair_nearby(addr, show).await {
                     Ok(device) => Update::Paired(device),
                     Err(error) => Update::PairingFailed(error),
                 };
                 let _ = updates.send(result).await;
                 let _ = updates.send(Update::Devices(node.devices())).await;
             }
-            Command::Invite { auto_accept } => {
+            Command::Invite => {
                 node.online_within(ONLINE_WAIT).await;
-                let code = node.invite(auto_accept).code().to_owned();
+                let code = node.invite().code().to_owned();
                 let _ = updates.send(Update::Invite(code)).await;
             }
-            Command::Join { code, auto_accept } => {
-                let result = match node.join(&code, auto_accept).await {
+            Command::Join { code } => {
+                let result = match node.join(&code).await {
                     Ok(device) => Update::Paired(device),
                     Err(error) => Update::PairingFailed(error),
                 };
@@ -368,6 +353,7 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 let _ = updates.send(Update::Blocked(node.blocked())).await;
             }
             Command::Answer { .. }
+            | Command::AcceptAlways(_)
             | Command::AnswerPairing { .. }
             | Command::BlockOffer(_)
             | Command::Apply(_)

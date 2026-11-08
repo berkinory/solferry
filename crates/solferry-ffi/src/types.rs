@@ -147,6 +147,10 @@ impl From<Route> for TransferRoute {
 /// Everything the app learns from the core, in the order it happens.
 #[derive(Clone, Debug, uniffi::Enum)]
 pub enum Update {
+    /// Paired devices that answered the last presence check.
+    Reachable {
+        ids: Vec<String>,
+    },
     Ready {
         id: String,
         fingerprint: String,

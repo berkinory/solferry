@@ -52,9 +52,9 @@ object DarkColors {
     val routeOverlay = Color(0xFFA78BFA)
     val routeDirect = Color(0xFF34D399)
     val routeRelay = Color(0xFFFBBF24)
-    val primaryFill = Color(0xFF645FCC)
-    val primaryHover = Color(0xFF6D68DB)
-    val primaryBorder = Color(0xFF6D68DB)
+    val primaryFill = Color(0xFF3630DB)
+    val primaryHover = Color(0xFF3A33E8)
+    val primaryBorder = Color(0xFF3A33E8)
 }
 
 object IdentityColors {

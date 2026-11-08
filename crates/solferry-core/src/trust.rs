@@ -14,7 +14,7 @@ const BLOCKED_FILE: &str = "blocked.json";
 pub struct Device {
     pub id: EndpointId,
     pub name: String,
-    /// Set on this device only: a pairing code can never grant it.
+    /// Set on this device only, and only from a yes on an actual offer or in the device's options.
     pub auto_accept: bool,
     pub relays: Vec<String>,
     /// Addresses seen when pairing, so a device stays reachable without any server.

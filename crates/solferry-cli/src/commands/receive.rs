@@ -87,7 +87,7 @@ async fn handle_pairing(node: &Node, request: PairingRequest, json: bool) {
     );
     let peer = request.peer;
     match tokio::task::spawn_blocking(move || ask(&prompt)).await {
-        Ok(Answer::Accept) => request.accept(true),
+        Ok(Answer::Accept) => request.accept(),
         Ok(Answer::Block) => {
             request.decline();
             block(node, peer);
