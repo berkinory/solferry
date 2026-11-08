@@ -10,9 +10,9 @@ use super::button::Button;
 use super::main_view::{MainView, Page};
 use super::{devices, offers, texts, transfers, ui};
 use crate::assets::{Glyph, icon};
-use crate::errors::explain;
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, SPACE_MD, SPACE_SM, SPACE_XS};
+use solferry_core::explain;
 
 const SHOWN_FILES: usize = 3;
 

@@ -1,7 +1,6 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 mod assets;
-mod errors;
 mod format;
 mod qr;
 mod service;

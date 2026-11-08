@@ -9,9 +9,9 @@ use super::main_view::MainView;
 use super::settings::change;
 use super::ui;
 use crate::assets::Glyph;
-use crate::errors::explain;
 use crate::theme::{color, palette};
 use crate::tokens::SPACE_XS;
+use solferry_core::explain;
 
 const GUIDE: &str = "https://github.com/berkinory/solferry/blob/main/docs/relay.md";
 

@@ -1,7 +1,4 @@
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
 use std::ops::Range;
-use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use bytes::{Bytes, BytesMut};
@@ -11,6 +8,7 @@ use solferry_proto::{FileResult, FileStart, Finalized, HASH_LEN, close, read_fra
 use tokio::sync::mpsc;
 
 use super::segments::{Progress, segments};
+use super::source::{Source, read_at};
 use super::{CHUNK_SIZE, Manifest, Meter};
 use crate::error::{Error, Result, StorageContext};
 use crate::route::{Route, current_route};
@@ -61,13 +59,19 @@ pub(crate) async fn run(
     Ok(route)
 }
 
+/// Reads every segment's result before giving up on a damaged one, so the receiver gets to check
+/// and forget all of them.
 async fn confirm(control: &mut RecvStream, manifest: &Manifest, count: usize) -> Result<()> {
+    let mut damaged = None;
     for _ in 0..count {
         let result: FileResult = read_frame(control).await?;
-        if !result.ok {
+        if !result.ok && damaged.is_none() {
             let entry = manifest.entries.get(result.index as usize);
-            return Err(Error::HashMismatch(entry.map(|e| e.path.clone()).unwrap_or_default()));
+            damaged = Some(entry.map(|e| e.path.clone()).unwrap_or_default());
         }
+    }
+    if let Some(name) = damaged {
+        return Err(Error::HashMismatch(name));
     }
     let finalized: Finalized = read_frame(control).await?;
     if finalized.ok { Ok(()) } else { Err(Error::DeliveryFailed) }
@@ -79,7 +83,7 @@ async fn send_segment(
     unit: Unit,
     meter: &Meter,
 ) -> Result<()> {
-    let source: PathBuf = manifest.sources[unit.index].clone();
+    let source = manifest.sources[unit.index].clone();
     let size = manifest.entries[unit.index].size;
     let (range, held) = (unit.range.clone(), unit.held);
     let (chunks, mut incoming) = mpsc::channel::<Bytes>(READ_AHEAD);
@@ -107,24 +111,24 @@ async fn send_segment(
 /// Hashes the whole segment so the receiver can verify resumed data, sending only bytes past
 /// what it already holds.
 fn read_source(
-    path: &Path,
+    source: &Source,
     size: u64,
     range: Range<u64>,
     held: u64,
     chunks: &mpsc::Sender<Bytes>,
 ) -> Result<blake3::Hash> {
-    let mut file = File::open(path).at(path)?;
+    let path = source.label();
+    let file = source.reader().at(path)?;
     if file.metadata().at(path)?.len() != size {
         return Err(Error::SourceChanged(path.to_owned()));
     }
-    file.seek(SeekFrom::Start(range.start)).at(path)?;
     let mut hasher = blake3::Hasher::new();
     let mut position = 0u64;
     let length = range.end - range.start;
     while position < length {
         let wanted = usize::try_from(length - position).unwrap_or(CHUNK_SIZE).min(CHUNK_SIZE);
         let mut buffer = BytesMut::zeroed(wanted);
-        let read = file.read(&mut buffer).at(path)?;
+        let read = read_at(&file, &mut buffer, range.start + position).at(path)?;
         if read == 0 {
             return Err(Error::SourceChanged(path.to_owned()));
         }

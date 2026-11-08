@@ -39,6 +39,9 @@ pub(crate) async fn run(
     let mut accepted = 0;
     let mut completed = 0;
     let mut seen = HashSet::new();
+    // Every segment is checked even after one fails, so each damaged one forgets itself and the
+    // next attempt sends exactly those again.
+    let mut damaged = None;
 
     while completed < needed {
         tokio::select! {
@@ -56,14 +59,13 @@ pub(crate) async fn run(
             }
             Some(result) = pending.recv() => write_frame(control, &result).await?,
             Some(joined) = files.join_next() => {
-                if let Err(error) = joined.map_err(|error| Error::Protocol(error.to_string()))? {
-                    drop(results);
-                    while let Some(result) = pending.recv().await {
-                        write_frame(control, &result).await?;
+                let outcome = joined.map_err(|error| Error::Protocol(error.to_string()))?;
+                match outcome {
+                    Err(Error::HashMismatch(name)) => {
+                        damaged.get_or_insert(Error::HashMismatch(name));
                     }
-                    let _ = control.finish();
-                    let _ = tokio::time::timeout(CLOSE_WAIT, connection.closed()).await;
-                    return Err(error);
+                    Err(error) => return Err(error),
+                    Ok(()) => {}
                 }
                 completed += 1;
             }
@@ -72,6 +74,11 @@ pub(crate) async fn run(
     drop(results);
     while let Some(result) = pending.recv().await {
         write_frame(control, &result).await?;
+    }
+    if let Some(error) = damaged {
+        let _ = control.finish();
+        let _ = tokio::time::timeout(CLOSE_WAIT, connection.closed()).await;
+        return Err(error);
     }
 
     let finished = plan.clone();

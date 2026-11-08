@@ -6,10 +6,10 @@ use super::button::Button;
 use super::main_view::MainView;
 use super::ui;
 use crate::assets::Glyph;
-use crate::errors::explain;
 use crate::qr;
 use crate::service::Command;
 use crate::tokens::{SPACE_MD, SPACE_SM, SPACE_XS};
+use solferry_core::explain;
 
 pub fn join(view: &MainView, cx: &mut Context<MainView>) {
     let code = view.code_input.read(cx).value().trim().to_owned();

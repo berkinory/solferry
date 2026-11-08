@@ -4,7 +4,7 @@ Accountless, open source file transfer between your devices and the people you t
 
 There is no account and no upload step. Files go straight from one device to another, end-to-end encrypted.
 
-> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds. Android comes next, iOS last.
+> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds, and the Android app on Android 10 and later. iOS comes last.
 
 ## Why
 
@@ -31,6 +31,16 @@ On macOS, run it as an app so it can show notifications and ask for local networ
 just bundle-macos
 open target/release/Solferry.app
 ```
+
+## Android
+
+```sh
+rustup target add aarch64-linux-android x86_64-linux-android
+cargo install cargo-ndk
+cd android && ./gradlew installDebug
+```
+
+Needs JDK 21 and the Android SDK with an NDK. Gradle builds the Rust core through `android/build-rust.sh` and generates its Kotlin bindings. Share files to Solferry from any app, or pick them from the send button. Received files land in Downloads/Solferry.
 
 ## Command line
 
@@ -93,6 +103,8 @@ solferry ships with no servers and contacts none by default. To reach devices on
 | `crates/solferry-core` | Identity, trust, discovery, transfers |
 | `crates/solferry-cli` | The `solferry` command |
 | `crates/solferry-desktop` | Desktop app built with GPUI |
+| `crates/solferry-ffi` | UniFFI bridge the mobile apps call into |
+| `android` | Android app in Kotlin and Compose |
 | `deploy/relay` | Self-hosted relay |
 | `tests/netlab` | NAT, loss and outage scenarios in Linux namespaces |
 | `tests/desktop` | Driver for real input against the desktop app |
