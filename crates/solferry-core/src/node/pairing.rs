@@ -42,12 +42,6 @@ impl Invite {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub(crate) struct PendingInvite {
-    auto_accept: bool,
-    expires_at_ms: u64,
-}
-
 pub(super) fn now_ms() -> u64 {
     let elapsed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
     u64::try_from(elapsed.as_millis()).unwrap_or(u64::MAX)
@@ -59,16 +53,14 @@ fn secret_key(secret: &[u8]) -> Option<[u8; 32]> {
 
 impl Node {
     /// Creates a single-use invite that a QR code or chat message can carry to another device.
-    /// `auto_accept` applies to this side only, the other device makes its own choice.
-    pub fn invite(&self, auto_accept: bool) -> Invite {
+    pub fn invite(&self) -> Invite {
         let mut secret = [0; 32];
         rand::rng().fill_bytes(&mut secret);
         let expires_at_ms = now_ms() + u64::try_from(INVITE_LIFETIME.as_millis()).unwrap_or(0);
-        let pending = PendingInvite { auto_accept, expires_at_ms };
         let mut invites =
             self.shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-        invites.retain(|_, invite| invite.expires_at_ms >= now_ms());
-        invites.insert(*blake3::hash(&secret).as_bytes(), pending);
+        invites.retain(|_, expires_at_ms| *expires_at_ms >= now_ms());
+        invites.insert(*blake3::hash(&secret).as_bytes(), expires_at_ms);
         drop(invites);
 
         let addr = self.addr();
@@ -87,7 +79,7 @@ impl Node {
     }
 
     /// Redeems an invite from another device and stores the resulting trust on both sides.
-    pub async fn join(&self, code: &str, auto_accept: bool) -> Result<Device> {
+    pub async fn join(&self, code: &str) -> Result<Device> {
         let ticket = decode_ticket(code)?;
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
@@ -122,7 +114,7 @@ impl Node {
         let device = Device {
             id,
             name: clean_label(&reply.name),
-            auto_accept,
+            auto_accept: false,
             relays,
             direct_addrs,
             paired_at_ms: now_ms(),
@@ -236,14 +228,14 @@ async fn redeem(shared: &Shared, connection: &Connection) -> Result<()> {
     if request.secret.is_empty() {
         return answer(shared, connection, send, recv, request).await;
     }
-    let pending = secret_key(&request.secret).and_then(|key| {
+    let expires_at_ms = secret_key(&request.secret).and_then(|key| {
         shared.invites.lock().unwrap_or_else(std::sync::PoisonError::into_inner).remove(&key)
     });
-    let Some(pending) = pending.filter(|invite| invite.expires_at_ms >= now_ms()) else {
+    if expires_at_ms.is_none_or(|expires_at_ms| expires_at_ms < now_ms()) {
         return refuse(connection, &mut send).await;
-    };
+    }
     write_frame(&mut send, &own_reply(shared)).await?;
-    complete(shared, connection, send, recv, request, pending.auto_accept).await
+    complete(shared, connection, send, recv, request).await
 }
 
 /// Says no and waits for the other side to read it, so it sees a refusal and not a lost connection.
@@ -261,7 +253,6 @@ pub(super) async fn complete(
     _send: SendStream,
     mut recv: RecvStream,
     request: PairRequest,
-    auto_accept: bool,
 ) -> Result<()> {
     let confirmed =
         tokio::time::timeout(CONFIRM_WAIT, read_small_frame::<_, Finalized>(&mut recv)).await;
@@ -271,7 +262,7 @@ pub(super) async fn complete(
     let device = Device {
         id: connection.remote_id(),
         name: clean_label(&request.name),
-        auto_accept,
+        auto_accept: false,
         relays: request.relay_urls,
         direct_addrs: request.direct_addrs,
         paired_at_ms: now_ms(),

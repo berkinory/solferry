@@ -81,7 +81,7 @@ git log -1 | solferry send --text - --to my-laptop
 | Same network or Tailscale | received right away | asks you, and you can block them |
 | Through a relay | received right away | refused, you never see it |
 
-To be asked for a paired device too, use `solferry pair --ask`, `solferry join <code> --ask` or `solferry approval <device> ask`. This choice stays on your device, a pairing code cannot change it. `solferry block` and `solferry unblock` manage blocked devices.
+Pairing never grants this on its own. A paired device still asks until you choose "Always accept" on one of its offers or run `solferry approval <device> auto`. This choice stays on your device. `solferry block` and `solferry unblock` manage blocked devices.
 
 Tailscale devices running solferry show up by themselves, next to devices on your network.
 

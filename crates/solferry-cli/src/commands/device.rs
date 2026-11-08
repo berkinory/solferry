@@ -12,11 +12,11 @@ const NEARBY_WINDOW: Duration = Duration::from_secs(4);
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 const INVITE_WAIT: Duration = Duration::from_secs(600);
 
-pub async fn pair(data_dir: PathBuf, auto_accept: bool) -> Result<()> {
+pub async fn pair(data_dir: PathBuf) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let mut events = node.events();
     node.online_within(ONLINE_WAIT).await;
-    let invite = node.invite(auto_accept);
+    let invite = node.invite();
     if let Ok(code) = QrCode::new(invite.code()) {
         println!("{}", code.render::<Dense1x2>().quiet_zone(true).build());
     }
@@ -37,12 +37,12 @@ pub async fn pair(data_dir: PathBuf, auto_accept: bool) -> Result<()> {
     node.shutdown().await
 }
 
-pub async fn pair_nearby(data_dir: PathBuf, name: &str, auto_accept: bool) -> Result<()> {
+pub async fn pair_nearby(data_dir: PathBuf, name: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let device = node.find_nearby(name, NEARBY_WINDOW).await;
     let device = device.ok_or_else(|| Error::UnknownDevice(name.to_owned()))?;
     let paired = node
-        .pair_nearby(device.addr, auto_accept, |code| {
+        .pair_nearby(device.addr, |code| {
             println!("Code: {code}\nCheck that {name} shows the same code, then accept there.");
         })
         .await?;
@@ -50,9 +50,9 @@ pub async fn pair_nearby(data_dir: PathBuf, name: &str, auto_accept: bool) -> Re
     node.shutdown().await
 }
 
-pub async fn join(data_dir: PathBuf, code: &str, auto_accept: bool) -> Result<()> {
+pub async fn join(data_dir: PathBuf, code: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    let device = node.join(code, auto_accept).await?;
+    let device = node.join(code).await?;
     println!("Paired with {}", device.name);
     node.shutdown().await
 }

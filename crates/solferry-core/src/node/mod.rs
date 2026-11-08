@@ -5,6 +5,7 @@ mod nearby;
 mod outbound;
 mod overlay;
 mod pairing;
+mod presence;
 mod text;
 
 use std::collections::HashMap;
@@ -17,7 +18,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use solferry_proto::{ALPN_PAIR, ALPN_TEXT, ALPN_TRANSFER, close};
+use solferry_proto::{ALPN_PAIR, ALPN_PRESENCE, ALPN_TEXT, ALPN_TRANSFER, close};
 use tokio::sync::{Semaphore, broadcast, mpsc};
 
 pub use confirm::PairingRequest;
@@ -60,7 +61,7 @@ pub(crate) struct Shared {
     pub(crate) trust: Mutex<TrustStore>,
     pub(crate) events: broadcast::Sender<Event>,
     pub(crate) offers: mpsc::Sender<IncomingOffer>,
-    pub(crate) invites: Mutex<HashMap<[u8; 32], pairing::PendingInvite>>,
+    pub(crate) invites: Mutex<HashMap<[u8; 32], u64>>,
     pair_listener: Mutex<Option<mpsc::Sender<PairingRequest>>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
     pub(crate) inbound_slots: Arc<Semaphore>,
@@ -150,6 +151,7 @@ impl Node {
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
             .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
+            .accept(ALPN_PRESENCE, presence::PresenceHandler)
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }

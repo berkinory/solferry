@@ -49,17 +49,9 @@ pub enum Command {
         /// Pair with this nearby device by comparing a code, instead of showing a pairing code.
         #[arg(long)]
         with: Option<String>,
-        /// Ask before taking files from this device instead of receiving them right away.
-        #[arg(long)]
-        ask: bool,
     },
     /// Redeem a pairing code from another device.
-    Join {
-        code: String,
-        /// Ask before taking files from this device instead of receiving them right away.
-        #[arg(long)]
-        ask: bool,
-    },
+    Join { code: String },
     /// List paired devices.
     Devices,
     /// Remove a paired device.

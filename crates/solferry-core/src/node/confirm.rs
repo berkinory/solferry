@@ -30,7 +30,7 @@ pub struct PairingRequest {
     pub peer_name: String,
     pub platform: Option<crate::Platform>,
     pub code: String,
-    reply: oneshot::Sender<Option<bool>>,
+    reply: oneshot::Sender<bool>,
 }
 
 impl PairingRequest {
@@ -40,13 +40,12 @@ impl PairingRequest {
         self.reply.is_closed()
     }
 
-    /// `auto_accept` decides whether this device takes files from the peer without asking.
-    pub fn accept(self, auto_accept: bool) {
-        let _ = self.reply.send(Some(auto_accept));
+    pub fn accept(self) {
+        let _ = self.reply.send(true);
     }
 
     pub fn decline(self) {
-        let _ = self.reply.send(None);
+        let _ = self.reply.send(false);
     }
 }
 
@@ -82,7 +81,6 @@ impl Node {
     pub async fn pair_nearby(
         &self,
         target: impl Into<EndpointAddr>,
-        auto_accept: bool,
         show_code: impl FnOnce(&str),
     ) -> Result<Device> {
         let shared = &self.shared;
@@ -113,7 +111,7 @@ impl Node {
         let device = Device {
             id: peer,
             name: clean_label(&reply.name),
-            auto_accept,
+            auto_accept: false,
             relays: reply.relay_urls,
             direct_addrs: reply.direct_addrs,
             paired_at_ms: now_ms(),
@@ -171,11 +169,11 @@ pub(super) async fn answer(
         answer = tokio::time::timeout(ANSWER_WAIT, decision) => answer.ok().and_then(Result::ok),
         _ = connection.closed() => None,
     };
-    let Some(Some(auto_accept)) = answer else {
+    if answer != Some(true) {
         return refuse(connection, &mut send).await;
-    };
+    }
     write_frame(&mut send, &own_reply(shared)).await?;
-    complete(shared, connection, send, recv, request, auto_accept).await
+    complete(shared, connection, send, recv, request).await
 }
 
 #[cfg(test)]

@@ -27,9 +27,9 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }
-        Command::Pair { with: Some(name), ask } => device::pair_nearby(data_dir, &name, !ask).await,
-        Command::Pair { with: None, ask } => device::pair(data_dir, !ask).await,
-        Command::Join { code, ask } => device::join(data_dir, &code, !ask).await,
+        Command::Pair { with: Some(name) } => device::pair_nearby(data_dir, &name).await,
+        Command::Pair { with: None } => device::pair(data_dir).await,
+        Command::Join { code } => device::join(data_dir, &code).await,
         Command::Devices => device::list(data_dir).await,
         Command::Forget { device } => device::forget(data_dir, &device).await,
         Command::Approval { device, mode } => device::approval(data_dir, &device, mode).await,
