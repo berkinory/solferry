@@ -46,7 +46,7 @@ fn advice(error: &Error) -> Advice {
         Error::ConnectionLost => "Try again. Transfers continue where they stopped.",
         Error::InvalidTicket => "Copy the whole code, starting with sf1.",
         Error::TicketExpired => "Codes last 10 minutes. Create a new one with `solferry pair`.",
-        Error::PairingRefused => "Codes work once. Create a new one with `solferry pair`.",
+        Error::PairingRefused => "Ask them to accept, or create a new code with `solferry pair`.",
         Error::UnknownDevice(_) => {
             "See `solferry devices` and `solferry nearby` for available names."
         }

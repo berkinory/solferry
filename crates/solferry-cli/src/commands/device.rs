@@ -91,7 +91,7 @@ fn device_id(node: &Node, query: &str) -> Result<EndpointId> {
     match node.find_device(query) {
         Ok(device) => Ok(device.id),
         Err(Error::UnknownDevice(_)) => {
-            query.parse().map_err(|_| Error::UnknownDevice(query.to_owned()))
+            EndpointId::from_z32(query).map_err(|_| Error::UnknownDevice(query.to_owned()))
         }
         Err(error) => Err(error),
     }
@@ -103,9 +103,14 @@ pub async fn block(data_dir: PathBuf, query: &str) -> Result<()> {
     node.shutdown().await
 }
 
-pub async fn unblock(data_dir: PathBuf, id: &str) -> Result<()> {
+pub async fn unblock(data_dir: PathBuf, query: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    node.unblock(id.parse().map_err(|_| Error::UnknownDevice(id.to_owned()))?)?;
+    let mut matches = node.blocked().into_iter().filter(|id| id.to_z32().starts_with(query));
+    let id = matches.next().ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
+    if matches.next().is_some() {
+        return Err(Error::AmbiguousDevice(query.to_owned()));
+    }
+    node.unblock(id)?;
     node.shutdown().await
 }
 
