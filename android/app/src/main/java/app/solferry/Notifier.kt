@@ -1,6 +1,7 @@
 package app.solferry
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -28,6 +29,16 @@ object Notifier {
         Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
         PendingIntent.FLAG_IMMUTABLE,
     )
+
+    fun progress(context: Context, count: Int, percent: Int): Notification =
+        NotificationCompat.Builder(context, TRANSFERS)
+            .setSmallIcon(R.drawable.ic_launcher_mark)
+            .setContentTitle(if (count == 1) "Moving 1 transfer" else "Moving $count transfers")
+            .setProgress(100, percent, false)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(opener(context))
+            .build()
 
     fun offer(context: Context, name: String) = show(context, "Incoming files", "$name wants to send you files")
 
