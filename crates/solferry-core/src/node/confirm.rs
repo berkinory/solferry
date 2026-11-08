@@ -97,6 +97,10 @@ impl Node {
             within_handshake(async { read_small_frame(&mut recv).await.map_err(Into::into) })
                 .await
                 .map_err(|error| refused(&connection, error))?;
+        // A refusal arrives here as an empty reply, which also decodes as a challenge.
+        if challenge.nonce.len() != NONCE_LEN {
+            return Err(Error::PairingRefused);
+        }
         write_frame(&mut send, &PairReveal { nonce: own_nonce.to_vec() }).await?;
         let peer = connection.remote_id();
         show_code(&pairing_code(self.id(), peer, &own_nonce, &challenge.nonce));

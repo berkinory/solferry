@@ -74,7 +74,9 @@ pub fn explain(error: &Error) -> Explanation {
         Error::TicketExpired => {
             say("That code expired", "Codes last 10 minutes. Create a new one.")
         }
-        Error::PairingRefused => say("The code was refused", "Codes work once. Create a new one."),
+        Error::PairingRefused => {
+            say("Pairing was refused", "Ask them to accept, or create a new code.")
+        }
         Error::UnknownDevice(_) => say("Device not found", "It may have been removed."),
         Error::AmbiguousDevice(_) => {
             say("More than one device matches", "Choose the device from the list.")
