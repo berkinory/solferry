@@ -1,6 +1,7 @@
 use iroh::EndpointId;
 use solferry_core::{
-    Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, Route, explain,
+    Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth, Route,
+    explain,
 };
 
 /// A short way to name a device on the other side of the bridge: its key in z-base-32.
@@ -41,7 +42,7 @@ pub struct Identity {
     pub platform: Option<DevicePlatform>,
 }
 
-fn identity(id: &EndpointId, platform: Option<Platform>) -> Identity {
+pub fn identity(id: &EndpointId, platform: Option<Platform>) -> Identity {
     Identity {
         id: device_id(id),
         fingerprint: id.fmt_short().to_string(),
@@ -84,6 +85,35 @@ impl From<&NearbyDevice> for Nearby {
             overlay: device.overlay,
         }
     }
+}
+
+/// How far a connection to one of your relays gets, from the first thing to go wrong.
+#[derive(Clone, Copy, Debug, uniffi::Enum)]
+pub enum RelayStatus {
+    Checking,
+    Connected,
+    UdpBlocked,
+    Refused,
+    Unreachable,
+}
+
+impl From<&RelayHealth> for RelayStatus {
+    fn from(health: &RelayHealth) -> Self {
+        match (health.reachable, health.accepted, health.direct_paths) {
+            (false, ..) => Self::Unreachable,
+            (true, false, _) => Self::Refused,
+            (true, true, false) => Self::UdpBlocked,
+            (true, true, true) => Self::Connected,
+        }
+    }
+}
+
+#[derive(Clone, Debug, uniffi::Record)]
+pub struct Relay {
+    /// What was added, including any access token. Removing a relay names it by this.
+    pub link: String,
+    pub url: String,
+    pub status: RelayStatus,
 }
 
 #[derive(Clone, Debug, uniffi::Record)]
@@ -147,6 +177,15 @@ impl From<Route> for TransferRoute {
 /// Everything the app learns from the core, in the order it happens.
 #[derive(Clone, Debug, uniffi::Enum)]
 pub enum Update {
+    Relays {
+        relays: Vec<Relay>,
+    },
+    RelayFailed {
+        problem: Problem,
+    },
+    Blocked {
+        devices: Vec<Identity>,
+    },
     /// Paired devices that answered the last presence check.
     Reachable {
         ids: Vec<String>,

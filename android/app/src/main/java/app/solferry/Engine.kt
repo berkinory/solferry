@@ -54,7 +54,7 @@ class Engine(private val context: Context) : Listener {
             }
             else -> {}
         }
-        TransferService.sync(context, state.value.transfers)
+        Keepalive.sync(context, state.value.transfers)
     }
 
     fun copy(text: String) {
@@ -87,6 +87,8 @@ class Engine(private val context: Context) : Listener {
     }
 
     fun setReach(reach: Reach) = bridge.setReach(reach)
+
+    fun cancelRunning() = state.value.transfers.filter { it.running }.forEach { bridge.cancel(it.id) }
 
     fun dismissProblem(index: Int) = mutable.update { it.copy(problems = it.problems.filterIndexed { i, _ -> i != index }) }
 

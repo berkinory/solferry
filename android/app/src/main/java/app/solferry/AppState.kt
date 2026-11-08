@@ -5,6 +5,7 @@ import uniffi.solferry_ffi.Incoming
 import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
 import uniffi.solferry_ffi.Problem
+import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.TransferRoute
 import uniffi.solferry_ffi.Update
 
@@ -43,6 +44,9 @@ data class AppState(
     val devices: List<PairedDevice> = emptyList(),
     val nearby: List<Nearby> = emptyList(),
     val reachable: Set<String>? = null,
+    val relays: List<Relay> = emptyList(),
+    val relayProblem: Problem? = null,
+    val blocked: List<Identity> = emptyList(),
     val transfers: List<Transfer> = emptyList(),
     val offers: List<Incoming> = emptyList(),
     val pairings: List<PairingPrompt> = emptyList(),
@@ -62,6 +66,9 @@ data class AppState(
         is Update.Devices -> copy(devices = update.devices)
         is Update.Nearby -> copy(nearby = update.devices)
         is Update.Reachable -> copy(reachable = update.ids.toSet())
+        is Update.Relays -> copy(relays = update.relays, relayProblem = null)
+        is Update.RelayFailed -> copy(relayProblem = update.problem)
+        is Update.Blocked -> copy(blocked = update.devices)
         is Update.Started -> copy(
             transfers = listOf(
                 Transfer(update.id, update.peerName, update.label, update.sending, update.route, total = update.bytes.toLong()),
