@@ -31,11 +31,11 @@ def mix(color, toward, amount):
 
 
 def derive(tokens):
-    """Adds the primary button's fill, hover and border, mixed from primary toward its deep end."""
+    """Adds the primary button's fill, hover and border, mixed from ultramarine toward the deep end."""
     for mode, colors in tokens["color"].items():
         for name, amount in tokens["button"][mode].items():
             key = "primary" + name.capitalize()
-            colors[key] = mix(colors["primary"], colors["primaryDeep"], amount)
+            colors[key] = mix(tokens["button"]["base"], colors["primaryDeep"], amount)
     return tokens
 
 

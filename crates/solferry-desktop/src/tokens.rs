@@ -76,9 +76,9 @@ pub const DARK: Palette = Palette {
     route_overlay: 0xa7_8bfa,
     route_direct: 0x34_d399,
     route_relay: 0xfb_bf24,
-    primary_fill: 0x64_5fcc,
-    primary_hover: 0x6d_68db,
-    primary_border: 0x6d_68db,
+    primary_fill: 0x36_30db,
+    primary_hover: 0x3a_33e8,
+    primary_border: 0x3a_33e8,
 };
 
 pub const IDENTITY_LIGHT: [u32; 8] =
