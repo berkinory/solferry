@@ -3,10 +3,6 @@ import SwiftUI
 
 private let presenceEverySeconds = 20.0
 
-enum Route: Hashable {
-    case addDevice
-}
-
 enum Place: Hashable {
     case home, history, settings
 }
@@ -28,7 +24,7 @@ private struct RootView: View {
     @Environment(Engine.self) private var engine
     @Environment(\.scenePhase) private var phase
     @State private var place = Place.home
-    @State private var path: [Route] = []
+    @State private var pairing = false
     @State private var sending = false
     @State private var staged: [URL] = []
     @State private var target: PairedDevice?
@@ -39,10 +35,7 @@ private struct RootView: View {
 
     var body: some View {
         TabView(selection: $place) {
-            NavigationStack(path: $path) {
-                HomeScreen(pick: pick)
-                    .navigationDestination(for: Route.self) { _ in AddDeviceScreen() }
-            }
+            NavigationStack { HomeScreen(pick: pick) }
             .tabItem { Label { Text("Transfer") } icon: { Image(decorative: Glyph.home.rawValue).renderingMode(.template) } }
             .tag(Place.home)
             NavigationStack { HistoryScreen() }
@@ -52,7 +45,9 @@ private struct RootView: View {
                 .tabItem { Label { Text("Settings") } icon: { Image(decorative: Glyph.settings.rawValue).renderingMode(.template) } }
                 .tag(Place.settings)
         }
+        .environment(\.addDevice) { pairing = true }
         .sensoryFeedback(.selection, trigger: place)
+        .sheet(isPresented: $pairing) { AddDeviceScreen() }
         .sheet(isPresented: $sending, onDismiss: { staged = [] }) { SendScreen(files: $staged) }
         .confirmationDialog("Send", isPresented: $choosing) {
             Button("Photos and videos") { browsingPhotos = true }
@@ -78,7 +73,7 @@ private struct RootView: View {
 
     private func goHome() {
         place = .home
-        path = []
+        pairing = false
     }
 
     private func pick(_ device: PairedDevice?) {

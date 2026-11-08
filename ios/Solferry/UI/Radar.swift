@@ -60,7 +60,7 @@ private struct Radar: View {
 
 /// The whole home screen for someone with no devices yet.
 struct RadarHero: View {
-    @Environment(\.palette) private var palette
+    @Environment(\.addDevice) private var addDevice
 
     var body: some View {
         CardFrame {
@@ -70,15 +70,7 @@ struct RadarHero: View {
                     Text("Looking for nearby devices").font(.titleText).padding(.top, SpaceTokens.sm)
                     Muted("Open Solferry on another device on this network and it shows up here.")
                         .multilineTextAlignment(.center)
-                    NavigationLink(value: Route.addDevice) {
-                        HStack(spacing: 6) {
-                            Icon(.qr, size: 18)
-                            Text("Pair with code")
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(palette.ink)
-                    .buttonBorderShape(.roundedRectangle(radius: RadiusTokens.control))
+                    ActionButton(label: "Pair with code", glyph: .qr, scale: .small, action: addDevice)
                     .padding(.top, SpaceTokens.xs)
                 }
                 .frame(maxWidth: .infinity)

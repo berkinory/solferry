@@ -59,8 +59,8 @@ private struct SendZone: View {
             Well(padding: 14, action: action) {
                 VStack(spacing: SpaceTokens.sm) {
                     ZStack {
-                        FanTile(glyph: .typeImage, x: -46)
-                        FanTile(glyph: .typePdf, x: 46)
+                        FanTile(glyph: .typeImage, x: -38)
+                        FanTile(glyph: .typePdf, x: 38)
                         Icon(.send, tint: palette.onPrimary, size: 24)
                             .frame(width: 56, height: 56)
                             .background(palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
@@ -85,11 +85,11 @@ private struct FanTile: View {
     let x: Double
 
     var body: some View {
-        Icon(glyph, tint: palette.inkMuted, size: 20)
-            .frame(width: 44, height: 44)
-            .background(palette.control, in: controlShape)
-            .overlay(controlShape.strokeBorder(palette.line))
+        Icon(glyph, tint: palette.inkMuted, size: 22)
+            .frame(width: 56, height: 56)
+            .background(palette.control, in: fieldShape)
+            .overlay(fieldShape.strokeBorder(palette.line))
             .rotationEffect(.degrees(x < 0 ? -11 : 11))
-            .offset(x: x, y: 6)
+            .offset(x: x)
     }
 }

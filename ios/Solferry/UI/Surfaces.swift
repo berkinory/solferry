@@ -3,6 +3,7 @@ import SwiftUI
 let cardShape = RoundedRectangle(cornerRadius: RadiusTokens.card, style: .continuous)
 let wellShape = RoundedRectangle(cornerRadius: RadiusTokens.well, style: .continuous)
 let controlShape = RoundedRectangle(cornerRadius: RadiusTokens.control, style: .continuous)
+let fieldShape = RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous)
 
 /// One line and 3pt of padding, so what it holds sits exactly 4pt inside it.
 struct CardFrame<Content: View>: View {
@@ -77,7 +78,7 @@ struct PaddedWell<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        Well(ground: ground, padding: SpaceTokens.md, spacing: SpaceTokens.sm) { content }
+        Well(ground: ground, padding: SpaceTokens.lg, spacing: SpaceTokens.sm) { content }
     }
 }
 
@@ -103,8 +104,7 @@ struct Card<Aside: View, Content: View>: View {
                 aside
             }
             .frame(minHeight: 36)
-            .padding(.leading, SpaceTokens.md)
-            .padding(.trailing, SpaceTokens.xs)
+            .padding(.horizontal, SpaceTokens.lg)
             content
         }
     }
@@ -120,6 +120,6 @@ struct Count: View {
     let value: Int
 
     var body: some View {
-        Caption(String(value)).padding(.trailing, SpaceTokens.sm)
+        Caption(String(value))
     }
 }

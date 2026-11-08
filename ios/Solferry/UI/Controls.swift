@@ -31,7 +31,7 @@ struct ActionButton: View {
             }
         }
         .controlSize(scale == .medium ? .large : .regular)
-        .buttonBorderShape(.roundedRectangle(radius: RadiusTokens.control))
+        .buttonBorderShape(.roundedRectangle(radius: scale == .medium ? RadiusTokens.control : RadiusTokens.floor))
         .accessibilityLabel(description ?? label ?? "")
     }
 

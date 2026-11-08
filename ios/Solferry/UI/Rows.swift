@@ -153,19 +153,12 @@ struct DeviceCard: View {
 
 struct NearbyCard: View {
     @Environment(Engine.self) private var engine
+    @Environment(\.addDevice) private var addDevice
     let nearby: [Nearby]
 
     var body: some View {
         Card(glyph: .nearby, title: "Nearby") {
-            NavigationLink(value: Route.addDevice) {
-                HStack(spacing: 6) {
-                    Icon(.qr, size: 16)
-                    Text("Use a code").font(.buttonText)
-                }
-                .padding(.horizontal, SpaceTokens.sm)
-                .frame(minHeight: 36)
-            }
-            .foregroundStyle(.secondary)
+            ActionButton(label: "Use a code", glyph: .qr, kind: .ghost, scale: .small, action: addDevice)
         } content: {
             Well {
                 if nearby.isEmpty { Scanning() }

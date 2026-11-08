@@ -2,11 +2,12 @@ import SwiftUI
 
 struct AddDeviceScreen: View {
     @Environment(Engine.self) private var engine
+    @Environment(\.dismiss) private var dismiss
     @State private var code = ""
 
     var body: some View {
         let state = engine.state
-        Page(title: "Pair with a code") {
+        NavigationStack { Page(title: "Pair with a code") {
             if let problem = state.pairingProblem { ProblemCard(problem: problem) }
             Card(glyph: .qr, title: "Show a code") {
                 PaddedWell {
@@ -28,6 +29,12 @@ struct AddDeviceScreen: View {
                 }
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { dismiss() } label: { Icon(.cancel, size: 20) }
+                    .accessibilityLabel("Close")
+            }
+        } }
     }
 
     private func join() {

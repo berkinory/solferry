@@ -47,6 +47,7 @@ struct Palette {
 
 extension EnvironmentValues {
     @Entry var palette = Palette.light
+    @Entry var addDevice: () -> Void = {}
 }
 
 /// A phone reads one step larger than the desktop's dense scale.
