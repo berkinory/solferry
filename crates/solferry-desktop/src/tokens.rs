@@ -22,6 +22,11 @@ pub struct Palette {
     pub route_overlay: u32,
     pub route_direct: u32,
     pub route_relay: u32,
+    pub success_fill: u32,
+    pub platform_apple: u32,
+    pub platform_android: u32,
+    pub platform_windows: u32,
+    pub platform_linux: u32,
     pub primary_fill: u32,
     pub primary_hover: u32,
     pub primary_border: u32,
@@ -49,6 +54,11 @@ pub const LIGHT: Palette = Palette {
     route_overlay: 0x6d_28d9,
     route_direct: 0x04_7857,
     route_relay: 0xa3_4700,
+    success_fill: 0x05_9669,
+    platform_apple: 0x18_181b,
+    platform_android: 0x1f_9d60,
+    platform_windows: 0x00_78d4,
+    platform_linux: 0xb7_791f,
     primary_fill: 0x37_30de,
     primary_hover: 0x3a_33e8,
     primary_border: 0x34_2dd3,
@@ -76,6 +86,11 @@ pub const DARK: Palette = Palette {
     route_overlay: 0xa7_8bfa,
     route_direct: 0x34_d399,
     route_relay: 0xfb_bf24,
+    success_fill: 0x10_b981,
+    platform_apple: 0xec_ecef,
+    platform_android: 0x3d_dc84,
+    platform_windows: 0x4a_a8ff,
+    platform_linux: 0xfb_bf24,
     primary_fill: 0x36_30db,
     primary_hover: 0x3a_33e8,
     primary_border: 0x3a_33e8,
@@ -95,11 +110,11 @@ pub const SPACE_MD: f32 = 12.0;
 pub const SPACE_LG: f32 = 16.0;
 pub const SPACE_XL: f32 = 24.0;
 pub const SPACE_XXL: f32 = 32.0;
-pub const RADIUS_FLOOR: f32 = 6.0;
-pub const RADIUS_CONTROL: f32 = 10.0;
-pub const RADIUS_FIELD: f32 = 14.0;
-pub const RADIUS_WELL: f32 = 18.0;
-pub const RADIUS_CARD: f32 = 22.0;
+pub const RADIUS_FLOOR: f32 = 10.0;
+pub const RADIUS_CONTROL: f32 = 14.0;
+pub const RADIUS_FIELD: f32 = 18.0;
+pub const RADIUS_WELL: f32 = 22.0;
+pub const RADIUS_CARD: f32 = 26.0;
 pub const TYPE_CAPTION: f32 = 12.0;
 pub const TYPE_LABEL: f32 = 13.0;
 pub const TYPE_BODY: f32 = 14.0;

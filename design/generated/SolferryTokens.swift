@@ -29,6 +29,11 @@ enum LightColors {
     static let routeOverlay = Color(hex: 0x6D28D9)
     static let routeDirect = Color(hex: 0x047857)
     static let routeRelay = Color(hex: 0xA34700)
+    static let successFill = Color(hex: 0x059669)
+    static let platformApple = Color(hex: 0x18181B)
+    static let platformAndroid = Color(hex: 0x1F9D60)
+    static let platformWindows = Color(hex: 0x0078D4)
+    static let platformLinux = Color(hex: 0xB7791F)
     static let primaryFill = Color(hex: 0x3730DE)
     static let primaryHover = Color(hex: 0x3A33E8)
     static let primaryBorder = Color(hex: 0x342DD3)
@@ -56,6 +61,11 @@ enum DarkColors {
     static let routeOverlay = Color(hex: 0xA78BFA)
     static let routeDirect = Color(hex: 0x34D399)
     static let routeRelay = Color(hex: 0xFBBF24)
+    static let successFill = Color(hex: 0x10B981)
+    static let platformApple = Color(hex: 0xECECEF)
+    static let platformAndroid = Color(hex: 0x3DDC84)
+    static let platformWindows = Color(hex: 0x4AA8FF)
+    static let platformLinux = Color(hex: 0xFBBF24)
     static let primaryFill = Color(hex: 0x3630DB)
     static let primaryHover = Color(hex: 0x3A33E8)
     static let primaryBorder = Color(hex: 0x3A33E8)
@@ -76,11 +86,11 @@ enum SpaceTokens {
 }
 
 enum RadiusTokens {
-    static let floor: Double = 6
-    static let control: Double = 10
-    static let field: Double = 14
-    static let well: Double = 18
-    static let card: Double = 22
+    static let floor: Double = 10
+    static let control: Double = 14
+    static let field: Double = 18
+    static let well: Double = 22
+    static let card: Double = 26
 }
 
 enum TypeTokens {

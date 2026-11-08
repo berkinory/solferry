@@ -25,6 +25,11 @@ object LightColors {
     val routeOverlay = Color(0xFF6D28D9)
     val routeDirect = Color(0xFF047857)
     val routeRelay = Color(0xFFA34700)
+    val successFill = Color(0xFF059669)
+    val platformApple = Color(0xFF18181B)
+    val platformAndroid = Color(0xFF1F9D60)
+    val platformWindows = Color(0xFF0078D4)
+    val platformLinux = Color(0xFFB7791F)
     val primaryFill = Color(0xFF3730DE)
     val primaryHover = Color(0xFF3A33E8)
     val primaryBorder = Color(0xFF342DD3)
@@ -52,6 +57,11 @@ object DarkColors {
     val routeOverlay = Color(0xFFA78BFA)
     val routeDirect = Color(0xFF34D399)
     val routeRelay = Color(0xFFFBBF24)
+    val successFill = Color(0xFF10B981)
+    val platformApple = Color(0xFFECECEF)
+    val platformAndroid = Color(0xFF3DDC84)
+    val platformWindows = Color(0xFF4AA8FF)
+    val platformLinux = Color(0xFFFBBF24)
     val primaryFill = Color(0xFF3630DB)
     val primaryHover = Color(0xFF3A33E8)
     val primaryBorder = Color(0xFF3A33E8)
@@ -72,11 +82,11 @@ object SpaceTokens {
 }
 
 object RadiusTokens {
-    const val floor = 6
-    const val control = 10
-    const val field = 14
-    const val well = 18
-    const val card = 22
+    const val floor = 10
+    const val control = 14
+    const val field = 18
+    const val well = 22
+    const val card = 26
 }
 
 object TypeTokens {

@@ -8,8 +8,8 @@
       "font.family": "Inter Tight",
       "mono_font.family": "Geist Mono",
       "mono_font.size": 12,
-      "radius": 10,
-      "radius.lg": 14,
+      "radius": 14,
+      "radius.lg": 18,
       "shadow": false,
       "colors": {
         "background": "#FFFFFF",
@@ -56,8 +56,8 @@
       "font.family": "Inter Tight",
       "mono_font.family": "Geist Mono",
       "mono_font.size": 12,
-      "radius": 10,
-      "radius.lg": 14,
+      "radius": 14,
+      "radius.lg": 18,
       "shadow": false,
       "colors": {
         "background": "#18181B",
