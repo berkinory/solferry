@@ -19,7 +19,7 @@ const SHOWN_FILES: usize = 3;
 pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let row = div().flex().flex_none().items_center().justify_between().h(px(40.)).px(px(SPACE_SM));
     if view.page != Page::Home {
-        let title = if view.page == Page::Pair { "Add device" } else { "Settings" };
+        let title = if view.page == Page::Pair { "Pair with a code" } else { "Settings" };
         return row
             .justify_start()
             .gap(px(SPACE_XS))
@@ -40,31 +40,14 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     row.pl(px(SPACE_MD))
         .child(div().min_w_0().children(name.map(|name| ui::muted(name, cx).truncate())))
         .child(
-            div()
-                .flex()
-                .flex_none()
-                .items_center()
-                .gap(px(2.))
-                .child(
-                    Button::new("add-device")
-                        .ghost()
-                        .xs()
-                        .icon(Glyph::Add)
-                        .label("Add device")
-                        .on_click(cx.listener(|view, _, window, cx| {
-                            view.open_page(Page::Pair, window, cx);
-                        })),
-                )
-                .child(
-                    Button::new("open-settings")
-                        .ghost()
-                        .xs()
-                        .icon(Glyph::Settings)
-                        .tooltip("Settings")
-                        .on_click(cx.listener(|view, _, window, cx| {
-                            view.open_page(Page::Settings, window, cx);
-                        })),
-                ),
+            Button::new("open-settings")
+                .ghost()
+                .xs()
+                .icon(Glyph::Settings)
+                .tooltip("Settings")
+                .on_click(cx.listener(|view, _, window, cx| {
+                    view.open_page(Page::Settings, window, cx);
+                })),
         )
         .into_any_element()
 }

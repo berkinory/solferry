@@ -23,7 +23,7 @@ pub fn install(cx: &mut App) {
         name: "Solferry".into(),
         items: vec![
             MenuItem::action("Choose Files...", ChooseFiles),
-            MenuItem::action("Add Device...", AddDevice),
+            MenuItem::action("Pair with a Code...", AddDevice),
             MenuItem::action("Settings...", OpenSettings),
             MenuItem::separator(),
             MenuItem::action("Quit Solferry", Quit),

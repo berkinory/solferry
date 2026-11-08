@@ -6,6 +6,7 @@ pub mod keys;
 mod main_view;
 mod offers;
 mod pairing;
+mod radar;
 mod relays;
 mod settings;
 mod texts;
