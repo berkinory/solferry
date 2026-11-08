@@ -76,20 +76,20 @@ struct DeviceTile: View {
 
     var body: some View {
         let shown = identity.platform ?? platform
-        if online {
-            Tile(glyph: platformGlyph(shown), fill: tone(shown).opacity(0.16), tone: tone(shown))
+        if online, let brand = brand(shown) {
+            Tile(glyph: platformGlyph(shown), fill: brand, tone: palette.ink)
         } else {
-            Tile(glyph: platformGlyph(shown), fill: palette.control, tone: palette.inkMuted)
+            Tile(glyph: platformGlyph(shown), fill: palette.control, tone: palette.inkMuted.opacity(shown == nil ? 1 : 0.6))
         }
     }
 
-    private func tone(_ platform: DevicePlatform?) -> Color {
+    private func brand(_ platform: DevicePlatform?) -> Color? {
         switch platform {
         case .macos, .ios: palette.platformApple
         case .android: palette.platformAndroid
         case .windows: palette.platformWindows
         case .linux: palette.platformLinux
-        case nil: palette.inkMuted
+        case nil: nil
         }
     }
 }

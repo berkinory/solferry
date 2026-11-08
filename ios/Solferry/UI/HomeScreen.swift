@@ -26,6 +26,10 @@ struct HomeScreen: View {
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.xs)
         }
+        .refreshable {
+            engine.bridge.checkPresence()
+            try? await Task.sleep(for: .milliseconds(700))
+        }
         .background(palette.page.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .safeAreaInset(edge: .top, spacing: 0) { HomeBar() }
@@ -85,6 +89,7 @@ private struct FanTile: View {
             .frame(width: 44, height: 44)
             .background(palette.control, in: controlShape)
             .overlay(controlShape.strokeBorder(palette.line))
+            .rotationEffect(.degrees(x < 0 ? -11 : 11))
             .offset(x: x, y: 6)
     }
 }

@@ -60,6 +60,8 @@ private struct Radar: View {
 
 /// The whole home screen for someone with no devices yet.
 struct RadarHero: View {
+    @Environment(\.palette) private var palette
+
     var body: some View {
         CardFrame {
             Well(padding: SpaceTokens.lg, spacing: SpaceTokens.sm) {
@@ -74,7 +76,9 @@ struct RadarHero: View {
                             Text("Pair with code")
                         }
                     }
-                    .buttonStyle(ActionStyle(kind: .secondary, iconOnly: false, scale: .small))
+                    .buttonStyle(.bordered)
+                    .tint(palette.ink)
+                    .buttonBorderShape(.roundedRectangle(radius: RadiusTokens.control))
                     .padding(.top, SpaceTokens.xs)
                 }
                 .frame(maxWidth: .infinity)

@@ -43,7 +43,7 @@ private struct RootView: View {
                 HomeScreen(pick: pick)
                     .navigationDestination(for: Route.self) { _ in AddDeviceScreen() }
             }
-            .tabItem { Label { Text("Home") } icon: { Image(decorative: Glyph.home.rawValue).renderingMode(.template) } }
+            .tabItem { Label { Text("Transfer") } icon: { Image(decorative: Glyph.home.rawValue).renderingMode(.template) } }
             .tag(Place.home)
             NavigationStack { HistoryScreen() }
                 .tabItem { Label { Text("History") } icon: { Image(decorative: Glyph.history.rawValue).renderingMode(.template) } }
@@ -52,6 +52,7 @@ private struct RootView: View {
                 .tabItem { Label { Text("Settings") } icon: { Image(decorative: Glyph.settings.rawValue).renderingMode(.template) } }
                 .tag(Place.settings)
         }
+        .sensoryFeedback(.selection, trigger: place)
         .sheet(isPresented: $sending, onDismiss: { staged = [] }) { SendScreen(files: $staged) }
         .confirmationDialog("Send", isPresented: $choosing) {
             Button("Photos and videos") { browsingPhotos = true }

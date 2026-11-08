@@ -10,51 +10,9 @@ enum ButtonScale {
     var height: Double { self == .medium ? 44 : 36 }
 }
 
-struct ActionStyle: ButtonStyle {
-    @Environment(\.palette) private var palette
-    @Environment(\.isEnabled) private var enabled
-    let kind: ButtonKind
-    let iconOnly: Bool
-    let scale: ButtonScale
-
-    func makeBody(configuration: Configuration) -> some View {
-        let look = look(pressed: configuration.isPressed)
-        configuration.label
-            .font(.buttonText)
-            .foregroundStyle(look.text)
-            .lineLimit(1)
-            .padding(.horizontal, iconOnly ? 0 : 14)
-            .frame(minWidth: iconOnly ? scale.height : nil, minHeight: scale.height)
-            .background {
-                ZStack {
-                    controlShape.fill(look.fill)
-                    if kind == .primary {
-                        controlShape.fill(
-                            Color.clear
-                                .shadow(.inner(color: .white.opacity(0.22), radius: 0, y: 1))
-                                .shadow(.inner(color: palette.primaryDeep.opacity(0.3), radius: 0, y: -1))
-                        )
-                    }
-                    if let border = look.border { controlShape.strokeBorder(border) }
-                }
-            }
-            .contentShape(controlShape)
-            .opacity(enabled ? 1 : 0.5)
-            .animation(.easeOut(duration: MotionTokens.quick / 1000), value: configuration.isPressed)
-    }
-
-    private func look(pressed: Bool) -> (fill: Color, text: Color, border: Color?) {
-        switch kind {
-        case .primary: (pressed ? palette.primaryHover : palette.primaryFill, palette.onPrimary, palette.primaryBorder)
-        case .secondary: (pressed ? palette.raised : palette.page, palette.ink, palette.line)
-        case .ghost: (pressed ? palette.raised : .clear, palette.inkMuted, nil)
-        case .danger: (palette.dangerFill.opacity(pressed ? 0.9 : 1), palette.onPrimary, nil)
-        }
-    }
-}
-
-/// The app's one button, like the desktop's: a lit primary, a framed secondary, quiet ghosts.
+/// The system's button styles, wearing the design system's colors and corners.
 struct ActionButton: View {
+    @Environment(\.palette) private var palette
     var label: String?
     var glyph: Glyph?
     var kind = ButtonKind.secondary
@@ -64,15 +22,28 @@ struct ActionButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Group {
+            switch kind {
+            case .primary: button.buttonStyle(.borderedProminent).tint(palette.primaryFill)
+            case .danger: button.buttonStyle(.borderedProminent).tint(palette.dangerFill)
+            case .secondary: button.buttonStyle(.bordered).tint(palette.ink)
+            case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
+            }
+        }
+        .controlSize(scale == .medium ? .large : .regular)
+        .buttonBorderShape(.roundedRectangle(radius: RadiusTokens.control))
+        .accessibilityLabel(description ?? label ?? "")
+    }
+
+    private var button: some View {
+        Button(role: kind == .danger ? .destructive : nil, action: action) {
             HStack(spacing: 6) {
                 if let glyph { Icon(glyph, tint: nil, size: 18) }
-                if let label { Text(label) }
+                if let label { Text(label).font(.buttonText).lineLimit(1) }
             }
-            .frame(maxWidth: wide ? .infinity : nil)
+            .frame(maxWidth: wide ? .infinity : nil, minHeight: label == nil ? 28 : nil)
+            .frame(minWidth: label == nil ? 28 : nil)
         }
-        .buttonStyle(ActionStyle(kind: kind, iconOnly: label == nil, scale: scale))
-        .accessibilityLabel(description ?? label ?? "")
     }
 }
 
@@ -134,17 +105,10 @@ struct PasteInto: View {
 }
 
 struct ProgressLine: View {
-    @Environment(\.palette) private var palette
     let fraction: Double
     let tone: Color
 
     var body: some View {
-        GeometryReader { space in
-            ZStack(alignment: .leading) {
-                Capsule().fill(palette.control)
-                Capsule().fill(tone).frame(width: space.size.width * min(max(fraction, 0), 1))
-            }
-        }
-        .frame(height: 6)
+        ProgressView(value: min(max(fraction, 0), 1)).tint(tone)
     }
 }

@@ -169,6 +169,8 @@ private struct LaunchButton: View {
         .buttonStyle(.plain)
         .disabled(chosen == 0 || launch != .idle)
         .opacity(chosen > 0 || launch == .sent ? 1 : 0.5)
+        .sensoryFeedback(.impact(weight: .medium), trigger: launch == .flying)
+        .sensoryFeedback(.success, trigger: launch == .sent)
     }
 
     private func start() {
@@ -209,5 +211,6 @@ private struct TargetRow: View {
         .contentShape(controlShape)
         .onTapGesture(perform: onToggle)
         .accessibilityAddTraits(chosen ? [.isButton, .isSelected] : .isButton)
+        .sensoryFeedback(.selection, trigger: chosen)
     }
 }

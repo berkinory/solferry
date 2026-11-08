@@ -67,6 +67,7 @@ private struct DeviceRow: View {
                 .contentShape(Rectangle())
                 .onTapGesture { onPick(device) }
                 .accessibilityAddTraits(.isButton)
+                .contextMenu { menu }
                 HStack(spacing: 2) {
                     ClipboardButton { engine.bridge.sendText(peer: device.identity.id, text: $0) }
                     ActionButton(glyph: .more, kind: .ghost, scale: .small, description: "Options for \(device.name)") {
@@ -82,6 +83,19 @@ private struct DeviceRow: View {
             message: "It goes back to being an unpaired device until you pair again.",
             action: "Forget"
         ) { engine.bridge.forget(peer: device.identity.id) }
+    }
+
+    @ViewBuilder private var menu: some View {
+        Button { onPick(device) } label: { Label { Text("Send files") } icon: { Image(decorative: Glyph.send.rawValue) } }
+        Toggle(
+            "Receive without asking",
+            isOn: Binding(
+                get: { device.autoAccept },
+                set: { engine.bridge.setAutoAccept(peer: device.identity.id, enabled: $0) }
+            )
+        )
+        Divider()
+        Button(role: .destructive) { forgetting = true } label: { Label { Text("Forget") } icon: { Image(decorative: Glyph.delete.rawValue) } }
     }
 
     @ViewBuilder private var status: some View {

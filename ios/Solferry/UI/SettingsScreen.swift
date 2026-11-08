@@ -61,17 +61,14 @@ private struct VisibilityCard: View {
     var body: some View {
         Card(glyph: .view, title: "Who can see this device") {
             PaddedWell {
-                HStack(spacing: SpaceTokens.xs) {
-                    ForEach(reaches.indices, id: \.self) { position in
-                        ActionButton(
-                            label: reaches[position].label,
-                            kind: position == current ? .primary : .ghost,
-                            scale: .small,
-                            wide: true
-                        ) { engine.bridge.setReach(reach: reaches[position].reach) }
-                        .accessibilityAddTraits(position == current ? .isSelected : [])
-                    }
+                Picker(
+                    "Who can see this device",
+                    selection: Binding(get: { current }, set: { engine.bridge.setReach(reach: reaches[$0].reach) })
+                ) {
+                    ForEach(reaches.indices, id: \.self) { Text(reaches[$0].label).tag($0) }
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
                 Muted(reaches[current].detail)
             }
         }
