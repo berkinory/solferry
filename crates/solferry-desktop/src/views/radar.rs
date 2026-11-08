@@ -97,7 +97,11 @@ pub fn use_code(label: &'static str, cx: &mut Context<MainView>) -> AnyElement {
 
 /// The whole home screen for someone with no devices yet.
 pub fn hero(cx: &mut Context<MainView>) -> AnyElement {
-    let code = use_code("Can't see it? Pair with a code", cx);
+    let code = Button::new("pair-with-code")
+        .sm()
+        .icon(Glyph::Qr)
+        .label("Pair with code")
+        .on_click(cx.listener(|view, _, window, cx| view.open_page(Page::Pair, window, cx)));
     ui::frame(cx)
         .child(
             ui::well(cx)

@@ -1,6 +1,7 @@
 mod button;
 mod devices;
 mod dialog;
+mod history;
 mod home;
 pub mod keys;
 mod main_view;
@@ -8,6 +9,7 @@ mod offers;
 mod pairing;
 mod radar;
 mod relays;
+mod send;
 mod settings;
 mod texts;
 mod transfers;

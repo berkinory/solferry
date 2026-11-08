@@ -1,9 +1,7 @@
-use std::path::Path;
-
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
     AnyElement, Context, ExternalPaths, InteractiveElement, IntoElement, ParentElement,
-    SharedString, StatefulInteractiveElement, Styled, div, px, transparent_black,
+    StatefulInteractiveElement, Styled, div, px, transparent_black,
 };
 
 use super::button::Button;
@@ -14,12 +12,10 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, SPACE_MD, SPACE_SM, SPACE_XS};
 use solferry_core::explain;
 
-const SHOWN_FILES: usize = 3;
-
 pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let row = div().flex().flex_none().items_center().justify_between().h(px(40.)).px(px(SPACE_SM));
-    if view.page != Page::Home {
-        let title = if view.page == Page::Pair { "Pair with a code" } else { "Settings" };
+    if matches!(view.page, Page::Pair | Page::Send) {
+        let title = if view.page == Page::Pair { "Pair with a code" } else { "Send" };
         return row
             .justify_start()
             .gap(px(SPACE_XS))
@@ -29,9 +25,7 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                     .xs()
                     .icon(Glyph::ArrowLeft)
                     .tooltip("Back")
-                    .on_click(
-                        cx.listener(|view, _, window, cx| view.open_page(Page::Home, window, cx)),
-                    ),
+                    .on_click(cx.listener(|view, _, window, cx| view.leave_page(window, cx))),
             )
             .child(ui::text(title))
             .into_any_element();
@@ -40,16 +34,30 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     row.pl(px(SPACE_MD))
         .child(div().min_w_0().children(name.map(|name| ui::muted(name, cx).truncate())))
         .child(
-            Button::new("open-settings")
-                .ghost()
-                .xs()
-                .icon(Glyph::Settings)
-                .tooltip("Settings")
-                .on_click(cx.listener(|view, _, window, cx| {
-                    view.open_page(Page::Settings, window, cx);
-                })),
+            div()
+                .flex()
+                .flex_none()
+                .gap(px(SPACE_XS))
+                .child(tab(view, Page::Home, Glyph::Home, "Home", cx))
+                .child(tab(view, Page::History, Glyph::History, "History", cx))
+                .child(tab(view, Page::Settings, Glyph::Settings, "Settings", cx)),
         )
         .into_any_element()
+}
+
+fn tab(
+    view: &MainView,
+    page: Page,
+    glyph: Glyph,
+    label: &'static str,
+    cx: &mut Context<MainView>,
+) -> Button {
+    let button = Button::new(label)
+        .xs()
+        .icon(glyph)
+        .label(label)
+        .on_click(cx.listener(move |view, _, window, cx| view.open_page(page, window, cx)));
+    if view.page == page { button } else { button.ghost() }
 }
 
 fn drop_zone(cx: &mut Context<MainView>) -> AnyElement {
@@ -97,84 +105,6 @@ fn drop_zone(cx: &mut Context<MainView>) -> AnyElement {
         .into_any_element()
 }
 
-fn file_name(path: &Path) -> String {
-    path.file_name()
-        .map_or_else(|| path.display().to_string(), |name| name.to_string_lossy().into_owned())
-}
-
-fn pending_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement {
-    let glyph = if path.is_dir() { Glyph::Folder } else { Glyph::File };
-    div()
-        .flex()
-        .items_center()
-        .gap(px(SPACE_SM))
-        .pl(px(SPACE_SM))
-        .h(px(30.))
-        .child(icon(glyph, 16.).text_color(cx.theme().muted_foreground))
-        .child(ui::text(file_name(path)).flex_1().min_w_0().truncate())
-        .child(
-            Button::new(SharedString::from(format!("unpick-{index}")))
-                .ghost()
-                .xs()
-                .icon(Glyph::Cancel)
-                .tooltip("Remove")
-                .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx))),
-        )
-        .into_any_element()
-}
-
-fn pending_card(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let chosen = view.selected.len();
-    let total = view.pending.len();
-    let rows: Vec<_> = view
-        .pending
-        .iter()
-        .take(SHOWN_FILES)
-        .enumerate()
-        .map(|(index, path)| pending_row(index, path, cx))
-        .collect();
-    let more = (total > SHOWN_FILES).then(|| {
-        ui::muted(format!("and {} more", total - SHOWN_FILES), cx).pl(px(SPACE_SM)).pb(px(SPACE_XS))
-    });
-    let send = if chosen == 0 {
-        ui::muted("Choose devices below", cx).flex_1().pl(px(SPACE_SM)).into_any_element()
-    } else {
-        let label =
-            if chosen == 1 { "Send".to_owned() } else { format!("Send to {chosen} devices") };
-        Button::new("send-selected")
-            .primary()
-            .grow()
-            .icon(Glyph::Send)
-            .label(label)
-            .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
-            .into_any_element()
-    };
-    ui::card(Glyph::Upload, "Ready to send", Some(ui::count(total, cx)), cx)
-        .child(
-            ui::well(cx).gap(px(0.)).children(rows).children(more).child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(SPACE_XS))
-                    .pt(px(SPACE_SM))
-                    .child(send)
-                    .child(
-                        Button::new("add-more")
-                            .icon(Glyph::Add)
-                            .tooltip("Add more")
-                            .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx))),
-                    )
-                    .child(
-                        Button::new("clear-pending")
-                            .ghost()
-                            .label("Cancel")
-                            .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx))),
-                    ),
-            ),
-        )
-        .into_any_element()
-}
-
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
     let fatal = state.fatal.as_ref().map(|error| {
@@ -186,7 +116,6 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         state.pairing_prompts.iter().map(|prompt| offers::pairing_card(prompt, cx)).collect();
     let code = state.pairing_code.as_deref().map(|code| offers::pairing_code(code, cx));
     let shared = texts::render(&state, cx);
-    let send = if view.pending.is_empty() { drop_zone(cx) } else { pending_card(view, cx) };
     div()
         .flex()
         .flex_col()
@@ -196,7 +125,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .children(code)
         .children(offers)
         .children(shared)
-        .child(send)
+        .child(drop_zone(cx))
         .child(devices::render(&state, view, cx))
         .children(transfers::render(&state, cx))
         .into_any_element()

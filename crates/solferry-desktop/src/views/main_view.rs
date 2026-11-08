@@ -15,7 +15,7 @@ use solferry_core::TransferId;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
-use super::{home, pairing, relays, settings};
+use super::{history, home, pairing, relays, send, settings};
 use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
@@ -29,7 +29,9 @@ const CONTENT_WIDTH: f32 = 560.0;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Page {
     Home,
+    History,
     Pair,
+    Send,
     Settings,
 }
 
@@ -60,7 +62,7 @@ impl MainView {
         let mut asking = state.read(cx).asking();
         cx.observe(&state, move |view, state, cx| {
             let (latest, waiting) = (state.read(cx).paired_count, state.read(cx).asking());
-            if latest != paired_count || waiting > asking {
+            if (latest != paired_count || waiting > asking) && view.page != Page::Send {
                 view.page = Page::Home;
             }
             (paired_count, asking) = (latest, waiting);
@@ -121,13 +123,19 @@ impl MainView {
         cx.notify();
     }
 
+    pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.page == Page::Send {
+            self.clear_pending(cx);
+        } else {
+            self.open_page(Page::Home, window, cx);
+        }
+    }
+
     fn back(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.dialog.take().is_some() {
             cx.notify();
         } else if self.page != Page::Home {
-            self.open_page(Page::Home, window, cx);
-        } else if !self.pending.is_empty() {
-            self.clear_pending(cx);
+            self.leave_page(window, cx);
         }
     }
 
@@ -136,19 +144,15 @@ impl MainView {
         Self::command(Command::Send { targets, paths }, cx);
     }
 
-    pub fn activate_device(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
-        if self.pending.is_empty() {
-            Self::pick_files_for(target, cx);
-        } else {
-            if !self.selected.remove(&id) {
-                self.selected.insert(id);
-                self.targets.insert(id, target);
-            }
-            cx.notify();
+    pub fn toggle_target(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
+        if !self.selected.remove(&id) {
+            self.selected.insert(id);
+            self.targets.insert(id, target);
         }
+        cx.notify();
     }
 
-    fn pick_files_for(target: Target, cx: &mut Context<Self>) {
+    pub fn pick_files_for(target: Target, cx: &mut Context<Self>) {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
@@ -161,12 +165,15 @@ impl MainView {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
-            let _ = view.update(cx, |view, cx| {
-                view.pending.extend(paths);
-                cx.notify();
-            });
+            let _ = view.update(cx, |view, cx| view.stage(paths, cx));
         })
         .detach();
+    }
+
+    pub fn stage(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
+        self.pending.extend(paths);
+        self.page = Page::Send;
+        cx.notify();
     }
 
     pub fn send_selected(&mut self, cx: &mut Context<Self>) {
@@ -180,6 +187,9 @@ impl MainView {
         self.pending.clear();
         self.selected.clear();
         self.targets.clear();
+        if self.page == Page::Send {
+            self.page = Page::Home;
+        }
         cx.notify();
     }
 
@@ -299,7 +309,9 @@ impl Render for MainView {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
         let body = match self.page {
             Page::Home => home::render(self, cx),
+            Page::History => history::render(self, cx),
             Page::Pair => pairing::render(self, cx),
+            Page::Send => send::render(self, cx),
             Page::Settings => settings::render(self, cx),
         };
         div()
@@ -323,9 +335,7 @@ impl Render for MainView {
                 view.open_page(Page::Settings, window, cx);
             }))
             .on_drop(cx.listener(|view, paths: &ExternalPaths, _, cx| {
-                view.page = Page::Home;
-                view.pending.extend_from_slice(paths.paths());
-                cx.notify();
+                view.stage(paths.paths().to_vec(), cx);
             }))
             .child(TitleBar::new().child(brand(cx)))
             .child(home::toolbar(self, cx))

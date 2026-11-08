@@ -8,7 +8,7 @@ use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
     Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    PairingRequest, Platform, RelayHealth, TransferId,
+    PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -36,6 +36,7 @@ pub enum Command {
     Forget(EndpointId),
     SetAutoAccept { id: EndpointId, enabled: bool },
     Unblock(EndpointId),
+    ClearHistory,
     Apply(Config),
     Quit,
 }
@@ -54,6 +55,7 @@ pub enum Update {
     Nearby(Vec<NearbyDevice>),
     Reachable(HashSet<EndpointId>),
     Transfer(Event),
+    History(Vec<PastTransfer>),
     Offer {
         key: u64,
         summary: OfferSummary,
@@ -138,16 +140,21 @@ async fn start(
         blocked: node.blocked(),
     };
     let _ = updates.unbounded_send(ready);
+    let _ = updates.unbounded_send(Update::History(node.history()));
 
     let mut tasks = Vec::new();
     let mut events = node.events();
-    let outgoing = updates.clone();
+    let (outgoing, recorder) = (updates.clone(), node.clone());
     tasks.push(
         tokio::spawn(async move {
             loop {
                 match events.recv().await {
                     Ok(event) => {
+                        let over = matches!(event, Event::Completed { .. } | Event::Failed { .. });
                         let _ = outgoing.unbounded_send(Update::Transfer(event));
+                        if over {
+                            let _ = outgoing.unbounded_send(Update::History(recorder.history()));
+                        }
                     }
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
                     Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
@@ -339,6 +346,10 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 };
                 let _ = updates.send(result).await;
                 let _ = updates.send(Update::Devices(node.devices())).await;
+            }
+            Command::ClearHistory => {
+                node.clear_history();
+                let _ = updates.send(Update::History(Vec::new())).await;
             }
             Command::Forget(id) => {
                 let _ = node.forget(&id.to_z32());

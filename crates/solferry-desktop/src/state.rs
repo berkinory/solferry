@@ -4,8 +4,8 @@ use std::time::Instant;
 
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth,
-    TransferId,
+    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
+    RelayHealth, TransferId,
 };
 
 use crate::format;
@@ -78,6 +78,7 @@ pub struct AppState {
     /// Paired devices that answered the last check. `None` until the first one finishes.
     pub reachable: Option<HashSet<EndpointId>>,
     pub transfers: Vec<Transfer>,
+    pub history: Vec<PastTransfer>,
     pub failures: Vec<FailedSend>,
     pub offers: Vec<Offer>,
     pub texts: Vec<SharedText>,
@@ -121,6 +122,7 @@ impl AppState {
             Update::Nearby(found) => self.nearby = found,
             Update::Reachable(reachable) => self.reachable = Some(reachable),
             Update::Transfer(event) => self.on_event(event),
+            Update::History(history) => self.history = history,
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
             Update::OfferGone(key) => self.offers.retain(|offer| offer.key != key),
             Update::PairingGone(key) => {
