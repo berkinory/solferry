@@ -68,7 +68,7 @@ pub struct Solferry {
 
 #[uniffi::export]
 impl Solferry {
-    /// Starts the node. The first start names this device and picks where received files go.
+    /// Starts the node. The first start names this device, and every start sets where files go.
     ///
     /// # Panics
     ///
@@ -82,12 +82,14 @@ impl Solferry {
     ) -> Arc<Self> {
         logging();
         let data_dir = PathBuf::from(data_dir);
-        if !data_dir.join(CONFIG_FILE).exists() {
-            let config = Config {
-                name: device_name,
-                download_dir: PathBuf::from(download_dir),
-                ..Config::default()
-            };
+        let download_dir = PathBuf::from(download_dir);
+        if data_dir.join(CONFIG_FILE).exists() {
+            // iOS moves an app's container on every update, so the saved path can't be trusted.
+            if let Ok(config) = Config::load(&data_dir) {
+                let _ = Config { download_dir, ..config }.save(&data_dir);
+            }
+        } else {
+            let config = Config { name: device_name, download_dir, ..Config::default() };
             let _ = std::fs::create_dir_all(&data_dir);
             let _ = config.save(&data_dir);
         }

@@ -4,7 +4,7 @@ Accountless, open source file transfer between your devices and the people you t
 
 There is no account and no upload step. Files go straight from one device to another, end-to-end encrypted.
 
-> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds, and the Android app on Android 10 and later. iOS comes last.
+> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds, and the Android app on Android 10 and later. The iOS app is written and builds, but has not been tried on a device yet.
 
 ## Why
 
@@ -31,6 +31,16 @@ On macOS, run it as an app so it can show notifications and ask for local networ
 just bundle-macos
 open target/release/Solferry.app
 ```
+
+## iOS
+
+```sh
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim
+ios/build-rust.sh
+open ios/Solferry.xcodeproj
+```
+
+Needs Xcode on a Mac. `ios/build-rust.sh` writes the Rust core and its Swift bindings to `ios/Generated`. Run it again after changing the core. Finding nearby devices on a real iPhone needs Apple's multicast entitlement.
 
 ## Android
 
@@ -105,6 +115,7 @@ solferry ships with no servers and contacts none by default. To reach devices on
 | `crates/solferry-desktop` | Desktop app built with GPUI |
 | `crates/solferry-ffi` | UniFFI bridge the mobile apps call into |
 | `android` | Android app in Kotlin and Compose |
+| `ios` | iOS app in SwiftUI |
 | `deploy/relay` | Self-hosted relay |
 | `tests/netlab` | NAT, loss and outage scenarios in Linux namespaces |
 | `tests/desktop` | Driver for real input against the desktop app |

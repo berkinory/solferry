@@ -13,6 +13,7 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Pairing nearby devices by comparing a code
 - Tailscale devices listed automatically
 - Android option to keep receiving while the app is closed
+- iOS app in SwiftUI
 - `solferry relay check` and a one-command relay installer
 - Live route updates during a transfer
 - `solferry` command with JSON event output
