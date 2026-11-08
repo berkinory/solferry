@@ -352,13 +352,15 @@ impl Focusable for MainView {
 impl Render for MainView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
-        let pushed = self.page == Page::Pair;
-        let sheet = (self.page == Page::Send).then(|| send::sheet(self, cx));
-        let tabs = (!pushed).then(|| nav::render(self, cx));
+        let sheet = match self.page {
+            Page::Send => Some(send::sheet(self, cx)),
+            Page::Pair => Some(pairing::sheet(self, cx)),
+            _ => None,
+        };
+        let tabs = nav::render(self, cx);
         let body = match self.page {
-            Page::Home | Page::Send => home::render(self, cx),
+            Page::Home | Page::Send | Page::Pair => home::render(self, cx),
             Page::History => history::render(self, cx),
-            Page::Pair => pairing::render(self, cx),
             Page::Settings => settings::render(self, cx),
         };
         div()
@@ -386,7 +388,6 @@ impl Render for MainView {
             }))
             .child(TitleBar::new())
             .child(brand(cx))
-            .children(pushed.then(|| home::toolbar(cx)))
             .child(
                 div().flex_1().min_h_0().child(
                     div()
@@ -394,12 +395,12 @@ impl Render for MainView {
                         .size_full()
                         .p(px(SPACE_SM))
                         .pt(px(4.))
-                        .pb(px(if pushed { SPACE_SM } else { nav::CLEARANCE }))
+                        .pb(px(nav::CLEARANCE))
                         .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
                         .overflow_y_scrollbar(),
                 ),
             )
-            .children(tabs)
+            .child(tabs)
             .children(sheet)
             .children(overlay)
     }

@@ -72,7 +72,10 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                 .flex_col()
                                 .flex_1()
                                 .min_w_0()
-                                .child(ui::text(format!("{} wants to send", summary.peer_name)))
+                                .child(
+                                    ui::text(format!("{} wants to send", summary.peer_name))
+                                        .truncate(),
+                                )
                                 .child(ui::caption(
                                     format!(
                                         "{files}, {}  ·  {}",
@@ -162,8 +165,11 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
                             div()
                                 .flex()
                                 .flex_col()
+                                .flex_1()
                                 .min_w_0()
-                                .child(ui::text(format!("{} wants to pair", prompt.name)))
+                                .child(
+                                    ui::text(format!("{} wants to pair", prompt.name)).truncate(),
+                                )
                                 .child(ui::caption(ui::fingerprint(&prompt.peer), cx)),
                         ),
                 )

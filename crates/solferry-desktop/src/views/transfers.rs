@@ -178,7 +178,7 @@ fn row(transfer: &Transfer, cx: &mut Context<MainView>) -> AnyElement {
                         .flex()
                         .items_center()
                         .gap(px(SPACE_XS))
-                        .child(ui::text(title).flex_1().min_w_0().truncate())
+                        .child(ui::text(title).truncate().flex_1().min_w_0().truncate())
                         .children(folder)
                         .child(close),
                 )

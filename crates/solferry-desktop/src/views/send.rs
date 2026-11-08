@@ -2,14 +2,12 @@ use std::path::Path;
 use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, FontWeight, Hsla, InteractiveElement,
     IntoElement, ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation,
-    black, div, ease_out_quint, percentage, point, px,
+    div, ease_out_quint, percentage, point, px,
 };
 
-use super::button::Button;
 use super::devices::{self, Row};
 use super::main_view::{MainView, SendPhase};
 use super::{radar, ui};
@@ -17,13 +15,11 @@ use crate::assets::{Glyph, file_glyph, icon};
 use crate::format;
 use crate::service::Target;
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_CARD, RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_MD, SPACE_SM};
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
 const BUTTON_WIDTH: f32 = 210.0;
 const SENT_WIDTH: f32 = 148.0;
 const DOTS: usize = 5;
-const SHEET_TOP: f32 = 40.0;
-const SHEET_TRAVEL: f32 = 180.0;
 const FLOW: Duration = Duration::from_millis(1100);
 
 #[expect(clippy::cast_possible_truncation, reason = "a list position fits in f32")]
@@ -225,7 +221,6 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     div().flex().justify_center().pt(px(SPACE_LG)).pb(px(SPACE_SM)).child(button).into_any_element()
 }
 
-/// Comes up from the bottom over the home screen, the way a phone presents a sheet.
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = devices::rows(view.state.read(cx));
     let files: Vec<_> =
@@ -236,76 +231,12 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     } else {
         ui::well(cx).children(targets)
     };
-    let header = div()
-        .relative()
-        .flex()
-        .flex_none()
-        .items_center()
-        .justify_center()
-        .h(px(46.))
-        .child(ui::text("Send").font_weight(FontWeight::MEDIUM))
-        .child(
-            div().absolute().left(px(SPACE_SM)).child(
-                Button::new("close-send")
-                    .ghost()
-                    .xs()
-                    .icon(Glyph::Cancel)
-                    .tooltip("Close")
-                    .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx))),
-            ),
-        );
     let content = div()
-        .id("send-content")
-        .flex_1()
-        .min_h_0()
-        .child(
-            div()
-                .flex()
-                .flex_col()
-                .px(px(SPACE_MD))
-                .child(div().flex().flex_col().children(files))
-                .child(connector(!view.selected.is_empty(), cx))
-                .child(ui::frame(cx).child(well))
-                .child(send_button(view, cx)),
-        )
-        .overflow_y_scrollbar();
-    let panel = div()
-        .absolute()
-        .left_0()
-        .right_0()
-        .bottom_0()
-        .top(px(SHEET_TOP))
         .flex()
         .flex_col()
-        .rounded_t(px(RADIUS_CARD))
-        .bg(cx.theme().background)
-        .border_1()
-        .border_color(cx.theme().border)
-        .child(header)
-        .child(content)
-        .with_animation(
-            "send-rise",
-            Animation::new(Duration::from_millis(360)).with_easing(ease_out_quint()),
-            |panel, delta| panel.top(px(SHEET_TOP + (1. - delta) * SHEET_TRAVEL)),
-        );
-    div()
-        .id("send-sheet")
-        .absolute()
-        .inset_0()
-        .occlude()
-        .child(
-            div()
-                .id("send-backdrop")
-                .absolute()
-                .inset_0()
-                .bg(black().opacity(0.45))
-                .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx)))
-                .with_animation(
-                    "send-dim",
-                    Animation::new(Duration::from_millis(240)),
-                    Styled::opacity,
-                ),
-        )
-        .child(panel)
-        .into_any_element()
+        .child(div().flex().flex_col().children(files))
+        .child(connector(!view.selected.is_empty(), cx))
+        .child(ui::frame(cx).child(well))
+        .child(send_button(view, cx));
+    super::sheet::present("Send", content, |view, _, cx| view.clear_pending(cx), cx)
 }

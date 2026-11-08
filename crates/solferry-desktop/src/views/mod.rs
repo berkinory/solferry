@@ -12,6 +12,7 @@ mod radar;
 mod relays;
 mod send;
 mod settings;
+mod sheet;
 mod texts;
 mod transfers;
 mod ui;

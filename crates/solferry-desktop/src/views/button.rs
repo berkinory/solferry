@@ -8,7 +8,7 @@ use gpui_kit::{
 use super::ui::shadow;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::RADIUS_CONTROL;
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FLOOR};
 
 const GROUP: &str = "button";
 
@@ -165,7 +165,7 @@ impl RenderOnce for Button {
             .justify_center()
             .gap(px(6.))
             .h(px(height))
-            .rounded(px(RADIUS_CONTROL))
+            .rounded(px(if self.size == Size::Md { RADIUS_CONTROL } else { RADIUS_FLOOR }))
             .text_size(px(text))
             .font_weight(FontWeight::MEDIUM)
             .text_color(look.text)

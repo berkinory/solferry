@@ -9,7 +9,7 @@ use solferry_core::Platform;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{
-    RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY, TYPE_CAPTION,
+    RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_LG, SPACE_SM, SPACE_XS, TYPE_BODY, TYPE_CAPTION,
     TYPE_LABEL,
 };
 
@@ -85,8 +85,8 @@ pub fn titled(heading: Div, aside: Option<AnyElement>, cx: &App) -> Div {
             .items_center()
             .justify_between()
             .h(px(34.))
-            .pl(px(SPACE_MD))
-            .pr(px(SPACE_XS))
+            .pl(px(SPACE_LG))
+            .pr(px(SPACE_SM))
             .child(heading)
             .children(aside),
     )
@@ -97,7 +97,7 @@ pub fn count(value: usize, cx: &App) -> AnyElement {
 }
 
 pub fn padded_well(cx: &App) -> Div {
-    well(cx).gap(px(SPACE_SM)).p(px(SPACE_MD))
+    well(cx).gap(px(SPACE_SM)).p(px(SPACE_LG))
 }
 
 pub fn failure(title: &str, next: impl Into<SharedString>, cx: &App) -> Div {

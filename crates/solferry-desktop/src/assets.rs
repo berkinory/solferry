@@ -36,7 +36,6 @@ glyphs! {
     Alert => "alert",
     Android => "android",
     Apple => "apple",
-    ArrowLeft => "arrow-left",
     Blocked => "blocked",
     Cancel => "cancel",
     Check => "check",

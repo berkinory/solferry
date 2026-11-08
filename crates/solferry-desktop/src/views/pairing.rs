@@ -23,7 +23,7 @@ pub fn join(view: &MainView, cx: &mut Context<MainView>) {
     MainView::command(Command::Join { code }, cx);
 }
 
-pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
     let error = state.pairing_error.as_ref().map(|error| {
         let explanation = explain(error);
@@ -34,7 +34,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         None => invite_prompt(cx),
     };
     let join_label = if state.joining { "Pairing..." } else { "Pair" };
-    div()
+    let content = div()
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
@@ -56,8 +56,8 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                         ),
                 ),
             ),
-        )
-        .into_any_element()
+        );
+    super::sheet::present("Pair with a code", content, MainView::leave_page, cx)
 }
 
 fn invite_prompt(cx: &mut Context<MainView>) -> AnyElement {

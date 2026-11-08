@@ -7,37 +7,16 @@ use gpui_kit::{
     ease_out_quint, px, radians, transparent_black,
 };
 
-use super::button::Button;
 use super::main_view::MainView;
 use super::{devices, offers, texts, transfers, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_FIELD, SPACE_SM, SPACE_XS};
+use crate::tokens::{RADIUS_FIELD, SPACE_SM};
 use solferry_core::explain;
 
-/// The back button and title of a page that was opened from somewhere else.
-pub fn toolbar(cx: &mut Context<MainView>) -> AnyElement {
-    div()
-        .flex()
-        .flex_none()
-        .items_center()
-        .h(px(40.))
-        .px(px(SPACE_SM))
-        .gap(px(SPACE_XS))
-        .child(
-            Button::new("go-home")
-                .ghost()
-                .xs()
-                .icon(Glyph::ArrowLeft)
-                .tooltip("Back")
-                .on_click(cx.listener(|view, _, window, cx| view.leave_page(window, cx))),
-        )
-        .child(ui::text("Pair with a code"))
-        .into_any_element()
-}
-
-const FAN_GAP: f32 = 46.0;
-const FAN_OPEN: f32 = 62.0;
+const FAN_GAP: f32 = 38.0;
+const FAN_OPEN: f32 = 54.0;
+const FAN_SIZE: f32 = 56.0;
 const FAN_TILT: f32 = 0.2;
 
 /// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
@@ -52,16 +31,16 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
     };
     let tile = div()
         .absolute()
-        .top(px(10.))
-        .left(px(70. + side * FAN_GAP - 22.))
+        .top(px(4.))
+        .left(px(70. + side * FAN_GAP - FAN_SIZE / 2.))
         .flex()
         .items_center()
         .justify_center()
-        .size(px(44.))
-        .child(layer(44., 0.).text_color(cx.theme().border))
-        .child(layer(42., 1.).text_color(cx.theme().secondary))
+        .size(px(FAN_SIZE))
+        .child(layer(FAN_SIZE, 0.).text_color(cx.theme().border))
+        .child(layer(FAN_SIZE - 2., 1.).text_color(cx.theme().secondary))
         .child(
-            icon(glyph, 20.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
+            icon(glyph, 22.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
         );
     if !open {
         return tile.into_any_element();
@@ -71,7 +50,7 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
         Animation::new(Duration::from_millis(280)).with_easing(ease_out_quint()),
         move |tile, delta| {
             let spread = FAN_GAP + (FAN_OPEN - FAN_GAP) * delta;
-            tile.left(px(70. + side * spread - 22.)).top(px(10. - 6. * delta))
+            tile.left(px(70. + side * spread - FAN_SIZE / 2.))
         },
     )
     .into_any_element()
