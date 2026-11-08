@@ -1,6 +1,7 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
-    <path android:pathData="M16.5962 16.5962C14.0578 19.1346 9.94221 19.1346 7.40381 16.5962C4.8654 14.0578 4.8654 9.94221 7.40381 7.40381C8.92815 5.87946 11.0212 5.27051 13 5.57693" android:strokeColor="#FF000000" android:strokeWidth="1.5" android:strokeLineCap="round" />
-    <path android:pathData="M12 12L16.9497 7.05025C17.9829 6.01707 18.4995 5.50048 18.3867 4.75173C18.2739 4.00298 17.7382 3.7198 16.6667 3.15343C15.2736 2.41699 13.6855 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 10.5778 21.7031 9.22492 21.1679 8" android:strokeColor="#FF000000" android:strokeWidth="1.5" android:strokeLineCap="round" />
+    <path android:pathData="M10.0002,14.0a2.0,2.0 0 1,0 4.0,0a2.0,2.0 0 1,0 -4.0,0" android:strokeColor="#FF000000" android:strokeWidth="1.5" android:strokeLineCap="round" />
+    <path android:pathData="M4.00018 20.001C2.74436 18.3295 2.00018 16.2516 2.00018 14C2.00018 8.47715 6.47734 4 12.0002 4C17.523 4 22.0002 8.47715 22.0002 14C22.0002 16.2516 21.256 18.3295 20.0002 20.001" android:strokeColor="#FF000000" android:strokeWidth="1.5" android:strokeLineCap="round" />
+    <path android:pathData="M7.52797 18C6.57789 16.9385 6.00018 15.5367 6.00018 14C6.00018 10.6863 8.68647 8 12.0002 8C15.3139 8 18.0002 10.6863 18.0002 14C18.0002 15.5367 17.4225 16.9385 16.4724 18" android:strokeColor="#FF000000" android:strokeWidth="1.5" android:strokeLineCap="round" />
 </vector>
