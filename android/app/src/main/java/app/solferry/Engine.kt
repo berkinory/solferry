@@ -81,9 +81,9 @@ class Engine(private val context: Context) : Listener {
         }
     }
 
-    fun join(code: String, autoAccept: Boolean) {
+    fun join(code: String) {
         mutable.update { it.copy(joining = true, pairingProblem = null) }
-        bridge.join(code, autoAccept)
+        bridge.join(code)
     }
 
     fun setReach(reach: Reach) = bridge.setReach(reach)
@@ -103,14 +103,19 @@ class Engine(private val context: Context) : Listener {
         bridge.answerOffer(key, accept)
     }
 
+    fun acceptAlways(key: ULong) {
+        mutable.update { state -> state.copy(offers = state.offers.filter { it.key != key }) }
+        bridge.acceptAlways(key)
+    }
+
     fun blockOffer(key: ULong) {
         mutable.update { state -> state.copy(offers = state.offers.filter { it.key != key }) }
         bridge.blockOffer(key)
     }
 
-    fun answerPairing(key: ULong, accept: Boolean, autoAccept: Boolean) {
+    fun answerPairing(key: ULong, accept: Boolean) {
         mutable.update { state -> state.copy(pairings = state.pairings.filter { it.key != key }) }
-        bridge.answerPairing(key, accept, autoAccept)
+        bridge.answerPairing(key, accept)
     }
 
     private fun displayName(uri: Uri): String {

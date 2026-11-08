@@ -42,6 +42,7 @@ data class AppState(
     val startProblem: Problem? = null,
     val devices: List<PairedDevice> = emptyList(),
     val nearby: List<Nearby> = emptyList(),
+    val reachable: Set<String>? = null,
     val transfers: List<Transfer> = emptyList(),
     val offers: List<Incoming> = emptyList(),
     val pairings: List<PairingPrompt> = emptyList(),
@@ -60,6 +61,7 @@ data class AppState(
         is Update.StartFailed -> copy(startProblem = update.problem)
         is Update.Devices -> copy(devices = update.devices)
         is Update.Nearby -> copy(nearby = update.devices)
+        is Update.Reachable -> copy(reachable = update.ids.toSet())
         is Update.Started -> copy(
             transfers = listOf(
                 Transfer(update.id, update.peerName, update.label, update.sending, update.route, total = update.bytes.toLong()),
@@ -80,6 +82,7 @@ data class AppState(
             pairingCode = null, invite = null, pairingProblem = null, joining = false,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
+            reachable = reachable?.plus(update.device.identity.id),
         )
         is Update.PairingFailed -> copy(pairingCode = null, joining = false, pairingProblem = update.problem)
         is Update.SendFailed -> copy(problems = problems + (update.name to update.problem))

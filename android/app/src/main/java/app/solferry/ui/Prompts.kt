@@ -11,12 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,8 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,50 +27,57 @@ import app.solferry.Engine
 import app.solferry.PairingPrompt
 import app.solferry.R
 import app.solferry.ReceivedText
+import app.solferry.design.RadiusTokens
+import app.solferry.design.SpaceTokens
+import uniffi.solferry_ffi.Identity
 import uniffi.solferry_ffi.Incoming
 import uniffi.solferry_ffi.Problem
 
 @Composable
 private fun Digits(code: String) {
+    val palette = LocalPalette.current
     val digits = code.filter { it.isDigit() }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+    Row(Modifier.fillMaxWidth().padding(vertical = SpaceTokens.xs.dp), horizontalArrangement = Arrangement.Center) {
         digits.forEachIndexed { index, digit ->
             if (index == digits.length / 2) Spacer(Modifier.width(10.dp))
             Box(
-                Modifier.padding(horizontal = 2.dp).size(38.dp, 48.dp).clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface),
+                Modifier.padding(horizontal = 2.dp).size(38.dp, 48.dp).background(palette.page, RoundedCornerShape(RadiusTokens.control.dp)),
                 contentAlignment = Alignment.Center,
-            ) { Text(digit.toString(), fontFamily = FontFamily.Monospace, fontSize = 22.sp, fontWeight = FontWeight.Medium) }
+            ) { Text(digit.toString(), fontFamily = MonoFamily, fontSize = 22.sp, fontWeight = FontWeight.Medium) }
         }
     }
 }
 
 @Composable
-fun PairingCard(prompt: PairingPrompt, engine: Engine, autoAccept: Boolean) {
-    val palette = LocalPalette.current
-    Notice(R.drawable.ic_shield, "Pairing request", palette.primary, palette.well) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            DeviceTile(prompt.peer)
-            Column {
-                Text("${prompt.name} wants to pair", style = MaterialTheme.typography.bodyLarge)
-                Mono(prompt.peer.fingerprint)
-            }
-        }
+private fun Asker(peer: Identity, title: String, detail: String) = Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp),
+) {
+    DeviceTile(peer)
+    Column(Modifier.weight(1f)) {
+        Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Mono(detail)
+    }
+}
+
+@Composable
+fun PairingCard(prompt: PairingPrompt, engine: Engine) = Card(R.drawable.ic_shield, "Pairing request", LocalPalette.current.primary) {
+    PaddedWell {
+        Asker(prompt.peer, "${prompt.name} wants to pair", prompt.peer.fingerprint)
         Digits(prompt.code)
-        Text("Accept only if the other screen shows the same code.", style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { engine.answerPairing(prompt.key, true, autoAccept) }) { Text("Same code") }
-            TextButton(onClick = { engine.answerPairing(prompt.key, false, autoAccept) }) { Text("Decline") }
+        Muted("Accept only if the other screen shows the same code.")
+        Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+            Button({ engine.answerPairing(prompt.key, true) }, Modifier.weight(1f), label = "Same code", kind = ButtonKind.Primary)
+            Button({ engine.answerPairing(prompt.key, false) }, label = "Decline")
         }
     }
 }
 
 @Composable
-fun CompareCard(code: String) {
-    val palette = LocalPalette.current
-    Notice(R.drawable.ic_shield, "Compare codes", palette.primary, palette.well) {
+fun CompareCard(code: String) = Card(R.drawable.ic_shield, "Compare codes", LocalPalette.current.primary) {
+    PaddedWell {
         Digits(code)
-        Text("Check that the other device shows this code, then accept there.", style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted)
+        Muted("Check that the other device shows this code, then accept there.")
     }
 }
 
@@ -86,47 +86,38 @@ fun OfferCard(incoming: Incoming, engine: Engine) {
     val palette = LocalPalette.current
     var blocking by remember { mutableStateOf(false) }
     val files = if (incoming.files == 1UL) "1 file" else "${incoming.files} files"
-    Notice(R.drawable.ic_download, "Incoming files", palette.primary, palette.well) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            DeviceTile(incoming.sender)
-            Column(Modifier.weight(1f)) {
-                Text("${incoming.name} wants to send", style = MaterialTheme.typography.bodyLarge)
-                Mono("$files, ${bytes(incoming.bytes.toLong())}  ·  ${incoming.sender.fingerprint}")
+    Card(R.drawable.ic_download, "Incoming files", palette.primary) {
+        PaddedWell {
+            Asker(incoming.sender, "${incoming.name} wants to send", "$files, ${bytes(incoming.bytes.toLong())}  ·  ${incoming.sender.fingerprint}")
+            Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
+            if (!incoming.paired) Muted("Not paired. Accept only if you expected this.", color = palette.warning)
+            Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Button({ engine.answerOffer(incoming.key, true) }, Modifier.weight(1f), label = "Accept", kind = ButtonKind.Primary)
+                if (incoming.paired) Button({ engine.acceptAlways(incoming.key) }, label = "Always accept")
+                Button({ engine.answerOffer(incoming.key, false) }, label = "Decline")
+                if (!incoming.paired) Button({ blocking = true }, label = "Block", kind = ButtonKind.Ghost)
             }
-        }
-        Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
-        if (!incoming.paired) {
-            Text("Not paired. Accept only if you expected this.", color = palette.warning, style = MaterialTheme.typography.bodyMedium)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { engine.answerOffer(incoming.key, true) }) { Text("Accept") }
-            FilledTonalButton(onClick = { engine.answerOffer(incoming.key, false) }) { Text("Decline") }
-            if (!incoming.paired) TextButton(onClick = { blocking = true }) { Text("Block") }
         }
     }
     if (blocking) {
-        AlertDialog(
-            onDismissRequest = { blocking = false },
-            title = { Text("Block ${incoming.name}?") },
-            text = { Text("It can't send files or ask to pair. You can unblock it later.") },
-            confirmButton = { TextButton(onClick = { blocking = false; engine.blockOffer(incoming.key) }) { Text("Block", color = palette.danger) } },
-            dismissButton = { TextButton(onClick = { blocking = false }) { Text("Cancel") } },
+        ConfirmDialog(
+            "Block ${incoming.name}?", "It can't send files or ask to pair. You can unblock it later.", "Block",
+            onConfirm = { blocking = false; engine.blockOffer(incoming.key) },
+            onDismiss = { blocking = false },
         )
     }
 }
 
 @Composable
-fun TextCard(shared: ReceivedText, engine: Engine) {
-    val palette = LocalPalette.current
-    Notice(R.drawable.ic_clipboard, "Text from ${shared.name}", palette.inkMuted, palette.well) {
-        Text(shared.text, maxLines = 4, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilledTonalButton(onClick = { engine.copy(shared.text); engine.markCopied(shared.key) }) {
-                Glyph(if (shared.copied) R.drawable.ic_check else R.drawable.ic_copy, size = 18)
-                Spacer(Modifier.width(8.dp))
-                Text(if (shared.copied) "Copied" else "Copy")
-            }
-            TextButton(onClick = { engine.dismissText(shared.key) }) { Text("Dismiss") }
+fun TextCard(shared: ReceivedText, engine: Engine) = Card(R.drawable.ic_clipboard, "Text from ${shared.name}") {
+    PaddedWell {
+        Text(shared.text, maxLines = 4, overflow = TextOverflow.Ellipsis)
+        Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+            Button(
+                { engine.copy(shared.text); engine.markCopied(shared.key) }, label = if (shared.copied) "Copied" else "Copy",
+                icon = if (shared.copied) R.drawable.ic_check else R.drawable.ic_copy, size = ButtonSize.Sm,
+            )
+            Button({ engine.dismissText(shared.key) }, label = "Dismiss", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
         }
     }
 }
@@ -134,8 +125,10 @@ fun TextCard(shared: ReceivedText, engine: Engine) {
 @Composable
 fun ProblemCard(problem: Problem, about: String?, onDismiss: (() -> Unit)?) {
     val palette = LocalPalette.current
-    Notice(R.drawable.ic_alert, problem.title, palette.danger, palette.dangerWell) {
-        Text(listOfNotNull(about, problem.next).joinToString(". "), style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted)
-        if (onDismiss != null) TextButton(onClick = onDismiss) { Text("Dismiss") }
+    Card(R.drawable.ic_alert, problem.title, palette.danger, palette.danger.copy(alpha = 0.5f)) {
+        PaddedWell(palette.dangerWell) {
+            Muted(listOfNotNull(about, problem.next).joinToString(". "))
+            if (onDismiss != null) Button(onDismiss, label = "Dismiss", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
+        }
     }
 }

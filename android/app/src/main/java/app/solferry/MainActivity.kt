@@ -11,20 +11,33 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.IntentCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.solferry.design.MotionTokens
 import app.solferry.ui.AddDeviceScreen
 import app.solferry.ui.HomeScreen
 import app.solferry.ui.SettingsScreen
 import app.solferry.ui.SolferryTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
 
 private enum class Screen { Home, AddDevice, Settings }
+
+private const val PRESENCE_EVERY_MS = 20_000L
 
 class MainActivity : ComponentActivity() {
     private var shared by mutableStateOf<List<Uri>>(emptyList())
@@ -34,11 +47,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         shared = sharedUris(intent)
         val engine = (application as SolferryApp).engine
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    engine.bridge.checkPresence()
+                    delay(PRESENCE_EVERY_MS)
+                }
+            }
+        }
         setContent {
             SolferryTheme {
                 val state by engine.state.collectAsStateWithLifecycle()
                 var screen by remember { mutableStateOf(Screen.Home) }
-                var autoAccept by remember { mutableStateOf(true) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
                 val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
                     if (uris.isEmpty()) return@rememberLauncherForActivityResult
@@ -56,17 +76,22 @@ class MainActivity : ComponentActivity() {
                 BackHandler(enabled = screen != Screen.Home || shared.isNotEmpty()) {
                     if (screen != Screen.Home) screen = Screen.Home else shared = emptyList()
                 }
-                when (screen) {
-                    Screen.Home -> HomeScreen(
-                        state, engine, shared, autoAccept,
-                        onPickFiles = { device -> target = device; picker.launch(arrayOf("*/*")) },
-                        onSendStaged = { device -> engine.sendUris(device.identity.id, shared); shared = emptyList() },
-                        onClearStaged = { shared = emptyList() },
-                        onAddDevice = { screen = Screen.AddDevice },
-                        onSettings = { screen = Screen.Settings },
-                    )
-                    Screen.AddDevice -> AddDeviceScreen(state, engine, autoAccept, { autoAccept = it }) { screen = Screen.Home }
-                    Screen.Settings -> SettingsScreen(state, engine) { screen = Screen.Home }
+                AnimatedContent(
+                    screen,
+                    transitionSpec = { fadeIn(tween(MotionTokens.standard)) togetherWith fadeOut(tween(MotionTokens.quick)) },
+                ) { shown ->
+                    when (shown) {
+                        Screen.Home -> HomeScreen(
+                            state, engine, shared,
+                            onPickFiles = { device -> target = device; picker.launch(arrayOf("*/*")) },
+                            onSendStaged = { device -> engine.sendUris(device.identity.id, shared); shared = emptyList() },
+                            onClearStaged = { shared = emptyList() },
+                            onUseCode = { screen = Screen.AddDevice },
+                            onSettings = { screen = Screen.Settings },
+                        )
+                        Screen.AddDevice -> AddDeviceScreen(state, engine) { screen = Screen.Home }
+                        Screen.Settings -> SettingsScreen(state, engine) { screen = Screen.Home }
+                    }
                 }
             }
         }
