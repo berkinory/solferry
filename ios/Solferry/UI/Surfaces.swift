@@ -120,6 +120,6 @@ struct Count: View {
     let value: Int
 
     var body: some View {
-        Mono(String(value)).padding(.trailing, SpaceTokens.sm)
+        Caption(String(value)).padding(.trailing, SpaceTokens.sm)
     }
 }

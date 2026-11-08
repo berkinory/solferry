@@ -3,7 +3,28 @@ import SwiftUI
 enum Glyph: String {
     case add, alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
     case external, file, folder, history, home, key, link, linux, mark, more, nearby, qr, relay, send, settings, shield
-    case transfers, upload, view, windows
+    case cursor, transfers, upload, view, windows
+    case typeArchive = "type-archive", typeAudio = "type-audio", typeCode = "type-code", typeDoc = "type-doc"
+    case typeImage = "type-image", typePackage = "type-package", typePdf = "type-pdf", typeSheet = "type-sheet"
+    case typeSlides = "type-slides", typeText = "type-text", typeVideo = "type-video"
+}
+
+/// The icon for a file, from what its name says it is.
+func fileGlyph(_ name: String) -> Glyph {
+    switch (name as NSString).pathExtension.lowercased() {
+    case "jpg", "jpeg", "png", "gif", "webp", "heic", "heif", "bmp", "tiff", "svg", "raw": .typeImage
+    case "mp4", "mov", "mkv", "avi", "webm", "m4v": .typeVideo
+    case "mp3", "wav", "flac", "aac", "ogg", "m4a", "opus": .typeAudio
+    case "pdf": .typePdf
+    case "doc", "docx", "odt", "rtf", "pages": .typeDoc
+    case "xls", "xlsx", "ods", "csv", "numbers": .typeSheet
+    case "ppt", "pptx", "odp", "key": .typeSlides
+    case "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "bz2": .typeArchive
+    case "txt", "md", "log": .typeText
+    case "rs", "js", "ts", "tsx", "py", "go", "c", "cpp", "h", "java", "kt", "swift", "html", "css", "json", "toml", "yaml", "yml", "sh": .typeCode
+    case "apk", "exe", "msi", "dmg", "pkg", "deb", "rpm", "appimage", "ipa": .typePackage
+    default: .file
+    }
 }
 
 func platformGlyph(_ platform: DevicePlatform?) -> Glyph {
@@ -58,7 +79,7 @@ struct DeviceTile: View {
     }
 }
 
-struct Mono: View {
+struct Caption: View {
     @Environment(\.palette) private var palette
     let text: String
     var color: Color?
@@ -69,7 +90,7 @@ struct Mono: View {
     }
 
     var body: some View {
-        Text(text).font(.monoText).foregroundStyle(color ?? palette.inkMuted).lineLimit(1)
+        Text(text).font(.captionText).foregroundStyle(color ?? palette.inkMuted).lineLimit(1)
     }
 }
 

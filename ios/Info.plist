@@ -50,8 +50,6 @@
 	<array>
 		<string>InterTight-Regular.ttf</string>
 		<string>InterTight-Medium.ttf</string>
-		<string>GeistMono-Regular.ttf</string>
-		<string>GeistMono-Medium.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

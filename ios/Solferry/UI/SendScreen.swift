@@ -8,31 +8,35 @@ private struct Target: Identifiable {
     var id: String { identity.id }
 }
 
+private enum Launch {
+    case idle, launching, sent
+}
+
 /// Everything about one send on its own screen: what goes, and who gets it.
 struct SendScreen: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
     @State private var chosen: Set<String> = []
-    @State private var browsing = false
+    @State private var appeared = false
     @Binding var files: [URL]
 
     var body: some View {
         NavigationStack {
             Page(title: "Send") {
-                Card(glyph: .file, title: "Files") {
-                    ActionButton(label: "Add", glyph: .add, kind: .ghost, scale: .small) { browsing = true }
-                } content: {
-                    Well(spacing: 0) {
-                        ForEach(files, id: \.self) { file in
-                            FileRow(file: file) {
-                                files.removeAll { $0 == file }
-                                if files.isEmpty { dismiss() }
-                            }
+                VStack(spacing: 0) {
+                    ForEach(Array(files.enumerated()), id: \.element) { index, file in
+                        FileRow(file: file) {
+                            files.removeAll { $0 == file }
+                            if files.isEmpty { dismiss() }
                         }
+                        .opacity(appeared ? 1 : 0)
+                        .offset(x: appeared ? 0 : -14)
+                        .animation(.easeOut(duration: 0.3).delay(Double(index) * 0.045), value: appeared)
                     }
                 }
-                Card(glyph: .devices, title: "Send to") {
+                Connector(live: !chosen.isEmpty)
+                CardFrame {
                     Well {
                         if targets.isEmpty { Scanning() }
                         ForEach(targets) { target in
@@ -42,12 +46,13 @@ struct SendScreen: View {
                         }
                     }
                 }
-                ActionButton(label: chosen.count > 1 ? "Send to \(chosen.count) devices" : "Send", glyph: .send, kind: .primary, wide: true) {
+                LaunchButton(chosen: chosen.count) {
                     engine.send(files, to: Array(chosen))
+                } onDone: {
                     files = []
                     dismiss()
                 }
-                .disabled(chosen.isEmpty)
+                .padding(.top, SpaceTokens.sm)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -55,9 +60,7 @@ struct SendScreen: View {
                         .accessibilityLabel("Cancel")
                 }
             }
-            .fileImporter(isPresented: $browsing, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
-                if case let .success(urls) = result { files.append(contentsOf: urls.filter { !files.contains($0) }) }
-            }
+            .onAppear { appeared = true }
         }
     }
 
@@ -69,14 +72,12 @@ struct SendScreen: View {
             identity.platform = identity.platform ?? near?.identity.platform
             return Target(identity: identity, name: device.name, detail: detail(near: near, online: state.reachable?.contains(device.identity.id)))
         }
-        let others = state.strangers.map { Target(identity: $0.identity, name: $0.name ?? "Unnamed device", detail: $0.overlay ? "Overlay, not paired" : "Not paired") }
-        return mine + others
+        return mine + state.strangers.map { Target(identity: $0.identity, name: $0.name ?? "Unnamed device", detail: "Not paired") }
     }
 
     private func detail(near: Nearby?, online: Bool?) -> String {
-        if let near { return near.overlay ? "On your overlay network" : "On this network" }
-        guard let online else { return "Paired" }
-        return online ? "Online" : "Offline"
+        if near != nil || online == true { return "Online" }
+        return online == false ? "Offline" : "Paired"
     }
 }
 
@@ -86,21 +87,96 @@ private struct FileRow: View {
     let onRemove: () -> Void
 
     var body: some View {
-        HStack(spacing: SpaceTokens.sm) {
-            Icon(.file, tint: palette.inkMuted, size: 18)
+        HStack(spacing: SpaceTokens.md) {
+            Icon(fileGlyph(file.lastPathComponent), tint: palette.inkMuted, size: 22)
             Text(file.lastPathComponent).lineLimit(1).truncationMode(.middle)
             Spacer(minLength: 0)
-            if let size { Mono(bytes(size)) }
-            ActionButton(glyph: .cancel, kind: .ghost, scale: .small, description: "Remove \(file.lastPathComponent)", action: onRemove)
+            if let size { Muted(bytes(size)) }
+            Button(action: onRemove) { Icon(.delete, tint: palette.danger, size: 18).frame(width: 36, height: 36).contentShape(Rectangle()) }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Remove \(file.lastPathComponent)")
         }
-        .padding(.leading, SpaceTokens.sm)
-        .frame(minHeight: 44)
+        .padding(.leading, SpaceTokens.xs)
+        .frame(minHeight: 48)
     }
 
     private var size: UInt64? {
         let scoped = file.startAccessingSecurityScopedResource()
         defer { if scoped { file.stopAccessingSecurityScopedResource() } }
         return (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap { $0 }.map(UInt64.init)
+    }
+}
+
+/// Dots running from the files down to the devices, lit once there is somewhere to go.
+private struct Connector: View {
+    @Environment(\.palette) private var palette
+    let live: Bool
+    private let dots = 5
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 20)) { timeline in
+            let cycle = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.1) / 1.1
+            VStack(spacing: 5) {
+                ForEach(0 ..< dots, id: \.self) { index in
+                    let wave = (cycle - Double(index) / Double(dots) + 1).truncatingRemainder(dividingBy: 1)
+                    Circle()
+                        .fill(live ? palette.primary : palette.inkMuted)
+                        .frame(width: 5, height: 5)
+                        .opacity(0.15 + 0.85 * (1 - wave) * (1 - wave))
+                }
+            }
+        }
+        .padding(.vertical, SpaceTokens.xs)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct LaunchButton: View {
+    @Environment(\.palette) private var palette
+    @State private var launch = Launch.idle
+    let chosen: Int
+    let onLaunch: () -> Void
+    let onDone: () -> Void
+
+    private var label: String {
+        switch launch {
+        case .sent: "Sent"
+        case .launching: "Sending"
+        case .idle: chosen > 1 ? "Send to \(chosen) devices" : "Send"
+        }
+    }
+
+    var body: some View {
+        Button(action: start) {
+            HStack(spacing: SpaceTokens.sm) {
+                if launch == .sent {
+                    Icon(.check, tint: palette.onPrimary, size: 22).transition(.scale.combined(with: .opacity))
+                } else {
+                    Icon(.cursor, tint: palette.onPrimary, size: 22)
+                        .rotationEffect(.degrees(90))
+                        .offset(x: launch == .launching ? 36 : 0, y: launch == .launching ? -36 : 0)
+                        .opacity(launch == .launching ? 0 : 1)
+                }
+                Text(label).font(.launchText).foregroundStyle(palette.onPrimary).contentTransition(.opacity)
+            }
+            .frame(width: launch == .sent ? 148 : 210, height: 56)
+            .background(launch == .sent ? palette.success : palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(chosen == 0 || launch != .idle)
+        .opacity(chosen > 0 || launch == .sent ? 1 : 0.5)
+    }
+
+    private func start() {
+        onLaunch()
+        withAnimation(.easeIn(duration: 0.38)) { launch = .launching }
+        Task {
+            try? await Task.sleep(for: .milliseconds(420))
+            withAnimation(.snappy(duration: 0.3)) { launch = .sent }
+            try? await Task.sleep(for: .milliseconds(1000))
+            onDone()
+        }
     }
 }
 
@@ -119,7 +195,7 @@ private struct TargetRow: View {
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text(target.name).lineLimit(1)
-                StatusLine(target.detail)
+                StatusLine(target.detail, dot: target.detail == "Online" ? palette.success : nil)
             }
             Spacer(minLength: 0)
         }

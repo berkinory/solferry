@@ -39,9 +39,9 @@ struct SettingsScreen: View {
             RelayCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
-                Mono("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                Caption("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
                 Spacer()
-                Mono(me?.fingerprint ?? "")
+                Caption(me?.fingerprint ?? "")
             }
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.sm)
@@ -151,7 +151,7 @@ private struct BlockedCard: View {
                 ForEach(blocked, id: \.id) { device in
                     HStack(spacing: SpaceTokens.md) {
                         Tile(glyph: .blocked, fill: palette.control, tone: palette.inkMuted)
-                        Mono(device.fingerprint)
+                        Caption(device.fingerprint)
                         Spacer()
                         ActionButton(label: "Unblock", scale: .small) { engine.bridge.unblock(peer: device.id) }
                     }

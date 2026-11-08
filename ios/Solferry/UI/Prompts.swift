@@ -32,7 +32,7 @@ private struct Asker: View {
             DeviceTile(identity: peer)
             VStack(alignment: .leading, spacing: 0) {
                 Text(title).lineLimit(1)
-                Mono(detail)
+                Caption(detail)
             }
         }
     }

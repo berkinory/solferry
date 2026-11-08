@@ -62,8 +62,10 @@ extension Font {
     static let mutedText = sans(TypeTokens.label + phoneStep)
     static let buttonText = sans(TypeTokens.body, medium: true)
     static let cardTitle = sans(TypeTokens.label, medium: true)
-    static let monoText = Font.custom("GeistMono-Regular", size: TypeTokens.caption)
-    static let digitText = Font.custom("GeistMono-Medium", size: 22)
+    static let captionText = sans(TypeTokens.caption)
+    static let digitText = sans(22, medium: true)
+    static let launchText = sans(TypeTokens.body + 2, medium: true)
+    static let tabText = sans(11, medium: true)
 }
 
 private struct Themed: ViewModifier {

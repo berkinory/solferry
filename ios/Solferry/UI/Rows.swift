@@ -82,14 +82,10 @@ private struct DeviceRow: View {
     }
 
     @ViewBuilder private var status: some View {
-        if let near {
-            if near.overlay {
-                StatusLine("On your overlay network", dot: palette.routeOverlay)
-            } else {
-                StatusLine("On this network", dot: palette.routeLocal)
-            }
-        } else if let online {
-            StatusLine(online ? "Online" : "Offline", dot: online ? palette.success : palette.inkMuted.opacity(0.5))
+        if near != nil || online == true {
+            StatusLine("Online", dot: palette.success)
+        } else if online == false {
+            StatusLine("Offline", dot: palette.inkMuted.opacity(0.5))
         } else {
             StatusLine("Paired")
         }
@@ -161,7 +157,7 @@ struct NearbyCard: View {
                         DeviceTile(identity: device.identity)
                         VStack(alignment: .leading, spacing: 0) {
                             Text(device.name ?? "Unnamed device").lineLimit(1)
-                            StatusLine(device.overlay ? "Overlay, not paired" : "Not paired")
+                            StatusLine("Not paired")
                         }
                         Spacer(minLength: 0)
                         ActionButton(label: "Pair", glyph: .link, scale: .small) { engine.bridge.pairNearby(peer: device.identity.id) }
@@ -203,11 +199,11 @@ private struct TransferRow: View {
             ProgressLine(fraction: transfer.fraction, tone: reconnecting ? palette.warning : palette.primary)
                 .padding(.top, SpaceTokens.xs)
             HStack {
-                Mono("\(bytes(transfer.transferred)) / \(bytes(transfer.total))")
+                Caption("\(bytes(transfer.transferred)) / \(bytes(transfer.total))")
                 Spacer()
-                Mono(reconnecting ? "reconnecting" : "\(bytes(UInt64(max(transfer.bytesPerSecond, 0))))/s")
+                Caption(reconnecting ? "reconnecting" : "\(bytes(UInt64(max(transfer.bytesPerSecond, 0))))/s")
             }
-        case .done: Mono(bytes(transfer.total), color: palette.success)
+        case .done: Caption(bytes(transfer.total), color: palette.success)
         case .failed: Muted(transfer.problem?.next ?? "", color: palette.danger)
         }
     }

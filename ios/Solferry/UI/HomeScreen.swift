@@ -59,17 +59,38 @@ private struct SendZone: View {
     var body: some View {
         CardFrame {
             Well(padding: 14, action: action) {
-                HStack(spacing: SpaceTokens.md) {
-                    Icon(.send, tint: palette.onPrimary, size: 20)
-                        .frame(width: 44, height: 44)
-                        .background(palette.primaryFill, in: controlShape)
-                        .overlay(controlShape.strokeBorder(palette.primaryBorder))
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Send files")
-                        Muted("Choose what to send, then who gets it")
+                VStack(spacing: SpaceTokens.sm) {
+                    ZStack {
+                        FanTile(glyph: .typeImage, x: -46)
+                        FanTile(glyph: .typePdf, x: 46)
+                        Icon(.send, tint: palette.onPrimary, size: 24)
+                            .frame(width: 56, height: 56)
+                            .background(palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous).strokeBorder(palette.primaryBorder))
+                    }
+                    .frame(height: 64)
+                    VStack(spacing: 0) {
+                        Text("Send files").font(.titleText)
+                        Muted("Tap to choose what to send")
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 140)
             }
         }
+    }
+}
+
+private struct FanTile: View {
+    @Environment(\.palette) private var palette
+    let glyph: Glyph
+    let x: Double
+
+    var body: some View {
+        Icon(glyph, tint: palette.inkMuted, size: 20)
+            .frame(width: 44, height: 44)
+            .background(palette.control, in: controlShape)
+            .overlay(controlShape.strokeBorder(palette.line))
+            .offset(x: x, y: 6)
     }
 }
