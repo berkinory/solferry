@@ -67,15 +67,30 @@ struct Tile: View {
     }
 }
 
-/// A device's tile: its platform logo in the color its key gives it, so copied names still differ.
+/// A device's tile: its platform logo in its own color while it is there, gray while it isn't.
 struct DeviceTile: View {
     @Environment(\.palette) private var palette
     let identity: Identity
     var platform: DevicePlatform?
+    var online = true
 
     var body: some View {
-        let tone = palette.identity[Int(identity.tone) % palette.identity.count]
-        Tile(glyph: platformGlyph(identity.platform ?? platform), fill: tone.opacity(0.16), tone: tone)
+        let shown = identity.platform ?? platform
+        if online {
+            Tile(glyph: platformGlyph(shown), fill: tone(shown).opacity(0.16), tone: tone(shown))
+        } else {
+            Tile(glyph: platformGlyph(shown), fill: palette.control, tone: palette.inkMuted)
+        }
+    }
+
+    private func tone(_ platform: DevicePlatform?) -> Color {
+        switch platform {
+        case .macos, .ios: palette.platformApple
+        case .android: palette.platformAndroid
+        case .windows: palette.platformWindows
+        case .linux: palette.platformLinux
+        case nil: palette.inkMuted
+        }
     }
 }
 
@@ -169,11 +184,11 @@ func ago(_ ms: UInt64) -> String {
     let minutes = max(0, Int(Date().timeIntervalSince1970 / 60) - Int(ms / 60000))
     switch minutes {
     case 0: return "just now"
-    case 1 ..< 60: return "\(minutes) min ago"
-    case 60 ..< 1440: return "\(minutes / 60) h ago"
+    case 1 ..< 60: return "\(minutes)m ago"
+    case 60 ..< 1440: return "\(minutes / 60)h ago"
     case 1440 ..< 2880: return "yesterday"
-    case 2880 ..< 43200: return "\(minutes / 1440) days ago"
-    default: return "\(minutes / 43200) months ago"
+    case 2880 ..< 43200: return "\(minutes / 1440)d ago"
+    default: return "\(minutes / 43200)mo ago"
     }
 }
 

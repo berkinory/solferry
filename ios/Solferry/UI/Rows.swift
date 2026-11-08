@@ -23,12 +23,15 @@ private struct RowBody<Content: View>: View {
 }
 
 private struct Detail<Trailing: View>: View {
+    @Environment(\.palette) private var palette
     let label: String
+    var moment: String?
     @ViewBuilder let trailing: Trailing
 
     var body: some View {
-        HStack {
+        HStack(spacing: SpaceTokens.xs) {
             Muted(label)
+            if let moment { Muted(moment, color: palette.inkMuted.opacity(0.6)) }
             Spacer()
             trailing
         }
@@ -54,7 +57,7 @@ private struct DeviceRow: View {
             RowBody(highlighted: open) {
                 // Only this part picks the device: a press on iOS's paste control would reach it too.
                 HStack(spacing: SpaceTokens.md) {
-                    DeviceTile(identity: device.identity, platform: near?.identity.platform)
+                    DeviceTile(identity: device.identity, platform: near?.identity.platform, online: near != nil || online == true)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(device.name).lineLimit(1)
                         status
@@ -83,7 +86,7 @@ private struct DeviceRow: View {
 
     @ViewBuilder private var status: some View {
         if near != nil || online == true {
-            StatusLine("Online", dot: palette.success)
+            StatusLine("Online", dot: palette.successFill)
         } else if online == false {
             StatusLine("Offline", dot: palette.inkMuted.opacity(0.5))
         } else {
@@ -103,7 +106,7 @@ private struct DeviceRow: View {
                 )
                 .labelsHidden()
             }
-            Detail(label: lastTransfer.map { "Last transfer \(ago($0))" } ?? "Paired \(ago(device.pairedAtMs))") {
+            Detail(label: lastTransfer == nil ? "Paired" : "Last transfer", moment: ago(lastTransfer ?? device.pairedAtMs)) {
                 ActionButton(label: "Forget", glyph: .delete, kind: .danger, scale: .small) { forgetting = true }
             }
         }

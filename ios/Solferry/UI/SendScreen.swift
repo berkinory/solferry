@@ -9,7 +9,7 @@ private struct Target: Identifiable {
 }
 
 private enum Launch {
-    case idle, launching, sent
+    case idle, flying, sending, sent
 }
 
 /// Everything about one send on its own screen: what goes, and who gets it.
@@ -141,26 +141,29 @@ private struct LaunchButton: View {
     private var label: String {
         switch launch {
         case .sent: "Sent"
-        case .launching: "Sending"
-        case .idle: chosen > 1 ? "Send to \(chosen) devices" : "Send"
+        case .sending: "Sending"
+        case .idle, .flying: chosen > 1 ? "Send to \(chosen) devices" : "Send"
         }
     }
 
     var body: some View {
         Button(action: start) {
             HStack(spacing: SpaceTokens.sm) {
-                if launch == .sent {
+                switch launch {
+                case .sent:
                     Icon(.check, tint: palette.onPrimary, size: 22).transition(.scale.combined(with: .opacity))
-                } else {
+                case .sending:
+                    ProgressView().tint(palette.onPrimary).transition(.scale.combined(with: .opacity))
+                case .idle, .flying:
                     Icon(.cursor, tint: palette.onPrimary, size: 22)
                         .rotationEffect(.degrees(90))
-                        .offset(x: launch == .launching ? 36 : 0, y: launch == .launching ? -36 : 0)
-                        .opacity(launch == .launching ? 0 : 1)
+                        .offset(x: launch == .flying ? 36 : 0, y: launch == .flying ? -36 : 0)
+                        .opacity(launch == .flying ? 0 : 1)
                 }
                 Text(label).font(.launchText).foregroundStyle(palette.onPrimary).contentTransition(.opacity)
             }
             .frame(width: launch == .sent ? 148 : 210, height: 56)
-            .background(launch == .sent ? palette.success : palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+            .background(launch == .sent ? palette.successFill : palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
             .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -170,9 +173,11 @@ private struct LaunchButton: View {
 
     private func start() {
         onLaunch()
-        withAnimation(.easeIn(duration: 0.38)) { launch = .launching }
+        withAnimation(.easeIn(duration: 0.36)) { launch = .flying }
         Task {
-            try? await Task.sleep(for: .milliseconds(420))
+            try? await Task.sleep(for: .milliseconds(380))
+            withAnimation(.snappy(duration: 0.25)) { launch = .sending }
+            try? await Task.sleep(for: .milliseconds(900))
             withAnimation(.snappy(duration: 0.3)) { launch = .sent }
             try? await Task.sleep(for: .milliseconds(1000))
             onDone()
@@ -191,11 +196,11 @@ private struct TargetRow: View {
             if chosen {
                 Tile(glyph: .check, fill: palette.primaryFill, tone: palette.onPrimary)
             } else {
-                DeviceTile(identity: target.identity)
+                DeviceTile(identity: target.identity, online: target.detail != "Offline" && target.detail != "Paired")
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text(target.name).lineLimit(1)
-                StatusLine(target.detail, dot: target.detail == "Online" ? palette.success : nil)
+                StatusLine(target.detail, dot: target.detail == "Online" ? palette.successFill : nil)
             }
             Spacer(minLength: 0)
         }

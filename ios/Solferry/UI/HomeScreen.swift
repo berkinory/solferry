@@ -28,25 +28,19 @@ struct HomeScreen: View {
         }
         .background(palette.page.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top, spacing: 0) { HomeBar(name: state.me?.name ?? "") }
+        .safeAreaInset(edge: .top, spacing: 0) { HomeBar() }
     }
 }
 
-/// The brand on the left and this device's name in the middle of the bar.
 private struct HomeBar: View {
     @Environment(\.palette) private var palette
-    let name: String
 
     var body: some View {
-        ZStack {
-            HStack(spacing: 6) {
-                Icon(.mark, tint: palette.brand, size: 20)
-                Text("Solferry").font(.titleText)
-                Spacer()
-            }
-            Muted(name).lineLimit(1).padding(.horizontal, 104)
+        HStack(spacing: 6) {
+            Icon(.mark, tint: palette.brand, size: 20)
+            Text("Solferry").font(.titleText)
         }
-        .padding(.horizontal, SpaceTokens.lg)
+        .frame(maxWidth: .infinity)
         .frame(height: 44)
         .background(palette.page)
     }
@@ -75,7 +69,7 @@ private struct SendZone: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 140)
+                .frame(height: 120)
             }
         }
     }
