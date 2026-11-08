@@ -87,7 +87,7 @@ fun BlockedCard(blocked: List<Identity>, engine: Engine) {
             blocked.forEach { device ->
                 Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
                     Tile(R.drawable.ic_blocked, palette.control, palette.inkMuted)
-                    Mono(device.fingerprint, Modifier.weight(1f))
+                    Caption(device.fingerprint, Modifier.weight(1f))
                     Button({ engine.bridge.unblock(device.id) }, label = "Unblock", size = ButtonSize.Sm)
                 }
             }

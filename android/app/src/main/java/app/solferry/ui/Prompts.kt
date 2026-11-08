@@ -43,7 +43,7 @@ private fun Digits(code: String) {
             Box(
                 Modifier.padding(horizontal = 2.dp).size(38.dp, 48.dp).background(palette.page, RoundedCornerShape(RadiusTokens.control.dp)),
                 contentAlignment = Alignment.Center,
-            ) { Text(digit.toString(), fontFamily = MonoFamily, fontSize = 22.sp, fontWeight = FontWeight.Medium) }
+            ) { Text(digit.toString(), fontSize = 22.sp, fontWeight = FontWeight.Medium) }
         }
     }
 }
@@ -56,7 +56,7 @@ private fun Asker(peer: Identity, title: String, detail: String) = Row(
     DeviceTile(peer)
     Column(Modifier.weight(1f)) {
         Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Mono(detail)
+        Caption(detail)
     }
 }
 

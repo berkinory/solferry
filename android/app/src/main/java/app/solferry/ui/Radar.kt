@@ -55,7 +55,7 @@ private val ghosts = listOf(
 
 /** Runs at 20 fps. These stay on screen as long as the app is open, and a full rate cost a third of a core. */
 @Composable
-private fun rememberCycle(millis: Int): State<Float> = produceState(0f, millis) {
+fun rememberCycle(millis: Int): State<Float> = produceState(0f, millis) {
     while (true) {
         delay(TICK_MS)
         value = withFrameMillis { (it % millis).toFloat() / millis }

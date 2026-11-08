@@ -1,6 +1,9 @@
 package app.solferry.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -10,11 +13,15 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -28,14 +35,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.solferry.R
+import app.solferry.design.MotionTokens
 import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.DevicePlatform
@@ -73,8 +87,8 @@ fun DeviceTile(identity: Identity) {
 }
 
 @Composable
-fun Mono(text: String, modifier: Modifier = Modifier, color: Color = LocalPalette.current.inkMuted) =
-    Text(text, modifier, fontFamily = MonoFamily, style = MaterialTheme.typography.bodySmall, color = color, maxLines = 1)
+fun Caption(text: String, modifier: Modifier = Modifier, color: Color = LocalPalette.current.inkMuted) =
+    Text(text, modifier, style = MaterialTheme.typography.bodySmall, color = color, maxLines = 1)
 
 @Composable
 fun Muted(
@@ -104,20 +118,52 @@ fun Toolbar(content: @Composable RowScope.() -> Unit) = Row(
 
 data class Tab(val label: String, @DrawableRes val icon: Int, val selected: Boolean, val onSelect: () -> Unit)
 
-/** The app's three places, at the bottom where a thumb reaches them. */
+private val TabWidth = 84.dp
+
+/** Room scrolling content leaves so nothing ends up under the floating bar. */
 @Composable
-fun TabBar(tabs: List<Tab>) {
+fun tabClearance() = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp
+
+/** The icon for a file, from what its name says it is. */
+@DrawableRes
+fun fileIcon(name: String) = when (name.substringAfterLast('.', "").lowercase()) {
+    "jpg", "jpeg", "png", "gif", "webp", "heic", "heif", "bmp", "tiff", "svg", "raw" -> R.drawable.ic_type_image
+    "mp4", "mov", "mkv", "avi", "webm", "m4v" -> R.drawable.ic_type_video
+    "mp3", "wav", "flac", "aac", "ogg", "m4a", "opus" -> R.drawable.ic_type_audio
+    "pdf" -> R.drawable.ic_type_pdf
+    "doc", "docx", "odt", "rtf", "pages" -> R.drawable.ic_type_doc
+    "xls", "xlsx", "ods", "csv", "numbers" -> R.drawable.ic_type_sheet
+    "ppt", "pptx", "odp", "key" -> R.drawable.ic_type_slides
+    "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "bz2" -> R.drawable.ic_type_archive
+    "txt", "md", "log" -> R.drawable.ic_type_text
+    "rs", "js", "ts", "tsx", "py", "go", "c", "cpp", "h", "java", "kt", "swift", "html", "css", "json", "toml", "yaml", "yml", "sh" -> R.drawable.ic_type_code
+    "apk", "exe", "msi", "dmg", "pkg", "deb", "rpm", "appimage", "ipa" -> R.drawable.ic_type_package
+    else -> R.drawable.ic_file
+}
+
+/** The app's three places, floating where a thumb reaches them. */
+@Composable
+fun TabBar(tabs: List<Tab>, modifier: Modifier = Modifier) {
     val palette = LocalPalette.current
-    Row(Modifier.fillMaxWidth().background(palette.page).navigationBarsPadding().height(60.dp)) {
-        tabs.forEach { tab ->
-            val tone = if (tab.selected) palette.primary else palette.inkMuted
-            Column(
-                Modifier.weight(1f).fillMaxSize().selectable(tab.selected, role = androidx.compose.ui.semantics.Role.Tab, onClick = tab.onSelect),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Glyph(tab.icon, tone, 22)
-                Text(tab.label, style = MaterialTheme.typography.labelMedium, color = tone, maxLines = 1)
+    val index = tabs.indexOfFirst { it.selected }.coerceAtLeast(0)
+    val slide by animateDpAsState(TabWidth * index, tween(MotionTokens.slow))
+    Box(
+        modifier.navigationBarsPadding().padding(bottom = SpaceTokens.sm.dp)
+            .dropShadow(CircleShape, Shadow(radius = 24.dp, color = Color.Black.copy(alpha = 0.3f), offset = DpOffset(0.dp, 8.dp)))
+            .background(palette.page, CircleShape).border(1.dp, palette.line, CircleShape).padding(4.dp),
+    ) {
+        Box(Modifier.offset(x = slide).size(TabWidth, 52.dp).background(palette.raised, CircleShape))
+        Row {
+            tabs.forEach { tab ->
+                val tone by animateColorAsState(if (tab.selected) palette.primary else palette.inkMuted, tween(MotionTokens.standard))
+                Column(
+                    Modifier.size(TabWidth, 52.dp).clip(CircleShape).selectable(tab.selected, role = Role.Tab, onClick = tab.onSelect),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Glyph(tab.icon, tone, 20)
+                    Text(tab.label, style = MaterialTheme.typography.labelSmall, color = tone, maxLines = 1)
+                }
             }
         }
     }
@@ -132,7 +178,7 @@ fun Page(title: String, onBack: (() -> Unit)?, content: @Composable ColumnScope.
     }
     Column(
         Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
-            .imePadding().then(if (onBack != null) Modifier.navigationBarsPadding() else Modifier).padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
+            .imePadding().then(if (onBack != null) Modifier.navigationBarsPadding() else Modifier.padding(bottom = tabClearance())).padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
         content = content,
     )

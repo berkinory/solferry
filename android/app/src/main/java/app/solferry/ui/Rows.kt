@@ -90,11 +90,9 @@ private fun DeviceRow(
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 when {
-                    near == null && online == null -> StatusLine("Paired")
-                    near == null && online == true -> StatusLine("Online", palette.success)
-                    near == null -> StatusLine("Offline", palette.inkMuted.copy(alpha = 0.5f))
-                    near.overlay -> StatusLine("On your overlay network", palette.routes[TransferRoute.OVERLAY])
-                    else -> StatusLine("On this network", palette.routes[TransferRoute.LOCAL])
+                    near != null || online == true -> StatusLine("Online", palette.success)
+                    online == null -> StatusLine("Paired")
+                    else -> StatusLine("Offline", palette.inkMuted.copy(alpha = 0.5f))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -166,7 +164,7 @@ fun NearbyCard(nearby: List<Nearby>, engine: Engine, onUseCode: () -> Unit) =
                     DeviceTile(device.identity)
                     Column(Modifier.weight(1f)) {
                         Text(device.name ?: "Unnamed device", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        StatusLine(if (device.overlay) "Overlay, not paired" else "Not paired")
+                        StatusLine("Not paired")
                     }
                     Button({ engine.bridge.pairNearby(device.identity.id) }, label = "Pair", icon = R.drawable.ic_link, size = ButtonSize.Sm)
                 }
@@ -192,11 +190,11 @@ private fun TransferRow(transfer: Transfer, engine: Engine) {
                     ProgressBar(transfer.fraction, if (reconnecting) palette.warning else palette.primary)
                     Spacer(Modifier.height(2.dp))
                     Row {
-                        Mono("${bytes(transfer.transferred)} / ${bytes(transfer.total)}", Modifier.weight(1f))
-                        Mono(if (reconnecting) "reconnecting" else "${bytes(transfer.bytesPerSecond.toLong())}/s")
+                        Caption("${bytes(transfer.transferred)} / ${bytes(transfer.total)}", Modifier.weight(1f))
+                        Caption(if (reconnecting) "reconnecting" else "${bytes(transfer.bytesPerSecond.toLong())}/s")
                     }
                 }
-                Phase.Done -> Mono(bytes(transfer.total), color = palette.success)
+                Phase.Done -> Caption(bytes(transfer.total), color = palette.success)
                 Phase.Failed -> Muted(transfer.problem?.next.orEmpty(), color = palette.danger)
             }
         }

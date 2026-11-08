@@ -37,6 +37,7 @@ import app.solferry.design.SpaceTokens
 val CardShape = RoundedCornerShape(RadiusTokens.card.dp)
 val WellShape = RoundedCornerShape(RadiusTokens.well.dp)
 val ControlShape = RoundedCornerShape(RadiusTokens.control.dp)
+val FieldShape = RoundedCornerShape(RadiusTokens.field.dp)
 
 /** One line and 3dp of padding, so what it holds sits exactly 4dp inside it. */
 @Composable
@@ -111,4 +112,4 @@ fun Card(
 }
 
 @Composable
-fun Count(value: Int) = Mono(value.toString(), Modifier.padding(end = SpaceTokens.sm.dp))
+fun Count(value: Int) = Caption(value.toString(), Modifier.padding(end = SpaceTokens.sm.dp))

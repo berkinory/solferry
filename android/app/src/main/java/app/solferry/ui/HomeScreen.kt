@@ -1,5 +1,6 @@
 package app.solferry.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.Engine
@@ -38,7 +43,7 @@ fun HomeScreen(
     HomeBar(state.me?.name.orEmpty())
     LazyColumn(
         Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = SpaceTokens.md.dp),
+        contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = tabClearance()),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
     ) {
         state.startProblem?.let { item { ProblemCard(it, null, null) } }
@@ -80,17 +85,29 @@ private fun HomeBar(name: String) {
 private fun SendZone(onClick: () -> Unit) {
     val palette = LocalPalette.current
     Frame {
-        Well(padding = 14.dp, onClick = onClick) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
-                Box(
-                    Modifier.size(44.dp).background(palette.primaryFill, ControlShape).border(1.dp, palette.primaryBorder, ControlShape),
-                    contentAlignment = Alignment.Center,
-                ) { Glyph(R.drawable.ic_send, palette.onPrimary, 20) }
-                Column {
-                    Text("Send files")
-                    Muted("Choose what to send, then who gets it")
+        Well(Modifier.height(168.dp), padding = 14.dp, onClick = onClick) {
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Box(Modifier.width(140.dp).height(64.dp), contentAlignment = Alignment.Center) {
+                    FanTile(R.drawable.ic_type_image, (-46).dp)
+                    FanTile(R.drawable.ic_type_pdf, 46.dp)
+                    Box(
+                        Modifier.size(56.dp).background(palette.primaryFill, FieldShape).border(1.dp, palette.primaryBorder, FieldShape),
+                        contentAlignment = Alignment.Center,
+                    ) { Glyph(R.drawable.ic_send, palette.onPrimary, 24) }
                 }
+                Spacer(Modifier.height(SpaceTokens.sm.dp))
+                Text("Send files", style = MaterialTheme.typography.titleMedium)
+                Muted("Tap to choose what to send")
             }
         }
     }
+}
+
+@Composable
+private fun FanTile(@DrawableRes icon: Int, offset: Dp) {
+    val palette = LocalPalette.current
+    Box(
+        Modifier.offset(x = offset, y = 6.dp).size(44.dp).background(palette.control, ControlShape).border(1.dp, palette.line, ControlShape),
+        contentAlignment = Alignment.Center,
+    ) { Glyph(icon, palette.inkMuted, 20) }
 }

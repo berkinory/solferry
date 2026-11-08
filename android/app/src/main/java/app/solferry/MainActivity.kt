@@ -17,7 +17,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
@@ -88,10 +89,10 @@ class MainActivity : ComponentActivity() {
                     if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && screen != Screen.Send) screen = Screen.Home
                 }
                 BackHandler(enabled = screen != Screen.Home) { leave() }
-                Column(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize()) {
                     AnimatedContent(
                         screen,
-                        Modifier.weight(1f),
+                        Modifier.fillMaxSize(),
                         transitionSpec = {
                             val enter = if (targetState == Screen.Send) slideInVertically(tween(MotionTokens.slow)) { it / 3 } + fadeIn(tween(MotionTokens.standard)) else fadeIn(tween(MotionTokens.standard))
                             enter togetherWith fadeOut(tween(MotionTokens.quick))
@@ -110,8 +111,8 @@ class MainActivity : ComponentActivity() {
                                 state,
                                 files = remember(shared) { shared.map(engine::describe) },
                                 onRemove = { file -> shared = shared - file.uri; if (shared.isEmpty()) screen = Screen.Home },
-                                onAddMore = { target = null; picker.launch(arrayOf("*/*")) },
-                                onSend = { peers -> peers.forEach { engine.sendUris(it, shared) }; leave() },
+                                onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
+                                onDone = { leave() },
                                 onBack = { leave() },
                             )
                         }
@@ -123,6 +124,7 @@ class MainActivity : ComponentActivity() {
                                 Tab("History", R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
                                 Tab("Settings", R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
                             ),
+                            Modifier.align(Alignment.BottomCenter),
                         )
                     }
                 }

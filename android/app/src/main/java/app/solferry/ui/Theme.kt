@@ -79,11 +79,6 @@ private val sans = FontFamily(
     Font(R.font.inter_tight_medium, FontWeight.Medium),
 )
 
-val MonoFamily = FontFamily(
-    Font(R.font.geist_mono_regular, FontWeight.Normal),
-    Font(R.font.geist_mono_medium, FontWeight.Medium),
-)
-
 /** A phone reads one step larger than the desktop's dense scale. */
 private const val PHONE_STEP = 1
 
@@ -98,6 +93,7 @@ private val type = Typography(
     bodySmall = style(TypeTokens.caption),
     labelLarge = style(TypeTokens.body, FontWeight.Medium),
     labelMedium = style(TypeTokens.label, FontWeight.Medium),
+    labelSmall = style(11, FontWeight.Medium),
 )
 
 @Composable
