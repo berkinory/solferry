@@ -1,13 +1,6 @@
 package app.solferry.ui
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.InfiniteTransition
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,21 +20,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.solferry.R
 import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
 
 private const val PULSE_MS = 2800
+private const val TICK_MS = 50L
 private const val SIZE = 208
 private const val CORE = 64
 private val orbits = listOf(124f, 200f)
@@ -56,9 +53,14 @@ private val ghosts = listOf(
     Ghost(R.drawable.ic_linux, 74, 62, 0.75f),
 )
 
+/** Runs at 20 fps. These stay on screen as long as the app is open, and a full rate cost a third of a core. */
 @Composable
-private fun InfiniteTransition.cycle(millis: Int): State<Float> =
-    animateFloat(0f, 1f, infiniteRepeatable(tween(millis, easing = LinearEasing), RepeatMode.Restart), label = "cycle")
+private fun rememberCycle(millis: Int): State<Float> = produceState(0f, millis) {
+    while (true) {
+        delay(TICK_MS)
+        value = withFrameMillis { (it % millis).toFloat() / millis }
+    }
+}
 
 /** A ring leaving the center and fading on its way out. */
 private fun DrawScope.pulse(progress: Float, from: Float, tone: Color) {
@@ -69,9 +71,8 @@ private fun DrawScope.pulse(progress: Float, from: Float, tone: Color) {
 @Composable
 private fun Radar() {
     val palette = LocalPalette.current
-    val motion = rememberInfiniteTransition(label = "radar")
-    val cycle by motion.cycle(PULSE_MS)
-    val breath by motion.cycle(PULSE_MS + 800)
+    val cycle by rememberCycle(PULSE_MS)
+    val breath by rememberCycle(PULSE_MS + 800)
     Box(Modifier.size(SIZE.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             orbits.forEach { drawCircle(palette.line, it.dp.toPx() / 2, style = Stroke(1.dp.toPx())) }
@@ -80,8 +81,10 @@ private fun Radar() {
             pulse((cycle + 0.5f) % 1f, from, palette.primary)
         }
         ghosts.forEach { ghost ->
-            val glow = 0.25f + 0.75f * (sin(2 * PI.toFloat() * (breath + ghost.phase)) * 0.5f + 0.5f)
-            Box(Modifier.offset(ghost.x.dp, ghost.y.dp).alpha(glow)) {
+            val glow = Modifier.graphicsLayer {
+                alpha = 0.25f + 0.75f * (sin(2 * PI.toFloat() * (breath + ghost.phase)) * 0.5f + 0.5f)
+            }
+            Box(Modifier.offset(ghost.x.dp, ghost.y.dp).then(glow)) {
                 Tile(ghost.icon, palette.control, palette.inkMuted)
             }
         }
@@ -114,7 +117,7 @@ fun RadarHero(onUseCode: () -> Unit) = Frame {
 @Composable
 fun Scanning() {
     val palette = LocalPalette.current
-    val cycle by rememberInfiniteTransition(label = "scan").cycle(PULSE_MS)
+    val cycle by rememberCycle(PULSE_MS)
     Row(
         Modifier.fillMaxWidth().padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
