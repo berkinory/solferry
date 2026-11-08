@@ -12,12 +12,12 @@ use super::button::Button;
 use super::dialog::Dialog;
 use super::main_view::MainView;
 use super::{radar, ui};
-use crate::assets::{Glyph, icon};
+use crate::assets::Glyph;
 use crate::format;
 use crate::service::{Command, Target};
 use crate::state::AppState;
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_CONTROL, SPACE_SM};
+use crate::tokens::{RADIUS_CONTROL, SPACE_SM, SPACE_XS};
 
 pub enum Dot {
     Online,
@@ -33,6 +33,7 @@ pub struct Row {
     dot: Option<Dot>,
     approval: Option<bool>,
     paired_at_ms: u64,
+    pub online: bool,
 }
 
 /// What a paired device's line says: where it was seen nearby, else whether it answered.
@@ -59,6 +60,7 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
         .map(|device| {
             let found = near(&device.id);
             let (detail, dot) = presence(found, &device.id, state);
+            let online = matches!(dot, Some(Dot::Online));
             Row {
                 id: device.id,
                 addr: found.map_or_else(|| device.addr(), |found| found.addr.clone()),
@@ -68,6 +70,7 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
                 dot,
                 approval: Some(device.auto_accept),
                 paired_at_ms: device.paired_at_ms,
+                online,
             }
         })
         .collect();
@@ -84,6 +87,7 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             dot: None,
             approval: None,
             paired_at_ms: 0,
+            online: true,
         })
         .collect();
     (mine, others)
@@ -110,13 +114,13 @@ pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> 
     div().flex().flex_col().gap(px(SPACE_SM)).children(paired).child(nearby).into_any_element()
 }
 
-pub fn tile(id: &EndpointId, platform: Option<Platform>, selected: bool, cx: &App) -> AnyElement {
+pub fn tile(platform: Option<Platform>, online: bool, selected: bool, cx: &App) -> AnyElement {
     if selected {
         let palette = palette(cx);
         ui::tinted_tile(Glyph::Check, color(palette.primary_fill), color(palette.on_primary))
             .into_any_element()
     } else {
-        ui::device_tile(id, platform, cx).into_any_element()
+        ui::device_tile(platform, online, cx).into_any_element()
     }
 }
 
@@ -138,13 +142,6 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
     let id: ElementId = group.clone().into();
     let target = Target { addr: row.addr.clone(), name: row.name.clone() };
     let drop_target = Target { addr: row.addr.clone(), name: row.name.clone() };
-    let hint = row.approval.is_some().then(|| {
-        div()
-            .flex_none()
-            .opacity(0.)
-            .group_hover(group.clone(), |style| style.opacity(1.))
-            .child(icon(Glyph::Send, 14.).text_color(cx.theme().muted_foreground))
-    });
     let details = row
         .approval
         .filter(|_| expanded)
@@ -155,11 +152,10 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
     } else {
         pair_button(row.id, row.addr.clone(), cx)
     };
-    let shown = tile(&row.id, row.platform, false, cx);
+    let shown = tile(row.platform, row.online, false, cx);
     let line = detail(&row, cx);
     let mut body = div()
         .id(id)
-        .group(group)
         .flex()
         .items_center()
         .gap(px(10.))
@@ -189,7 +185,6 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 .child(ui::text(row.name).truncate())
                 .child(line),
         )
-        .children(hint)
         .children(share)
         .child(action);
     if expanded {
@@ -243,10 +238,15 @@ fn device_details(
         .iter()
         .find(|past| past.peer == id && past.completed)
         .map(|past| past.finished_ms);
-    let when = last.map_or_else(
-        || format!("Paired {}", format::ago(row.paired_at_ms)),
-        |ms| format!("Last transfer {}", format::ago(ms)),
+    let (what, moment) = last.map_or_else(
+        || ("Paired", format::ago(row.paired_at_ms)),
+        |ms| ("Last transfer", format::ago(ms)),
     );
+    let when = div()
+        .flex()
+        .gap(px(SPACE_XS))
+        .child(ui::muted(what, cx))
+        .child(ui::muted(moment, cx).opacity(0.6));
     let line = || div().flex().items_center().justify_between().h(px(36.)).pl(px(50.)).pr(px(7.));
     div()
         .flex()
@@ -262,7 +262,7 @@ fn device_details(
             ),
         )
         .child(
-            line().child(ui::muted(when, cx)).child(
+            line().child(when).child(
                 Button::new(SharedString::from(format!("forget-{id}")))
                     .danger()
                     .xs()

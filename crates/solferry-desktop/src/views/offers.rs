@@ -65,7 +65,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         .flex()
                         .items_center()
                         .gap(px(10.))
-                        .child(ui::device_tile(&summary.peer, summary.platform, cx))
+                        .child(ui::device_tile(summary.platform, true, cx))
                         .child(
                             div()
                                 .flex()
@@ -157,7 +157,7 @@ pub fn pairing_card(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyEl
                         .flex()
                         .items_center()
                         .gap(px(10.))
-                        .child(ui::device_tile(&prompt.peer, prompt.platform, cx))
+                        .child(ui::device_tile(prompt.platform, true, cx))
                         .child(
                             div()
                                 .flex()

@@ -8,7 +8,7 @@ use gpui_kit::{
 };
 
 use super::button::Button;
-use super::main_view::{MainView, Page};
+use super::main_view::MainView;
 use super::{devices, offers, texts, transfers, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
@@ -16,8 +16,7 @@ use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_SM, SPACE_XS};
 use solferry_core::explain;
 
 /// The back button and title of a page that was opened from somewhere else.
-pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let title = if view.page == Page::Pair { "Pair with a code" } else { "Send" };
+pub fn toolbar(cx: &mut Context<MainView>) -> AnyElement {
     div()
         .flex()
         .flex_none()
@@ -33,7 +32,7 @@ pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .tooltip("Back")
                 .on_click(cx.listener(|view, _, window, cx| view.leave_page(window, cx))),
         )
-        .child(ui::text(title))
+        .child(ui::text("Pair with a code"))
         .into_any_element()
 }
 
@@ -97,7 +96,7 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
         .items_center()
         .justify_center()
         .gap(px(SPACE_SM))
-        .h(px(172.))
+        .h(px(148.))
         .border_1()
         .border_color(transparent_black())
         .cursor_pointer()

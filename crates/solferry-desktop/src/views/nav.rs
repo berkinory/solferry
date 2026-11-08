@@ -9,12 +9,15 @@ use gpui_kit::{
 
 use super::main_view::{MainView, Page};
 use crate::assets::{Glyph, icon};
+use crate::format;
 use crate::theme::{color, palette};
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, TYPE_LABEL};
 
 /// Room the scrolling content leaves so nothing ends up under the bar.
-pub const CLEARANCE: f32 = 80.0;
+pub const CLEARANCE: f32 = 64.0;
 
-const ITEM_WIDTH: f32 = 84.0;
+const ITEM_WIDTH: f32 = 96.0;
+const ITEM_HEIGHT: f32 = 34.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [
@@ -23,9 +26,10 @@ const TABS: [(Page, Glyph, &str); 3] = [
     (Page::Settings, Glyph::Settings, "Settings"),
 ];
 
+#[expect(clippy::cast_possible_truncation, reason = "a tab position fits in f32")]
 fn slot(page: Page) -> f32 {
     let index = TABS.iter().position(|(tab, ..)| *tab == page).unwrap_or(0);
-    INSET + ITEM_WIDTH * index as f32
+    INSET + ITEM_WIDTH * format::precise(index as u64) as f32
 }
 
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
@@ -36,8 +40,8 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .top(px(INSET))
         .left(px(to))
         .w(px(ITEM_WIDTH))
-        .h(px(46.))
-        .rounded_full()
+        .h(px(ITEM_HEIGHT))
+        .rounded(px(RADIUS_CONTROL))
         .bg(cx.theme().secondary)
         .with_animation(
             SharedString::from(format!("nav-slide-{}", view.nav_moves)),
@@ -52,23 +56,23 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .id(SharedString::from(label))
                 .relative()
                 .flex()
-                .flex_col()
                 .items_center()
                 .justify_center()
+                .gap(px(6.))
                 .w(px(ITEM_WIDTH))
-                .h(px(46.))
+                .h(px(ITEM_HEIGHT))
                 .cursor_pointer()
-                .text_size(px(11.))
+                .text_size(px(TYPE_LABEL))
                 .text_color(tone)
                 .on_click(cx.listener(move |view, _, window, cx| view.open_page(page, window, cx)))
-                .child(icon(glyph, 18.).text_color(tone))
+                .child(icon(glyph, 15.).text_color(tone))
                 .child(label)
                 .into_any_element()
         })
         .collect();
     div()
         .absolute()
-        .bottom(px(14.))
+        .bottom(px(12.))
         .left_0()
         .right_0()
         .flex()
@@ -78,14 +82,14 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .relative()
                 .flex()
                 .p(px(INSET))
-                .rounded_full()
+                .rounded(px(RADIUS_FIELD))
                 .bg(cx.theme().background)
                 .border_1()
                 .border_color(cx.theme().border)
                 .shadow(vec![BoxShadow {
-                    color: black().opacity(0.28),
-                    offset: point(px(0.), px(10.)),
-                    blur_radius: px(30.),
+                    color: black().opacity(0.2),
+                    offset: point(px(0.), px(6.)),
+                    blur_radius: px(18.),
                     spread_radius: px(0.),
                     inset: false,
                 }])

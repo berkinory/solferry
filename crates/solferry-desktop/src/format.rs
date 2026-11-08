@@ -29,11 +29,11 @@ pub fn ago(ms: u64) -> String {
     let minutes = now.saturating_sub(u128::from(ms)) / 60_000;
     match minutes {
         0 => "just now".to_owned(),
-        1..60 => format!("{minutes} min ago"),
-        60..1440 => format!("{} h ago", minutes / 60),
+        1..60 => format!("{minutes}m ago"),
+        60..1440 => format!("{}h ago", minutes / 60),
         1440..2880 => "yesterday".to_owned(),
-        2880..43200 => format!("{} days ago", minutes / 1440),
-        _ => format!("{} months ago", (minutes / 43200).max(1)),
+        2880..43200 => format!("{}d ago", minutes / 1440),
+        _ => format!("{}mo ago", (minutes / 43200).max(1)),
     }
 }
 

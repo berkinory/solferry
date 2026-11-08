@@ -4,7 +4,7 @@ use std::time::Duration;
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, Div, FontWeight, Hsla, IntoElement,
-    ParentElement, Styled, div, px, white,
+    ParentElement, Styled, div, px,
 };
 
 use super::button::Button;
@@ -14,19 +14,19 @@ use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM, SPACE_XS};
 
-const SIZE: f32 = 176.0;
-const CORE: f32 = 56.0;
-const ORBITS: [f32; 2] = [108.0, 172.0];
+const SIZE: f32 = 148.0;
+const CORE: f32 = 48.0;
+const ORBITS: [f32; 2] = [92.0, 146.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
 const TILE: f32 = 32.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [
-    ("ghost-apple", Glyph::Apple, -66.0, -42.0, 0.0),
-    ("ghost-windows", Glyph::Windows, 68.0, -30.0, 0.25),
-    ("ghost-android", Glyph::Android, -54.0, 58.0, 0.5),
-    ("ghost-linux", Glyph::Linux, 62.0, 52.0, 0.75),
+    ("ghost-apple", Glyph::Apple, -56.0, -35.0, 0.0),
+    ("ghost-windows", Glyph::Windows, 57.0, -25.0, 0.25),
+    ("ghost-android", Glyph::Android, -45.0, 49.0, 0.5),
+    ("ghost-linux", Glyph::Linux, 52.0, 44.0, 0.75),
 ];
 
 fn centered(area: f32, size: f32) -> Div {
@@ -69,11 +69,10 @@ fn radar(cx: &Context<MainView>) -> Div {
         .items_center()
         .justify_center()
         .rounded(px(RADIUS_FIELD))
-        .bg(color(palette.primary_fill))
+        .bg(cx.theme().secondary)
         .border_1()
-        .border_color(color(palette.primary_border))
-        .shadow(vec![ui::shadow(white().opacity(0.22), 1., 0., 0., true)])
-        .child(icon(Glyph::Nearby, 24.).text_color(color(palette.on_primary)));
+        .border_color(cx.theme().border)
+        .child(icon(Glyph::Nearby, 22.).text_color(cx.theme().muted_foreground));
     let line = cx.theme().border;
     div()
         .relative()
@@ -107,7 +106,7 @@ pub fn hero(cx: &mut Context<MainView>) -> AnyElement {
             ui::well(cx)
                 .items_center()
                 .gap(px(SPACE_SM))
-                .py(px(24.))
+                .py(px(16.))
                 .child(radar(cx))
                 .child(
                     ui::text("Looking for nearby devices")

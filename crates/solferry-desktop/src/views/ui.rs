@@ -7,7 +7,7 @@ use iroh::EndpointId;
 use solferry_core::Platform;
 
 use crate::assets::{Glyph, icon};
-use crate::theme::{color, identity_color, palette};
+use crate::theme::{color, palette};
 use crate::tokens::{
     RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY, TYPE_CAPTION,
     TYPE_LABEL,
@@ -137,9 +137,21 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
 }
 
 /// A device's tile: its platform logo in the color its key gives it.
-pub fn device_tile(id: &EndpointId, platform: Option<Platform>, cx: &App) -> Div {
-    let tone = identity_color(id, cx);
-    tinted_tile(platform_glyph(platform), tone.opacity(0.16), tone)
+/// A device's tile: its platform logo in its own color while it is there, gray while it isn't.
+pub fn device_tile(platform: Option<Platform>, online: bool, cx: &App) -> Div {
+    let glyph = platform_glyph(platform);
+    if !online {
+        return tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground);
+    }
+    let palette = palette(cx);
+    let tone = match platform {
+        Some(Platform::Macos | Platform::Ios) => color(palette.platform_apple),
+        Some(Platform::Android) => color(palette.platform_android),
+        Some(Platform::Windows) => color(palette.platform_windows),
+        Some(Platform::Linux) => color(palette.platform_linux),
+        None => cx.theme().muted_foreground,
+    };
+    tinted_tile(glyph, tone.opacity(0.16), tone)
 }
 
 /// The start of the device's key, short enough to compare by eye.

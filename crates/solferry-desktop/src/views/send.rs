@@ -2,12 +2,14 @@ use std::path::Path;
 use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
+use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement,
-    ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
-    ease_out_quint, percentage, point, px,
+    Animation, AnimationExt, AnyElement, Context, FontWeight, Hsla, InteractiveElement,
+    IntoElement, ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation,
+    black, div, ease_out_quint, percentage, point, px,
 };
 
+use super::button::Button;
 use super::devices::{self, Row};
 use super::main_view::{MainView, SendPhase};
 use super::{radar, ui};
@@ -15,12 +17,19 @@ use crate::assets::{Glyph, file_glyph, icon};
 use crate::format;
 use crate::service::Target;
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
+use crate::tokens::{RADIUS_CARD, RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_MD, SPACE_SM};
 
 const BUTTON_WIDTH: f32 = 210.0;
 const SENT_WIDTH: f32 = 148.0;
 const DOTS: usize = 5;
+const SHEET_TOP: f32 = 40.0;
+const SHEET_TRAVEL: f32 = 180.0;
 const FLOW: Duration = Duration::from_millis(1100);
+
+#[expect(clippy::cast_possible_truncation, reason = "a list position fits in f32")]
+fn fraction(value: usize) -> f32 {
+    format::precise(value as u64) as f32
+}
 
 fn file_name(path: &Path) -> String {
     path.file_name()
@@ -35,7 +44,7 @@ fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement
         .filter(std::fs::Metadata::is_file)
         .map(|meta| format::bytes(meta.len()));
     let danger = color(palette(cx).danger);
-    let step = index as f32;
+    let step = fraction(index);
     div()
         .flex()
         .items_center()
@@ -87,7 +96,7 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
         .on_click(cx.listener(move |view, _, _, cx| {
             view.toggle_target(id, Target { addr: addr.clone(), name: name.clone() }, cx);
         }))
-        .child(devices::tile(&row.id, row.platform, selected, cx))
+        .child(devices::tile(row.platform, row.online, selected, cx))
         .child(
             div()
                 .flex()
@@ -108,7 +117,7 @@ fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
     let tone = if live { color(palette(cx).primary) } else { cx.theme().muted_foreground };
     let dots: Vec<_> = (0..DOTS)
         .map(|index| {
-            let offset = index as f32 / DOTS as f32;
+            let offset = fraction(index) / fraction(DOTS);
             div()
                 .size(px(5.))
                 .rounded_full()
@@ -139,13 +148,24 @@ fn cursor_at(delta: f32) -> Transformation {
         .with_translation(point(px(delta * 34.), px(delta * -34.)))
 }
 
+fn spinner(tone: Hsla) -> AnyElement {
+    icon(Glyph::Loading, 20.)
+        .text_color(tone)
+        .with_animation(
+            "send-spinner",
+            Animation::new(Duration::from_millis(800)).repeat(),
+            |glyph, delta| glyph.with_transformation(Transformation::rotate(percentage(delta))),
+        )
+        .into_any_element()
+}
+
 fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let palette = palette(cx);
     let chosen = view.selected.len();
     let phase = view.send_phase;
     let label = match (phase, chosen) {
         (SendPhase::Sent, _) => "Sent".to_owned(),
-        (SendPhase::Launching, _) => "Sending".to_owned(),
+        (SendPhase::Sending, _) => "Sending".to_owned(),
         (_, 0 | 1) => "Send".to_owned(),
         (_, many) => format!("Send to {many} devices"),
     };
@@ -155,18 +175,22 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             .text_color(on_primary)
             .with_transformation(cursor_at(0.))
             .into_any_element(),
-        SendPhase::Launching => icon(Glyph::Cursor, 20.)
+        SendPhase::Flying => icon(Glyph::Cursor, 20.)
             .text_color(on_primary)
             .with_animation(
                 "cursor-launch",
-                Animation::new(Duration::from_millis(380)),
+                Animation::new(Duration::from_millis(360)),
                 |glyph, delta| glyph.with_transformation(cursor_at(delta * delta)),
             )
             .into_any_element(),
+        SendPhase::Sending => spinner(on_primary),
         SendPhase::Sent => icon(Glyph::Check, 20.).text_color(on_primary).into_any_element(),
     };
-    let fill =
-        if phase == SendPhase::Sent { color(palette.success) } else { color(palette.primary_fill) };
+    let fill = if phase == SendPhase::Sent {
+        color(palette.success_fill)
+    } else {
+        color(palette.primary_fill)
+    };
     let button = div()
         .id("send-selected")
         .flex()
@@ -174,7 +198,7 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .justify_center()
         .gap(px(SPACE_SM))
         .w(px(BUTTON_WIDTH))
-        .h(px(54.))
+        .h(px(52.))
         .rounded(px(RADIUS_FIELD))
         .bg(fill)
         .overflow_hidden()
@@ -196,12 +220,13 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             .hover(|style| style.opacity(0.92))
             .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
             .into_any_element(),
-        SendPhase::Launching => button.into_any_element(),
+        _ => button.into_any_element(),
     };
-    div().flex().justify_center().pt(px(SPACE_LG)).child(button).into_any_element()
+    div().flex().justify_center().pt(px(SPACE_LG)).pb(px(SPACE_SM)).child(button).into_any_element()
 }
 
-pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+/// Comes up from the bottom over the home screen, the way a phone presents a sheet.
+pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = devices::rows(view.state.read(cx));
     let files: Vec<_> =
         view.pending.iter().enumerate().map(|(index, path)| file_row(index, path, cx)).collect();
@@ -211,17 +236,76 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     } else {
         ui::well(cx).children(targets)
     };
-    div()
+    let header = div()
+        .relative()
+        .flex()
+        .flex_none()
+        .items_center()
+        .justify_center()
+        .h(px(46.))
+        .child(ui::text("Send").font_weight(FontWeight::MEDIUM))
+        .child(
+            div().absolute().left(px(SPACE_SM)).child(
+                Button::new("close-send")
+                    .ghost()
+                    .xs()
+                    .icon(Glyph::Cancel)
+                    .tooltip("Close")
+                    .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx))),
+            ),
+        );
+    let content = div()
+        .id("send-content")
+        .flex_1()
+        .min_h_0()
+        .child(
+            div()
+                .flex()
+                .flex_col()
+                .px(px(SPACE_MD))
+                .child(div().flex().flex_col().children(files))
+                .child(connector(!view.selected.is_empty(), cx))
+                .child(ui::frame(cx).child(well))
+                .child(send_button(view, cx)),
+        )
+        .overflow_y_scrollbar();
+    let panel = div()
+        .absolute()
+        .left_0()
+        .right_0()
+        .bottom_0()
+        .top(px(SHEET_TOP))
         .flex()
         .flex_col()
-        .child(div().flex().flex_col().children(files))
-        .child(connector(!view.selected.is_empty(), cx))
-        .child(ui::frame(cx).child(well))
-        .child(send_button(view, cx))
+        .rounded_t(px(RADIUS_CARD))
+        .bg(cx.theme().background)
+        .border_1()
+        .border_color(cx.theme().border)
+        .child(header)
+        .child(content)
         .with_animation(
             "send-rise",
-            Animation::new(Duration::from_millis(280)).with_easing(ease_out_quint()),
-            |page, delta| page.opacity(delta).mt(px((1. - delta) * 18.)),
+            Animation::new(Duration::from_millis(360)).with_easing(ease_out_quint()),
+            |panel, delta| panel.top(px(SHEET_TOP + (1. - delta) * SHEET_TRAVEL)),
+        );
+    div()
+        .id("send-sheet")
+        .absolute()
+        .inset_0()
+        .occlude()
+        .child(
+            div()
+                .id("send-backdrop")
+                .absolute()
+                .inset_0()
+                .bg(black().opacity(0.45))
+                .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx)))
+                .with_animation(
+                    "send-dim",
+                    Animation::new(Duration::from_millis(240)),
+                    Styled::opacity,
+                ),
         )
+        .child(panel)
         .into_any_element()
 }

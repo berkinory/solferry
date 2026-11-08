@@ -6,7 +6,7 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Theme, TitleBar};
 use gpui_kit::{
-    AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
+    AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
     InteractiveElement, IntoElement, ParentElement, PathPromptOptions, Render, Styled, Window, div,
     px, svg,
 };
@@ -24,14 +24,17 @@ use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
-const LAUNCH_FOR: Duration = Duration::from_millis(420);
+const FLY_FOR: Duration = Duration::from_millis(380);
+const SENDING_FOR: Duration = Duration::from_millis(900);
 const SENT_FOR: Duration = Duration::from_millis(1000);
 const CONTENT_WIDTH: f32 = 560.0;
+const BRAND_HEIGHT: f32 = 34.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SendPhase {
     Idle,
-    Launching,
+    Flying,
+    Sending,
     Sent,
 }
 
@@ -203,10 +206,15 @@ impl MainView {
         let chosen: Vec<EndpointId> = self.selected.iter().copied().collect();
         let targets = chosen.iter().filter_map(|id| self.targets.remove(id)).collect();
         Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
-        self.send_phase = SendPhase::Launching;
+        self.send_phase = SendPhase::Flying;
         cx.notify();
         cx.spawn(async move |view, cx| {
-            cx.background_executor().timer(LAUNCH_FOR).await;
+            cx.background_executor().timer(FLY_FOR).await;
+            let _ = view.update(cx, |view, cx| {
+                view.send_phase = SendPhase::Sending;
+                cx.notify();
+            });
+            cx.background_executor().timer(SENDING_FOR).await;
             let _ = view.update(cx, |view, cx| {
                 view.send_phase = SendPhase::Sent;
                 cx.notify();
@@ -344,13 +352,13 @@ impl Focusable for MainView {
 impl Render for MainView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
-        let pushed = matches!(self.page, Page::Pair | Page::Send);
+        let pushed = self.page == Page::Pair;
+        let sheet = (self.page == Page::Send).then(|| send::sheet(self, cx));
         let tabs = (!pushed).then(|| nav::render(self, cx));
         let body = match self.page {
-            Page::Home => home::render(self, cx),
+            Page::Home | Page::Send => home::render(self, cx),
             Page::History => history::render(self, cx),
             Page::Pair => pairing::render(self, cx),
-            Page::Send => send::render(self, cx),
             Page::Settings => settings::render(self, cx),
         };
         div()
@@ -376,8 +384,9 @@ impl Render for MainView {
             .on_drop(cx.listener(|view, paths: &ExternalPaths, _, cx| {
                 view.stage(paths.paths().to_vec(), cx);
             }))
-            .child(TitleBar::new().child(brand(cx)).child(device_name(self, cx)))
-            .children(pushed.then(|| home::toolbar(self, cx)))
+            .child(TitleBar::new())
+            .child(brand(cx))
+            .children(pushed.then(|| home::toolbar(cx)))
             .child(
                 div().flex_1().min_h_0().child(
                     div()
@@ -391,25 +400,22 @@ impl Render for MainView {
                 ),
             )
             .children(tabs)
+            .children(sheet)
             .children(overlay)
     }
 }
 
-fn device_name(view: &MainView, cx: &Context<MainView>) -> AnyElement {
-    let name =
-        view.state.read(cx).config.as_ref().map(|config| config.name.clone()).unwrap_or_default();
-    div()
-        .pr(px(SPACE_SM))
-        .text_size(px(TYPE_LABEL))
-        .text_color(cx.theme().muted_foreground)
-        .child(name)
-        .into_any_element()
-}
-
+/// Centered over the title bar, which keeps its own window buttons and drag area.
 fn brand(cx: &Context<MainView>) -> impl IntoElement {
     div()
+        .absolute()
+        .top_0()
+        .left_0()
+        .right_0()
+        .h(px(BRAND_HEIGHT))
         .flex()
         .items_center()
+        .justify_center()
         .gap(px(6.))
         .child(svg().path(MARK).size(px(16.)).text_color(color(palette(cx).brand)))
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))

@@ -2,10 +2,9 @@ use std::borrow::Cow;
 
 use gpui_kit::component::{ActiveTheme, Theme, ThemeRegistry};
 use gpui_kit::{App, Hsla, Rgba, rgb};
-use iroh::EndpointId;
 use solferry_core::Route;
 
-use crate::tokens::{DARK, IDENTITY_DARK, IDENTITY_LIGHT, LIGHT, Palette};
+use crate::tokens::{DARK, LIGHT, Palette};
 
 const THEMES: &str = include_str!("theme.json");
 const FONTS: [&[u8]; 2] = [
@@ -33,12 +32,6 @@ pub fn palette(cx: &App) -> &'static Palette {
 pub fn color(value: u32) -> Hsla {
     let color: Rgba = rgb(value);
     color.into()
-}
-
-/// A color taken from the device's key, so a copied name never brings the same look with it.
-pub fn identity_color(id: &EndpointId, cx: &App) -> Hsla {
-    let colors = if cx.theme().is_dark() { &IDENTITY_DARK } else { &IDENTITY_LIGHT };
-    color(colors[usize::from(id.as_bytes()[0]) % colors.len()])
 }
 
 /// The color that identifies how a transfer travels.

@@ -55,6 +55,7 @@ glyphs! {
     Home => "home",
     Key => "key",
     Link => "link",
+    Loading => "loading",
     Linux => "linux",
     More => "more",
     Nearby => "nearby",
