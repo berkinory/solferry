@@ -66,7 +66,7 @@ pub fn explain(error: &Error) -> Explanation {
             say("Damaged data was caught", "The bad copy was discarded. Send it again.")
         }
         Error::ConnectionLost => {
-            say("Connection lost", "Try again. The transfer continues where it stopped.")
+            say("Connection lost", "Try again. Transfers continue where they stopped.")
         }
         Error::InvalidTicket => {
             say("That code isn't valid", "Paste the whole code, starting with sf1.")

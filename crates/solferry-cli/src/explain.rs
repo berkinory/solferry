@@ -43,7 +43,7 @@ fn advice(error: &Error) -> Advice {
         Error::UnsupportedName(_) => "Rename the file to valid Unicode.",
         Error::NothingToSend => "Check the paths you gave. Symbolic links are skipped.",
         Error::HashMismatch(_) => "Send again. The damaged copy was discarded.",
-        Error::ConnectionLost => "Send again and the transfer continues where it stopped.",
+        Error::ConnectionLost => "Try again. Transfers continue where they stopped.",
         Error::InvalidTicket => "Copy the whole code, starting with sf1.",
         Error::TicketExpired => "Codes last 10 minutes. Create a new one with `solferry pair`.",
         Error::PairingRefused => "Codes work once. Create a new one with `solferry pair`.",
