@@ -51,8 +51,10 @@ class Engine(private val context: Context) : Listener {
                 if (update.autoCopy) copy(update.text)
                 Notifier.text(context, update.name, update.autoCopy)
             }
-            is Update.Offer -> Notifier.offer(context, update.incoming.name)
-            is Update.PairingRequest -> Notifier.pairing(context, update.name)
+            is Update.Offer -> Notifier.offer(context, update.incoming.key, update.incoming.name)
+            is Update.OfferGone -> Notifier.settleOffer(context, update.key)
+            is Update.PairingRequest -> Notifier.pairing(context, update.key, update.name)
+            is Update.PairingGone -> Notifier.settlePairing(context, update.key)
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
@@ -123,23 +125,29 @@ class Engine(private val context: Context) : Listener {
 
     fun clear(id: String) = mutable.update { state -> state.copy(transfers = state.transfers.filter { it.id != id }) }
 
-    fun answerOffer(key: ULong, accept: Boolean) {
+    private fun settleOffer(key: ULong) {
         mutable.update { state -> state.copy(offers = state.offers.filter { it.key != key }) }
+        Notifier.settleOffer(context, key)
+    }
+
+    fun answerOffer(key: ULong, accept: Boolean) {
+        settleOffer(key)
         bridge.answerOffer(key, accept)
     }
 
     fun acceptAlways(key: ULong) {
-        mutable.update { state -> state.copy(offers = state.offers.filter { it.key != key }) }
+        settleOffer(key)
         bridge.acceptAlways(key)
     }
 
     fun blockOffer(key: ULong) {
-        mutable.update { state -> state.copy(offers = state.offers.filter { it.key != key }) }
+        settleOffer(key)
         bridge.blockOffer(key)
     }
 
     fun answerPairing(key: ULong, accept: Boolean) {
         mutable.update { state -> state.copy(pairings = state.pairings.filter { it.key != key }) }
+        Notifier.settlePairing(context, key)
         bridge.answerPairing(key, accept)
     }
 

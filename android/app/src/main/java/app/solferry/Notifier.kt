@@ -17,6 +17,8 @@ object Notifier {
     const val ASKS = "asks"
     const val TRANSFERS = "transfers"
     const val STANDBY = "standby"
+    private const val OFFER = "offer"
+    private const val PAIRING = "pairing"
     private var next = 100
 
     fun createChannels(context: Context) {
@@ -52,9 +54,16 @@ object Notifier {
             .setContentIntent(opener(context))
             .build()
 
-    fun offer(context: Context, name: String) = show(context, "Incoming files", "$name wants to send you files")
+    fun offer(context: Context, key: ULong, name: String) =
+        show(context, "Incoming files", "$name wants to send you files", OFFER, key.toInt())
 
-    fun pairing(context: Context, name: String) = show(context, "Pairing request", "$name wants to pair with this device")
+    fun pairing(context: Context, key: ULong, name: String) =
+        show(context, "Pairing request", "$name wants to pair with this device", PAIRING, key.toInt())
+
+    /** Takes back a question once it has been answered or the other device has left. */
+    fun settleOffer(context: Context, key: ULong) = NotificationManagerCompat.from(context).cancel(OFFER, key.toInt())
+
+    fun settlePairing(context: Context, key: ULong) = NotificationManagerCompat.from(context).cancel(PAIRING, key.toInt())
 
     fun text(context: Context, name: String, copied: Boolean) =
         show(context, "Text from $name", if (copied) "Copied to your clipboard" else "Open Solferry to copy it")
@@ -70,7 +79,7 @@ object Notifier {
         if (allowed(context)) NotificationManagerCompat.from(context).notify(id, notification)
     }
 
-    private fun show(context: Context, title: String, body: String) {
+    private fun show(context: Context, title: String, body: String, tag: String? = null, id: Int = next++) {
         if (!allowed(context)) return
         val notification = NotificationCompat.Builder(context, ASKS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
@@ -79,6 +88,6 @@ object Notifier {
             .setContentIntent(opener(context))
             .setAutoCancel(true)
             .build()
-        NotificationManagerCompat.from(context).notify(next++, notification)
+        NotificationManagerCompat.from(context).notify(tag, id, notification)
     }
 }
