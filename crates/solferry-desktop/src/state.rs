@@ -95,6 +95,11 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Questions waiting for an answer, which only the home page shows.
+    pub fn asking(&self) -> usize {
+        self.offers.len() + self.pairing_prompts.len()
+    }
+
     pub fn apply(&mut self, update: Update) {
         match update {
             Update::Ready { id, config, devices, blocked } => {

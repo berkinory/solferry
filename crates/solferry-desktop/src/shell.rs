@@ -54,7 +54,7 @@ fn handle_update(update: Update, cx: &mut App) {
     if let Update::Transfer(Event::TextReceived { text, auto_copy: true, .. }) = &update {
         cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
     }
-    let wants_attention = matches!(update, Update::Offer { .. });
+    let wants_attention = matches!(update, Update::Offer { .. } | Update::PairingRequest { .. });
     let state = cx.global::<Shell>().state.clone();
     state.update(cx, |state, cx| {
         state.apply(update);

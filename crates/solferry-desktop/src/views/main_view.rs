@@ -57,12 +57,13 @@ impl MainView {
         })
         .detach();
         let mut paired_count = state.read(cx).paired_count;
+        let mut asking = state.read(cx).asking();
         cx.observe(&state, move |view, state, cx| {
-            let latest = state.read(cx).paired_count;
-            if latest != paired_count {
-                paired_count = latest;
+            let (latest, waiting) = (state.read(cx).paired_count, state.read(cx).asking());
+            if latest != paired_count || waiting > asking {
                 view.page = Page::Home;
             }
+            (paired_count, asking) = (latest, waiting);
             cx.notify();
         })
         .detach();
