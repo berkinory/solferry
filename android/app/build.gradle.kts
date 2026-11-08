@@ -26,6 +26,23 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            providers.environmentVariable("SOLFERRY_KEYSTORE").orNull?.let { path ->
+                storeFile = file(path)
+                storePassword = providers.environmentVariable("SOLFERRY_KEYSTORE_PASSWORD").get()
+                keyAlias = "solferry"
+                keyPassword = storePassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs["release"].takeIf { it.storeFile != null }
+        }
+    }
+
     buildFeatures {
         compose = true
     }

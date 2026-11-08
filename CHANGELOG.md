@@ -20,6 +20,7 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Desktop app for Linux, Windows and macOS with tray, pairing and settings
 - Online and offline status for paired devices
 - "Always accept" on incoming files, so pairing no longer grants it
+- Android: your relays, blocked devices, long transfers as user-initiated jobs, signed release APK
 - Device platforms shared on pairing and discovery, shown as platform icons
 - Clipboard text sharing with paired devices, from the desktop and with `solferry send --text`
 - Large files sent as up to 16 parallel segments, each verified and resumable on its own
