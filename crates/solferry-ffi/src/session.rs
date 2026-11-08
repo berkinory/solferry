@@ -4,14 +4,14 @@ use std::time::Duration;
 
 use iroh::EndpointId;
 use solferry_core::{
-    IncomingOffer, NearbyDevice, Node, NodeOptions, PairingRequest, RelayHealth, RelayLink,
+    Event, IncomingOffer, NearbyDevice, Node, NodeOptions, PairingRequest, RelayHealth, RelayLink,
     TransferId,
 };
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
 use crate::Listener;
-use crate::types::{Incoming, PairedDevice, Relay, RelayStatus, Update, identity};
+use crate::types::{HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, Update, identity};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
 const RELAY_WAIT: Duration = Duration::from_secs(5);
@@ -46,6 +46,10 @@ pub fn lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 
 pub fn devices(node: &Node) -> Update {
     Update::Devices { devices: node.devices().iter().map(PairedDevice::from).collect() }
+}
+
+pub fn history(node: &Node) -> Update {
+    Update::History { entries: node.history().iter().map(HistoryEntry::from).collect() }
 }
 
 pub fn blocked(node: &Node) -> Update {
@@ -88,6 +92,7 @@ pub async fn start(
     });
     listener.update(devices(&node));
     listener.update(blocked(&node));
+    listener.update(history(&node));
     listener.update(relays(&node, &[]));
 
     let mut tasks = Vec::new();
@@ -96,21 +101,7 @@ pub async fn start(
         let health = checker.relay_health(RELAY_WAIT).await;
         out.update(relays(&checker, &health));
     }));
-    let (mut events, out, kept) = (node.events(), listener.clone(), shelf.clone());
-    tasks.push(spawn(async move {
-        loop {
-            match events.recv().await {
-                Ok(event) => {
-                    if let solferry_core::Event::Started { id, .. } = &event {
-                        lock(&kept.transfers).insert(id.to_string(), *id);
-                    }
-                    out.update(Update::from_event(&event));
-                }
-                Err(RecvError::Lagged(_)) => {}
-                Err(RecvError::Closed) => break,
-            }
-        }
-    }));
+    tasks.push(forward_events(&node, listener.clone(), shelf.clone()));
 
     let (out, kept) = (listener.clone(), shelf.clone());
     let downloads = node.config().download_dir.clone();
@@ -172,6 +163,28 @@ pub async fn start(
             .await;
     }));
     Some(Session { node, tasks })
+}
+
+/// Passes transfer events to the app, with the history again whenever a transfer ends.
+fn forward_events(node: &Node, out: Arc<dyn Listener>, kept: Arc<Shelf>) -> AbortHandle {
+    let (mut events, recorder) = (node.events(), node.clone());
+    spawn(async move {
+        loop {
+            match events.recv().await {
+                Ok(event) => {
+                    if let Event::Started { id, .. } = &event {
+                        lock(&kept.transfers).insert(id.to_string(), *id);
+                    }
+                    out.update(Update::from_event(&event));
+                    if matches!(event, Event::Completed { .. } | Event::Failed { .. }) {
+                        out.update(history(&recorder));
+                    }
+                }
+                Err(RecvError::Lagged(_)) => {}
+                Err(RecvError::Closed) => break,
+            }
+        }
+    })
 }
 
 fn spawn(task: impl Future<Output = ()> + Send + 'static) -> AbortHandle {

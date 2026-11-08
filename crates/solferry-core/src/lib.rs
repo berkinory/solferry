@@ -4,6 +4,7 @@ mod config;
 mod error;
 mod event;
 mod explain;
+mod history;
 mod identity;
 mod net;
 mod node;
@@ -18,6 +19,7 @@ pub use config::{Config, Visibility, default_data_dir};
 pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
 pub use explain::{Explanation, explain};
+pub use history::PastTransfer;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
     RelayHealth, SendReport,

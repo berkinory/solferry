@@ -1,7 +1,7 @@
 use iroh::EndpointId;
 use solferry_core::{
-    Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth, Route,
-    explain,
+    Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
+    RelayHealth, Route, explain,
 };
 
 /// A short way to name a device on the other side of the bridge: its key in z-base-32.
@@ -56,6 +56,7 @@ pub struct PairedDevice {
     pub identity: Identity,
     pub name: String,
     pub auto_accept: bool,
+    pub paired_at_ms: u64,
 }
 
 impl From<&Device> for PairedDevice {
@@ -64,6 +65,7 @@ impl From<&Device> for PairedDevice {
             identity: identity(&device.id, device.platform),
             name: device.name.clone(),
             auto_accept: device.auto_accept,
+            paired_at_ms: device.paired_at_ms,
         }
     }
 }
@@ -83,6 +85,34 @@ impl From<&NearbyDevice> for Nearby {
             name: device.name.clone(),
             known: device.known,
             overlay: device.overlay,
+        }
+    }
+}
+
+/// A transfer that is over, as the history screen lists it.
+#[derive(Clone, Debug, uniffi::Record)]
+pub struct HistoryEntry {
+    pub peer: String,
+    pub name: String,
+    pub label: String,
+    pub sending: bool,
+    pub files: u64,
+    pub bytes: u64,
+    pub finished_ms: u64,
+    pub completed: bool,
+}
+
+impl From<&PastTransfer> for HistoryEntry {
+    fn from(past: &PastTransfer) -> Self {
+        Self {
+            peer: device_id(&past.peer),
+            name: past.peer_name.clone(),
+            label: past.label.clone(),
+            sending: past.direction == Direction::Sending,
+            files: past.files as u64,
+            bytes: past.bytes,
+            finished_ms: past.finished_ms,
+            completed: past.completed,
         }
     }
 }
@@ -202,6 +232,9 @@ pub enum Update {
     },
     Devices {
         devices: Vec<PairedDevice>,
+    },
+    History {
+        entries: Vec<HistoryEntry>,
     },
     Nearby {
         devices: Vec<Nearby>,

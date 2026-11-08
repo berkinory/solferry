@@ -12,7 +12,7 @@ use solferry_core::{Config, NamedFile, RelayLink, Visibility};
 use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
-use session::{Session, Shelf, blocked, devices, lock};
+use session::{Session, Shelf, blocked, devices, history, lock};
 pub use types::*;
 
 uniffi::setup_scaffolding!();
@@ -284,6 +284,16 @@ impl Solferry {
                     let _ = node.unblock(id);
                 }
                 listener.update(blocked(&node));
+            },
+            None,
+        );
+    }
+
+    pub fn clear_history(&self) {
+        self.with_node(
+            move |node, listener, _| async move {
+                node.clear_history();
+                listener.update(history(&node));
             },
             None,
         );

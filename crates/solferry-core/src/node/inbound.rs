@@ -143,7 +143,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
 
     let files = offer.entries.iter().filter(|entry| !entry.is_dir).count();
     let route = current_route(connection);
-    let _ = shared.events.send(Event::Started {
+    shared.publish(Event::Started {
         id,
         peer,
         peer_name: hello.name,
@@ -166,7 +166,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         Ok(_) => Event::Completed { id },
         Err(error) => Event::Failed { id, error },
     };
-    let _ = shared.events.send(event);
+    shared.publish(event);
     Ok(())
 }
 

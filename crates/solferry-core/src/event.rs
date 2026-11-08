@@ -1,5 +1,7 @@
 use std::fmt;
 
+use serde::{Deserialize, Serialize};
+
 use iroh::EndpointId;
 
 use crate::error::Error;
@@ -15,7 +17,7 @@ impl fmt::Display for TransferId {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Direction {
     Sending,
     Receiving,
