@@ -42,12 +42,16 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +67,7 @@ import app.solferry.R
 import app.solferry.design.MotionTokens
 import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
+import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.DevicePlatform
 import uniffi.solferry_ffi.Identity
 
@@ -189,19 +194,44 @@ fun TabBar(tabs: List<Tab>, modifier: Modifier = Modifier) {
     }
 }
 
-/** A pushed screen: a back button, a title, and cards that scroll clear of the keyboard. */
+/** A top-level screen: a title and cards that scroll clear of the keyboard. */
 @Composable
-fun Page(title: String, onBack: (() -> Unit)?, content: @Composable ColumnScope.() -> Unit) = Column(Modifier.fillMaxSize()) {
+fun Page(title: String, content: @Composable ColumnScope.() -> Unit) = Column(Modifier.fillMaxSize()) {
     Toolbar {
-        if (onBack != null) Button(onBack, icon = R.drawable.ic_arrow_left, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Back")
-        Text(title, Modifier.padding(start = if (onBack == null) SpaceTokens.sm.dp else 0.dp), style = MaterialTheme.typography.titleMedium)
+        Text(title, Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium)
     }
     Column(
         Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
-            .imePadding().then(if (onBack != null) Modifier.navigationBarsPadding() else Modifier.padding(bottom = tabClearance())).padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
+            .imePadding().padding(bottom = tabClearance()).padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
         content = content,
     )
+}
+
+/** Material's bottom sheet with a centered title. `content` gets a way to close it with the animation. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Sheet(title: String, onClose: () -> Unit, content: @Composable ColumnScope.(close: () -> Unit) -> Unit) {
+    val palette = LocalPalette.current
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    val close: () -> Unit = { scope.launch { state.hide() }.invokeOnCompletion { onClose() } }
+    ModalBottomSheet(
+        onClose,
+        sheetState = state,
+        containerColor = palette.page,
+        contentColor = palette.ink,
+        shape = RoundedCornerShape(topStart = RadiusTokens.card.dp, topEnd = RadiusTokens.card.dp),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding()
+                .padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
+            verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
+        ) {
+            Text(title, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            content(close)
+        }
+    }
 }
 
 @Composable

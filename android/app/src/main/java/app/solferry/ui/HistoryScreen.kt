@@ -18,7 +18,7 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.HistoryEntry
 
 @Composable
-fun HistoryScreen(state: AppState, engine: Engine) = Page("History", null) {
+fun HistoryScreen(state: AppState, engine: Engine) = Page("History") {
     if (state.history.isEmpty()) {
         Card(R.drawable.ic_history, "History") {
             PaddedWell {

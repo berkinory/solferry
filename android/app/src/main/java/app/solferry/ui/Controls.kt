@@ -51,6 +51,7 @@ fun Button(
 ) {
     val palette = LocalPalette.current
     val height = if (size == ButtonSize.Md) 44.dp else 36.dp
+    val shape = if (size == ButtonSize.Md) ControlShape else FloorShape
     if (label == null) {
         IconButton(onClick, modifier.size(height), enabled) {
             if (icon != null) Glyph(icon, palette.inkMuted, 18, description)
@@ -67,23 +68,23 @@ fun Button(
     val padding = PaddingValues(horizontal = 14.dp)
     when (kind) {
         ButtonKind.Primary -> androidx.compose.material3.Button(
-            onClick, sized, enabled, ControlShape,
+            onClick, sized, enabled, shape,
             ButtonDefaults.buttonColors(containerColor = palette.primaryFill, contentColor = palette.onPrimary),
             contentPadding = padding,
         ) { content(palette.onPrimary) }
         ButtonKind.Danger -> androidx.compose.material3.Button(
-            onClick, sized, enabled, ControlShape,
+            onClick, sized, enabled, shape,
             ButtonDefaults.buttonColors(containerColor = palette.dangerFill, contentColor = palette.onPrimary),
             contentPadding = padding,
         ) { content(palette.onPrimary) }
         ButtonKind.Secondary -> OutlinedButton(
-            onClick, sized, enabled, ControlShape,
+            onClick, sized, enabled, shape,
             ButtonDefaults.outlinedButtonColors(contentColor = palette.ink),
             border = BorderStroke(1.dp, palette.line),
             contentPadding = padding,
         ) { content(palette.ink) }
         ButtonKind.Ghost -> TextButton(
-            onClick, sized, enabled, ControlShape,
+            onClick, sized, enabled, shape,
             ButtonDefaults.textButtonColors(contentColor = palette.inkMuted),
             contentPadding = padding,
         ) { content(palette.inkMuted) }
@@ -127,7 +128,7 @@ fun Field(
         trailingIcon = trailing?.let { { Row(verticalAlignment = Alignment.CenterVertically, content = it) } },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        shape = FieldShape,
+        shape = ControlShape,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = palette.primary, unfocusedBorderColor = palette.line, cursorColor = palette.primary,
             focusedContainerColor = palette.page, unfocusedContainerColor = palette.page,

@@ -104,8 +104,8 @@ private fun SendZone(onClick: () -> Unit) {
         Well(Modifier.height(148.dp), padding = 14.dp, onClick = onClick) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.width(140.dp).height(64.dp), contentAlignment = Alignment.Center) {
-                    FanTile(R.drawable.ic_type_image, (-46).dp, -11f)
-                    FanTile(R.drawable.ic_type_pdf, 46.dp, 11f)
+                    FanTile(R.drawable.ic_type_image, (-38).dp, -11f)
+                    FanTile(R.drawable.ic_type_pdf, 38.dp, 11f)
                     Box(
                         Modifier.size(56.dp).background(palette.primaryFill, FieldShape).border(1.dp, palette.primaryBorder, FieldShape),
                         contentAlignment = Alignment.Center,
@@ -123,7 +123,7 @@ private fun SendZone(onClick: () -> Unit) {
 private fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
     val palette = LocalPalette.current
     Box(
-        Modifier.offset(x = offset, y = 6.dp).rotate(tilt).size(44.dp).background(palette.control, ControlShape).border(1.dp, palette.line, ControlShape),
+        Modifier.offset(x = offset).rotate(tilt).size(56.dp).background(palette.control, FieldShape).border(1.dp, palette.line, FieldShape),
         contentAlignment = Alignment.Center,
-    ) { Glyph(icon, palette.inkMuted, 20) }
+    ) { Glyph(icon, palette.inkMuted, 22) }
 }

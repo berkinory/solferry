@@ -20,24 +20,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,17 +39,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.PickedFile
 import app.solferry.R
 import app.solferry.design.MotionTokens
-import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.Identity
 
 private enum class Launch { Idle, Flying, Sending, Sent }
@@ -70,7 +59,6 @@ private const val SENT_MS = 1000L
 private const val FLOW_MS = 1100
 private const val DOTS = 5
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendSheet(
     state: AppState,
@@ -78,33 +66,7 @@ fun SendSheet(
     onRemove: (PickedFile) -> Unit,
     onSend: (Set<String>) -> Unit,
     onClose: () -> Unit,
-) {
-    val palette = LocalPalette.current
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
-    val close: () -> Unit = { scope.launch { sheet.hide() }.invokeOnCompletion { onClose() } }
-    ModalBottomSheet(
-        onDismissRequest = onClose,
-        sheetState = sheet,
-        containerColor = palette.page,
-        contentColor = palette.ink,
-        shape = RoundedCornerShape(topStart = RadiusTokens.card.dp, topEnd = RadiusTokens.card.dp),
-    ) {
-        SendContent(state, files, onRemove, onSend, close)
-    }
-}
-
-@Composable
-private fun SendContent(
-    state: AppState,
-    files: List<PickedFile>,
-    onRemove: (PickedFile) -> Unit,
-    onSend: (Set<String>) -> Unit,
-    onDone: () -> Unit,
-) = Column(
-    Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
-    verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
-) {
+) = Sheet("Send", onClose) { close ->
     var chosen by remember { mutableStateOf(emptySet<String>()) }
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { appeared = true }
@@ -118,7 +80,6 @@ private fun SendContent(
         Target(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), device.name, detail)
     }
     val others = state.strangers.map { Target(it.identity, it.name ?: "Unnamed device", "Not paired") }
-    Text("Send", Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
     Column {
         files.forEachIndexed { index, file -> FileRow(file, index, appeared) { onRemove(file) } }
     }
@@ -134,7 +95,7 @@ private fun SendContent(
         }
     }
     Box(Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), contentAlignment = Alignment.Center) {
-        LaunchButton(chosen.size, { onSend(chosen) }, onDone)
+        LaunchButton(chosen.size, { onSend(chosen) }, close)
     }
 }
 

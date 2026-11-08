@@ -33,11 +33,11 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.qrCode
 
 @Composable
-fun AddDeviceScreen(
+fun AddDeviceSheet(
     state: AppState,
     engine: Engine,
-    onBack: () -> Unit,
-) = Page("Pair with a code", onBack) {
+    onClose: () -> Unit,
+) = Sheet("Pair with a code", onClose) {
     var code by remember { mutableStateOf("") }
     val clipboard = LocalClipboardManager.current
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }

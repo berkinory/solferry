@@ -32,7 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.solferry.design.MotionTokens
-import app.solferry.ui.AddDeviceScreen
+import app.solferry.ui.AddDeviceSheet
 import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
 import app.solferry.ui.SendSheet
@@ -44,7 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
 
-private enum class Screen { Home, History, Settings, AddDevice }
+private enum class Screen { Home, History, Settings }
 
 private const val PRESENCE_EVERY_MS = 20_000L
 
@@ -69,6 +69,7 @@ class MainActivity : ComponentActivity() {
             SolferryTheme {
                 val state by engine.state.collectAsStateWithLifecycle()
                 var screen by rememberSaveable { mutableStateOf(Screen.Home) }
+                var pairing by rememberSaveable { mutableStateOf(false) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
                 val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
                     if (uris.isEmpty()) return@rememberLauncherForActivityResult
@@ -81,7 +82,12 @@ class MainActivity : ComponentActivity() {
                         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
-                LaunchedEffect(state.pairedCount) { if (state.pairedCount > 0 && shared.isEmpty()) screen = Screen.Home }
+                LaunchedEffect(state.pairedCount) {
+                    if (state.pairedCount > 0 && shared.isEmpty()) {
+                        pairing = false
+                        screen = Screen.Home
+                    }
+                }
                 LaunchedEffect(state.offers.size + state.pairings.size) {
                     if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && shared.isEmpty()) screen = Screen.Home
                 }
@@ -96,11 +102,10 @@ class MainActivity : ComponentActivity() {
                             Screen.Home -> HomeScreen(
                                 state, engine,
                                 onPickFiles = { device -> target = device; picker.launch(arrayOf("*/*")) },
-                                onUseCode = { screen = Screen.AddDevice },
+                                onUseCode = { pairing = true },
                             )
                             Screen.History -> HistoryScreen(state, engine)
                             Screen.Settings -> SettingsScreen(state, engine)
-                            Screen.AddDevice -> AddDeviceScreen(state, engine) { screen = Screen.Home }
                         }
                     }
                     if (shared.isNotEmpty()) {
@@ -112,16 +117,15 @@ class MainActivity : ComponentActivity() {
                             onClose = { shared = emptyList() },
                         )
                     }
-                    if (screen != Screen.AddDevice) {
-                        TabBar(
-                            listOf(
-                                Tab("Transfer", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
-                                Tab("History", R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
-                                Tab("Settings", R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
-                            ),
-                            Modifier.align(Alignment.BottomCenter),
-                        )
-                    }
+                    if (pairing) AddDeviceSheet(state, engine) { pairing = false }
+                    TabBar(
+                        listOf(
+                            Tab("Transfer", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
+                            Tab("History", R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
+                            Tab("Settings", R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
+                        ),
+                        Modifier.align(Alignment.BottomCenter),
+                    )
                 }
             }
         }
