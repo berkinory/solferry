@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SolferryTheme {
                 val state by engine.state.collectAsStateWithLifecycle()
-                var screen by remember { mutableStateOf(Screen.Home) }
+                var screen by rememberSaveable { mutableStateOf(Screen.Home) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
                 val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
                     if (uris.isEmpty()) return@rememberLauncherForActivityResult
