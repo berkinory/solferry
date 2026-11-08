@@ -21,7 +21,7 @@ const ITEM_HEIGHT: f32 = 34.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [
-    (Page::Home, Glyph::Home, "Home"),
+    (Page::Home, Glyph::Home, "Transfer"),
     (Page::History, Glyph::History, "History"),
     (Page::Settings, Glyph::Settings, "Settings"),
 ];

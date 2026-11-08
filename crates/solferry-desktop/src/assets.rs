@@ -48,6 +48,7 @@ glyphs! {
     Devices => "devices",
     Download => "download",
     External => "external",
+    FanCard => "fan-card",
     File => "file",
     Folder => "folder",
     FolderOpen => "folder-open",

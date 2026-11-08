@@ -3,8 +3,8 @@ use std::time::Duration;
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, App, Context, FontWeight, InteractiveElement, IntoElement,
-    ParentElement, SharedString, StatefulInteractiveElement, Styled, div, ease_out_quint, px,
-    transparent_black,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
+    ease_out_quint, px, radians, transparent_black,
 };
 
 use super::button::Button;
@@ -12,7 +12,7 @@ use super::main_view::MainView;
 use super::{devices, offers, texts, transfers, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_SM, SPACE_XS};
+use crate::tokens::{RADIUS_FIELD, SPACE_SM, SPACE_XS};
 use solferry_core::explain;
 
 /// The back button and title of a page that was opened from somewhere else.
@@ -38,8 +38,18 @@ pub fn toolbar(cx: &mut Context<MainView>) -> AnyElement {
 
 const FAN_GAP: f32 = 46.0;
 const FAN_OPEN: f32 = 62.0;
+const FAN_TILT: f32 = 0.2;
 
+/// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
 fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
+    let turn = || Transformation::rotate(radians(side * FAN_TILT));
+    let layer = |size: f32, inset: f32| {
+        icon(Glyph::FanCard, size)
+            .absolute()
+            .top(px(inset))
+            .left(px(inset))
+            .with_transformation(turn())
+    };
     let tile = div()
         .absolute()
         .top(px(10.))
@@ -48,11 +58,11 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
         .items_center()
         .justify_center()
         .size(px(44.))
-        .rounded(px(RADIUS_CONTROL))
-        .bg(cx.theme().secondary)
-        .border_1()
-        .border_color(cx.theme().border)
-        .child(icon(glyph, 20.).text_color(cx.theme().muted_foreground));
+        .child(layer(44., 0.).text_color(cx.theme().border))
+        .child(layer(42., 1.).text_color(cx.theme().secondary))
+        .child(
+            icon(glyph, 20.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
+        );
     if !open {
         return tile.into_any_element();
     }

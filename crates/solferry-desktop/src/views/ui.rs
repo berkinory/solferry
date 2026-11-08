@@ -137,21 +137,22 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
 }
 
 /// A device's tile: its platform logo in the color its key gives it.
-/// A device's tile: its platform logo in its own color while it is there, gray while it isn't.
+/// A device's tile: filled with its platform's color while it is there, flat gray while it isn't.
 pub fn device_tile(platform: Option<Platform>, online: bool, cx: &App) -> Div {
     let glyph = platform_glyph(platform);
-    if !online {
-        return tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground);
-    }
     let palette = palette(cx);
-    let tone = match platform {
-        Some(Platform::Macos | Platform::Ios) => color(palette.platform_apple),
-        Some(Platform::Android) => color(palette.platform_android),
-        Some(Platform::Windows) => color(palette.platform_windows),
-        Some(Platform::Linux) => color(palette.platform_linux),
-        None => cx.theme().muted_foreground,
+    let brand = match platform {
+        Some(Platform::Macos | Platform::Ios) => palette.platform_apple,
+        Some(Platform::Android) => palette.platform_android,
+        Some(Platform::Windows) => palette.platform_windows,
+        Some(Platform::Linux) => palette.platform_linux,
+        None => return tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground),
     };
-    tinted_tile(glyph, tone.opacity(0.16), tone)
+    if online {
+        tinted_tile(glyph, color(brand), cx.theme().foreground)
+    } else {
+        tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground.opacity(0.6))
+    }
 }
 
 /// The start of the device's key, short enough to compare by eye.
