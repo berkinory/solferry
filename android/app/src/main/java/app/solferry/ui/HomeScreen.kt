@@ -1,6 +1,5 @@
 package app.solferry.ui
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -8,14 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.Engine
@@ -34,23 +32,13 @@ import uniffi.solferry_ffi.PairedDevice
 fun HomeScreen(
     state: AppState,
     engine: Engine,
-    staged: List<Uri>,
     onPickFiles: (PairedDevice?) -> Unit,
-    onSendStaged: (PairedDevice) -> Unit,
-    onClearStaged: () -> Unit,
     onUseCode: () -> Unit,
-    onSettings: () -> Unit,
 ) = Column(Modifier.fillMaxSize()) {
-    Toolbar {
-        Text("Solferry", Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.width(6.dp))
-        Muted(state.me?.name.orEmpty(), Modifier.weight(1f))
-        Button(onSettings, icon = R.drawable.ic_settings, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Settings")
-    }
-    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    HomeBar(state.me?.name.orEmpty())
     LazyColumn(
         Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = bottom + SpaceTokens.md.dp),
+        contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = SpaceTokens.md.dp),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
     ) {
         state.startProblem?.let { item { ProblemCard(it, null, null) } }
@@ -62,21 +50,29 @@ fun HomeScreen(
         state.pairingCode?.let { item { CompareCard(it) } }
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         items(state.texts, key = { "text-${it.key}" }) { TextCard(it, engine) }
-        if (staged.isNotEmpty()) {
-            item { Staged(staged.size, onClearStaged) }
-        } else if (state.devices.isNotEmpty()) {
-            item { SendZone { onPickFiles(null) } }
-        }
+        item { SendZone { onPickFiles(null) } }
         if (state.devices.isEmpty() && state.strangers.isEmpty()) item { RadarHero(onUseCode) }
         if (state.devices.isNotEmpty()) {
-            item {
-                DeviceCard(state.devices, state.nearby, state.reachable, staged.isNotEmpty(), engine) { device ->
-                    if (staged.isNotEmpty()) onSendStaged(device) else onPickFiles(device)
-                }
-            }
+            item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine) { onPickFiles(it) } }
         }
         if (state.devices.isNotEmpty() || state.strangers.isNotEmpty()) item { NearbyCard(state.strangers, engine, onUseCode) }
         if (state.transfers.isNotEmpty()) item { TransferCard(state.transfers, engine) }
+    }
+}
+
+/** The brand on the left and this device's name in the middle of the bar. */
+@Composable
+private fun HomeBar(name: String) {
+    val palette = LocalPalette.current
+    Box(Modifier.fillMaxWidth().statusBarsPadding().height(52.dp).padding(horizontal = SpaceTokens.lg.dp)) {
+        Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Glyph(R.drawable.ic_mark, palette.brand, 20)
+            Text("Solferry", style = MaterialTheme.typography.titleMedium)
+        }
+        Text(
+            name, Modifier.align(Alignment.Center).padding(horizontal = 104.dp),
+            style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -92,19 +88,9 @@ private fun SendZone(onClick: () -> Unit) {
                 ) { Glyph(R.drawable.ic_send, palette.onPrimary, 20) }
                 Column {
                     Text("Send files")
-                    Muted("Choose what to send, then tap a device")
+                    Muted("Choose what to send, then who gets it")
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun Staged(count: Int, onClear: () -> Unit) = Card(R.drawable.ic_upload, "Ready to send", aside = { Count(count) }) {
-    PaddedWell {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Muted(if (count == 1) "Tap a device to send this file." else "Tap a device to send these files.", Modifier.weight(1f))
-            Button(onClear, label = "Cancel", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
         }
     }
 }

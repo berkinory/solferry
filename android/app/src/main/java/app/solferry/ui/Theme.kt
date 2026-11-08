@@ -33,6 +33,7 @@ data class Palette(
     val ink: Color,
     val inkMuted: Color,
     val primary: Color,
+    val brand: Color,
     val primaryFill: Color,
     val primaryHover: Color,
     val primaryBorder: Color,
@@ -49,7 +50,7 @@ data class Palette(
 
 private val light = with(LightColors) {
     Palette(
-        false, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
+        false, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
         primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
@@ -61,7 +62,7 @@ private val light = with(LightColors) {
 
 private val dark = with(DarkColors) {
     Palette(
-        true, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
+        true, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
         primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,

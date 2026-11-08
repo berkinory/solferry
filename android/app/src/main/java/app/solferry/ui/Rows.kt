@@ -35,6 +35,7 @@ import app.solferry.Phase
 import app.solferry.R
 import app.solferry.Transfer
 import app.solferry.design.MotionTokens
+import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
 import uniffi.solferry_ffi.TransferRoute
@@ -76,7 +77,7 @@ private fun DeviceRow(
     device: PairedDevice,
     near: Nearby?,
     online: Boolean?,
-    picking: Boolean,
+    lastTransfer: Long?,
     engine: Engine,
     onPick: (PairedDevice) -> Unit,
 ) {
@@ -96,10 +97,7 @@ private fun DeviceRow(
                     else -> StatusLine("On this network", palette.routes[TransferRoute.LOCAL])
                 }
             }
-            if (picking) {
-                Glyph(R.drawable.ic_send, palette.primary, 18)
-            } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     Button(
                         { engine.shareClipboard(device.identity.id, device.name) }, icon = R.drawable.ic_clipboard,
                         kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Send clipboard to ${device.name}",
@@ -108,21 +106,19 @@ private fun DeviceRow(
                         { open = !open }, icon = R.drawable.ic_more,
                         kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Options for ${device.name}",
                     )
-                }
             }
         }
         AnimatedVisibility(
-            open && !picking,
+            open,
             enter = expandVertically(tween(MotionTokens.standard)) + fadeIn(tween(MotionTokens.standard)),
             exit = shrinkVertically(tween(MotionTokens.quick)) + fadeOut(tween(MotionTokens.quick)),
         ) {
             Column {
-                Detail("Key") { Mono(device.identity.fingerprint) }
                 Detail("Receive without asking") {
                     Toggle(device.autoAccept, { engine.bridge.setAutoAccept(device.identity.id, it) }, "Receive without asking")
                 }
-                Detail("Remove this device") {
-                    Button({ forgetting = true }, label = "Forget", icon = R.drawable.ic_delete, size = ButtonSize.Sm)
+                Detail(lastTransfer?.let { "Last transfer ${ago(it)}" } ?: "Paired ${ago(device.pairedAtMs.toLong())}") {
+                    Button({ forgetting = true }, label = "Forget", icon = R.drawable.ic_delete, kind = ButtonKind.Danger, size = ButtonSize.Sm)
                 }
             }
         }
@@ -141,7 +137,7 @@ fun DeviceCard(
     devices: List<PairedDevice>,
     nearby: List<Nearby>,
     reachable: Set<String>?,
-    picking: Boolean,
+    history: List<HistoryEntry>,
     engine: Engine,
     onPick: (PairedDevice) -> Unit,
 ) =
@@ -150,7 +146,8 @@ fun DeviceCard(
             devices.forEach { device ->
                 key(device.identity.id) {
                     val online = reachable?.contains(device.identity.id)
-                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, picking, engine, onPick)
+                    val last = history.firstOrNull { it.peer == device.identity.id && it.completed }?.finishedMs?.toLong()
+                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, engine, onPick)
                 }
             }
         }
@@ -171,7 +168,7 @@ fun NearbyCard(nearby: List<Nearby>, engine: Engine, onUseCode: () -> Unit) =
                         Text(device.name ?: "Unnamed device", maxLines = 1, overflow = TextOverflow.Ellipsis)
                         StatusLine(if (device.overlay) "Overlay, not paired" else "Not paired")
                     }
-                    Button({ engine.bridge.pairNearby(device.identity.id) }, label = "Pair", size = ButtonSize.Sm)
+                    Button({ engine.bridge.pairNearby(device.identity.id) }, label = "Pair", icon = R.drawable.ic_link, size = ButtonSize.Sm)
                 }
             }
         }

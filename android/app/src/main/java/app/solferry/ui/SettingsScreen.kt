@@ -37,7 +37,7 @@ private fun reachOf(visibility: String) = when (visibility) {
 }
 
 @Composable
-fun SettingsScreen(state: AppState, engine: Engine, onBack: () -> Unit) = Page("Settings", onBack) {
+fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings", null) {
     val me = state.me
     var name by remember(me?.name) { mutableStateOf(me?.name.orEmpty()) }
     val focus = LocalFocusManager.current

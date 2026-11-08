@@ -96,6 +96,15 @@ class Engine(private val context: Context) : Listener {
         if (files.isNotEmpty()) bridge.sendFiles(peer, files)
     }
 
+    /** What a picked document is called and how big it is, for the send screen. */
+    fun describe(uri: Uri): PickedFile {
+        var size: Long? = null
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) size = cursor.getLong(0)
+        }
+        return PickedFile(uri, displayName(uri), size)
+    }
+
     fun shareClipboard(peer: String, name: String) {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
         val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()

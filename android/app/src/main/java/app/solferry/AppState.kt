@@ -1,5 +1,6 @@
 package app.solferry
 
+import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Identity
 import uniffi.solferry_ffi.Incoming
 import uniffi.solferry_ffi.Nearby
@@ -32,6 +33,8 @@ data class Transfer(
     val fraction get() = if (total == 0L) 1f else transferred.toFloat() / total
 }
 
+data class PickedFile(val uri: android.net.Uri, val name: String, val size: Long?)
+
 data class PairingPrompt(val key: ULong, val peer: Identity, val name: String, val code: String)
 
 data class ReceivedText(val key: Long, val name: String, val text: String, val copied: Boolean)
@@ -48,6 +51,7 @@ data class AppState(
     val relayProblem: Problem? = null,
     val blocked: List<Identity> = emptyList(),
     val transfers: List<Transfer> = emptyList(),
+    val history: List<HistoryEntry> = emptyList(),
     val offers: List<Incoming> = emptyList(),
     val pairings: List<PairingPrompt> = emptyList(),
     val pairingCode: String? = null,
@@ -65,6 +69,7 @@ data class AppState(
         is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility), startProblem = null)
         is Update.StartFailed -> copy(startProblem = update.problem)
         is Update.Devices -> copy(devices = update.devices)
+        is Update.History -> copy(history = update.entries)
         is Update.Nearby -> copy(nearby = update.devices)
         is Update.Reachable -> copy(reachable = update.ids.toSet())
         is Update.Relays -> copy(relays = update.relays, relayProblem = null)

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -101,16 +102,37 @@ fun Toolbar(content: @Composable RowScope.() -> Unit) = Row(
     content = content,
 )
 
+data class Tab(val label: String, @DrawableRes val icon: Int, val selected: Boolean, val onSelect: () -> Unit)
+
+/** The app's three places, at the bottom where a thumb reaches them. */
+@Composable
+fun TabBar(tabs: List<Tab>) {
+    val palette = LocalPalette.current
+    Row(Modifier.fillMaxWidth().background(palette.page).navigationBarsPadding().height(60.dp)) {
+        tabs.forEach { tab ->
+            val tone = if (tab.selected) palette.primary else palette.inkMuted
+            Column(
+                Modifier.weight(1f).fillMaxSize().selectable(tab.selected, role = androidx.compose.ui.semantics.Role.Tab, onClick = tab.onSelect),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Glyph(tab.icon, tone, 22)
+                Text(tab.label, style = MaterialTheme.typography.labelMedium, color = tone, maxLines = 1)
+            }
+        }
+    }
+}
+
 /** A pushed screen: a back button, a title, and cards that scroll clear of the keyboard. */
 @Composable
-fun Page(title: String, onBack: () -> Unit, content: @Composable ColumnScope.() -> Unit) = Column(Modifier.fillMaxSize()) {
+fun Page(title: String, onBack: (() -> Unit)?, content: @Composable ColumnScope.() -> Unit) = Column(Modifier.fillMaxSize()) {
     Toolbar {
-        Button(onBack, icon = R.drawable.ic_arrow_left, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Back")
-        Text(title, style = MaterialTheme.typography.titleMedium)
+        if (onBack != null) Button(onBack, icon = R.drawable.ic_arrow_left, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Back")
+        Text(title, Modifier.padding(start = if (onBack == null) SpaceTokens.sm.dp else 0.dp), style = MaterialTheme.typography.titleMedium)
     }
     Column(
         Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
-            .imePadding().navigationBarsPadding().padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
+            .imePadding().then(if (onBack != null) Modifier.navigationBarsPadding() else Modifier).padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.xs.dp),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
         content = content,
     )
@@ -135,6 +157,19 @@ fun ConfirmDialog(title: String, body: String, action: String, onConfirm: () -> 
                 Button(onConfirm, label = action, kind = ButtonKind.Danger, size = ButtonSize.Sm)
             }
         }
+    }
+}
+
+/** How long ago a moment was, in the largest unit that still reads naturally. */
+fun ago(ms: Long): String {
+    val minutes = (System.currentTimeMillis() - ms).coerceAtLeast(0) / 60_000
+    return when {
+        minutes < 1 -> "just now"
+        minutes < 60 -> "$minutes min ago"
+        minutes < 1440 -> "${minutes / 60} h ago"
+        minutes < 2880 -> "yesterday"
+        minutes < 43_200 -> "${minutes / 1440} days ago"
+        else -> "${minutes / 43_200} months ago"
     }
 }
 

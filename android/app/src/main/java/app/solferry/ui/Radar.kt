@@ -108,7 +108,7 @@ fun RadarHero(onUseCode: () -> Unit) = Frame {
             Radar()
             Text("Looking for nearby devices", Modifier.padding(top = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium)
             Muted("Open Solferry on another device on this network and it shows up here.", textAlign = TextAlign.Center)
-            Button(onUseCode, Modifier.padding(top = SpaceTokens.xs.dp), label = "Can't see it? Pair with a code", icon = R.drawable.ic_qr, kind = ButtonKind.Ghost, size = ButtonSize.Sm)
+            Button(onUseCode, Modifier.padding(top = SpaceTokens.xs.dp), label = "Pair with code", icon = R.drawable.ic_qr, size = ButtonSize.Sm)
         }
     }
 }
