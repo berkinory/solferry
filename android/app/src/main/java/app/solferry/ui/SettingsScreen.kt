@@ -76,6 +76,8 @@ fun SettingsScreen(state: AppState, engine: Engine, onBack: () -> Unit) = Page("
             Muted(reaches.first { it.first == current }.third)
         }
     }
+    RelayCard(state, engine)
+    if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
         Mono("Solferry 0.1.0", Modifier.weight(1f))
         Mono(me?.fingerprint.orEmpty())

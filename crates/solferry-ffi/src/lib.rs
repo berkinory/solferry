@@ -8,11 +8,11 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use iroh::{EndpointAddr, EndpointId};
-use solferry_core::{Config, NamedFile, Visibility};
+use solferry_core::{Config, NamedFile, RelayLink, Visibility};
 use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
-use session::{Session, Shelf, devices, lock};
+use session::{Session, Shelf, blocked, devices, lock};
 pub use types::*;
 
 uniffi::setup_scaffolding!();
@@ -179,11 +179,13 @@ impl Solferry {
     pub fn block_offer(&self, key: u64) {
         let offer = lock(&self.shelf.offers).remove(&key);
         self.with_node(
-            move |node, _, _| async move {
+            move |node, listener, _| async move {
                 if let Some(offer) = offer {
                     let peer = offer.summary.peer;
                     offer.decline();
                     let _ = node.block(peer);
+                    listener.update(devices(&node));
+                    listener.update(blocked(&node));
                 }
             },
             None,
@@ -271,6 +273,33 @@ impl Solferry {
             },
             None,
         );
+    }
+
+    pub fn unblock(&self, peer: String) {
+        self.with_node(
+            move |node, listener, _| async move {
+                if let Ok(id) = EndpointId::from_z32(&peer) {
+                    let _ = node.unblock(id);
+                }
+                listener.update(blocked(&node));
+            },
+            None,
+        );
+    }
+
+    pub fn add_relay(&self, link: String) {
+        if let Err(error) = RelayLink::parse(&link) {
+            self.listener.update(Update::RelayFailed { problem: (&error).into() });
+            return;
+        }
+        self.change(move |config| {
+            config.relays.retain(|existing| *existing != link);
+            config.relays.push(link);
+        });
+    }
+
+    pub fn remove_relay(&self, link: String) {
+        self.change(move |config| config.relays.retain(|existing| *existing != link));
     }
 
     pub fn rename(&self, name: String) {

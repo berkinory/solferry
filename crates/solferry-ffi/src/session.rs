@@ -3,14 +3,18 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use iroh::EndpointId;
-use solferry_core::{IncomingOffer, NearbyDevice, Node, NodeOptions, PairingRequest, TransferId};
+use solferry_core::{
+    IncomingOffer, NearbyDevice, Node, NodeOptions, PairingRequest, RelayHealth, RelayLink,
+    TransferId,
+};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
 use crate::Listener;
-use crate::types::{Incoming, PairedDevice, Update};
+use crate::types::{Incoming, PairedDevice, Relay, RelayStatus, Update, identity};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
+const RELAY_WAIT: Duration = Duration::from_secs(5);
 
 /// What the bridge remembers between calls: prompts waiting for an answer, what is nearby, and
 /// which transfer an id from the app refers to.
@@ -44,6 +48,24 @@ pub fn devices(node: &Node) -> Update {
     Update::Devices { devices: node.devices().iter().map(PairedDevice::from).collect() }
 }
 
+pub fn blocked(node: &Node) -> Update {
+    Update::Blocked { devices: node.blocked().iter().map(|id| identity(id, None)).collect() }
+}
+
+/// The relays this device was given, with what is known about each so far.
+fn relays(node: &Node, health: &[RelayHealth]) -> Update {
+    let row = |link: &String| {
+        let parsed = RelayLink::parse(link).ok()?;
+        let found = health.iter().find(|health| health.url == *parsed.url());
+        Some(Relay {
+            link: link.clone(),
+            url: parsed.url().to_string(),
+            status: found.map_or(RelayStatus::Checking, Into::into),
+        })
+    };
+    Update::Relays { relays: node.config().relays.iter().filter_map(row).collect() }
+}
+
 pub async fn start(
     data_dir: std::path::PathBuf,
     shelf: &Arc<Shelf>,
@@ -65,8 +87,15 @@ pub async fn start(
         visibility: format!("{:?}", config.visibility),
     });
     listener.update(devices(&node));
+    listener.update(blocked(&node));
+    listener.update(relays(&node, &[]));
 
     let mut tasks = Vec::new();
+    let (checker, out) = (node.clone(), listener.clone());
+    tasks.push(spawn(async move {
+        let health = checker.relay_health(RELAY_WAIT).await;
+        out.update(relays(&checker, &health));
+    }));
     let (mut events, out, kept) = (node.events(), listener.clone(), shelf.clone());
     tasks.push(spawn(async move {
         loop {
