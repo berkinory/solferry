@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,13 +68,13 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings", null) {
     Card(R.drawable.ic_view, "Who can see this device") {
         PaddedWell {
             val current = reachOf(me?.visibility.orEmpty())
-            Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
-                reaches.forEach { (reach, label, _) ->
-                    val chosen = reach == current
-                    Button(
-                        { engine.setReach(reach) }, Modifier.weight(1f).semantics { selected = chosen }, label = label,
-                        kind = if (chosen) ButtonKind.Primary else ButtonKind.Ghost, size = ButtonSize.Sm,
-                    )
+            val palette = LocalPalette.current
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                reaches.forEachIndexed { index, (reach, label, _) ->
+                    SegmentedButton(
+                        reach == current, { engine.setReach(reach) }, SegmentedButtonDefaults.itemShape(index, reaches.size, ControlShape), icon = {},
+                        colors = SegmentedButtonDefaults.colors(activeContainerColor = palette.primaryFill, activeContentColor = palette.onPrimary, inactiveContainerColor = palette.page, inactiveContentColor = palette.inkMuted, activeBorderColor = palette.primaryFill, inactiveBorderColor = palette.line),
+                    ) { Text(label, maxLines = 1) }
                 }
             }
             Muted(reaches.first { it.first == current }.third)

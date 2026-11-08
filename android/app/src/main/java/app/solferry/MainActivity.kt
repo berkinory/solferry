@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
                     if (screen != Screen.AddDevice) {
                         TabBar(
                             listOf(
-                                Tab("Home", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
+                                Tab("Transfer", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
                                 Tab("History", R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
                                 Tab("Settings", R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
                             ),

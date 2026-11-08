@@ -19,19 +19,31 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
+import kotlinx.coroutines.delay
 import uniffi.solferry_ffi.PairedDevice
 
+private const val REFRESH_MS = 700L
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     state: AppState,
@@ -40,7 +52,15 @@ fun HomeScreen(
     onUseCode: () -> Unit,
 ) = Column(Modifier.fillMaxSize()) {
     HomeBar()
-    LazyColumn(
+    var refreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            engine.bridge.checkPresence()
+            delay(REFRESH_MS)
+            refreshing = false
+        }
+    }
+    PullToRefreshBox(refreshing, { refreshing = true }, Modifier.fillMaxSize()) { LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = tabClearance()),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
@@ -61,7 +81,7 @@ fun HomeScreen(
         }
         if (state.devices.isNotEmpty() || state.strangers.isNotEmpty()) item { NearbyCard(state.strangers, engine, onUseCode) }
         if (state.transfers.isNotEmpty()) item { TransferCard(state.transfers, engine) }
-    }
+    } }
 }
 
 @Composable
@@ -84,8 +104,8 @@ private fun SendZone(onClick: () -> Unit) {
         Well(Modifier.height(148.dp), padding = 14.dp, onClick = onClick) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.width(140.dp).height(64.dp), contentAlignment = Alignment.Center) {
-                    FanTile(R.drawable.ic_type_image, (-46).dp)
-                    FanTile(R.drawable.ic_type_pdf, 46.dp)
+                    FanTile(R.drawable.ic_type_image, (-46).dp, -11f)
+                    FanTile(R.drawable.ic_type_pdf, 46.dp, 11f)
                     Box(
                         Modifier.size(56.dp).background(palette.primaryFill, FieldShape).border(1.dp, palette.primaryBorder, FieldShape),
                         contentAlignment = Alignment.Center,
@@ -100,10 +120,10 @@ private fun SendZone(onClick: () -> Unit) {
 }
 
 @Composable
-private fun FanTile(@DrawableRes icon: Int, offset: Dp) {
+private fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
     val palette = LocalPalette.current
     Box(
-        Modifier.offset(x = offset, y = 6.dp).size(44.dp).background(palette.control, ControlShape).border(1.dp, palette.line, ControlShape),
+        Modifier.offset(x = offset, y = 6.dp).rotate(tilt).size(44.dp).background(palette.control, ControlShape).border(1.dp, palette.line, ControlShape),
         contentAlignment = Alignment.Center,
     ) { Glyph(icon, palette.inkMuted, 20) }
 }

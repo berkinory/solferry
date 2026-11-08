@@ -6,11 +6,11 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.Engine
@@ -47,15 +53,16 @@ private fun routeName(route: TransferRoute) = when (route) {
     TransferRoute.RELAY -> "relay"
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RowBody(onClick: (() -> Unit)?, highlighted: Boolean = false, content: @Composable RowScope.() -> Unit) {
+private fun RowBody(onClick: (() -> Unit)?, highlighted: Boolean = false, onLongClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
     val palette = LocalPalette.current
-    val press = remember { MutableInteractionSource() }
-    val pressed by press.collectIsPressedAsState()
-    val ground = if (pressed || highlighted) palette.raised else Color.Transparent
+    val haptics = LocalHapticFeedback.current
+    val ground = if (highlighted) palette.raised else Color.Transparent
+    val hold = onLongClick?.let { { haptics.performHapticFeedback(HapticFeedbackType.LongPress); it() } }
     Row(
-        Modifier.fillMaxWidth().background(ground, ControlShape)
-            .then(if (onClick != null) Modifier.clickable(press, null, onClick = onClick) else Modifier)
+        Modifier.fillMaxWidth().clip(ControlShape).background(ground)
+            .then(if (onClick != null) Modifier.combinedClickable(onLongClick = hold, onClick = onClick) else Modifier)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -87,8 +94,10 @@ private fun DeviceRow(
     val palette = LocalPalette.current
     var open by remember { mutableStateOf(false) }
     var forgetting by remember { mutableStateOf(false) }
+    var menu by remember { mutableStateOf(false) }
     Column {
-        RowBody({ onPick(device) }, highlighted = open) {
+        Box {
+        RowBody({ onPick(device) }, highlighted = open, onLongClick = { menu = true }) {
             DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), near != null || online == true)
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -108,6 +117,8 @@ private fun DeviceRow(
                         kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Options for ${device.name}",
                     )
             }
+        }
+        DeviceMenu(menu, device, { menu = false }, { onPick(device) }, engine) { forgetting = true }
         }
         AnimatedVisibility(
             open,
@@ -129,6 +140,28 @@ private fun DeviceRow(
             "Forget ${device.name}?", "It goes back to being an unpaired device until you pair again.", "Forget",
             onConfirm = { forgetting = false; engine.bridge.forget(device.identity.id) },
             onDismiss = { forgetting = false },
+        )
+    }
+}
+
+@Composable
+private fun DeviceMenu(expanded: Boolean, device: PairedDevice, onDismiss: () -> Unit, onSend: () -> Unit, engine: Engine, onForget: () -> Unit) {
+    val palette = LocalPalette.current
+    DropdownMenu(expanded, onDismiss, shape = FieldShape, containerColor = palette.raised) {
+        DropdownMenuItem({ Text("Send files") }, { onDismiss(); onSend() }, leadingIcon = { Glyph(R.drawable.ic_send, palette.inkMuted, 20) })
+        DropdownMenuItem(
+            { Text("Send clipboard") }, { onDismiss(); engine.shareClipboard(device.identity.id, device.name) },
+            leadingIcon = { Glyph(R.drawable.ic_clipboard, palette.inkMuted, 20) },
+        )
+        DropdownMenuItem(
+            { Text("Receive without asking") }, { engine.bridge.setAutoAccept(device.identity.id, !device.autoAccept) },
+            leadingIcon = { Glyph(R.drawable.ic_download, palette.inkMuted, 20) },
+            trailingIcon = { if (device.autoAccept) Glyph(R.drawable.ic_check, palette.primary, 20) },
+        )
+        HorizontalDivider(color = palette.line)
+        DropdownMenuItem(
+            { Text("Forget", color = palette.danger) }, { onDismiss(); onForget() },
+            leadingIcon = { Glyph(R.drawable.ic_delete, palette.danger, 20) },
         )
     }
 }

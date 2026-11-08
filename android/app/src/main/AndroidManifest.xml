@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:name=".SolferryApp"
         android:label="Solferry"
         android:icon="@mipmap/ic_launcher"

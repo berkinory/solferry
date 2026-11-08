@@ -38,23 +38,27 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import app.solferry.R
 import app.solferry.design.MotionTokens
 import app.solferry.design.RadiusTokens
@@ -85,18 +89,19 @@ fun Tile(@DrawableRes icon: Int, fill: Color, tone: Color) = Box(
     contentAlignment = Alignment.Center,
 ) { Glyph(icon, tone, 18) }
 
-/** A device's tile: its platform logo in its own color while it is there, gray while it isn't. */
+/** A device's tile: filled with its platform's color while it is there, flat gray while it isn't. */
 @Composable
 fun DeviceTile(identity: Identity, online: Boolean = true) {
     val palette = LocalPalette.current
-    val tone = when (identity.platform) {
+    val brand = when (identity.platform) {
         DevicePlatform.MACOS, DevicePlatform.IOS -> palette.platformApple
         DevicePlatform.ANDROID -> palette.platformAndroid
         DevicePlatform.WINDOWS -> palette.platformWindows
         DevicePlatform.LINUX -> palette.platformLinux
-        null -> palette.inkMuted
+        null -> null
     }
-    if (online) Tile(platformIcon(identity.platform), tone.copy(alpha = 0.16f), tone) else Tile(platformIcon(identity.platform), palette.control, palette.inkMuted)
+    val icon = platformIcon(identity.platform)
+    if (brand != null && online) Tile(icon, brand, palette.ink) else Tile(icon, palette.control, palette.inkMuted.copy(alpha = if (brand == null) 1f else 0.6f))
 }
 
 @Composable
@@ -131,10 +136,6 @@ fun Toolbar(content: @Composable RowScope.() -> Unit) = Row(
 
 data class Tab(val label: String, @DrawableRes val icon: Int, val selected: Boolean, val onSelect: () -> Unit)
 
-/** Room scrolling content leaves so nothing ends up under the floating bar. */
-@Composable
-fun tabClearance() = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 80.dp
-
 /** The icon for a file, from what its name says it is. */
 @DrawableRes
 fun fileIcon(name: String) = when (name.substringAfterLast('.', "").lowercase()) {
@@ -152,22 +153,30 @@ fun fileIcon(name: String) = when (name.substringAfterLast('.', "").lowercase())
     else -> R.drawable.ic_file
 }
 
-/** The app's three places: a floating toolbar where the current one opens up to show its name. */
+/** Room scrolling content leaves so nothing ends up under the floating toolbar. */
+@Composable
+fun tabClearance() = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 92.dp
+
+/** Material's floating toolbar, where the current place opens up to show its name. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TabBar(tabs: List<Tab>, modifier: Modifier = Modifier) {
     val palette = LocalPalette.current
-    Row(
-        modifier.navigationBarsPadding().padding(bottom = SpaceTokens.md.dp)
-            .dropShadow(CircleShape, Shadow(radius = 16.dp, color = Color.Black.copy(alpha = 0.28f), offset = DpOffset(0.dp, 6.dp)))
-            .background(palette.raised, CircleShape).padding(6.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    val haptics = LocalHapticFeedback.current
+    HorizontalFloatingToolbar(
+        expanded = true,
+        modifier = modifier.navigationBarsPadding().padding(bottom = SpaceTokens.md.dp),
+        colors = FloatingToolbarDefaults.standardFloatingToolbarColors(toolbarContainerColor = palette.raised, toolbarContentColor = palette.inkMuted),
     ) {
         tabs.forEach { tab ->
-            val width by animateDpAsState(if (tab.selected) 128.dp else 60.dp, spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = 0.8f))
+            val width by animateDpAsState(if (tab.selected) 124.dp else 56.dp, spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = 0.8f))
             val fill by animateColorAsState(if (tab.selected) palette.primaryFill else Color.Transparent, tween(MotionTokens.standard))
             val tone by animateColorAsState(if (tab.selected) palette.onPrimary else palette.inkMuted, tween(MotionTokens.standard))
             Row(
-                Modifier.width(width).height(52.dp).clip(CircleShape).background(fill).selectable(tab.selected, role = Role.Tab, onClick = tab.onSelect),
+                Modifier.width(width).height(48.dp).clip(CircleShape).background(fill).selectable(tab.selected, role = Role.Tab) {
+                    if (!tab.selected) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    tab.onSelect()
+                },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -198,23 +207,15 @@ fun Page(title: String, onBack: (() -> Unit)?, content: @Composable ColumnScope.
 @Composable
 fun ConfirmDialog(title: String, body: String, action: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     val palette = LocalPalette.current
-    Dialog(onDismiss) {
-        Column(
-            Modifier.fillMaxWidth().background(palette.page, CardShape).border(1.dp, palette.line, CardShape)
-                .padding(SpaceTokens.lg.dp),
-            verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp),
-        ) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Muted(body)
-            Row(
-                Modifier.fillMaxWidth().padding(top = SpaceTokens.lg.dp),
-                horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.End),
-            ) {
-                Button(onDismiss, label = "Cancel", size = ButtonSize.Sm)
-                Button(onConfirm, label = action, kind = ButtonKind.Danger, size = ButtonSize.Sm)
-            }
-        }
-    }
+    AlertDialog(
+        onDismiss,
+        confirmButton = { TextButton(onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = palette.danger)) { Text(action) } },
+        dismissButton = { TextButton(onDismiss, colors = ButtonDefaults.textButtonColors(contentColor = palette.ink)) { Text("Cancel") } },
+        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        text = { Text(body, color = palette.inkMuted) },
+        shape = CardShape,
+        containerColor = palette.raised,
+    )
 }
 
 /** How long ago a moment was, in the largest unit that still reads naturally. */

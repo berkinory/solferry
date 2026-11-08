@@ -109,6 +109,8 @@ fun SolferryTheme(content: @Composable () -> Unit) {
         (if (night) darkColorScheme() else lightColorScheme()).copy(
             primary = primaryFill, onPrimary = onPrimary, background = page, onBackground = ink,
             surface = page, onSurface = ink, onSurfaceVariant = inkMuted, outline = line, error = danger,
+            surfaceContainerLowest = well, surfaceContainerLow = well, surfaceContainer = raised, surfaceContainerHigh = raised, surfaceContainerHighest = control,
+            outlineVariant = line, primaryContainer = primaryFill, onPrimaryContainer = onPrimary, secondaryContainer = raised, onSecondaryContainer = ink,
         )
     }
     CompositionLocalProvider(LocalPalette provides palette) {

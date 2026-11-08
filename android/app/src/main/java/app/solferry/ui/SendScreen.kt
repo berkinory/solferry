@@ -44,7 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -180,11 +182,12 @@ private fun Connector(live: Boolean) {
 private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) {
     val palette = LocalPalette.current
     var launch by remember { mutableStateOf(Launch.Idle) }
+    val haptics = LocalHapticFeedback.current
     LaunchedEffect(launch) {
         when (launch) {
             Launch.Flying -> { delay(FLY_MS); launch = Launch.Sending }
             Launch.Sending -> { delay(SENDING_MS); launch = Launch.Sent }
-            Launch.Sent -> { delay(SENT_MS); onDone() }
+            Launch.Sent -> { haptics.performHapticFeedback(HapticFeedbackType.Confirm); delay(SENT_MS); onDone() }
             Launch.Idle -> {}
         }
     }
@@ -202,7 +205,7 @@ private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) 
     val density = LocalDensity.current
     Box(
         Modifier.width(width).height(56.dp).graphicsLayer { alpha = if (chosen > 0 || sent) 1f else 0.5f }.clip(FieldShape)
-            .background(fill).clickable(enabled = enabled) { onLaunch(); launch = Launch.Flying },
+            .background(fill).clickable(enabled = enabled) { haptics.performHapticFeedback(HapticFeedbackType.Confirm); onLaunch(); launch = Launch.Flying },
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
@@ -233,8 +236,12 @@ private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) 
 @Composable
 private fun TargetRow(target: Target, chosen: Boolean, onToggle: () -> Unit) {
     val palette = LocalPalette.current
+    val haptics = LocalHapticFeedback.current
     Row(
-        Modifier.fillMaxWidth().background(if (chosen) palette.raised else Color.Transparent, ControlShape).clickable(onClick = onToggle).padding(8.dp),
+        Modifier.fillMaxWidth().clip(ControlShape).background(if (chosen) palette.raised else Color.Transparent).clickable {
+            haptics.performHapticFeedback(if (chosen) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn)
+            onToggle()
+        }.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {

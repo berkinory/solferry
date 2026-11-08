@@ -18,12 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.graphics.Color
@@ -68,7 +70,7 @@ fun Well(
     }
     val press = remember { MutableInteractionSource() }
     val pressed by press.collectIsPressedAsState()
-    val tap = if (onClick != null) Modifier.clickable(press, null, onClick = onClick) else Modifier
+    val tap = if (onClick != null) Modifier.clip(WellShape).clickable(press, ripple(), onClick = onClick) else Modifier
     Column(
         modifier.fillMaxWidth()
             .background(if (pressed) palette.raised else ground, WellShape)
