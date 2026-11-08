@@ -59,13 +59,19 @@ pub(crate) async fn run(
     Ok(route)
 }
 
+/// Reads every segment's result before giving up on a damaged one, so the receiver gets to check
+/// and forget all of them.
 async fn confirm(control: &mut RecvStream, manifest: &Manifest, count: usize) -> Result<()> {
+    let mut damaged = None;
     for _ in 0..count {
         let result: FileResult = read_frame(control).await?;
-        if !result.ok {
+        if !result.ok && damaged.is_none() {
             let entry = manifest.entries.get(result.index as usize);
-            return Err(Error::HashMismatch(entry.map(|e| e.path.clone()).unwrap_or_default()));
+            damaged = Some(entry.map(|e| e.path.clone()).unwrap_or_default());
         }
+    }
+    if let Some(name) = damaged {
+        return Err(Error::HashMismatch(name));
     }
     let finalized: Finalized = read_frame(control).await?;
     if finalized.ok { Ok(()) } else { Err(Error::DeliveryFailed) }
