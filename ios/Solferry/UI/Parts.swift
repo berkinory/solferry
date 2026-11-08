@@ -28,7 +28,7 @@ struct Icon: View {
     }
 
     var body: some View {
-        let image = Image(glyph.rawValue).renderingMode(.template).resizable().frame(width: size, height: size)
+        let image = Image(decorative: glyph.rawValue).renderingMode(.template).resizable().frame(width: size, height: size)
         if let tint { image.foregroundStyle(tint) } else { image }
     }
 }

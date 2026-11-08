@@ -124,7 +124,7 @@ private struct RelayCard: View {
                 ForEach(state.relays, id: \.link) { RelayRow(relay: $0) }
                 if let problem = state.relayProblem { Muted(problem.next, color: palette.danger) }
                 HStack(spacing: SpaceTokens.sm) {
-                    Field(text: $link, placeholder: "https://relay.example.com#token", onSubmit: add) { PasteButton(text: $link) }
+                    Field(text: $link, placeholder: "https://relay.example.com#token", onSubmit: add) { PasteInto(text: $link) }
                     ActionButton(label: "Add", action: add)
                 }
             }

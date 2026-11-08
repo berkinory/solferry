@@ -109,13 +109,27 @@ extension Field where Trailing == EmptyView {
     }
 }
 
-struct PasteButton: View {
+/// Apple's own paste control: iOS gives an app the clipboard only through a press on this.
+struct ClipboardButton: View {
+    @Environment(\.palette) private var palette
+    let onText: (String) -> Void
+
+    var body: some View {
+        PasteButton(payloadType: String.self) { strings in
+            guard let text = strings.first else { return }
+            Task { @MainActor in onText(text) }
+        }
+        .labelStyle(.iconOnly)
+        .buttonBorderShape(.roundedRectangle(radius: RadiusTokens.control))
+        .tint(palette.raised)
+    }
+}
+
+struct PasteInto: View {
     @Binding var text: String
 
     var body: some View {
-        ActionButton(glyph: .clipboard, kind: .ghost, scale: .small, description: "Paste") {
-            if let pasted = UIPasteboard.general.string { text = pasted.trimmingCharacters(in: .whitespacesAndNewlines) }
-        }
+        ClipboardButton { text = $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 }
 

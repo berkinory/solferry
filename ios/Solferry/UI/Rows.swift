@@ -12,7 +12,6 @@ private func routeName(_ route: TransferRoute) -> String {
 private struct RowBody<Content: View>: View {
     @Environment(\.palette) private var palette
     var highlighted = false
-    var action: (() -> Void)?
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -20,8 +19,6 @@ private struct RowBody<Content: View>: View {
             .padding(SpaceTokens.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(highlighted ? palette.raised : .clear, in: controlShape)
-            .contentShape(controlShape)
-            .onTapGesture { action?() }
     }
 }
 
@@ -54,20 +51,23 @@ private struct DeviceRow: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            RowBody(highlighted: open, action: { onPick(device) }) {
-                DeviceTile(identity: device.identity, platform: near?.identity.platform)
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(device.name).lineLimit(1)
-                    status
+            RowBody(highlighted: open) {
+                // Only this part picks the device: a press on iOS's paste control would reach it too.
+                HStack(spacing: SpaceTokens.md) {
+                    DeviceTile(identity: device.identity, platform: near?.identity.platform)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(device.name).lineLimit(1)
+                        status
+                    }
+                    Spacer(minLength: 0)
+                    if picking { Icon(.send, tint: palette.primary, size: 18) }
                 }
-                Spacer(minLength: 0)
-                if picking {
-                    Icon(.send, tint: palette.primary, size: 18)
-                } else {
+                .contentShape(Rectangle())
+                .onTapGesture { onPick(device) }
+                .accessibilityAddTraits(.isButton)
+                if !picking {
                     HStack(spacing: 2) {
-                        ActionButton(glyph: .clipboard, kind: .ghost, scale: .small, description: "Send clipboard to \(device.name)") {
-                            engine.shareClipboard(peer: device.identity.id, name: device.name)
-                        }
+                        ClipboardButton { engine.bridge.sendText(peer: device.identity.id, text: $0) }
                         ActionButton(glyph: .more, kind: .ghost, scale: .small, description: "Options for \(device.name)") {
                             withAnimation(.easeOut(duration: MotionTokens.standard / 1000)) { open.toggle() }
                         }

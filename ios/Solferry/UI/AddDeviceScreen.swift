@@ -21,7 +21,7 @@ struct AddDeviceScreen: View {
             Card(glyph: .key, title: "Enter a code") {
                 PaddedWell {
                     HStack(spacing: SpaceTokens.sm) {
-                        Field(text: $code, placeholder: "Paste a sf1 code", onSubmit: join) { PasteButton(text: $code) }
+                        Field(text: $code, placeholder: "Paste a sf1 code", onSubmit: join) { PasteInto(text: $code) }
                         ActionButton(label: state.joining ? "Pairing" : "Pair", kind: .primary, action: join)
                             .disabled(state.joining)
                     }

@@ -79,15 +79,6 @@ final class Engine {
         UIPasteboard.general.string = text
     }
 
-    func shareClipboard(peer: String, name: String) {
-        guard let text = UIPasteboard.general.string, !text.isEmpty else {
-            let problem = Problem(title: "Your clipboard has no text", next: "Copy some text, then send it again.")
-            state.problems.append(NamedProblem(name: name, problem: problem))
-            return
-        }
-        bridge.sendText(peer: peer, text: text)
-    }
-
     func send(_ urls: [URL], to peer: String) {
         let bridge = bridge!
         Task.detached {
