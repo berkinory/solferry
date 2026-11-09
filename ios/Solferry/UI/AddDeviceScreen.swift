@@ -30,7 +30,7 @@ struct AddDeviceScreen: View {
                 }
             }
         }
-        .onDisappear { engine.state.joinError = nil }
+        .onDisappear { engine.clearJoinError() }
     }
 
     private func join() {

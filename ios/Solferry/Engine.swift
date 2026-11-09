@@ -91,6 +91,10 @@ final class Engine {
         }
     }
 
+    func clearJoinError() {
+        state.joinError = nil
+    }
+
     func join(_ code: String) {
         state.joining = true
         state.joinError = nil
