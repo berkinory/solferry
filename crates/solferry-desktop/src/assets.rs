@@ -33,7 +33,6 @@ macro_rules! glyphs {
 
 glyphs! {
     Add => "add",
-    Alert => "alert",
     Android => "android",
     Apple => "apple",
     Blocked => "blocked",

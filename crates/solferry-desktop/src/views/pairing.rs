@@ -8,7 +8,6 @@ use crate::assets::Glyph;
 use crate::qr;
 use crate::service::Command;
 use crate::tokens::{SPACE_SM, SPACE_XS};
-use solferry_core::explain;
 
 pub fn join(view: &MainView, cx: &mut Context<MainView>) {
     let code = view.code_input.read(cx).value().trim().to_owned();
@@ -17,7 +16,6 @@ pub fn join(view: &MainView, cx: &mut Context<MainView>) {
     }
     view.state.update(cx, |state, cx| {
         state.joining = true;
-        state.pairing_error = None;
         cx.notify();
     });
     MainView::command(Command::Join { code }, cx);
@@ -25,10 +23,6 @@ pub fn join(view: &MainView, cx: &mut Context<MainView>) {
 
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
-    let error = state.pairing_error.as_ref().map(|error| {
-        let explanation = explain(error);
-        ui::failure(explanation.title, explanation.next, cx)
-    });
     let code = match state.invite.as_deref() {
         Some(code) => invite(code, view.copied, cx),
         None => invite_prompt(cx),
@@ -38,7 +32,6 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
-        .children(error)
         .child(ui::card(Glyph::Qr, "Show a code", None, cx).child(ui::padded_well(cx).child(code)))
         .child(
             ui::card(Glyph::Key, "Enter a code", None, cx).child(

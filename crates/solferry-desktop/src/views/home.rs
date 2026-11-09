@@ -12,7 +12,6 @@ use super::{devices, offers, texts, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
-use solferry_core::explain;
 
 const FAN_GAP: f32 = 38.0;
 const FAN_OPEN: f32 = 54.0;
@@ -114,10 +113,6 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
 
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
-    let fatal = state.fatal.as_ref().map(|error| {
-        let explanation = explain(error);
-        ui::failure(explanation.title, explanation.next, cx)
-    });
     let offers: Vec<_> = state.offers.iter().map(|offer| offers::card(offer, cx)).collect();
     let shared = texts::render(&state, cx);
     let dragging = cx.has_active_drag();
@@ -125,7 +120,6 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
-        .children(fatal)
         .children(offers)
         .children(shared)
         .child(drop_zone(dragging, cx))

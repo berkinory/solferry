@@ -11,6 +11,7 @@ mod offers;
 mod pairing;
 mod radar;
 mod relays;
+mod ring;
 mod send;
 mod settings;
 mod sheet;

@@ -104,8 +104,6 @@ pub struct AppState {
     pub pairing_prompts: Vec<PairingPrompt>,
     pub pairing_code: Option<String>,
     pub invite: Option<String>,
-    pub pairing_error: Option<Error>,
-    pub relay_error: Option<Error>,
     pub relay_health: Vec<RelayHealth>,
     pub joining: bool,
     pub paired_count: u32,
@@ -156,11 +154,8 @@ impl AppState {
             }
             Update::PairingFailed(error) => {
                 self.pairing_code = None;
-                if !self.joining {
-                    self.toast(Tone::Error, explain(&error).title, None);
-                }
                 self.joining = false;
-                self.pairing_error = Some(error);
+                self.toast(Tone::Error, explain(&error).title, None);
             }
             Update::TextShared { name, result } => {
                 if let Err(error) = result {
@@ -197,7 +192,6 @@ impl AppState {
     fn add_device(&mut self, device: Device) {
         self.toast(Tone::Success, format!("Paired with {}", device.name), None);
         self.invite = None;
-        self.pairing_error = None;
         self.joining = false;
         self.paired_count += 1;
         self.devices.retain(|known| known.id != device.id);

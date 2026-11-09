@@ -100,14 +100,6 @@ pub fn padded_well(cx: &App) -> Div {
     well(cx).gap(px(SPACE_SM)).p(px(SPACE_LG))
 }
 
-pub fn failure(title: &str, next: impl Into<SharedString>, cx: &App) -> Div {
-    let palette = palette(cx);
-    let danger = color(palette.danger);
-    titled(header(Glyph::Alert, title.to_owned(), danger, cx), None, cx)
-        .border_color(danger.opacity(0.5))
-        .child(padded_well(cx).bg(color(palette.danger_well)).child(muted(next, cx)))
-}
-
 pub fn text(value: impl Into<SharedString>) -> Div {
     div().text_size(px(TYPE_BODY)).child(value.into())
 }

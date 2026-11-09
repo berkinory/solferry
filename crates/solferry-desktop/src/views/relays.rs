@@ -9,6 +9,7 @@ use super::main_view::MainView;
 use super::settings::change;
 use super::ui;
 use crate::assets::Glyph;
+use crate::state::Tone;
 use crate::theme::{color, palette};
 use crate::tokens::SPACE_XS;
 use solferry_core::explain;
@@ -18,8 +19,6 @@ const GUIDE: &str = "https://github.com/berkinory/solferry/blob/main/docs/relay.
 pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     let health = view.state.read(cx).relay_health.clone();
     let rows: Vec<_> = config.relays.iter().map(|url| row(url, &health, cx)).collect();
-    let failure = view.state.read(cx).relay_error.as_ref().map(explain);
-    let failure = failure.map(|explanation| ui::muted(explanation.next, cx));
     let guide = Button::new("relay-guide")
         .ghost()
         .xs()
@@ -32,7 +31,6 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
             ui::padded_well(cx)
                 .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
                 .children(rows)
-                .children(failure)
                 .child(
                     div()
                         .flex()
@@ -110,12 +108,11 @@ pub fn add(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
     }
     if let Err(error) = RelayLink::parse(&url) {
         view.state.update(cx, |state, cx| {
-            state.relay_error = Some(error);
+            state.toast(Tone::Error, explain(&error).title, None);
             cx.notify();
         });
         return;
     }
-    view.state.update(cx, |state, _| state.relay_error = None);
     change(view, cx, |config| {
         config.relays.retain(|existing| *existing != url);
         config.relays.push(url);

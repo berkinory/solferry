@@ -1,16 +1,17 @@
-use std::f32::consts::{FRAC_PI_2, TAU};
+use std::f32::consts::TAU;
 use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, Bounds, Context, Div, FontWeight, Hsla,
-    InteractiveElement, IntoElement, ParentElement, PathBuilder, Pixels, SharedString, Stateful,
-    StatefulInteractiveElement, Styled, Window, canvas, div, ease_out_quint, point, px, rgb, white,
+    Animation, AnimationExt, AnyElement, Context, Div, FontWeight, Hsla, InteractiveElement,
+    IntoElement, ParentElement, SharedString, Stateful, StatefulInteractiveElement, Styled, div,
+    ease_out_quint, px, rgb, white,
 };
-use solferry_core::Direction;
+use solferry_core::{Direction, Error, explain};
 
 use super::main_view::MainView;
+use super::ring::ring;
 use super::toast_timing::EXIT;
 use crate::assets::{Glyph, icon};
 use crate::format;
@@ -71,38 +72,6 @@ fn shell(cx: &Context<MainView>) -> Div {
 
 fn faded(cx: &Context<MainView>) -> Hsla {
     cx.theme().background.opacity(0.76)
-}
-
-fn arc(bounds: Bounds<Pixels>, sweep: f32, tone: Hsla, window: &mut Window) {
-    let center = bounds.center();
-    let radius = f32::from(bounds.size.width) / 2. - 1.;
-    let at = |angle: f32| {
-        let turned = angle - FRAC_PI_2;
-        point(center.x + px(turned.cos() * radius), center.y + px(turned.sin() * radius))
-    };
-    let mut path = PathBuilder::stroke(px(2.));
-    path.move_to(at(0.));
-    for step in 1..=48u8 {
-        path.line_to(at(sweep * f32::from(step) / 48.));
-    }
-    if let Ok(built) = path.build() {
-        window.paint_path(built, tone);
-    }
-}
-
-/// How far along a transfer is, drawn by hand because only paths can curve.
-fn ring(fraction: f32, tone: Hsla) -> impl IntoElement {
-    canvas(
-        |_, _, _| {},
-        move |bounds, (), window, _| {
-            arc(bounds, TAU, tone.opacity(0.25), window);
-            if fraction > 0. {
-                arc(bounds, TAU * fraction.min(1.), tone, window);
-            }
-        },
-    )
-    .flex_none()
-    .size(px(RING))
 }
 
 /// A filled circle with a mark that lands with a small overshoot.
@@ -190,7 +159,7 @@ fn running_row(transfer: &Transfer, wide: bool, budget: usize, cx: &mut Context<
     let tone = if waiting { rgb(RECONNECTING).into() } else { cx.theme().background };
     let key = SharedString::from(format!("pill-text-{id}-{waiting}"));
     row(true)
-        .child(ring(transfer.fraction(), tone))
+        .child(ring(transfer.fraction(), tone, RING))
         .child(label(key, line, wide))
         .child(percent(transfer.fraction(), cx))
         .child(
@@ -241,7 +210,7 @@ fn many_row(running: &[&Transfer], open: bool, cx: &mut Context<MainView>) -> An
             view.transfers_open = !view.transfers_open;
             cx.notify();
         }))
-        .child(ring(fraction, cx.theme().background))
+        .child(ring(fraction, cx.theme().background, RING))
         .child(label(key, format!("{} transfers", running.len()), true))
         .child(percent(fraction, cx))
         .child(
@@ -306,6 +275,43 @@ fn pill(
     )
 }
 
+/// Stays until the app can network again, and opens to say why.
+fn fatal_row(error: &Error, open: bool, cx: &mut Context<MainView>) -> AnyElement {
+    let explanation = explain(error);
+    let head = row(false)
+        .id("fatal")
+        .cursor_pointer()
+        .on_click(cx.listener(|view, _, _, cx| {
+            view.fatal_open = !view.fatal_open;
+            cx.notify();
+        }))
+        .child(badge("fatal-badge".into(), Tone::Error, cx))
+        .child(label("fatal-text".into(), explanation.title.to_owned(), open))
+        .child(
+            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 15.)
+                .text_color(faded(cx)),
+        );
+    let detail = open.then(|| {
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(4.))
+            .px(px(18.))
+            .pb(px(14.))
+            .text_size(px(13.))
+            .text_color(faded(cx))
+            .child(explanation.next)
+            .child(error.to_string())
+    });
+    div()
+        .flex()
+        .justify_center()
+        .w_full()
+        .px(px(CONTROLS))
+        .child(shell(cx).when(open, Styled::w_full).child(head).children(detail))
+        .into_any_element()
+}
+
 fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
     let key = toast.key;
     let leaving = toast.leaving;
@@ -361,7 +367,8 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
 pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option<AnyElement> {
     let state = view.state.read(cx).clone();
     let pill = pill(&state, view, width, cx);
-    if pill.is_none() && state.toasts.is_empty() {
+    let fatal = state.fatal.as_ref().map(|error| fatal_row(error, view.fatal_open, cx));
+    if fatal.is_none() && pill.is_none() && state.toasts.is_empty() {
         return None;
     }
     let toasts: Vec<_> = state.toasts.iter().map(|toast| toast_row(toast, cx)).collect();
@@ -373,6 +380,7 @@ pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option
             .right_0()
             .flex()
             .flex_col()
+            .children(fatal)
             .children(pill)
             .children(toasts)
             .into_any_element(),
