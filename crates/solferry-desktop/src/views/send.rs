@@ -18,7 +18,6 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
 const BUTTON_WIDTH: f32 = 210.0;
-const SENT_WIDTH: f32 = 148.0;
 const DOTS: usize = 5;
 const FLOW: Duration = Duration::from_millis(1100);
 
@@ -160,7 +159,6 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let chosen = view.selected.len();
     let phase = view.send_phase;
     let label = match (phase, chosen) {
-        (SendPhase::Sent, _) => "Sent".to_owned(),
         (SendPhase::Sending, _) => "Sending".to_owned(),
         (_, 0 | 1) => "Send".to_owned(),
         (_, many) => format!("Send to {many} devices"),
@@ -180,13 +178,8 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             )
             .into_any_element(),
         SendPhase::Sending => spinner(on_primary),
-        SendPhase::Sent => icon(Glyph::Check, 20.).text_color(on_primary).into_any_element(),
     };
-    let fill = if phase == SendPhase::Sent {
-        color(palette.success_fill)
-    } else {
-        color(palette.primary_fill)
-    };
+    let fill = color(palette.primary_fill);
     let button = div()
         .id("send-selected")
         .flex()
@@ -203,13 +196,6 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(symbol)
         .child(label);
     let button: AnyElement = match phase {
-        SendPhase::Sent => button
-            .with_animation(
-                "send-morph",
-                Animation::new(Duration::from_millis(300)).with_easing(ease_out_quint()),
-                |morph, delta| morph.w(px(BUTTON_WIDTH + (SENT_WIDTH - BUTTON_WIDTH) * delta)),
-            )
-            .into_any_element(),
         _ if chosen == 0 => button.opacity(0.5).into_any_element(),
         SendPhase::Idle => button
             .cursor_pointer()

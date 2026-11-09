@@ -14,10 +14,10 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, TYPE_LABEL};
 
 /// Room the scrolling content leaves so nothing ends up under the bar.
-pub const CLEARANCE: f32 = 64.0;
+pub const CLEARANCE: f32 = 70.0;
 
-const ITEM_WIDTH: f32 = 96.0;
-const ITEM_HEIGHT: f32 = 34.0;
+const ITEM_WIDTH: f32 = 106.0;
+const ITEM_HEIGHT: f32 = 38.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [

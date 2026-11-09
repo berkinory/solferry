@@ -85,7 +85,7 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
         .items_center()
         .justify_center()
         .gap(px(SPACE_SM))
-        .h(px(148.))
+        .h(px(164.))
         .border_1()
         .border_color(transparent_black())
         .cursor_pointer()

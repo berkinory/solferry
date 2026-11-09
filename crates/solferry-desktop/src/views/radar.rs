@@ -19,7 +19,7 @@ const CORE: f32 = 38.0;
 const ORBITS: [f32; 2] = [72.0, 114.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
-const TILE: f32 = 32.0;
+const TILE: f32 = 36.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [

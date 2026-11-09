@@ -368,7 +368,7 @@ pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option
     Some(
         div()
             .absolute()
-            .top(px(5.))
+            .top(px(7.))
             .left_0()
             .right_0()
             .flex()

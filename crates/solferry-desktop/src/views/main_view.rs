@@ -24,10 +24,8 @@ use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const FLY_FOR: Duration = Duration::from_millis(380);
-const SENDING_FOR: Duration = Duration::from_millis(900);
-const SENT_FOR: Duration = Duration::from_millis(1000);
-const CONTENT_WIDTH: f32 = 560.0;
-const HEADER_HEIGHT: f32 = 52.0;
+const CONTENT_WIDTH: f32 = 640.0;
+const HEADER_HEIGHT: f32 = 56.0;
 const TITLE_BAR: f32 = 34.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -35,7 +33,6 @@ pub enum SendPhase {
     Idle,
     Flying,
     Sending,
-    Sent,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -55,6 +52,7 @@ pub struct MainView {
     pub expanded: Option<EndpointId>,
     pub dialog: Option<Dialog>,
     pub send_phase: SendPhase,
+    launched: (u64, u64, usize),
     pub nav_from: Page,
     pub nav_moves: usize,
     pub copied: bool,
@@ -85,6 +83,7 @@ impl MainView {
             }
             (paired_count, asking) = (latest, waiting);
             toast_timing::track(view, &state, cx);
+            view.settle_send(cx);
             cx.notify();
         })
         .detach();
@@ -120,6 +119,7 @@ impl MainView {
             expanded: None,
             dialog: None,
             send_phase: SendPhase::Idle,
+            launched: (0, 0, 0),
             nav_from: Page::Home,
             nav_moves: 0,
             copied: false,
@@ -205,13 +205,16 @@ impl MainView {
         cx.notify();
     }
 
-    /// Hands the files over at once, then lets the button finish its animation before leaving.
+    /// Hands the files over at once. The screen waits for the outcome: it leaves when a
+    /// transfer starts, and stays when every device failed, so the toast can say why.
     pub fn send_selected(&mut self, cx: &mut Context<Self>) {
         if self.send_phase != SendPhase::Idle {
             return;
         }
-        let chosen: Vec<EndpointId> = self.selected.iter().copied().collect();
-        let targets = chosen.iter().filter_map(|id| self.targets.remove(id)).collect();
+        let targets: Vec<Target> =
+            self.selected.iter().filter_map(|id| self.targets.get(id).cloned()).collect();
+        let state = self.state.read(cx);
+        self.launched = (state.sends_started, state.sends_failed, targets.len());
         Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
         self.send_phase = SendPhase::Flying;
         cx.notify();
@@ -219,23 +222,31 @@ impl MainView {
             cx.background_executor().timer(FLY_FOR).await;
             let _ = view.update(cx, |view, cx| {
                 view.send_phase = SendPhase::Sending;
+                view.settle_send(cx);
                 cx.notify();
-            });
-            cx.background_executor().timer(SENDING_FOR).await;
-            let _ = view.update(cx, |view, cx| {
-                view.send_phase = SendPhase::Sent;
-                cx.notify();
-            });
-            cx.background_executor().timer(SENT_FOR).await;
-            let _ = view.update(cx, |view, cx| {
-                view.send_phase = SendPhase::Idle;
-                view.clear_pending(cx);
             });
         })
         .detach();
     }
 
+    fn settle_send(&mut self, cx: &mut Context<Self>) {
+        if self.send_phase != SendPhase::Sending {
+            return;
+        }
+        let state = self.state.read(cx);
+        let (started, failed, count) = self.launched;
+        let (began, lost) = (state.sends_started > started, state.sends_failed - failed);
+        if began {
+            self.send_phase = SendPhase::Idle;
+            self.clear_pending(cx);
+        } else if lost >= count as u64 {
+            self.send_phase = SendPhase::Idle;
+            cx.notify();
+        }
+    }
+
     pub fn clear_pending(&mut self, cx: &mut Context<Self>) {
+        self.send_phase = SendPhase::Idle;
         self.pending.clear();
         self.selected.clear();
         self.targets.clear();

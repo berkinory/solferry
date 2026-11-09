@@ -130,10 +130,10 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
         .flex_none()
         .items_center()
         .justify_center()
-        .size(px(32.))
+        .size(px(36.))
         .rounded(px(RADIUS_FLOOR))
         .bg(fill)
-        .child(icon(glyph, 16.).text_color(tone))
+        .child(icon(glyph, 18.).text_color(tone))
 }
 
 /// A device's tile: its platform logo in the color its key gives it.

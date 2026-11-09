@@ -17,6 +17,7 @@ use crate::watch;
 
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
+#[derive(Clone)]
 pub struct Target {
     pub addr: EndpointAddr,
     pub name: String,

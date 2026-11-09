@@ -95,6 +95,9 @@ pub struct AppState {
     /// Goes up each time the last transfer ends, which starts the pill's way out.
     pub pill_settled: u64,
     pub pill_leaving: bool,
+    /// Counted so the send screen can tell how the send it started turned out.
+    pub sends_started: u64,
+    pub sends_failed: u64,
     pub offers: Vec<Offer>,
     pub texts: Vec<SharedText>,
     texts_seen: u64,
@@ -165,6 +168,7 @@ impl AppState {
                 }
             }
             Update::SendFailed { name, addr, paths, error } => {
+                self.sends_failed += 1;
                 if !matches!(error, Error::Cancelled) {
                     let title = about(&error, &name);
                     self.toast(Tone::Error, title, Some(FailedSend { name, addr, paths }));
@@ -221,6 +225,7 @@ impl AppState {
                 self.transfers.retain(|transfer| transfer.id != id && transfer.running());
                 self.pill_leaving = false;
                 self.pill_settled += 1;
+                self.sends_started += u64::from(direction == Direction::Sending);
                 self.transfers.insert(
                     0,
                     Transfer {
