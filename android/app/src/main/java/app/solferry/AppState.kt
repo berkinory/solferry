@@ -1,5 +1,6 @@
 package app.solferry
 
+import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Identity
 import uniffi.solferry_ffi.Incoming
@@ -52,7 +53,7 @@ data class AppState(
     val nearby: List<Nearby> = emptyList(),
     val reachable: Set<String>? = null,
     val relays: List<Relay> = emptyList(),
-    val blocked: List<Identity> = emptyList(),
+    val blocked: List<BlockedDevice> = emptyList(),
     val transfers: List<Transfer> = emptyList(),
     val history: List<HistoryEntry> = emptyList(),
     val offers: List<Incoming> = emptyList(),
@@ -60,6 +61,7 @@ data class AppState(
     val pairingCode: String? = null,
     val invite: String? = null,
     val joining: Boolean = false,
+    val joinError: String? = null,
     val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
@@ -101,12 +103,12 @@ data class AppState(
         is Update.PairingCode -> copy(pairingCode = update.code)
         is Update.Invite -> copy(invite = update.code)
         is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}").copy(
-            pairingCode = null, invite = null, joining = false,
+            pairingCode = null, invite = null, joining = false, joinError = null,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
             reachable = reachable?.plus(update.device.identity.id),
         )
-        is Update.PairingFailed -> toast(Tone.Error, update.problem.title).copy(pairingCode = null, joining = false)
+        is Update.PairingFailed -> (if (joining) copy(joinError = update.problem.title) else toast(Tone.Error, update.problem.title)).copy(pairingCode = null, joining = false)
         is Update.SendFailed -> toast(Tone.Error, update.problem.title).copy(sendsFailed = sendsFailed + 1)
         is Update.TextReceived -> copy(
             text = ReceivedText(now, update.name, update.text, update.autoCopy),

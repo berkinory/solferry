@@ -37,7 +37,7 @@ fun AddDeviceSheet(
     state: AppState,
     engine: Engine,
     onClose: () -> Unit,
-) = Sheet("Pair with a code", onClose) {
+) = Sheet("Pair with a code", { engine.clearJoinError(); onClose() }) {
     var code by remember { mutableStateOf("") }
     val clipboard = LocalClipboardManager.current
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }
@@ -68,6 +68,7 @@ fun AddDeviceSheet(
                 )
                 Button(join, label = if (state.joining) "Pairing" else "Pair", kind = ButtonKind.Primary, enabled = !state.joining)
             }
+            state.joinError?.let { Muted(it, color = LocalPalette.current.danger) }
         }
     }
 }

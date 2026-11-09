@@ -3,6 +3,7 @@ import SwiftUI
 struct AddDeviceScreen: View {
     @Environment(Engine.self) private var engine
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.palette) private var palette
     @State private var code = ""
 
     var body: some View {
@@ -25,9 +26,11 @@ struct AddDeviceScreen: View {
                         ActionButton(label: state.joining ? "Pairing" : "Pair", kind: .primary, action: join)
                             .disabled(state.joining)
                     }
+                    if let error = state.joinError { Muted(error, color: palette.danger) }
                 }
             }
         }
+        .onDisappear { engine.state.joinError = nil }
     }
 
     private func join() {

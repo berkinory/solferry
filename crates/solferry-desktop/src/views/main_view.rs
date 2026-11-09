@@ -25,7 +25,7 @@ use crate::tokens::{SPACE_SM, TYPE_LABEL};
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const FLY_FOR: Duration = Duration::from_millis(380);
 const CONTENT_WIDTH: f32 = 720.0;
-const HEADER_HEIGHT: f32 = 64.0;
+const HEADER_HEIGHT: f32 = 72.0;
 const TITLE_BAR: f32 = 34.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -155,6 +155,7 @@ impl MainView {
     }
 
     pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, _| state.join_error = None);
         if self.page == Page::Send {
             self.clear_pending(cx);
         } else {
@@ -420,7 +421,7 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .flex()
         .items_center()
         .justify_center()
-        .gap(px(7.))
-        .child(svg().path(MARK).size(px(18.)).text_color(color(palette(cx).brand)))
+        .gap(px(8.))
+        .child(svg().path(MARK).size(px(20.)).text_color(color(palette(cx).brand)))
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

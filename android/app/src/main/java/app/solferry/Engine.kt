@@ -115,8 +115,10 @@ class Engine(private val context: Context) : Listener {
         }
     }
 
+    fun clearJoinError() = mutable.update { it.copy(joinError = null) }
+
     fun join(code: String) {
-        mutable.update { it.copy(joining = true) }
+        mutable.update { it.copy(joining = true, joinError = null) }
         bridge.join(code)
     }
 

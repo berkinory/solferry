@@ -65,7 +65,7 @@ struct AppState {
     var nearby: [Nearby] = []
     var reachable: Set<String>?
     var relays: [Relay] = []
-    var blocked: [Identity] = []
+    var blocked: [BlockedDevice] = []
     var transfers: [Transfer] = []
     var history: [HistoryEntry] = []
     var offers: [Incoming] = []
@@ -73,6 +73,7 @@ struct AppState {
     var pairingCode: String?
     var invite: String?
     var joining = false
+    var joinError: String?
     var text: ReceivedText?
     var toasts: [Toast] = []
     var toastsMade = 0
@@ -147,7 +148,7 @@ struct AppState {
             pairedCount += 1
             reachable?.insert(device.identity.id)
         case let .pairingFailed(problem):
-            toast(.failure, problem.title)
+            if joining { joinError = problem.title } else { toast(.failure, problem.title) }
             pairingCode = nil
             joining = false
         case let .sendFailed(_, problem):

@@ -3,8 +3,8 @@ use std::path::PathBuf;
 
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
-    RelayHealth, TransferId, about, explain,
+    BlockedDevice, Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary,
+    PastTransfer, Platform, RelayHealth, TransferId, about, explain,
 };
 
 use crate::format;
@@ -82,7 +82,7 @@ pub struct AppState {
     pub id: Option<EndpointId>,
     pub config: Option<Config>,
     pub devices: Vec<Device>,
-    pub blocked: Vec<EndpointId>,
+    pub blocked: Vec<BlockedDevice>,
     pub nearby: Vec<NearbyDevice>,
     /// Paired devices that answered the last check. `None` until the first one finishes.
     pub reachable: Option<HashSet<EndpointId>>,
@@ -104,6 +104,8 @@ pub struct AppState {
     pub invite: Option<String>,
     pub relay_health: Vec<RelayHealth>,
     pub joining: bool,
+    /// Why the last code didn't work, shown under the field it was typed into.
+    pub join_error: Option<&'static str>,
     pub paired_count: u32,
     pub fatal: Option<Error>,
 }
@@ -152,8 +154,13 @@ impl AppState {
             }
             Update::PairingFailed(error) => {
                 self.pairing_code = None;
+                let title = explain(&error).title;
+                if self.joining {
+                    self.join_error = Some(title);
+                } else {
+                    self.toast(Tone::Error, title, None);
+                }
                 self.joining = false;
-                self.toast(Tone::Error, explain(&error).title, None);
             }
             Update::TextShared { name, result } => {
                 if let Err(error) = result {
@@ -191,6 +198,7 @@ impl AppState {
         self.toast(Tone::Success, format!("Paired with {}", device.name), None);
         self.invite = None;
         self.joining = false;
+        self.join_error = None;
         self.paired_count += 1;
         self.devices.retain(|known| known.id != device.id);
         if let Some(reachable) = &mut self.reachable {

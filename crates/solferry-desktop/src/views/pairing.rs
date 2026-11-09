@@ -8,6 +8,7 @@ use super::ui;
 use crate::assets::Glyph;
 use crate::qr;
 use crate::service::Command;
+use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, SPACE_XS};
 
 pub fn join(view: &MainView, cx: &mut Context<MainView>) {
@@ -17,6 +18,7 @@ pub fn join(view: &MainView, cx: &mut Context<MainView>) {
     }
     view.state.update(cx, |state, cx| {
         state.joining = true;
+        state.join_error = None;
         cx.notify();
     });
     MainView::command(Command::Join { code }, cx);
@@ -36,19 +38,29 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(ui::card(Glyph::Qr, "Show a code", None, cx).child(ui::padded_well(cx).child(code)))
         .child(
             ui::card(Glyph::Key, "Enter a code", None, cx).child(
-                ui::padded_well(cx).child(
-                    div()
-                        .flex()
-                        .gap(px(SPACE_XS))
-                        .child(div().flex_1().min_w_0().child(Input::new(&view.code_input).large()))
-                        .child(
-                            Button::new("join")
-                                .primary()
-                                .sm()
-                                .label(join_label)
-                                .on_click(cx.listener(|view, _, _, cx| join(view, cx))),
-                        ),
-                ),
+                ui::padded_well(cx)
+                    .child(
+                        div()
+                            .flex()
+                            .gap(px(SPACE_XS))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w_0()
+                                    .child(Input::new(&view.code_input).large()),
+                            )
+                            .child(
+                                Button::new("join")
+                                    .primary()
+                                    .label(join_label)
+                                    .on_click(cx.listener(|view, _, _, cx| join(view, cx))),
+                            ),
+                    )
+                    .children(
+                        state.join_error.map(|error| {
+                            ui::muted(error, cx).text_color(color(palette(cx).danger))
+                        }),
+                    ),
             ),
         );
     super::sheet::present("Pair with a code", content, MainView::leave_page, cx)

@@ -93,6 +93,7 @@ final class Engine {
 
     func join(_ code: String) {
         state.joining = true
+        state.joinError = nil
         bridge.join(code: code)
     }
 
