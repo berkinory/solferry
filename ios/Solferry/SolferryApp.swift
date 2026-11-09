@@ -98,6 +98,7 @@ private struct RootView: View {
                 pairing = false
             } else {
                 sending = false
+                Outbox.discard(staged)
                 staged = []
             }
         }

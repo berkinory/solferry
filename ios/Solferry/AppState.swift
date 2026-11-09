@@ -78,6 +78,8 @@ struct AppState {
     var texts: [ReceivedText] = []
     var toasts: [Toast] = []
     var toastsMade = 0
+    var sendsStarted = 0
+    var sendsFailed = 0
     var pairedCount = 0
 
     var strangers: [Nearby] { nearby.filter { !$0.known } }
@@ -101,6 +103,7 @@ struct AppState {
         case let .blocked(list): blocked = list
         case let .started(id, peerName, label, sending, route, bytes):
             transfers.removeAll { $0.id == id || !$0.running }
+            if sending { sendsStarted += 1 }
             let started = Transfer(id: id, peerName: peerName, label: label, sending: sending, total: bytes)
             transfers.insert(started, at: 0)
         case let .progress(id, transferred, total):
@@ -151,6 +154,7 @@ struct AppState {
             joining = false
             pairingProblem = problem
         case let .sendFailed(_, problem):
+            sendsFailed += 1
             toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):
             texts.insert(ReceivedText(id: now, name: name, text: text, copied: autoCopy), at: 0)

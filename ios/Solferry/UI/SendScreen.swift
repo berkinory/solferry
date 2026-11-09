@@ -9,7 +9,7 @@ private struct Target: Identifiable {
 }
 
 private enum Launch {
-    case idle, flying, sending, sent
+    case idle, flying, sending
 }
 
 /// Everything about one send on its own screen: what goes, and who gets it.
@@ -22,7 +22,7 @@ struct SendScreen: View {
     @Binding var files: [URL]
 
     var body: some View {
-        SheetPage(title: "Send", close: { files = []; dismiss() }) {
+        SheetPage(title: "Send", close: { dismiss() }) {
             VStack(spacing: 0) {
                 ForEach(Array(files.enumerated()), id: \.element) { index, file in
                     FileRow(file: file) {
@@ -46,9 +46,8 @@ struct SendScreen: View {
                 }
             }
             LaunchButton(chosen: chosen.count) {
-                engine.send(files, to: Array(chosen))
+                engine.send(files, to: Array(chosen), discarding: false)
             } onDone: {
-                files = []
                 dismiss()
             }
             .padding(.top, SpaceTokens.sm)
@@ -124,29 +123,25 @@ struct Connector: View {
 }
 
 private struct LaunchButton: View {
+    @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
     @State private var launch = Launch.idle
+    @State private var launched = (started: 0, failed: 0, count: 0)
     let chosen: Int
     let onLaunch: () -> Void
     let onDone: () -> Void
 
     private var label: String {
-        switch launch {
-        case .sent: "Sent"
-        case .sending: "Sending"
-        case .idle, .flying: chosen > 1 ? "Send to \(chosen) devices" : "Send"
-        }
+        if launch == .sending { return "Sending" }
+        return chosen > 1 ? "Send to \(chosen) devices" : "Send"
     }
 
     var body: some View {
         Button(action: start) {
             HStack(spacing: SpaceTokens.sm) {
-                switch launch {
-                case .sent:
-                    Icon(.check, tint: palette.onPrimary, size: 22).transition(.scale.combined(with: .opacity))
-                case .sending:
+                if launch == .sending {
                     ProgressView().tint(palette.onPrimary).transition(.scale.combined(with: .opacity))
-                case .idle, .flying:
+                } else {
                     Icon(.cursor, tint: palette.onPrimary, size: 22)
                         .rotationEffect(.degrees(90))
                         .offset(x: launch == .flying ? 36 : 0, y: launch == .flying ? -36 : 0)
@@ -154,26 +149,35 @@ private struct LaunchButton: View {
                 }
                 Text(label).font(.launchText).foregroundStyle(palette.onPrimary).contentTransition(.opacity)
             }
-            .frame(width: launch == .sent ? 148 : 210, height: 56)
-            .glassFill(launch == .sent ? palette.successFill : palette.primaryFill, in: fieldShape, interactive: true)
+            .frame(width: 210, height: 56)
+            .glassFill(palette.primaryFill, in: fieldShape, interactive: true)
         }
         .buttonStyle(.plain)
         .disabled(chosen == 0 || launch != .idle)
-        .opacity(chosen > 0 || launch == .sent ? 1 : 0.5)
+        .opacity(chosen > 0 ? 1 : 0.5)
         .sensoryFeedback(.impact(weight: .medium), trigger: launch == .flying)
-        .sensoryFeedback(.success, trigger: launch == .sent)
+        .onChange(of: engine.state.sendsStarted) { settle() }
+        .onChange(of: engine.state.sendsFailed) { settle() }
     }
 
     private func start() {
+        launched = (engine.state.sendsStarted, engine.state.sendsFailed, chosen)
         onLaunch()
         withAnimation(.easeIn(duration: 0.36)) { launch = .flying }
         Task {
             try? await Task.sleep(for: .milliseconds(380))
             withAnimation(.snappy(duration: 0.25)) { launch = .sending }
-            try? await Task.sleep(for: .milliseconds(900))
-            withAnimation(.snappy(duration: 0.3)) { launch = .sent }
-            try? await Task.sleep(for: .milliseconds(1000))
+            settle()
+        }
+    }
+
+    /// Leaves once a transfer has started, and stays when every device failed.
+    private func settle() {
+        guard launch == .sending else { return }
+        if engine.state.sendsStarted > launched.started {
             onDone()
+        } else if engine.state.sendsFailed - launched.failed >= launched.count {
+            withAnimation(.snappy(duration: 0.25)) { launch = .idle }
         }
     }
 }

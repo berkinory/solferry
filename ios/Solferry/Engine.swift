@@ -79,14 +79,15 @@ final class Engine {
         UIPasteboard.general.string = text
     }
 
-    func send(_ urls: [URL], to peers: [String]) {
+    /// `discarding` is false from the send screen, which keeps the files for another try.
+    func send(_ urls: [URL], to peers: [String], discarding: Bool = true) {
         let bridge = bridge!
         Task.detached {
             for peer in peers {
                 let files = urls.compactMap(Outbox.open)
                 if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
             }
-            Outbox.discard(urls)
+            if discarding { Outbox.discard(urls) }
         }
     }
 
