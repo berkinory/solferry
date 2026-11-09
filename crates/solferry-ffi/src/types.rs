@@ -152,6 +152,14 @@ pub struct Problem {
     pub next: String,
 }
 
+impl Problem {
+    /// The same advice, with a title that names the device it happened with.
+    #[must_use]
+    pub fn about(error: &solferry_core::Error, name: &str) -> Self {
+        Self { title: solferry_core::about(error, name), ..error.into() }
+    }
+}
+
 impl From<&Error> for Problem {
     fn from(error: &Error) -> Self {
         let explanation = explain(error);

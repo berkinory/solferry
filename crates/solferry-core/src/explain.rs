@@ -11,6 +11,18 @@ const fn say(title: &'static str, next: &'static str) -> Explanation {
     Explanation { title, next }
 }
 
+/// One short line about something that failed with a particular device.
+#[must_use]
+pub fn about(error: &Error, name: &str) -> String {
+    match error {
+        Error::Unreachable(_) => format!("Can't reach {name}"),
+        Error::Declined => format!("{name} declined"),
+        Error::Busy => format!("{name} is busy"),
+        Error::NotPaired => format!("Pair with {name} first"),
+        other => explain(other).title.to_owned(),
+    }
+}
+
 #[must_use]
 pub fn explain(error: &Error) -> Explanation {
     match error {

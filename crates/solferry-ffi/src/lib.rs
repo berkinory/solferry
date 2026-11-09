@@ -118,7 +118,8 @@ impl Solferry {
                 let Some(target) = target else { return };
                 let name = peer_name(&node, &target);
                 if let Err(error) = node.send_named(target, named).await {
-                    listener.update(Update::SendFailed { name, problem: (&error).into() });
+                    let problem = Problem::about(&error, &name);
+                    listener.update(Update::SendFailed { name, problem });
                 }
             },
             Some(peer),
@@ -130,7 +131,11 @@ impl Solferry {
             move |node, listener, target| async move {
                 let Some(target) = target else { return };
                 let name = peer_name(&node, &target);
-                let problem = node.send_text(target, text).await.err().map(|error| (&error).into());
+                let problem = node
+                    .send_text(target, text)
+                    .await
+                    .err()
+                    .map(|error| Problem::about(&error, &name));
                 listener.update(Update::TextShared { name, problem });
             },
             Some(peer),

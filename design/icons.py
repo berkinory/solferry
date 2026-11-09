@@ -24,6 +24,8 @@ ICONS = {
     "blocked": "UnavailableIcon",
     "cancel": "Cancel01Icon",
     "check": "Tick02Icon",
+    "chevron-down": "ArrowDown01Icon",
+    "chevron-up": "ArrowUp01Icon",
     "clipboard": "ClipboardPasteIcon",
     "computer": "ComputerIcon",
     "copy": "Copy01Icon",

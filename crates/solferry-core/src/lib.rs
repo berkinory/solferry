@@ -18,7 +18,7 @@ mod trust;
 pub use config::{Config, Visibility, default_data_dir};
 pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
-pub use explain::{Explanation, explain};
+pub use explain::{Explanation, about, explain};
 pub use history::PastTransfer;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
