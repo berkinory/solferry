@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,24 +62,26 @@ private fun Asker(peer: Identity, title: String, detail: String) = Row(
 }
 
 @Composable
-fun PairingCard(prompt: PairingPrompt, engine: Engine) = Card(R.drawable.ic_shield, "Pairing request", LocalPalette.current.primary) {
-    PaddedWell {
-        Asker(prompt.peer, "${prompt.name} wants to pair", prompt.peer.fingerprint)
-        Digits(prompt.code)
-        Muted("Accept only if the other screen shows the same code.")
-        Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-            Button({ engine.answerPairing(prompt.key, true) }, Modifier.weight(1f), label = "Same code", kind = ButtonKind.Primary)
-            Button({ engine.answerPairing(prompt.key, false) }, label = "Decline")
-        }
+fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet("Pairing request", { engine.answerPairing(prompt.key, false) }) { close ->
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
+        DeviceTile(prompt.peer)
+        Text("${prompt.name} wants to pair", maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Caption(prompt.peer.fingerprint)
+    }
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) { Connector(true) }
+    Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
+    Muted("Accept only if the other screen shows the same code.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+    Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+        Button({ engine.answerPairing(prompt.key, false); close() }, label = "Decline")
+        Button({ engine.answerPairing(prompt.key, true); close() }, Modifier.weight(1f), label = "Same code", icon = R.drawable.ic_check, kind = ButtonKind.Primary)
     }
 }
 
 @Composable
-fun CompareCard(code: String) = Card(R.drawable.ic_shield, "Compare codes", LocalPalette.current.primary) {
-    PaddedWell {
-        Digits(code)
-        Muted("Check that the other device shows this code, then accept there.")
-    }
+fun CompareSheet(code: String, engine: Engine) = Sheet("Compare codes", { engine.stopComparing() }) {
+    Frame { Well(padding = 12.dp) { Digits(code) } }
+    Muted("Check that the other device shows this code, then accept there.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) { Connector(true) }
 }
 
 @Composable

@@ -123,7 +123,7 @@ private fun FileRow(file: PickedFile, index: Int, appeared: Boolean, onRemove: (
 
 /** Dots running from the files down to the devices, lit once there is somewhere to go. */
 @Composable
-private fun Connector(live: Boolean) {
+fun Connector(live: Boolean) {
     val palette = LocalPalette.current
     val cycle by rememberCycle(FLOW_MS)
     val tone by animateColorAsState(if (live) palette.primary else palette.inkMuted, tween(MotionTokens.standard))

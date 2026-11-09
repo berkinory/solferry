@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,13 +34,16 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.solferry.design.MotionTokens
 import app.solferry.ui.AddDeviceSheet
+import app.solferry.ui.CompareSheet
 import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
+import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
 import app.solferry.ui.SolferryTheme
 import app.solferry.ui.Tab
 import app.solferry.ui.TabBar
+import app.solferry.ui.Toaster
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
@@ -118,6 +122,13 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     if (pairing) AddDeviceSheet(state, engine) { pairing = false }
+                    val asked = state.pairings.firstOrNull()
+                    val code = state.pairingCode
+                    if (asked != null) {
+                        key(asked.key) { PairRequestSheet(asked, engine) }
+                    } else if (code != null) {
+                        CompareSheet(code, engine)
+                    }
                     TabBar(
                         listOf(
                             Tab("Transfer", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
@@ -126,6 +137,7 @@ class MainActivity : ComponentActivity() {
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
+                    Toaster(state, engine, Modifier.align(Alignment.TopCenter))
                 }
             }
         }

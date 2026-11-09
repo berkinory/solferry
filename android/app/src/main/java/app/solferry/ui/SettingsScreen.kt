@@ -30,12 +30,10 @@ import uniffi.solferry_ffi.Reach
 
 private val reaches = listOf(
     Triple(Reach.EVERYONE, "Everyone", "Anyone on your network can see this device and ask to send."),
-    Triple(Reach.PAIRED, "Paired", "Others can see this device, but only paired devices can send."),
     Triple(Reach.HIDDEN, "Hidden", "This device doesn't show up nearby. Paired devices can still send."),
 )
 
 private fun reachOf(visibility: String) = when (visibility) {
-    "KnownDevices" -> Reach.PAIRED
     "Hidden" -> Reach.HIDDEN
     else -> Reach.EVERYONE
 }

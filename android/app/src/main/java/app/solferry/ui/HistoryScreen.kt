@@ -1,10 +1,16 @@
 package app.solferry.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,23 +24,39 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.HistoryEntry
 
 @Composable
-fun HistoryScreen(state: AppState, engine: Engine) = Page("History") {
+fun HistoryScreen(state: AppState, engine: Engine) {
     if (state.history.isEmpty()) {
-        Card(R.drawable.ic_history, "History") {
-            PaddedWell {
-                Column(Modifier.fillMaxWidth().padding(vertical = SpaceTokens.lg.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text("No transfers yet")
-                    Muted("Files you send or receive are listed here.")
-                }
+        NoHistory()
+    } else {
+        Page("History") {
+            Card(
+                R.drawable.ic_history, "History",
+                aside = { Button({ engine.bridge.clearHistory() }, label = "Clear", kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+            ) {
+                Well { state.history.forEach { Past(it) } }
             }
         }
-    } else {
-        Card(
-            R.drawable.ic_history, "History",
-            aside = { Button({ engine.bridge.clearHistory() }, label = "Clear", kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
-        ) {
-            Well { state.history.forEach { Past(it) } }
+    }
+}
+
+@Composable
+private fun NoHistory() = Column(Modifier.fillMaxSize()) {
+    val palette = LocalPalette.current
+    Toolbar { Text("History", Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium) }
+    Column(
+        Modifier.fillMaxWidth().weight(1f).padding(bottom = tabClearance()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp, Alignment.CenterVertically),
+    ) {
+        Box(Modifier.padding(bottom = SpaceTokens.md.dp), contentAlignment = Alignment.Center) {
+            FanTile(R.drawable.ic_upload, (-38).dp, -11f)
+            FanTile(R.drawable.ic_download, 38.dp, 11f)
+            Box(Modifier.size(56.dp).background(palette.raised, FieldShape).border(1.dp, palette.line, FieldShape), contentAlignment = Alignment.Center) {
+                Glyph(R.drawable.ic_history, palette.ink, 24)
+            }
         }
+        Text("No transfers yet", style = MaterialTheme.typography.titleMedium)
+        Muted("Files you send or receive show up here.")
     }
 }
 

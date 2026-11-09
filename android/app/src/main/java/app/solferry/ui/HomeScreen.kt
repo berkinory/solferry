@@ -66,12 +66,6 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
     ) {
         state.startProblem?.let { item { ProblemCard(it, null, null) } }
-        items(state.problems.size) { index ->
-            val (name, problem) = state.problems[index]
-            ProblemCard(problem, name, onDismiss = { engine.dismissProblem(index) })
-        }
-        items(state.pairings, key = { "pair-${it.key}" }) { PairingCard(it, engine) }
-        state.pairingCode?.let { item { CompareCard(it) } }
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         items(state.texts, key = { "text-${it.key}" }) { TextCard(it, engine) }
         item { SendZone { onPickFiles(null) } }
@@ -79,7 +73,6 @@ fun HomeScreen(
             item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine) { onPickFiles(it) } }
         }
         item { NearbyCard(state.strangers, state.devices.isEmpty(), engine, onUseCode) }
-        if (state.transfers.isNotEmpty()) item { TransferCard(state.transfers, engine) }
     } }
 }
 
@@ -119,7 +112,7 @@ private fun SendZone(onClick: () -> Unit) {
 }
 
 @Composable
-private fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
+fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
     val palette = LocalPalette.current
     Box(
         Modifier.offset(x = offset).rotate(tilt).size(56.dp).background(palette.control, FieldShape).border(1.dp, palette.line, FieldShape),
