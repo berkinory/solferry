@@ -143,6 +143,9 @@ struct StatusLine: View {
     }
 }
 
+/// The navigation bar and the room under the last card.
+private let sheetChrome = 88.0
+
 /// A pushed screen: a title in the bar and cards that scroll clear of the keyboard.
 struct Page<Content: View>: View {
     @Environment(\.palette) private var palette
@@ -159,6 +162,36 @@ struct Page<Content: View>: View {
         .background(palette.page.ignoresSafeArea())
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// A sheet as tall as what it holds, scrolling only once that outgrows the screen.
+struct SheetPage<Content: View>: View {
+    let title: String
+    let close: () -> Void
+    @ViewBuilder let content: Content
+    @State private var height = 0.0
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: SpaceTokens.sm) { content }
+                    .padding(.horizontal, SpaceTokens.md)
+                    .padding(.vertical, SpaceTokens.xs)
+                    .onGeometryChange(for: Double.self) { $0.size.height } action: { height = $0 }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: close) { Icon(.cancel, size: 20) }
+                        .accessibilityLabel("Close")
+                }
+            }
+        }
+        .presentationDetents([.height(height + sheetChrome)])
     }
 }
 

@@ -22,46 +22,38 @@ struct SendScreen: View {
     @Binding var files: [URL]
 
     var body: some View {
-        NavigationStack {
-            Page(title: "Send") {
-                VStack(spacing: 0) {
-                    ForEach(Array(files.enumerated()), id: \.element) { index, file in
-                        FileRow(file: file) {
-                            files.removeAll { $0 == file }
-                            if files.isEmpty { dismiss() }
-                        }
-                        .opacity(appeared ? 1 : 0)
-                        .offset(x: appeared ? 0 : -14)
-                        .animation(.easeOut(duration: 0.3).delay(Double(index) * 0.045), value: appeared)
+        SheetPage(title: "Send", close: { files = []; dismiss() }) {
+            VStack(spacing: 0) {
+                ForEach(Array(files.enumerated()), id: \.element) { index, file in
+                    FileRow(file: file) {
+                        files.removeAll { $0 == file }
+                        if files.isEmpty { dismiss() }
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(x: appeared ? 0 : -14)
+                    .animation(.easeOut(duration: 0.3).delay(Double(index) * 0.045), value: appeared)
                 }
-                Connector(live: !chosen.isEmpty)
-                CardFrame {
-                    Well {
-                        if targets.isEmpty { Scanning() }
-                        ForEach(targets) { target in
-                            TargetRow(target: target, chosen: chosen.contains(target.id)) {
-                                if chosen.remove(target.id) == nil { chosen.insert(target.id) }
-                            }
+            }
+            Connector(live: !chosen.isEmpty)
+            CardFrame {
+                Well {
+                    if targets.isEmpty { Scanning() }
+                    ForEach(targets) { target in
+                        TargetRow(target: target, chosen: chosen.contains(target.id)) {
+                            if chosen.remove(target.id) == nil { chosen.insert(target.id) }
                         }
                     }
                 }
-                LaunchButton(chosen: chosen.count) {
-                    engine.send(files, to: Array(chosen))
-                } onDone: {
-                    files = []
-                    dismiss()
-                }
-                .padding(.top, SpaceTokens.sm)
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { files = []; dismiss() } label: { Icon(.cancel, size: 20) }
-                        .accessibilityLabel("Cancel")
-                }
+            LaunchButton(chosen: chosen.count) {
+                engine.send(files, to: Array(chosen))
+            } onDone: {
+                files = []
+                dismiss()
             }
-            .onAppear { appeared = true }
+            .padding(.top, SpaceTokens.sm)
         }
+        .onAppear { appeared = true }
     }
 
     private var targets: [Target] {
@@ -163,8 +155,7 @@ private struct LaunchButton: View {
                 Text(label).font(.launchText).foregroundStyle(palette.onPrimary).contentTransition(.opacity)
             }
             .frame(width: launch == .sent ? 148 : 210, height: 56)
-            .background(launch == .sent ? palette.successFill : palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
-            .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+            .glassEffect(.regular.tint(launch == .sent ? palette.successFill : palette.primaryFill).interactive(), in: fieldShape)
         }
         .buttonStyle(.plain)
         .disabled(chosen == 0 || launch != .idle)

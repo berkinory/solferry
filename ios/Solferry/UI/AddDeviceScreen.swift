@@ -7,7 +7,7 @@ struct AddDeviceScreen: View {
 
     var body: some View {
         let state = engine.state
-        NavigationStack { Page(title: "Pair with a code") {
+        SheetPage(title: "Pair with a code", close: { dismiss() }) {
             if let problem = state.pairingProblem { ProblemCard(problem: problem) }
             Card(glyph: .qr, title: "Show a code") {
                 PaddedWell {
@@ -29,12 +29,6 @@ struct AddDeviceScreen: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button { dismiss() } label: { Icon(.cancel, size: 20) }
-                    .accessibilityLabel("Close")
-            }
-        } }
     }
 
     private func join() {

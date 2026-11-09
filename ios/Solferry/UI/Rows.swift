@@ -155,13 +155,14 @@ struct NearbyCard: View {
     @Environment(Engine.self) private var engine
     @Environment(\.addDevice) private var addDevice
     let nearby: [Nearby]
+    let alone: Bool
 
     var body: some View {
         Card(glyph: .nearby, title: "Nearby") {
             ActionButton(label: "Use a code", glyph: .qr, kind: .ghost, scale: .small, action: addDevice)
         } content: {
             Well {
-                if nearby.isEmpty { Scanning() }
+                if nearby.isEmpty { if alone { Searching() } else { Scanning() } }
                 ForEach(nearby, id: \.identity.id) { device in
                     RowBody {
                         DeviceTile(identity: device.identity)

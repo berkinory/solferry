@@ -18,9 +18,8 @@ struct HomeScreen: View {
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 ForEach(state.texts) { TextCard(shared: $0) }
                 SendZone { pick(nil) }
-                if state.devices.isEmpty, state.strangers.isEmpty { RadarHero() }
                 if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
-                if !state.devices.isEmpty || !state.strangers.isEmpty { NearbyCard(nearby: state.strangers) }
+                NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
                 if !state.transfers.isEmpty { TransferCard(transfers: state.transfers) }
             }
             .padding(.horizontal, SpaceTokens.md)
@@ -31,12 +30,15 @@ struct HomeScreen: View {
             try? await Task.sleep(for: .milliseconds(700))
         }
         .background(palette.page.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top, spacing: 0) { HomeBar() }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) { Brand() }
+                .sharedBackgroundVisibility(.hidden)
+        }
     }
 }
 
-private struct HomeBar: View {
+private struct Brand: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -44,9 +46,6 @@ private struct HomeBar: View {
             Icon(.mark, tint: palette.brand, size: 20)
             Text("Solferry").font(.titleText)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .background(palette.page)
     }
 }
 
@@ -63,8 +62,7 @@ private struct SendZone: View {
                         FanTile(glyph: .typePdf, x: 38)
                         Icon(.send, tint: palette.onPrimary, size: 24)
                             .frame(width: 56, height: 56)
-                            .background(palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous).strokeBorder(palette.primaryBorder))
+                            .glassEffect(.regular.tint(palette.primaryFill), in: fieldShape)
                     }
                     .frame(height: 64)
                     VStack(spacing: 0) {
