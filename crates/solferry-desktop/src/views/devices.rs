@@ -148,7 +148,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
         .map(|auto_accept| device_details(&row, auto_accept, view, cx));
     let share = row.approval.is_some().then(|| share_button(&row, view, cx));
     let action = if row.approval.is_some() {
-        more_button(row.id, cx)
+        more_button(row.id, expanded, cx)
     } else {
         pair_button(row.id, row.addr.clone(), cx)
     };
@@ -210,11 +210,11 @@ fn share_button(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEl
         .into_any_element()
 }
 
-fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
+fn more_button(id: EndpointId, open: bool, cx: &mut Context<MainView>) -> AnyElement {
     Button::new(SharedString::from(format!("more-{id}")))
         .ghost()
         .xs()
-        .icon(Glyph::More)
+        .icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown })
         .tooltip("Options")
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
             cx.stop_propagation();

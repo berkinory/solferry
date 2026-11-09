@@ -1,8 +1,8 @@
-use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::input::Input;
+use gpui_kit::component::switch::Switch;
 use gpui_kit::{
-    AnyElement, Context, InteractiveElement, IntoElement, ParentElement, PathPromptOptions,
-    SharedString, StatefulInteractiveElement, Styled, Window, div, px,
+    AnyElement, Context, IntoElement, ParentElement, PathPromptOptions, SharedString, Styled,
+    Window, div, px,
 };
 use iroh::EndpointId;
 use solferry_core::{Config, Visibility};
@@ -12,20 +12,7 @@ use super::main_view::MainView;
 use super::{relays, ui};
 use crate::assets::Glyph;
 use crate::service::Command;
-use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS};
-
-const VISIBILITY: [(Visibility, &str, &str); 2] = [
-    (
-        Visibility::Everyone,
-        "Everyone",
-        "Anyone on your network can see this device and ask to send.",
-    ),
-    (
-        Visibility::Hidden,
-        "Hidden",
-        "This device doesn't show up nearby. Paired devices can still send.",
-    ),
-];
+use crate::tokens::{SPACE_MD, SPACE_SM, SPACE_XS};
 
 pub fn load_inputs(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
     let name = view.state.read(cx).config.as_ref().map(|config| config.name.clone());
@@ -115,48 +102,32 @@ fn choose_folder(cx: &mut Context<MainView>) {
 }
 
 fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    let theme = cx.theme();
-    let (track, chosen, hover) = (theme.secondary, theme.background, theme.accent);
-    let muted = theme.muted_foreground;
-    let current = VISIBILITY.iter().find(|option| option.0 == config.visibility);
-    let options: Vec<_> = VISIBILITY
-        .iter()
-        .map(|&(mode, title, _)| {
-            let selected = config.visibility == mode;
-            let option = div()
-                .id(SharedString::from(title))
-                .flex()
-                .flex_1()
-                .items_center()
-                .justify_center()
-                .h(px(28.))
-                .rounded(px(RADIUS_CONTROL))
-                .text_size(px(13.))
-                .cursor_pointer()
-                .child(title)
-                .on_click(cx.listener(move |view, _, _, cx| {
-                    change(view, cx, |config| config.visibility = mode);
-                }));
-            if selected {
-                option.bg(chosen)
-            } else {
-                option.text_color(muted).hover(move |style| style.bg(hover))
-            }
-        })
-        .collect();
-    ui::card(Glyph::View, "Who can see this device", None, cx)
+    let found = config.visibility == Visibility::Everyone;
+    let detail = if found {
+        "Devices on your network can see this one and ask to send."
+    } else {
+        "Nobody new can find this device. Paired devices can still reach it."
+    };
+    ui::card(Glyph::View, "Let others find me", None, cx)
         .child(
-            ui::padded_well(cx)
-                .child(
-                    div()
-                        .flex()
-                        .gap(px(SPACE_XS))
-                        .p(px(SPACE_XS))
-                        .rounded(px(RADIUS_FIELD))
-                        .bg(track)
-                        .children(options),
-                )
-                .children(current.map(|option| ui::muted(option.2, cx))),
+            ui::padded_well(cx).child(
+                div()
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .gap(px(SPACE_MD))
+                    .child(ui::muted(detail, cx).flex_1())
+                    .child(
+                        Switch::new("findable")
+                            .checked(found)
+                            .accessibility_label("Let others find me")
+                            .on_click(cx.listener(move |view, on: &bool, _, cx| {
+                                let chosen =
+                                    if *on { Visibility::Everyone } else { Visibility::Hidden };
+                                change(view, cx, |config| config.visibility = chosen);
+                            })),
+                    ),
+            ),
         )
         .into_any_element()
 }

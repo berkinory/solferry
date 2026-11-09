@@ -343,7 +343,7 @@ impl Render for MainView {
             Page::Pair => Some(pairing::sheet(self, cx)),
             _ => None,
         });
-        let toasts = toast::render(self, cx);
+        let toasts = toast::render(self, f32::from(window.viewport_size().width), cx);
         let room = f32::from(window.viewport_size().height) - HEADER_HEIGHT - nav::CLEARANCE;
         let tabs = nav::render(self, cx);
         let body = match self.page {

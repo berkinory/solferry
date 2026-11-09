@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
     Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
-    RelayHealth, TransferId, explain,
+    RelayHealth, TransferId, about, explain,
 };
 
 use crate::format;
@@ -166,7 +166,7 @@ impl AppState {
             }
             Update::SendFailed { name, addr, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
-                    let title = format!("{name}: {}", explain(&error).title);
+                    let title = about(&error, &name);
                     self.toast(Tone::Error, title, Some(FailedSend { name, addr, paths }));
                 }
             }
@@ -186,7 +186,7 @@ impl AppState {
         if matches!(error, Error::NothingToSend) {
             self.toast(Tone::Error, "Your clipboard has no text", None);
         } else {
-            self.toast(Tone::Error, format!("{name}: {}", explain(error).title), None);
+            self.toast(Tone::Error, about(error, name), None);
         }
     }
 

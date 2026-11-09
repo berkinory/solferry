@@ -25,10 +25,35 @@ const RING: f32 = 16.0;
 const ROW_HEIGHT: f32 = 48.0;
 const ENTER: Duration = Duration::from_millis(380);
 const RECONNECTING: u32 = 0x00f5_9e0b;
+const CHROME: f32 = 124.0;
+const CHARACTER: f32 = 6.6;
 #[cfg(target_os = "macos")]
 const CONTROLS: f32 = 84.0;
 #[cfg(not(target_os = "macos"))]
 const CONTROLS: f32 = 104.0;
+
+/// How many characters of the pill's text fit in this much room.
+fn limit(room: f32) -> usize {
+    usize::try_from(format::whole(f64::from(room / CHARACTER))).unwrap_or(usize::MAX)
+}
+
+/// Cuts the middle out of a name too long for the pill, so both of its ends stay readable.
+fn fitted(text: &str, budget: usize) -> String {
+    let length = text.chars().count();
+    if length <= budget || budget < 8 {
+        return text.to_owned();
+    }
+    let tail = budget * 2 / 5;
+    let head = budget - tail - 1;
+    let start: String = text.chars().take(head).collect();
+    let end: String = text.chars().skip(length - tail).collect();
+    format!("{}\u{2026}{}", start.trim_end(), end.trim_start())
+}
+
+/// A verb that always shows, then as much of the name as still fits.
+fn phrase(verb: &str, name: &str, budget: usize) -> String {
+    format!("{verb} {}", fitted(name, budget.saturating_sub(verb.len() + 1)))
+}
 
 /// Foreground fill and background text, sized by what it says, so it flips with the theme.
 fn shell(cx: &Context<MainView>) -> Div {
@@ -154,19 +179,19 @@ fn row(close: bool) -> Div {
     }))
 }
 
-fn running_row(transfer: &Transfer, wide: bool, cx: &mut Context<MainView>) -> Div {
+fn running_row(transfer: &Transfer, wide: bool, budget: usize, cx: &mut Context<MainView>) -> Div {
     let id = transfer.id;
     let waiting = matches!(transfer.phase, Phase::Reconnecting);
-    let verb = match (waiting, transfer.direction) {
-        (true, _) => "Reconnecting",
-        (_, Direction::Sending) => "Sending",
-        (_, Direction::Receiving) => "Receiving",
+    let line = match (waiting, transfer.direction) {
+        (true, _) => phrase("Reconnecting to", &transfer.peer, budget),
+        (_, Direction::Sending) => phrase("Sending", &transfer.title, budget),
+        (_, Direction::Receiving) => phrase("Receiving", &transfer.title, budget),
     };
     let tone = if waiting { rgb(RECONNECTING).into() } else { cx.theme().background };
     let key = SharedString::from(format!("pill-text-{id}-{waiting}"));
     row(true)
         .child(ring(transfer.fraction(), tone))
-        .child(label(key, format!("{verb} {}", transfer.title), wide))
+        .child(label(key, line, wide))
         .child(percent(transfer.fraction(), cx))
         .child(
             dismiss(SharedString::from(format!("pill-cancel-{id}")), cx).on_click(
@@ -175,14 +200,14 @@ fn running_row(transfer: &Transfer, wide: bool, cx: &mut Context<MainView>) -> D
         )
 }
 
-fn ended_row(transfer: &Transfer, cx: &mut Context<MainView>) -> Div {
+fn ended_row(transfer: &Transfer, budget: usize, cx: &mut Context<MainView>) -> Div {
     let id = transfer.id;
     let (tone, title) = transfer.outcome();
     let received = tone == Tone::Success && transfer.direction == Direction::Receiving;
     let hover = cx.theme().background.opacity(0.12);
     row(received)
         .child(badge(SharedString::from(format!("pill-badge-{id}")), tone, cx))
-        .child(label(SharedString::from(format!("pill-end-{id}")), title, false))
+        .child(label(SharedString::from(format!("pill-end-{id}")), fitted(&title, budget), false))
         .children(received.then(|| {
             div()
                 .id("pill-folder")
@@ -206,7 +231,7 @@ fn share(running: &[&Transfer]) -> f32 {
     if total == 0 { 1. } else { (format::precise(done) / format::precise(total)) as f32 }
 }
 
-fn many_row(running: &[&Transfer], cx: &mut Context<MainView>) -> AnyElement {
+fn many_row(running: &[&Transfer], open: bool, cx: &mut Context<MainView>) -> AnyElement {
     let fraction = share(running);
     let key = SharedString::from(format!("pill-many-{}", running.len()));
     row(false)
@@ -219,6 +244,10 @@ fn many_row(running: &[&Transfer], cx: &mut Context<MainView>) -> AnyElement {
         .child(ring(fraction, cx.theme().background))
         .child(label(key, format!("{} transfers", running.len()), true))
         .child(percent(fraction, cx))
+        .child(
+            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 15.)
+                .text_color(faded(cx)),
+        )
         .into_any_element()
 }
 
@@ -228,15 +257,21 @@ fn shake(element: Div, id: impl Into<SharedString>) -> impl IntoElement {
     })
 }
 
-fn pill(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> Option<AnyElement> {
+fn pill(
+    state: &AppState,
+    view: &MainView,
+    width: f32,
+    cx: &mut Context<MainView>,
+) -> Option<AnyElement> {
+    let budget = limit(WIDTH.min(width - 2. * CONTROLS) - CHROME);
     let running: Vec<_> = state.transfers.iter().filter(|item| item.running()).collect();
     let body = match running.as_slice() {
-        [] => ended_row(state.transfers.first()?, cx).into_any_element(),
-        [only] => running_row(only, false, cx).into_any_element(),
-        many => many_row(many, cx),
+        [] => ended_row(state.transfers.first()?, budget, cx).into_any_element(),
+        [only] => running_row(only, false, budget, cx).into_any_element(),
+        many => many_row(many, view.transfers_open, cx),
     };
     let list: Vec<_> = if view.transfers_open && running.len() > 1 {
-        running.iter().map(|item| running_row(item, true, cx).into_any_element()).collect()
+        running.iter().map(|item| running_row(item, true, budget, cx).into_any_element()).collect()
     } else {
         Vec::new()
     };
@@ -323,9 +358,9 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 /// One pill for what is moving over the brand, and short messages underneath it.
-pub fn render(view: &MainView, cx: &mut Context<MainView>) -> Option<AnyElement> {
+pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option<AnyElement> {
     let state = view.state.read(cx).clone();
-    let pill = pill(&state, view, cx);
+    let pill = pill(&state, view, width, cx);
     if pill.is_none() && state.toasts.is_empty() {
         return None;
     }
