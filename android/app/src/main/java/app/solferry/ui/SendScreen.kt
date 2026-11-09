@@ -3,7 +3,6 @@ package app.solferry.ui
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -49,13 +48,11 @@ import app.solferry.design.SpaceTokens
 import kotlinx.coroutines.delay
 import uniffi.solferry_ffi.Identity
 
-private enum class Launch { Idle, Flying, Sending, Sent }
+private enum class Launch { Idle, Flying, Sending }
 
 private data class Target(val identity: Identity, val name: String, val detail: String)
 
 private const val FLY_MS = 380L
-private const val SENDING_MS = 900L
-private const val SENT_MS = 1000L
 private const val FLOW_MS = 1100
 private const val DOTS = 5
 
@@ -95,7 +92,7 @@ fun SendSheet(
         }
     }
     Box(Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), contentAlignment = Alignment.Center) {
-        LaunchButton(chosen.size, { onSend(chosen) }, close)
+        LaunchButton(chosen.size, state.sendsStarted, state.sendsFailed, { onSend(chosen) }, close)
     }
 }
 
@@ -140,41 +137,39 @@ fun Connector(live: Boolean) {
 }
 
 @Composable
-private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) {
+private fun LaunchButton(chosen: Int, started: Int, failed: Int, onLaunch: () -> Unit, onDone: () -> Unit) {
     val palette = LocalPalette.current
     var launch by remember { mutableStateOf(Launch.Idle) }
+    var launched by remember { mutableStateOf(Triple(0, 0, 0)) }
     val haptics = LocalHapticFeedback.current
-    LaunchedEffect(launch) {
-        when (launch) {
-            Launch.Flying -> { delay(FLY_MS); launch = Launch.Sending }
-            Launch.Sending -> { delay(SENDING_MS); launch = Launch.Sent }
-            Launch.Sent -> { haptics.performHapticFeedback(HapticFeedbackType.Confirm); delay(SENT_MS); onDone() }
-            Launch.Idle -> {}
-        }
+    LaunchedEffect(launch) { if (launch == Launch.Flying) { delay(FLY_MS); launch = Launch.Sending } }
+    LaunchedEffect(launch, started, failed) {
+        if (launch != Launch.Sending) return@LaunchedEffect
+        val (startedBefore, failedBefore, count) = launched
+        if (started > startedBefore) onDone() else if (failed - failedBefore >= count) launch = Launch.Idle
     }
-    val sent = launch == Launch.Sent
-    val width by animateDpAsState(if (sent) 148.dp else 210.dp, tween(MotionTokens.slow))
-    val fill by animateColorAsState(if (sent) palette.successFill else palette.primaryFill, tween(MotionTokens.slow))
     val fly by animateFloatAsState(if (launch == Launch.Idle) 0f else 1f, tween(380, easing = FastOutLinearInEasing))
     val enabled = chosen > 0 && launch == Launch.Idle
     val label = when {
-        sent -> "Sent"
         launch == Launch.Sending -> "Sending"
         chosen > 1 -> "Send to $chosen devices"
         else -> "Send"
     }
     val density = LocalDensity.current
     Box(
-        Modifier.width(width).height(56.dp).graphicsLayer { alpha = if (chosen > 0 || sent) 1f else 0.5f }.clip(FieldShape)
-            .background(fill).clickable(enabled = enabled) { haptics.performHapticFeedback(HapticFeedbackType.Confirm); onLaunch(); launch = Launch.Flying },
+        Modifier.width(210.dp).height(56.dp).graphicsLayer { alpha = if (chosen > 0) 1f else 0.5f }.clip(FieldShape)
+            .background(palette.primaryFill).clickable(enabled = enabled) {
+                haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                launched = Triple(started, failed, chosen)
+                onLaunch()
+                launch = Launch.Flying
+            },
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
             val symbol = if (launch == Launch.Flying) Launch.Idle else launch
             AnimatedContent(symbol, transitionSpec = { (fadeIn() + scaleIn()) togetherWith fadeOut() }) { shown ->
-                if (shown == Launch.Sent) {
-                    Glyph(R.drawable.ic_check, palette.onPrimary, 22)
-                } else if (shown == Launch.Sending) {
+                if (shown == Launch.Sending) {
                     CircularProgressIndicator(Modifier.size(20.dp), color = palette.onPrimary, strokeWidth = 2.dp)
                 } else {
                     Box(

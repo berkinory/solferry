@@ -65,6 +65,8 @@ data class AppState(
     val texts: List<ReceivedText> = emptyList(),
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
+    val sendsStarted: Int = 0,
+    val sendsFailed: Int = 0,
     val standby: Boolean = false,
     val pairedCount: Int = 0,
 ) {
@@ -81,6 +83,7 @@ data class AppState(
         is Update.RelayFailed -> copy(relayProblem = update.problem)
         is Update.Blocked -> copy(blocked = update.devices)
         is Update.Started -> copy(
+            sendsStarted = sendsStarted + if (update.sending) 1 else 0,
             transfers = listOf(
                 Transfer(update.id, update.peerName, update.label, update.sending, total = update.bytes.toLong()),
             ) + transfers.filter { it.id != update.id && it.running },
@@ -108,7 +111,7 @@ data class AppState(
         is Update.PairingFailed ->
             (if (joining) this else toast(Tone.Error, update.problem.title))
                 .copy(pairingCode = null, joining = false, pairingProblem = update.problem)
-        is Update.SendFailed -> toast(Tone.Error, update.problem.title)
+        is Update.SendFailed -> toast(Tone.Error, update.problem.title).copy(sendsFailed = sendsFailed + 1)
         is Update.TextReceived -> copy(
             texts = (listOf(ReceivedText(now, update.name, update.text, update.autoCopy)) + texts).take(MAX_TEXTS),
         )
