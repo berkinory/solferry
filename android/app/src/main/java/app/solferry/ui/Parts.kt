@@ -51,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -208,6 +209,9 @@ fun Page(title: String, content: @Composable ColumnScope.() -> Unit) = Column(Mo
     )
 }
 
+/** Draws the toasts inside a sheet, which would otherwise dim the ones on the screen behind it. */
+val LocalToaster = staticCompositionLocalOf<@Composable (Modifier) -> Unit> { {} }
+
 /** Material's bottom sheet with a centered title. `content` gets a way to close it with the animation. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -223,13 +227,16 @@ fun Sheet(title: String, onClose: () -> Unit, content: @Composable ColumnScope.(
         contentColor = palette.ink,
         shape = RoundedCornerShape(topStart = RadiusTokens.card.dp, topEnd = RadiusTokens.card.dp),
     ) {
-        Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding()
-                .padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
-            verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
-        ) {
-            Text(title, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-            content(close)
+        Box {
+            Column(
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().navigationBarsPadding()
+                    .padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
+                verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
+            ) {
+                Text(title, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+                content(close)
+            }
+            LocalToaster.current(Modifier.align(Alignment.TopCenter))
         }
     }
 }

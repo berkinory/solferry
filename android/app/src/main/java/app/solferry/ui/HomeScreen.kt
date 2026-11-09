@@ -65,7 +65,6 @@ fun HomeScreen(
         contentPadding = PaddingValues(start = SpaceTokens.md.dp, end = SpaceTokens.md.dp, top = SpaceTokens.xs.dp, bottom = tabClearance()),
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
     ) {
-        state.startProblem?.let { item { ProblemCard(it, null, null) } }
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         items(state.texts, key = { "text-${it.key}" }) { TextCard(it, engine) }
         item { SendZone { onPickFiles(null) } }

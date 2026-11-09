@@ -67,6 +67,7 @@ import app.solferry.R
 import app.solferry.Toast
 import app.solferry.Tone
 import app.solferry.Transfer
+import uniffi.solferry_ffi.Problem
 import kotlinx.coroutines.delay
 
 private const val SUCCESS_STAYS_MS = 3000L
@@ -245,12 +246,36 @@ private fun ToastRow(toast: Toast, engine: Engine) {
     }
 }
 
+/** Stays until the app can network again, and opens to say why. */
+@Composable
+private fun FatalRow(problem: Problem, reason: String) {
+    val ground = LocalPalette.current.page
+    var opened by remember { mutableStateOf(false) }
+    Shell {
+        Column(if (opened) Modifier.width(320.dp) else Modifier.width(IntrinsicSize.Max)) {
+            PillRow({ opened = !opened }, closes = false, wide = opened) {
+                Badge(Tone.Error)
+                Label(problem.title, opened)
+                Glyph(if (opened) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down, ground.copy(alpha = 0.76f), 15)
+            }
+            AnimatedVisibility(opened, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                Column(Modifier.padding(start = 18.dp, end = 18.dp, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(problem.next, color = ground.copy(alpha = 0.76f), fontSize = 13.sp)
+                    Text(reason, color = ground.copy(alpha = 0.76f), fontSize = 13.sp)
+                }
+            }
+        }
+    }
+}
+
 /** One pill for what is moving over the brand, and short messages underneath it. */
 @Composable
-fun Toaster(state: AppState, engine: Engine, modifier: Modifier = Modifier) {
+fun Toaster(state: AppState, engine: Engine, modifier: Modifier = Modifier, inSheet: Boolean = false) {
     var kept by remember { mutableStateOf(state.transfers) }
     if (state.transfers.isNotEmpty()) kept = state.transfers
-    Column(modifier.statusBarsPadding().padding(top = 4.dp).padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    val place = if (inSheet) modifier else modifier.statusBarsPadding()
+    Column(place.padding(top = 4.dp).padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        state.startProblem?.let { FatalRow(it, state.startReason) }
         AnimatedVisibility(state.transfers.isNotEmpty(), enter = enter, exit = exit) { Pill(kept, engine) }
         state.toasts.forEach { key(it.key) { ToastRow(it, engine) } }
     }

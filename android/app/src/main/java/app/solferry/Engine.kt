@@ -116,7 +116,7 @@ class Engine(private val context: Context) : Listener {
     }
 
     fun join(code: String) {
-        mutable.update { it.copy(joining = true, pairingProblem = null) }
+        mutable.update { it.copy(joining = true) }
         bridge.join(code)
     }
 

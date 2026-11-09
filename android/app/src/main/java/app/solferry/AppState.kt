@@ -48,11 +48,11 @@ data class Me(val id: String, val fingerprint: String, val name: String, val vis
 data class AppState(
     val me: Me? = null,
     val startProblem: Problem? = null,
+    val startReason: String = "",
     val devices: List<PairedDevice> = emptyList(),
     val nearby: List<Nearby> = emptyList(),
     val reachable: Set<String>? = null,
     val relays: List<Relay> = emptyList(),
-    val relayProblem: Problem? = null,
     val blocked: List<Identity> = emptyList(),
     val transfers: List<Transfer> = emptyList(),
     val history: List<HistoryEntry> = emptyList(),
@@ -60,7 +60,6 @@ data class AppState(
     val pairings: List<PairingPrompt> = emptyList(),
     val pairingCode: String? = null,
     val invite: String? = null,
-    val pairingProblem: Problem? = null,
     val joining: Boolean = false,
     val texts: List<ReceivedText> = emptyList(),
     val toasts: List<Toast> = emptyList(),
@@ -74,13 +73,13 @@ data class AppState(
 
     fun apply(update: Update, now: Long): AppState = when (update) {
         is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility), startProblem = null)
-        is Update.StartFailed -> copy(startProblem = update.problem)
+        is Update.StartFailed -> copy(startProblem = update.problem, startReason = update.reason)
         is Update.Devices -> copy(devices = update.devices)
         is Update.History -> copy(history = update.entries)
         is Update.Nearby -> copy(nearby = update.devices)
         is Update.Reachable -> copy(reachable = update.ids.toSet())
-        is Update.Relays -> copy(relays = update.relays, relayProblem = null)
-        is Update.RelayFailed -> copy(relayProblem = update.problem)
+        is Update.Relays -> copy(relays = update.relays)
+        is Update.RelayFailed -> toast(Tone.Error, update.problem.title)
         is Update.Blocked -> copy(blocked = update.devices)
         is Update.Started -> copy(
             sendsStarted = sendsStarted + if (update.sending) 1 else 0,
@@ -103,14 +102,12 @@ data class AppState(
         is Update.PairingCode -> copy(pairingCode = update.code)
         is Update.Invite -> copy(invite = update.code)
         is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}").copy(
-            pairingCode = null, invite = null, pairingProblem = null, joining = false,
+            pairingCode = null, invite = null, joining = false,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
             reachable = reachable?.plus(update.device.identity.id),
         )
-        is Update.PairingFailed ->
-            (if (joining) this else toast(Tone.Error, update.problem.title))
-                .copy(pairingCode = null, joining = false, pairingProblem = update.problem)
+        is Update.PairingFailed -> toast(Tone.Error, update.problem.title).copy(pairingCode = null, joining = false)
         is Update.SendFailed -> toast(Tone.Error, update.problem.title).copy(sendsFailed = sendsFailed + 1)
         is Update.TextReceived -> copy(
             texts = (listOf(ReceivedText(now, update.name, update.text, update.autoCopy)) + texts).take(MAX_TEXTS),

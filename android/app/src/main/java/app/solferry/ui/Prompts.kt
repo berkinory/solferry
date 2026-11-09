@@ -32,7 +32,6 @@ import app.solferry.design.RadiusTokens
 import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.Identity
 import uniffi.solferry_ffi.Incoming
-import uniffi.solferry_ffi.Problem
 
 @Composable
 private fun Digits(code: String) {
@@ -121,17 +120,6 @@ fun TextCard(shared: ReceivedText, engine: Engine) = Card(R.drawable.ic_clipboar
                 icon = if (shared.copied) R.drawable.ic_check else R.drawable.ic_copy, size = ButtonSize.Sm,
             )
             Button({ engine.dismissText(shared.key) }, label = "Dismiss", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
-        }
-    }
-}
-
-@Composable
-fun ProblemCard(problem: Problem, about: String?, onDismiss: (() -> Unit)?) {
-    val palette = LocalPalette.current
-    Card(R.drawable.ic_alert, problem.title, palette.danger, palette.danger.copy(alpha = 0.5f)) {
-        PaddedWell(palette.dangerWell) {
-            Muted(listOfNotNull(about, problem.next).joinToString(". "))
-            if (onDismiss != null) Button(onDismiss, label = "Dismiss", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
         }
     }
 }

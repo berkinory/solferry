@@ -18,6 +18,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -37,6 +38,7 @@ import app.solferry.ui.AddDeviceSheet
 import app.solferry.ui.CompareSheet
 import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
+import app.solferry.ui.LocalToaster
 import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
@@ -96,7 +98,7 @@ class MainActivity : ComponentActivity() {
                     if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && shared.isEmpty()) screen = Screen.Home
                 }
                 BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
-                Box(Modifier.fillMaxSize()) {
+                CompositionLocalProvider(LocalToaster provides { place -> Toaster(state, engine, place, inSheet = true) }) { Box(Modifier.fillMaxSize()) {
                     AnimatedContent(
                         screen,
                         Modifier.fillMaxSize(),
@@ -137,8 +139,9 @@ class MainActivity : ComponentActivity() {
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
-                    Toaster(state, engine, Modifier.align(Alignment.TopCenter))
-                }
+                    val sheetOpen = shared.isNotEmpty() || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
+                    if (!sheetOpen) Toaster(state, engine, Modifier.align(Alignment.TopCenter))
+                } }
             }
         }
     }

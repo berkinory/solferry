@@ -41,7 +41,6 @@ fun AddDeviceSheet(
     var code by remember { mutableStateOf("") }
     val clipboard = LocalClipboardManager.current
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }
-    state.pairingProblem?.let { ProblemCard(it, null, null) }
     Card(R.drawable.ic_qr, "Show a code") {
         PaddedWell {
             val invite = state.invite

@@ -62,7 +62,6 @@ fun RelayCard(state: AppState, engine: Engine) {
         PaddedWell {
             Muted("Reach devices on other networks through a relay you run.")
             state.relays.forEach { RelayRow(it, engine) }
-            state.relayProblem?.let { Muted(it.next, color = palette.danger) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Field(
                     link, { link = it }, "https://relay.example.com#token", Modifier.weight(1f),
