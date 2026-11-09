@@ -55,6 +55,7 @@ private struct Label: View {
         Text(text)
             .font(.system(size: 14, weight: .medium))
             .lineLimit(1)
+            .truncationMode(.middle)
             .id(text)
             .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .move(edge: .top).combined(with: .opacity)))
     }
@@ -127,10 +128,10 @@ private struct RunningRow: View {
 
     var body: some View {
         let waiting = transfer.phase == .reconnecting
-        let verb = waiting ? "Reconnecting" : transfer.sending ? "Sending" : "Receiving"
+        let line = waiting ? "Reconnecting to \(transfer.peerName)" : "\(transfer.sending ? "Sending" : "Receiving") \(transfer.label)"
         PillRow(closes: true) {
             Ring(fraction: transfer.fraction, tone: waiting ? reconnecting : palette.page)
-            Label(text: "\(verb) \(transfer.label)")
+            Label(text: line)
             if wide { Spacer(minLength: 0) }
             Percent(fraction: transfer.fraction)
             Dismiss(label: "Cancel") { engine.bridge.cancel(transfer: transfer.id) }
@@ -167,7 +168,7 @@ private struct TransferPill: View {
                     ForEach(running) { RunningRow(transfer: $0, wide: true).transition(.opacity) }
                 }
             }
-            .frame(width: open && running.count > 1 ? 320 : nil, alignment: .leading)
+            .frame(maxWidth: open && running.count > 1 ? 360 : nil, alignment: .leading)
         }
         .clipShape(pillShape)
         .animation(spring, value: running.count)
@@ -204,6 +205,7 @@ private struct TransferPill: View {
             Label(text: "\(running.count) transfers")
             if open { Spacer(minLength: 0) }
             Percent(fraction: fraction)
+            Icon(open ? .chevronUp : .chevronDown, tint: palette.page.opacity(0.76), size: 15)
         }
         .contentShape(Rectangle())
         .onTapGesture { open.toggle() }

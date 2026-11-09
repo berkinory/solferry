@@ -4,6 +4,7 @@ enum Glyph: String {
     case add, alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
     case external, file, folder, history, home, key, link, linux, mark, more, nearby, qr, relay, send, settings, shield
     case cursor, transfers, upload, view, windows
+    case chevronDown = "chevron-down", chevronUp = "chevron-up"
     case typeArchive = "type-archive", typeAudio = "type-audio", typeCode = "type-code", typeDoc = "type-doc"
     case typeImage = "type-image", typePackage = "type-package", typePdf = "type-pdf", typeSheet = "type-sheet"
     case typeSlides = "type-slides", typeText = "type-text", typeVideo = "type-video"

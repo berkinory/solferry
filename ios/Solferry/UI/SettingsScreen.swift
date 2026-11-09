@@ -2,15 +2,6 @@ import SwiftUI
 
 private let guide = URL(string: "https://github.com/berkinory/solferry/blob/main/docs/relay.md")!
 
-private let reaches: [(reach: Reach, label: String, detail: String)] = [
-    (.everyone, "Everyone", "Anyone on your network can see this device and ask to send."),
-    (.hidden, "Hidden", "This device doesn't show up nearby. Paired devices can still send."),
-]
-
-private func index(of visibility: String) -> Int {
-    visibility == "Hidden" ? 1 : 0
-}
-
 struct SettingsScreen: View {
     @Environment(Engine.self) private var engine
     @State private var name = ""
@@ -30,7 +21,7 @@ struct SettingsScreen: View {
             Card(glyph: .folder, title: "Save files to") {
                 PaddedWell { Muted("The Solferry folder in the Files app") }
             }
-            VisibilityCard(current: index(of: me?.visibility ?? ""))
+            VisibilityCard(found: me?.visibility != "Hidden")
             RelayCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
@@ -51,20 +42,14 @@ struct SettingsScreen: View {
 
 private struct VisibilityCard: View {
     @Environment(Engine.self) private var engine
-    let current: Int
+    let found: Bool
 
     var body: some View {
-        Card(glyph: .view, title: "Who can see this device") {
+        Card(glyph: .view, title: "Let others find me") {
             PaddedWell {
-                Picker(
-                    "Who can see this device",
-                    selection: Binding(get: { current }, set: { engine.bridge.setReach(reach: reaches[$0].reach) })
-                ) {
-                    ForEach(reaches.indices, id: \.self) { Text(reaches[$0].label).tag($0) }
+                Toggle(isOn: Binding(get: { found }, set: { engine.bridge.setReach(reach: $0 ? .everyone : .hidden) })) {
+                    Muted(found ? "Devices on your network can see this one and ask to send." : "Nobody new can find this device. Paired devices can still reach it.")
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Muted(reaches[current].detail)
             }
         }
     }

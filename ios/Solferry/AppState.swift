@@ -150,13 +150,13 @@ struct AppState {
             pairingCode = nil
             joining = false
             pairingProblem = problem
-        case let .sendFailed(name, problem):
-            toast(.failure, "\(name): \(problem.title)")
+        case let .sendFailed(_, problem):
+            toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):
             texts.insert(ReceivedText(id: now, name: name, text: text, copied: autoCopy), at: 0)
             texts = Array(texts.prefix(maxTexts))
-        case let .textShared(name, problem):
-            if let problem { toast(.failure, "\(name): \(problem.title)") }
+        case let .textShared(_, problem):
+            if let problem { toast(.failure, problem.title) }
         }
     }
 
