@@ -67,7 +67,7 @@ def radii(tokens):
 
 
 # A desktop window is read from further away than a phone.
-DESKTOP_SCALE = 1.15
+DESKTOP_SCALE = 1.3
 
 
 def scales(tokens):
@@ -188,6 +188,7 @@ def desktop_theme(tokens):
                 "name": f"Solferry {mode.capitalize()}",
                 "mode": mode,
                 "font.family": tokens["font"]["sans"],
+                "font.size": tokens["type"]["body"],
                 "mono_font.family": tokens["font"]["mono"],
                 "mono_font.size": tokens["type"]["caption"],
                 "radius": tokens["corner"]["control"],

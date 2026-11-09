@@ -6,7 +6,7 @@ use gpui_kit::{
     Window, div, px,
 };
 use iroh::EndpointId;
-use solferry_core::{Config, Visibility};
+use solferry_core::{BlockedDevice, Config, Visibility};
 
 use super::button::Button;
 use super::main_view::MainView;
@@ -120,6 +120,7 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
                     .child(ui::muted(detail, cx).flex_1())
                     .child(
                         Switch::new("findable")
+                            .large()
                             .checked(found)
                             .accessibility_label("Let others find me")
                             .on_click(cx.listener(move |view, on: &bool, _, cx| {
@@ -133,11 +134,11 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
         .into_any_element()
 }
 
-fn blocked_section(blocked: &[EndpointId], cx: &mut Context<MainView>) -> Option<AnyElement> {
+fn blocked_section(blocked: &[BlockedDevice], cx: &mut Context<MainView>) -> Option<AnyElement> {
     if blocked.is_empty() {
         return None;
     }
-    let rows: Vec<_> = blocked.iter().map(|&id| blocked_row(id, cx)).collect();
+    let rows: Vec<_> = blocked.iter().map(|device| blocked_row(device, cx)).collect();
     Some(
         ui::card(Glyph::Blocked, "Blocked", Some(ui::count(blocked.len(), cx)), cx)
             .child(ui::well(cx).children(rows))
@@ -145,14 +146,23 @@ fn blocked_section(blocked: &[EndpointId], cx: &mut Context<MainView>) -> Option
     )
 }
 
-fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
+fn blocked_row(device: &BlockedDevice, cx: &mut Context<MainView>) -> AnyElement {
+    let id = device.id;
+    let short = id.fmt_short().to_string();
+    let who = div()
+        .flex()
+        .flex_col()
+        .flex_1()
+        .min_w_0()
+        .child(ui::text(device.name.clone().unwrap_or_else(|| short.clone())).truncate())
+        .children(device.name.is_some().then(|| ui::caption(short, cx)));
     div()
         .flex()
         .items_center()
-        .gap(px(12.))
-        .p(px(8.))
+        .gap(px(14.))
+        .p(px(9.))
         .child(ui::tile(Glyph::Blocked, cx))
-        .child(ui::caption(id.fmt_short().to_string(), cx).flex_1())
+        .child(who)
         .child(
             Button::new(SharedString::from(format!("unblock-{id}")))
                 .xs()

@@ -1,4 +1,5 @@
 use gpui_kit::component::ActiveTheme;
+use gpui_kit::component::Sizable;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::{
     AnyElement, App, Context, ElementId, ExternalPaths, Hsla, InteractiveElement, IntoElement,
@@ -158,8 +159,8 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
         .id(id)
         .flex()
         .items_center()
-        .gap(px(12.))
-        .p(px(8.))
+        .gap(px(14.))
+        .p(px(9.))
         .rounded(px(RADIUS_CONTROL))
         .border_1()
         .border_color(transparent_black())
@@ -247,13 +248,14 @@ fn device_details(
         .gap(px(SPACE_XS))
         .child(ui::muted(what, cx))
         .child(ui::muted(moment, cx).opacity(0.6));
-    let line = || div().flex().items_center().justify_between().h(px(42.)).pl(px(59.)).pr(px(8.));
+    let line = || div().flex().items_center().justify_between().h(px(47.)).pl(px(67.)).pr(px(9.));
     div()
         .flex()
         .flex_col()
         .child(
             line().child(ui::muted("Receive without asking", cx)).child(
                 Switch::new(SharedString::from(format!("approval-{id}")))
+                    .large()
                     .checked(auto_accept)
                     .accessibility_label("Receive without asking")
                     .on_click(cx.listener(move |_, enabled: &bool, _, cx| {

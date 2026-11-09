@@ -41,7 +41,6 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
                         )
                         .child(
                             Button::new("add-relay")
-                                .sm()
                                 .icon(Glyph::Add)
                                 .label("Add")
                                 .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
@@ -69,7 +68,7 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
     div()
         .flex()
         .items_center()
-        .gap(px(12.))
+        .gap(px(14.))
         .child(ui::tile(Glyph::Relay, cx))
         .child(
             div()
