@@ -17,7 +17,7 @@ use crate::service::Target;
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
-const BUTTON_WIDTH: f32 = 210.0;
+const BUTTON_WIDTH: f32 = 240.0;
 const DOTS: usize = 5;
 const FLOW: Duration = Duration::from_millis(1100);
 
@@ -44,9 +44,9 @@ fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement
         .flex()
         .items_center()
         .gap(px(SPACE_SM))
-        .h(px(36.))
+        .h(px(42.))
         .px(px(SPACE_SM))
-        .child(icon(glyph, 20.).text_color(cx.theme().muted_foreground))
+        .child(icon(glyph, 23.).text_color(cx.theme().muted_foreground))
         .child(ui::text(name).flex_1().min_w_0().truncate())
         .children(size.map(|size| ui::muted(size, cx)))
         .child(
@@ -55,12 +55,12 @@ fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement
                 .flex()
                 .items_center()
                 .justify_center()
-                .size(px(28.))
+                .size(px(32.))
                 .rounded(px(RADIUS_CONTROL))
                 .cursor_pointer()
                 .hover(|style| style.opacity(0.7))
                 .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx)))
-                .child(icon(Glyph::Delete, 16.).text_color(danger)),
+                .child(icon(Glyph::Delete, 18.).text_color(danger)),
         )
         .with_animation(
             SharedString::from(format!("file-in-{index}")),
@@ -83,8 +83,8 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
         .id(SharedString::from(format!("target-{id}")))
         .flex()
         .items_center()
-        .gap(px(10.))
-        .p(px(7.))
+        .gap(px(12.))
+        .p(px(8.))
         .rounded(px(RADIUS_CONTROL))
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
@@ -108,13 +108,13 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
 }
 
 /// Dots running from the files down to the devices, lit once there is somewhere to go.
-pub fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
+fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
     let tone = if live { color(palette(cx).primary) } else { cx.theme().muted_foreground };
     let dots: Vec<_> = (0..DOTS)
         .map(|index| {
             let offset = fraction(index) / fraction(DOTS);
             div()
-                .size(px(5.))
+                .size(px(6.))
                 .rounded_full()
                 .bg(tone)
                 .with_animation(
@@ -132,7 +132,7 @@ pub fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .items_center()
-        .gap(px(5.))
+        .gap(px(6.))
         .py(px(SPACE_SM))
         .children(dots)
         .into_any_element()
@@ -144,7 +144,7 @@ fn cursor_at(delta: f32) -> Transformation {
 }
 
 fn spinner(tone: Hsla) -> AnyElement {
-    icon(Glyph::Loading, 20.)
+    icon(Glyph::Loading, 23.)
         .text_color(tone)
         .with_animation(
             "send-spinner",
@@ -165,11 +165,11 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     };
     let on_primary = color(palette.on_primary);
     let symbol: AnyElement = match phase {
-        SendPhase::Idle => icon(Glyph::Cursor, 20.)
+        SendPhase::Idle => icon(Glyph::Cursor, 23.)
             .text_color(on_primary)
             .with_transformation(cursor_at(0.))
             .into_any_element(),
-        SendPhase::Flying => icon(Glyph::Cursor, 20.)
+        SendPhase::Flying => icon(Glyph::Cursor, 23.)
             .text_color(on_primary)
             .with_animation(
                 "cursor-launch",
@@ -187,7 +187,7 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .justify_center()
         .gap(px(SPACE_SM))
         .w(px(BUTTON_WIDTH))
-        .h(px(52.))
+        .h(px(58.))
         .rounded(px(RADIUS_FIELD))
         .bg(fill)
         .overflow_hidden()

@@ -1,3 +1,4 @@
+use gpui_kit::component::Sizable;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::{
@@ -57,7 +58,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 fn device_section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     ui::card(Glyph::Computer, "This device", None, cx)
         .child(
-            ui::padded_well(cx).child(Input::new(&view.name_input)).child(
+            ui::padded_well(cx).child(Input::new(&view.name_input).large()).child(
                 div()
                     .flex()
                     .items_center()
@@ -148,8 +149,8 @@ fn blocked_row(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
     div()
         .flex()
         .items_center()
-        .gap(px(10.))
-        .p(px(7.))
+        .gap(px(12.))
+        .p(px(8.))
         .child(ui::tile(Glyph::Blocked, cx))
         .child(ui::caption(id.fmt_short().to_string(), cx).flex_1())
         .child(

@@ -69,7 +69,7 @@ pub fn header(glyph: Glyph, title: impl Into<SharedString>, tone: Hsla, cx: &App
         .text_size(px(TYPE_LABEL))
         .font_weight(FontWeight::MEDIUM)
         .text_color(cx.theme().foreground.opacity(0.8))
-        .child(icon(glyph, 16.).text_color(tone))
+        .child(icon(glyph, 18.).text_color(tone))
         .child(title.into())
 }
 
@@ -84,7 +84,7 @@ pub fn titled(heading: Div, aside: Option<AnyElement>, cx: &App) -> Div {
             .flex()
             .items_center()
             .justify_between()
-            .h(px(34.))
+            .h(px(40.))
             .pl(px(SPACE_LG))
             .pr(px(SPACE_SM))
             .child(heading)
@@ -122,10 +122,10 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
         .flex_none()
         .items_center()
         .justify_center()
-        .size(px(36.))
+        .size(px(42.))
         .rounded(px(RADIUS_FLOOR))
         .bg(fill)
-        .child(icon(glyph, 18.).text_color(tone))
+        .child(icon(glyph, 21.).text_color(tone))
 }
 
 /// A device's tile: its platform logo in the color its key gives it.
@@ -168,5 +168,5 @@ pub fn dot(value: Hsla) -> Div {
 
 /// Muted text after a colored dot, for anything that has a state.
 pub fn status(value: Hsla, label: impl Into<SharedString>, cx: &App) -> Div {
-    div().flex().items_center().gap(px(6.)).min_w_0().child(dot(value)).child(muted(label, cx))
+    div().flex().items_center().gap(px(7.)).min_w_0().child(dot(value)).child(muted(label, cx))
 }

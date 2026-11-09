@@ -11,7 +11,7 @@ use super::ui;
 use crate::service::Command;
 use crate::tokens::{RADIUS_CARD, SPACE_LG, SPACE_SM, SPACE_XS};
 
-const WIDTH: f32 = 340.0;
+const WIDTH: f32 = 390.0;
 
 pub enum Dialog {
     Forget { id: EndpointId, name: String },

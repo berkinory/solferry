@@ -149,9 +149,9 @@ fn look(variant: Variant, cx: &App) -> Look {
 impl RenderOnce for Button {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let (height, padding, text, glyph_size) = match self.size {
-            Size::Xs => (30.0, 9.0, 13.0, 15.0),
-            Size::Sm => (34.0, 13.0, 14.0, 17.0),
-            Size::Md => (38.0, 15.0, 15.0, 17.0),
+            Size::Xs => (34.0, 11.0, 14.0, 17.0),
+            Size::Sm => (38.0, 15.0, 15.0, 19.0),
+            Size::Md => (44.0, 17.0, 16.0, 20.0),
         };
         let look = look(self.variant, cx);
         let (hover, hover_text) = (look.hover, look.hover_text);
@@ -163,7 +163,7 @@ impl RenderOnce for Button {
             .flex_none()
             .items_center()
             .justify_center()
-            .gap(px(6.))
+            .gap(px(7.))
             .h(px(height))
             .rounded(px(if self.size == Size::Md { RADIUS_CONTROL } else { RADIUS_FLOOR }))
             .text_size(px(text))

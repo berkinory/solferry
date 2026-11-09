@@ -19,15 +19,15 @@ use crate::service::Command;
 use crate::state::{AppState, Phase, Toast, Tone, Transfer};
 use crate::theme::{color, palette};
 
-const WIDTH: f32 = 340.0;
-const RADIUS: f32 = 20.0;
-const HEIGHT: f32 = 42.0;
-const RING: f32 = 16.0;
-const ROW_HEIGHT: f32 = 48.0;
+const WIDTH: f32 = 390.0;
+const RADIUS: f32 = 23.0;
+const HEIGHT: f32 = 48.0;
+const RING: f32 = 18.0;
+const ROW_HEIGHT: f32 = 54.0;
 const ENTER: Duration = Duration::from_millis(380);
 const RECONNECTING: u32 = 0x00f5_9e0b;
-const CHROME: f32 = 124.0;
-const CHARACTER: f32 = 6.6;
+const CHROME: f32 = 142.0;
+const CHARACTER: f32 = 7.6;
 #[cfg(target_os = "macos")]
 const CONTROLS: f32 = 84.0;
 #[cfg(not(target_os = "macos"))]
@@ -89,7 +89,7 @@ fn badge(id: SharedString, tone: Tone, cx: &Context<MainView>) -> AnyElement {
         .rounded_full()
         .size(px(RING))
         .bg(fill)
-        .child(icon(glyph, 10.).text_color(white()))
+        .child(icon(glyph, 11.).text_color(white()))
         .with_animation(
             id,
             Animation::new(Duration::from_millis(480)).with_easing(ease_out_quint()),
@@ -109,11 +109,11 @@ fn dismiss(id: SharedString, cx: &Context<MainView>) -> Stateful<Div> {
         .flex_none()
         .items_center()
         .justify_center()
-        .size(px(24.))
-        .rounded(px(6.))
+        .size(px(28.))
+        .rounded(px(7.))
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
-        .child(icon(Glyph::Cancel, 12.).text_color(faded(cx)))
+        .child(icon(Glyph::Cancel, 14.).text_color(faded(cx)))
 }
 
 /// One line that comes up from below whenever it changes.
@@ -121,7 +121,7 @@ fn label(id: SharedString, text: String, wide: bool) -> impl IntoElement {
     let line = if wide { div().flex_1() } else { div() };
     line.relative()
         .min_w_0()
-        .text_size(px(14.))
+        .text_size(px(16.))
         .font_weight(FontWeight::MEDIUM)
         .truncate()
         .child(text)
@@ -135,16 +135,16 @@ fn label(id: SharedString, text: String, wide: bool) -> impl IntoElement {
 fn percent(fraction: f32, cx: &Context<MainView>) -> impl IntoElement {
     div()
         .flex_none()
-        .text_size(px(13.))
+        .text_size(px(15.))
         .text_color(faded(cx))
         .child(format!("{}%", format::whole(f64::from(fraction) * 100.)))
 }
 
 fn row(close: bool) -> Div {
-    div().flex().items_center().gap(px(10.)).h(px(HEIGHT)).pl(px(16.)).pr(px(if close {
-        10.
+    div().flex().items_center().gap(px(11.)).h(px(HEIGHT)).pl(px(18.)).pr(px(if close {
+        11.
     } else {
-        18.
+        20.
     }))
 }
 
@@ -184,11 +184,11 @@ fn ended_row(transfer: &Transfer, budget: usize, cx: &mut Context<MainView>) -> 
                 .flex_none()
                 .items_center()
                 .justify_center()
-                .size(px(24.))
-                .rounded(px(6.))
+                .size(px(28.))
+                .rounded(px(7.))
                 .cursor_pointer()
                 .hover(move |style| style.bg(hover))
-                .child(icon(Glyph::FolderOpen, 14.).text_color(faded(cx)))
+                .child(icon(Glyph::FolderOpen, 16.).text_color(faded(cx)))
                 .on_click(cx.listener(|view, _, _, cx| view.show_downloads(cx)))
         }))
 }
@@ -295,10 +295,10 @@ fn fatal_row(error: &Error, open: bool, cx: &mut Context<MainView>) -> AnyElemen
         div()
             .flex()
             .flex_col()
-            .gap(px(4.))
-            .px(px(18.))
-            .pb(px(14.))
-            .text_size(px(13.))
+            .gap(px(5.))
+            .px(px(20.))
+            .pb(px(16.))
+            .text_size(px(15.))
             .text_color(faded(cx))
             .child(explanation.next)
             .child(error.to_string())
@@ -321,7 +321,7 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
         div()
             .id(SharedString::from(format!("toast-retry-{key}")))
             .flex_none()
-            .text_size(px(13.))
+            .text_size(px(15.))
             .font_weight(FontWeight::MEDIUM)
             .cursor_pointer()
             .child("Try again")
@@ -348,8 +348,8 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .justify_center()
         .w_full()
-        .px(px(8.))
-        .pt(px(6.))
+        .px(px(9.))
+        .pt(px(7.))
         .h(px(ROW_HEIGHT))
         .child(shell)
         .with_animation(
@@ -375,7 +375,7 @@ pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option
     Some(
         div()
             .absolute()
-            .top(px(7.))
+            .top(px(8.))
             .left_0()
             .right_0()
             .flex()

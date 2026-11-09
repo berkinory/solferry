@@ -14,6 +14,10 @@ use crate::state::AppState;
 use crate::tray::{TrayAction, TrayEvents};
 use crate::views::MainView;
 
+const WINDOW_WIDTH: f32 = 640.0;
+const WINDOW_HEIGHT: f32 = 920.0;
+/// Keeps the window clear of a menu bar and a dock or taskbar on small screens.
+const SCREEN_MARGIN: f32 = 96.0;
 const TRAY_POLL: Duration = Duration::from_millis(150);
 
 pub struct Shell {
@@ -106,10 +110,13 @@ pub fn show_window(cx: &mut App) {
     {
         return;
     }
-    let bounds = Bounds::centered(None, size(px(560.), px(840.)), cx);
+    let room = cx
+        .primary_display()
+        .map_or(px(WINDOW_HEIGHT), |display| display.bounds().size.height - px(SCREEN_MARGIN));
+    let bounds = Bounds::centered(None, size(px(WINDOW_WIDTH), px(WINDOW_HEIGHT).min(room)), cx);
     let mut options = TitleBar::window_options();
     options.window_bounds = Some(WindowBounds::Windowed(bounds));
-    options.window_min_size = Some(size(px(400.), px(560.)));
+    options.window_min_size = Some(size(px(460.), px(640.)));
     options.app_id = Some("solferry".to_owned());
     let opened = gpui_kit::open_window(options, cx, |window, cx| {
         window.on_window_should_close(cx, |_, cx| {

@@ -1,3 +1,4 @@
+use gpui_kit::component::Sizable;
 use gpui_kit::component::input::Input;
 use gpui_kit::{AnyElement, ClipboardItem, Context, IntoElement, ParentElement, Styled, div, px};
 
@@ -39,7 +40,7 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                     div()
                         .flex()
                         .gap(px(SPACE_XS))
-                        .child(div().flex_1().min_w_0().child(Input::new(&view.code_input)))
+                        .child(div().flex_1().min_w_0().child(Input::new(&view.code_input).large()))
                         .child(
                             Button::new("join")
                                 .primary()
