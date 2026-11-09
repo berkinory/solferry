@@ -20,7 +20,7 @@ const FAN_SIZE: f32 = 56.0;
 const FAN_TILT: f32 = 0.2;
 
 /// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
-pub fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
+fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
     let turn = || Transformation::rotate(radians(side * FAN_TILT));
     let layer = |size: f32, inset: f32| {
         icon(Glyph::FanCard, size)

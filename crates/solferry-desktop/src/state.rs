@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
-use std::time::Instant;
 
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
@@ -11,7 +10,6 @@ use solferry_core::{
 use crate::format;
 use crate::service::Update;
 
-const SPEED_SMOOTHING: f64 = 0.2;
 const MAX_TEXTS: usize = 3;
 const MAX_TOASTS: usize = 3;
 
@@ -29,12 +27,9 @@ pub struct Transfer {
     pub title: String,
     pub peer: String,
     pub direction: Direction,
-    pub route: solferry_core::Route,
     pub transferred: u64,
     pub total: u64,
-    pub speed: f64,
     pub phase: Phase,
-    measured: Option<(Instant, u64)>,
 }
 
 #[derive(Clone)]
@@ -56,7 +51,6 @@ pub struct Toast {
     pub key: u64,
     pub tone: Tone,
     pub title: String,
-    pub detail: String,
     pub retry: Option<FailedSend>,
     pub leaving: bool,
 }
@@ -160,8 +154,7 @@ impl AppState {
             Update::PairingFailed(error) => {
                 self.pairing_code = None;
                 if !self.joining {
-                    let explanation = explain(&error);
-                    self.toast(Tone::Error, explanation.title, explanation.next, None);
+                    self.toast(Tone::Error, explain(&error).title, None);
                 }
                 self.joining = false;
                 self.pairing_error = Some(error);
@@ -173,26 +166,17 @@ impl AppState {
             }
             Update::SendFailed { name, addr, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
-                    let explanation = explain(&error);
-                    let detail = format!("{name}: {}", explanation.next);
-                    let retry = FailedSend { name, addr, paths };
-                    self.toast(Tone::Error, explanation.title, detail, Some(retry));
+                    let title = format!("{name}: {}", explain(&error).title);
+                    self.toast(Tone::Error, title, Some(FailedSend { name, addr, paths }));
                 }
             }
         }
     }
 
-    pub fn toast(
-        &mut self,
-        tone: Tone,
-        title: impl Into<String>,
-        detail: impl Into<String>,
-        retry: Option<FailedSend>,
-    ) {
+    pub fn toast(&mut self, tone: Tone, title: impl Into<String>, retry: Option<FailedSend>) {
         self.toasts_made += 1;
         let key = self.toasts_made;
-        let (title, detail) = (title.into(), detail.into());
-        self.toasts.push(Toast { key, tone, title, detail, retry, leaving: false });
+        self.toasts.push(Toast { key, tone, title: title.into(), retry, leaving: false });
         if self.toasts.len() > MAX_TOASTS {
             self.toasts.remove(0);
         }
@@ -200,25 +184,14 @@ impl AppState {
 
     pub fn text_failed(&mut self, name: &str, error: &Error) {
         if matches!(error, Error::NothingToSend) {
-            self.toast(Tone::Error, "Your clipboard has no text", "Copy some text first.", None);
+            self.toast(Tone::Error, "Your clipboard has no text", None);
         } else {
-            let explanation = explain(error);
-            self.toast(
-                Tone::Error,
-                explanation.title,
-                format!("{name}: {}", explanation.next),
-                None,
-            );
+            self.toast(Tone::Error, format!("{name}: {}", explain(error).title), None);
         }
     }
 
     fn add_device(&mut self, device: Device) {
-        self.toast(
-            Tone::Success,
-            format!("Paired with {}", device.name),
-            "It can send to you now.",
-            None,
-        );
+        self.toast(Tone::Success, format!("Paired with {}", device.name), None);
         self.invite = None;
         self.pairing_error = None;
         self.joining = false;
@@ -244,7 +217,7 @@ impl AppState {
                     .insert(0, SharedText { key, peer, name: peer_name, text, copied: auto_copy });
                 self.texts.truncate(MAX_TEXTS);
             }
-            Event::Started { id, peer_name, label, direction, route, bytes, .. } => {
+            Event::Started { id, peer_name, label, direction, bytes, .. } => {
                 self.transfers.retain(|transfer| transfer.id != id && transfer.running());
                 self.pill_leaving = false;
                 self.pill_settled += 1;
@@ -255,20 +228,13 @@ impl AppState {
                         title: label,
                         peer: peer_name,
                         direction,
-                        route,
                         transferred: 0,
                         total: bytes,
-                        speed: 0.0,
                         phase: Phase::Active,
-                        measured: None,
                     },
                 );
             }
-            Event::RouteChanged { id, route } => {
-                if let Some(transfer) = self.transfers.iter_mut().find(|item| item.id == id) {
-                    transfer.route = route;
-                }
-            }
+            Event::RouteChanged { .. } => {}
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {
                     transfer.record(transferred, total);
@@ -311,8 +277,8 @@ impl AppState {
             return;
         };
         let ended = self.transfers.remove(index);
-        let (tone, title, detail) = ended.outcome();
-        self.toast(tone, title, detail, None);
+        let (tone, title) = ended.outcome();
+        self.toast(tone, title, None);
     }
 
     fn transfer(&mut self, id: TransferId) -> Option<&mut Transfer> {
@@ -325,33 +291,18 @@ impl Transfer {
         matches!(self.phase, Phase::Active | Phase::Reconnecting)
     }
 
-    pub fn outcome(&self) -> (Tone, String, String) {
+    pub fn outcome(&self) -> (Tone, String) {
         if let Phase::Failed(error) = &self.phase {
-            let explanation = explain(error);
-            return (Tone::Error, explanation.title.to_owned(), explanation.next.to_owned());
+            return (Tone::Error, explain(error).title.to_owned());
         }
-        let (verb, from) = match self.direction {
-            Direction::Sending => ("Sent", "To"),
-            Direction::Receiving => ("Received", "From"),
+        let verb = match self.direction {
+            Direction::Sending => "Sent",
+            Direction::Receiving => "Received",
         };
-        let size = format::bytes(self.total);
-        (
-            Tone::Success,
-            format!("{verb} {}", self.title),
-            format!("{from} {}  ·  {size}", self.peer),
-        )
+        (Tone::Success, format!("{verb} {}", self.title))
     }
 
     fn record(&mut self, transferred: u64, total: u64) {
-        let now = Instant::now();
-        if let Some((at, before)) = self.measured {
-            let elapsed = now.duration_since(at).as_secs_f64();
-            if elapsed > 0.0 {
-                let sample = format::precise(transferred.saturating_sub(before)) / elapsed;
-                self.speed += (sample - self.speed) * SPEED_SMOOTHING;
-            }
-        }
-        self.measured = Some((now, transferred));
         self.transferred = transferred;
         self.total = total;
         self.phase = Phase::Active;
@@ -363,10 +314,5 @@ impl Transfer {
             return 1.0;
         }
         (format::precise(self.transferred) / format::precise(self.total)) as f32
-    }
-
-    pub fn seconds_left(&self) -> Option<f64> {
-        (self.speed > 1.0)
-            .then(|| format::precise(self.total.saturating_sub(self.transferred)) / self.speed)
     }
 }

@@ -12,17 +12,6 @@ pub fn bytes(value: u64) -> String {
     if unit == 0 { format!("{value} B") } else { format!("{amount:.1} {}", UNITS[unit]) }
 }
 
-pub fn duration(seconds: f64) -> String {
-    let rounded = seconds.round();
-    if rounded < 60.0 {
-        format!("{rounded:.0}s")
-    } else if rounded < 3600.0 {
-        format!("{:.0}m {:.0}s", (rounded / 60.0).floor(), rounded % 60.0)
-    } else {
-        format!("{:.0}h {:.0}m", (rounded / 3600.0).floor(), ((rounded % 3600.0) / 60.0).floor())
-    }
-}
-
 /// How long ago a moment was, in the largest unit that still reads naturally.
 pub fn ago(ms: u64) -> String {
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis();

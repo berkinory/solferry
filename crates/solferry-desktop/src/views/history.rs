@@ -3,7 +3,6 @@ use gpui_kit::{AnyElement, Context, FontWeight, IntoElement, ParentElement, Styl
 use solferry_core::{Direction, PastTransfer};
 
 use super::button::Button;
-use super::home::fan_tile;
 use super::main_view::MainView;
 use super::ui;
 use crate::assets::{Glyph, icon};
@@ -14,9 +13,6 @@ use crate::tokens::{RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS};
 
 fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
     let core = div()
-        .absolute()
-        .top(px(4.))
-        .left(px(42.))
         .flex()
         .items_center()
         .justify_center()
@@ -26,13 +22,6 @@ fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
         .border_1()
         .border_color(cx.theme().border)
         .child(icon(Glyph::History, 24.).text_color(cx.theme().muted_foreground));
-    let fan = div()
-        .relative()
-        .w(px(140.))
-        .h(px(64.))
-        .child(fan_tile("past-out", Glyph::Upload, -1., false, cx))
-        .child(fan_tile("past-in", Glyph::Download, 1., false, cx))
-        .child(core);
     div()
         .flex()
         .flex_col()
@@ -40,7 +29,7 @@ fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
         .justify_center()
         .gap(px(SPACE_SM))
         .h(px(room))
-        .child(fan)
+        .child(core)
         .child(ui::text("No transfers yet").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
         .child(ui::muted("Files you send or receive show up here.", cx).text_center())
         .into_any_element()
