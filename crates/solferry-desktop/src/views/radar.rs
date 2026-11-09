@@ -12,21 +12,21 @@ use super::main_view::{MainView, Page};
 use super::ui;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_FIELD, SPACE_SM, SPACE_XS};
+use crate::tokens::{RADIUS_FIELD, SPACE_XS};
 
-const SIZE: f32 = 148.0;
-const CORE: f32 = 48.0;
-const ORBITS: [f32; 2] = [92.0, 146.0];
+const SIZE: f32 = 116.0;
+const CORE: f32 = 38.0;
+const ORBITS: [f32; 2] = [72.0, 114.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
 const TILE: f32 = 32.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [
-    ("ghost-apple", Glyph::Apple, -56.0, -35.0, 0.0),
-    ("ghost-windows", Glyph::Windows, 57.0, -25.0, 0.25),
-    ("ghost-android", Glyph::Android, -45.0, 49.0, 0.5),
-    ("ghost-linux", Glyph::Linux, 52.0, 44.0, 0.75),
+    ("ghost-apple", Glyph::Apple, -44.0, -27.0, 0.0),
+    ("ghost-windows", Glyph::Windows, 44.0, -20.0, 0.25),
+    ("ghost-android", Glyph::Android, -35.0, 38.0, 0.5),
+    ("ghost-linux", Glyph::Linux, 41.0, 34.0, 0.75),
 ];
 
 fn centered(area: f32, size: f32) -> Div {
@@ -72,7 +72,7 @@ fn radar(cx: &Context<MainView>) -> Div {
         .bg(cx.theme().secondary)
         .border_1()
         .border_color(cx.theme().border)
-        .child(icon(Glyph::Nearby, 22.).text_color(cx.theme().muted_foreground));
+        .child(icon(Glyph::Nearby, 18.).text_color(cx.theme().muted_foreground));
     let line = cx.theme().border;
     div()
         .relative()
@@ -84,46 +84,29 @@ fn radar(cx: &Context<MainView>) -> Div {
         .child(core)
 }
 
-pub fn use_code(label: &'static str, cx: &mut Context<MainView>) -> AnyElement {
+pub fn use_code(cx: &mut Context<MainView>) -> AnyElement {
     Button::new("use-code")
         .ghost()
         .xs()
         .icon(Glyph::Qr)
-        .label(label)
+        .label("Use a code")
         .on_click(cx.listener(|view, _, window, cx| view.open_page(Page::Pair, window, cx)))
         .into_any_element()
 }
 
-/// The whole home screen for someone with no devices yet.
-pub fn hero(cx: &mut Context<MainView>) -> AnyElement {
-    let code = Button::new("pair-with-code")
-        .sm()
-        .icon(Glyph::Qr)
-        .label("Pair with code")
-        .on_click(cx.listener(|view, _, window, cx| view.open_page(Page::Pair, window, cx)));
-    ui::frame(cx)
+/// What the nearby card holds for someone with no devices yet.
+pub fn searching(cx: &mut Context<MainView>) -> Div {
+    ui::well(cx)
+        .items_center()
+        .gap(px(SPACE_XS))
+        .py(px(12.))
+        .child(radar(cx))
+        .child(ui::text("Looking for devices").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
         .child(
-            ui::well(cx)
-                .items_center()
-                .gap(px(SPACE_SM))
-                .py(px(16.))
-                .child(radar(cx))
-                .child(
-                    ui::text("Looking for nearby devices")
-                        .pt(px(SPACE_SM))
-                        .font_weight(FontWeight::MEDIUM),
-                )
-                .child(
-                    ui::muted(
-                        "Open Solferry on another device on this network and it shows up here.",
-                        cx,
-                    )
-                    .text_center()
-                    .max_w(px(300.)),
-                )
-                .child(div().pt(px(SPACE_XS)).child(code)),
+            ui::muted("Open Solferry on another device on this network and it shows up here.", cx)
+                .text_center()
+                .max_w(px(300.)),
         )
-        .into_any_element()
 }
 
 /// One quiet line for when nothing new is around but the search is still on.

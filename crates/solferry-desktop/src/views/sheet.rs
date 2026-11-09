@@ -16,7 +16,7 @@ use crate::tokens::{RADIUS_CARD, SPACE_MD, SPACE_SM};
 const TOP: f32 = 40.0;
 const TRAVEL: f32 = 180.0;
 
-/// Comes up from the bottom over the home screen, the way a phone presents a sheet.
+/// Comes up from the bottom over the home screen, only as tall as what it holds.
 pub fn present(
     title: &'static str,
     content: impl IntoElement,
@@ -43,16 +43,12 @@ pub fn present(
         );
     let body = div()
         .id("sheet-content")
-        .flex_1()
         .min_h_0()
-        .child(div().flex().flex_col().px(px(SPACE_MD)).pb(px(SPACE_SM)).child(content))
+        .child(div().flex().flex_col().px(px(SPACE_MD)).pb(px(SPACE_MD)).child(content))
         .overflow_y_scrollbar();
     let panel = div()
-        .absolute()
-        .left_0()
-        .right_0()
-        .bottom_0()
-        .top(px(TOP))
+        .relative()
+        .max_h_full()
         .flex()
         .flex_col()
         .rounded_t(px(RADIUS_CARD))
@@ -64,7 +60,7 @@ pub fn present(
         .with_animation(
             "sheet-rise",
             Animation::new(Duration::from_millis(360)).with_easing(ease_out_quint()),
-            |panel, delta| panel.top(px(TOP + (1. - delta) * TRAVEL)),
+            |panel, delta| panel.top(px((1. - delta) * TRAVEL)),
         );
     div()
         .id("sheet")
@@ -84,6 +80,17 @@ pub fn present(
                     Styled::opacity,
                 ),
         )
-        .child(panel)
+        .child(
+            div()
+                .absolute()
+                .left_0()
+                .right_0()
+                .bottom_0()
+                .top(px(TOP))
+                .flex()
+                .flex_col()
+                .justify_end()
+                .child(panel),
+        )
         .into_any_element()
 }

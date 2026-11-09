@@ -95,21 +95,21 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
 
 pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = rows(state);
-    if mine.is_empty() && others.is_empty() {
-        return radar::hero(cx);
-    }
+    let alone = mine.is_empty();
     let paired = (!mine.is_empty()).then(|| {
         let count = ui::count(mine.len(), cx);
         let elements: Vec<_> = mine.into_iter().map(|row| device_row(row, view, cx)).collect();
         ui::card(Glyph::Devices, "Devices", Some(count), cx).child(ui::well(cx).children(elements))
     });
     let found: Vec<_> = others.into_iter().map(|row| device_row(row, view, cx)).collect();
-    let well = if found.is_empty() {
-        ui::well(cx).child(radar::scanning(cx))
-    } else {
+    let well = if !found.is_empty() {
         ui::well(cx).children(found)
+    } else if alone {
+        radar::searching(cx)
+    } else {
+        ui::well(cx).child(radar::scanning(cx))
     };
-    let code = radar::use_code("Use a code", cx);
+    let code = radar::use_code(cx);
     let nearby = ui::card(Glyph::Nearby, "Nearby", Some(code), cx).child(well);
     div().flex().flex_col().gap(px(SPACE_SM)).children(paired).child(nearby).into_any_element()
 }
