@@ -33,15 +33,14 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.qrCode
 
 @Composable
-fun AddDeviceScreen(
+fun AddDeviceSheet(
     state: AppState,
     engine: Engine,
-    onBack: () -> Unit,
-) = Page("Pair with a code", onBack) {
+    onClose: () -> Unit,
+) = Sheet("Pair with a code", { engine.clearJoinError(); onClose() }) {
     var code by remember { mutableStateOf("") }
     val clipboard = LocalClipboardManager.current
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }
-    state.pairingProblem?.let { ProblemCard(it, null, null) }
     Card(R.drawable.ic_qr, "Show a code") {
         PaddedWell {
             val invite = state.invite
@@ -69,6 +68,7 @@ fun AddDeviceScreen(
                 )
                 Button(join, label = if (state.joining) "Pairing" else "Pair", kind = ButtonKind.Primary, enabled = !state.joining)
             }
+            state.joinError?.let { Muted(it, color = LocalPalette.current.danger) }
         }
     }
 }

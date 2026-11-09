@@ -1,7 +1,7 @@
 use iroh::EndpointId;
 use solferry_core::{
-    Device, Direction, Error, Event, NearbyDevice, OfferSummary, Platform, RelayHealth, Route,
-    explain,
+    Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
+    RelayHealth, Route, explain,
 };
 
 /// A short way to name a device on the other side of the bridge: its key in z-base-32.
@@ -56,6 +56,7 @@ pub struct PairedDevice {
     pub identity: Identity,
     pub name: String,
     pub auto_accept: bool,
+    pub paired_at_ms: u64,
 }
 
 impl From<&Device> for PairedDevice {
@@ -64,6 +65,7 @@ impl From<&Device> for PairedDevice {
             identity: identity(&device.id, device.platform),
             name: device.name.clone(),
             auto_accept: device.auto_accept,
+            paired_at_ms: device.paired_at_ms,
         }
     }
 }
@@ -83,6 +85,40 @@ impl From<&NearbyDevice> for Nearby {
             name: device.name.clone(),
             known: device.known,
             overlay: device.overlay,
+        }
+    }
+}
+
+/// A transfer that is over, as the history screen lists it.
+#[derive(Clone, Debug, uniffi::Record)]
+pub struct BlockedDevice {
+    pub identity: Identity,
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, uniffi::Record)]
+pub struct HistoryEntry {
+    pub peer: String,
+    pub name: String,
+    pub label: String,
+    pub sending: bool,
+    pub files: u64,
+    pub bytes: u64,
+    pub finished_ms: u64,
+    pub completed: bool,
+}
+
+impl From<&PastTransfer> for HistoryEntry {
+    fn from(past: &PastTransfer) -> Self {
+        Self {
+            peer: device_id(&past.peer),
+            name: past.peer_name.clone(),
+            label: past.label.clone(),
+            sending: past.direction == Direction::Sending,
+            files: past.files as u64,
+            bytes: past.bytes,
+            finished_ms: past.finished_ms,
+            completed: past.completed,
         }
     }
 }
@@ -120,6 +156,14 @@ pub struct Relay {
 pub struct Problem {
     pub title: String,
     pub next: String,
+}
+
+impl Problem {
+    /// The same advice, with a title that names the device it happened with.
+    #[must_use]
+    pub fn about(error: &solferry_core::Error, name: &str) -> Self {
+        Self { title: solferry_core::about(error, name), ..error.into() }
+    }
 }
 
 impl From<&Error> for Problem {
@@ -184,7 +228,7 @@ pub enum Update {
         problem: Problem,
     },
     Blocked {
-        devices: Vec<Identity>,
+        devices: Vec<BlockedDevice>,
     },
     /// Paired devices that answered the last presence check.
     Reachable {
@@ -199,9 +243,13 @@ pub enum Update {
     },
     StartFailed {
         problem: Problem,
+        reason: String,
     },
     Devices {
         devices: Vec<PairedDevice>,
+    },
+    History {
+        entries: Vec<HistoryEntry>,
     },
     Nearby {
         devices: Vec<Nearby>,
@@ -227,6 +275,9 @@ pub enum Update {
         id: String,
     },
     Completed {
+        id: String,
+    },
+    Cancelled {
         id: String,
     },
     Failed {
@@ -301,6 +352,7 @@ impl Update {
             }
             Event::Reconnecting { id, .. } => Self::Reconnecting { id: id.to_string() },
             Event::Completed { id } => Self::Completed { id: id.to_string() },
+            Event::Failed { id, error: Error::Cancelled } => Self::Cancelled { id: id.to_string() },
             Event::Failed { id, error } => {
                 Self::Failed { id: id.to_string(), problem: error.into() }
             }

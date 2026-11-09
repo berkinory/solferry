@@ -7,8 +7,8 @@ use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    PairingRequest, Platform, RelayHealth, TransferId,
+    BlockedDevice, Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions,
+    OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -17,6 +17,7 @@ use crate::watch;
 
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
 
+#[derive(Clone)]
 pub struct Target {
     pub addr: EndpointAddr,
     pub name: String,
@@ -36,6 +37,7 @@ pub enum Command {
     Forget(EndpointId),
     SetAutoAccept { id: EndpointId, enabled: bool },
     Unblock(EndpointId),
+    ClearHistory,
     Apply(Config),
     Quit,
 }
@@ -45,15 +47,16 @@ pub enum Update {
         id: EndpointId,
         config: Box<Config>,
         devices: Vec<Device>,
-        blocked: Vec<EndpointId>,
+        blocked: Vec<BlockedDevice>,
     },
     StartFailed(Error),
     Devices(Vec<Device>),
-    Blocked(Vec<EndpointId>),
+    Blocked(Vec<BlockedDevice>),
     RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
     Reachable(HashSet<EndpointId>),
     Transfer(Event),
+    History(Vec<PastTransfer>),
     Offer {
         key: u64,
         summary: OfferSummary,
@@ -138,16 +141,21 @@ async fn start(
         blocked: node.blocked(),
     };
     let _ = updates.unbounded_send(ready);
+    let _ = updates.unbounded_send(Update::History(node.history()));
 
     let mut tasks = Vec::new();
     let mut events = node.events();
-    let outgoing = updates.clone();
+    let (outgoing, recorder) = (updates.clone(), node.clone());
     tasks.push(
         tokio::spawn(async move {
             loop {
                 match events.recv().await {
                     Ok(event) => {
+                        let over = matches!(event, Event::Completed { .. } | Event::Failed { .. });
                         let _ = outgoing.unbounded_send(Update::Transfer(event));
+                        if over {
+                            let _ = outgoing.unbounded_send(Update::History(recorder.history()));
+                        }
                     }
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
                     Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
@@ -266,10 +274,10 @@ async fn run(
             }
             Command::BlockOffer(offer) => {
                 let Some(offer) = pending.lock().await.remove(&offer) else { continue };
-                let peer = offer.summary.peer;
+                let (peer, name) = (offer.summary.peer, offer.summary.peer_name.clone());
                 offer.decline();
                 if let Some(active) = &session
-                    && active.node.block(peer).is_ok()
+                    && active.node.block(peer, Some(name)).is_ok()
                 {
                     let _ = updates.unbounded_send(Update::Devices(active.node.devices()));
                     let _ = updates.unbounded_send(Update::Blocked(active.node.blocked()));
@@ -339,6 +347,10 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 };
                 let _ = updates.send(result).await;
                 let _ = updates.send(Update::Devices(node.devices())).await;
+            }
+            Command::ClearHistory => {
+                node.clear_history();
+                let _ = updates.send(Update::History(Vec::new())).await;
             }
             Command::Forget(id) => {
                 let _ = node.forget(&id.to_z32());

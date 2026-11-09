@@ -79,7 +79,7 @@ class Engine(private val context: Context) : Listener {
     }
 
     private fun saveFailed(name: String) = mutable.update {
-        it.copy(problems = it.problems + (name to Problem("Couldn't save to Downloads", "Free up some space and reopen Solferry.")))
+        it.toast(Tone.Error, "$name: Couldn't save to Downloads")
     }
 
     fun copy(text: String) {
@@ -96,18 +96,29 @@ class Engine(private val context: Context) : Listener {
         if (files.isNotEmpty()) bridge.sendFiles(peer, files)
     }
 
+    /** What a picked document is called and how big it is, for the send screen. */
+    fun describe(uri: Uri): PickedFile {
+        var size: Long? = null
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) size = cursor.getLong(0)
+        }
+        return PickedFile(uri, displayName(uri), size)
+    }
+
     fun shareClipboard(peer: String, name: String) {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
         val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
         if (text.isNullOrEmpty()) {
-            mutable.update { it.copy(problems = it.problems + (name to emptyClipboard)) }
+            mutable.update { it.toast(Tone.Error, emptyClipboard.title) }
         } else {
             bridge.sendText(peer, text)
         }
     }
 
+    fun clearJoinError() = mutable.update { it.copy(joinError = null) }
+
     fun join(code: String) {
-        mutable.update { it.copy(joining = true, pairingProblem = null) }
+        mutable.update { it.copy(joining = true, joinError = null) }
         bridge.join(code)
     }
 
@@ -115,12 +126,14 @@ class Engine(private val context: Context) : Listener {
 
     fun cancelRunning() = state.value.transfers.filter { it.running }.forEach { bridge.cancel(it.id) }
 
-    fun dismissProblem(index: Int) = mutable.update { it.copy(problems = it.problems.filterIndexed { i, _ -> i != index }) }
+    fun dismissToast(key: Long) = mutable.update { state -> state.copy(toasts = state.toasts.filter { it.key != key }) }
 
-    fun dismissText(key: Long) = mutable.update { state -> state.copy(texts = state.texts.filter { it.key != key }) }
+    fun stopComparing() = mutable.update { it.copy(pairingCode = null) }
+
+    fun dismissText(key: Long) = mutable.update { state -> if (state.text?.key == key) state.copy(text = null) else state }
 
     fun markCopied(key: Long) = mutable.update { state ->
-        state.copy(texts = state.texts.map { if (it.key == key) it.copy(copied = true) else it })
+        if (state.text?.key == key) state.copy(text = state.text.copy(copied = true)) else state
     }
 
     fun clear(id: String) = mutable.update { state -> state.copy(transfers = state.transfers.filter { it.id != id }) }

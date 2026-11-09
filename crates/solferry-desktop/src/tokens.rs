@@ -18,10 +18,16 @@ pub struct Palette {
     pub danger: u32,
     pub danger_fill: u32,
     pub danger_well: u32,
+    pub warning_fill: u32,
     pub route_local: u32,
     pub route_overlay: u32,
     pub route_direct: u32,
     pub route_relay: u32,
+    pub success_fill: u32,
+    pub platform_apple: u32,
+    pub platform_android: u32,
+    pub platform_windows: u32,
+    pub platform_linux: u32,
     pub primary_fill: u32,
     pub primary_hover: u32,
     pub primary_border: u32,
@@ -45,10 +51,16 @@ pub const LIGHT: Palette = Palette {
     danger: 0xb9_1c1c,
     danger_fill: 0xdc_2626,
     danger_well: 0xfd_f0f0,
+    warning_fill: 0xb4_5309,
     route_local: 0x1d_4ed8,
     route_overlay: 0x6d_28d9,
     route_direct: 0x04_7857,
     route_relay: 0xa3_4700,
+    success_fill: 0x05_9669,
+    platform_apple: 0xd4_d4d8,
+    platform_android: 0x3d_dc84,
+    platform_windows: 0x60_b0ff,
+    platform_linux: 0xfb_bf24,
     primary_fill: 0x37_30de,
     primary_hover: 0x3a_33e8,
     primary_border: 0x34_2dd3,
@@ -72,10 +84,16 @@ pub const DARK: Palette = Palette {
     danger: 0xf8_7171,
     danger_fill: 0x9a_4041,
     danger_well: 0x1f_1113,
+    warning_fill: 0x8f_5a12,
     route_local: 0x60_a5fa,
     route_overlay: 0xa7_8bfa,
     route_direct: 0x34_d399,
     route_relay: 0xfb_bf24,
+    success_fill: 0x10_b981,
+    platform_apple: 0x52_525b,
+    platform_android: 0x15_803d,
+    platform_windows: 0x00_78d4,
+    platform_linux: 0xb4_5309,
     primary_fill: 0x36_30db,
     primary_hover: 0x3a_33e8,
     primary_border: 0x3a_33e8,
@@ -90,18 +108,18 @@ pub const FONT_SANS: &str = "Inter Tight";
 pub const FONT_MONO: &str = "Geist Mono";
 
 pub const SPACE_XS: f32 = 4.0;
-pub const SPACE_SM: f32 = 8.0;
-pub const SPACE_MD: f32 = 12.0;
-pub const SPACE_LG: f32 = 16.0;
-pub const SPACE_XL: f32 = 24.0;
-pub const SPACE_XXL: f32 = 32.0;
-pub const RADIUS_FLOOR: f32 = 6.0;
-pub const RADIUS_CONTROL: f32 = 10.0;
-pub const RADIUS_FIELD: f32 = 14.0;
-pub const RADIUS_WELL: f32 = 18.0;
-pub const RADIUS_CARD: f32 = 22.0;
-pub const TYPE_CAPTION: f32 = 12.0;
-pub const TYPE_LABEL: f32 = 13.0;
-pub const TYPE_BODY: f32 = 14.0;
-pub const TYPE_TITLE: f32 = 18.0;
-pub const TYPE_CODE: f32 = 28.0;
+pub const SPACE_SM: f32 = 9.0;
+pub const SPACE_MD: f32 = 13.0;
+pub const SPACE_LG: f32 = 17.0;
+pub const SPACE_XL: f32 = 26.0;
+pub const SPACE_XXL: f32 = 35.0;
+pub const RADIUS_FLOOR: f32 = 10.0;
+pub const RADIUS_CONTROL: f32 = 14.0;
+pub const RADIUS_FIELD: f32 = 18.0;
+pub const RADIUS_WELL: f32 = 22.0;
+pub const RADIUS_CARD: f32 = 26.0;
+pub const TYPE_CAPTION: f32 = 13.0;
+pub const TYPE_LABEL: f32 = 14.0;
+pub const TYPE_BODY: f32 = 15.0;
+pub const TYPE_TITLE: f32 = 19.0;
+pub const TYPE_CODE: f32 = 30.0;

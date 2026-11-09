@@ -7,10 +7,10 @@ use iroh::EndpointId;
 use solferry_core::Platform;
 
 use crate::assets::{Glyph, icon};
-use crate::theme::{color, identity_color, palette};
+use crate::theme::{color, palette};
 use crate::tokens::{
-    FONT_MONO, RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_BODY,
-    TYPE_CAPTION, TYPE_LABEL,
+    RADIUS_CARD, RADIUS_FLOOR, RADIUS_WELL, SPACE_LG, SPACE_SM, SPACE_XS, TYPE_BODY, TYPE_CAPTION,
+    TYPE_LABEL,
 };
 
 /// One line and 3px of padding, so what it holds sits exactly 4px inside it.
@@ -69,7 +69,7 @@ pub fn header(glyph: Glyph, title: impl Into<SharedString>, tone: Hsla, cx: &App
         .text_size(px(TYPE_LABEL))
         .font_weight(FontWeight::MEDIUM)
         .text_color(cx.theme().foreground.opacity(0.8))
-        .child(icon(glyph, 16.).text_color(tone))
+        .child(icon(glyph, 17.).text_color(tone))
         .child(title.into())
 }
 
@@ -84,28 +84,20 @@ pub fn titled(heading: Div, aside: Option<AnyElement>, cx: &App) -> Div {
             .flex()
             .items_center()
             .justify_between()
-            .h(px(34.))
-            .pl(px(SPACE_MD))
-            .pr(px(SPACE_XS))
+            .h(px(37.))
+            .pl(px(SPACE_LG))
+            .pr(px(SPACE_SM))
             .child(heading)
             .children(aside),
     )
 }
 
 pub fn count(value: usize, cx: &App) -> AnyElement {
-    mono(value.to_string(), cx).pr(px(SPACE_SM)).into_any_element()
+    caption(value.to_string(), cx).pr(px(SPACE_SM)).into_any_element()
 }
 
 pub fn padded_well(cx: &App) -> Div {
-    well(cx).gap(px(SPACE_SM)).p(px(SPACE_MD))
-}
-
-pub fn failure(title: &str, next: impl Into<SharedString>, cx: &App) -> Div {
-    let palette = palette(cx);
-    let danger = color(palette.danger);
-    titled(header(Glyph::Alert, title.to_owned(), danger, cx), None, cx)
-        .border_color(danger.opacity(0.5))
-        .child(padded_well(cx).bg(color(palette.danger_well)).child(muted(next, cx)))
+    well(cx).gap(px(SPACE_SM)).p(px(SPACE_LG))
 }
 
 pub fn text(value: impl Into<SharedString>) -> Div {
@@ -116,12 +108,8 @@ pub fn muted(value: impl Into<SharedString>, cx: &App) -> Div {
     div().text_size(px(TYPE_LABEL)).text_color(cx.theme().muted_foreground).child(value.into())
 }
 
-pub fn mono(value: impl Into<SharedString>, cx: &App) -> Div {
-    div()
-        .font_family(FONT_MONO)
-        .text_size(px(TYPE_CAPTION))
-        .text_color(cx.theme().muted_foreground)
-        .child(value.into())
+pub fn caption(value: impl Into<SharedString>, cx: &App) -> Div {
+    div().text_size(px(TYPE_CAPTION)).text_color(cx.theme().muted_foreground).child(value.into())
 }
 
 pub fn tile(glyph: Glyph, cx: &App) -> Div {
@@ -134,16 +122,29 @@ pub fn tinted_tile(glyph: Glyph, fill: Hsla, tone: Hsla) -> Div {
         .flex_none()
         .items_center()
         .justify_center()
-        .size(px(32.))
+        .size(px(38.))
         .rounded(px(RADIUS_FLOOR))
         .bg(fill)
-        .child(icon(glyph, 16.).text_color(tone))
+        .child(icon(glyph, 20.).text_color(tone))
 }
 
 /// A device's tile: its platform logo in the color its key gives it.
-pub fn device_tile(id: &EndpointId, platform: Option<Platform>, cx: &App) -> Div {
-    let tone = identity_color(id, cx);
-    tinted_tile(platform_glyph(platform), tone.opacity(0.16), tone)
+/// A device's tile: filled with its platform's color while it is there, flat gray while it isn't.
+pub fn device_tile(platform: Option<Platform>, online: bool, cx: &App) -> Div {
+    let glyph = platform_glyph(platform);
+    let palette = palette(cx);
+    let brand = match platform {
+        Some(Platform::Macos | Platform::Ios) => palette.platform_apple,
+        Some(Platform::Android) => palette.platform_android,
+        Some(Platform::Windows) => palette.platform_windows,
+        Some(Platform::Linux) => palette.platform_linux,
+        None => return tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground),
+    };
+    if online {
+        tinted_tile(glyph, color(brand), cx.theme().foreground)
+    } else {
+        tinted_tile(glyph, cx.theme().secondary, cx.theme().muted_foreground.opacity(0.6))
+    }
 }
 
 /// The start of the device's key, short enough to compare by eye.
@@ -167,5 +168,5 @@ pub fn dot(value: Hsla) -> Div {
 
 /// Muted text after a colored dot, for anything that has a state.
 pub fn status(value: Hsla, label: impl Into<SharedString>, cx: &App) -> Div {
-    div().flex().items_center().gap(px(6.)).min_w_0().child(dot(value)).child(muted(label, cx))
+    div().flex().items_center().gap(px(7.)).min_w_0().child(dot(value)).child(muted(label, cx))
 }

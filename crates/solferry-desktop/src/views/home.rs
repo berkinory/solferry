@@ -1,203 +1,129 @@
-use std::path::Path;
+use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    AnyElement, Context, ExternalPaths, InteractiveElement, IntoElement, ParentElement,
-    SharedString, StatefulInteractiveElement, Styled, div, px, transparent_black,
+    Animation, AnimationExt, AnyElement, App, Context, FontWeight, InteractiveElement, IntoElement,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
+    ease_out_quint, px, radians, transparent_black,
 };
 
-use super::button::Button;
-use super::main_view::{MainView, Page};
-use super::{devices, offers, texts, transfers, ui};
+use super::main_view::MainView;
+use super::{devices, offers, texts, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_CONTROL, SPACE_MD, SPACE_SM, SPACE_XS};
-use solferry_core::explain;
+use crate::tokens::{RADIUS_FIELD, SPACE_SM};
 
-const SHOWN_FILES: usize = 3;
+const FAN_WIDTH: f32 = 150.0;
+const FAN_GAP: f32 = 41.0;
+const FAN_OPEN: f32 = 58.0;
+const FAN_SIZE: f32 = 60.0;
+const FAN_TILT: f32 = 0.2;
 
-pub fn toolbar(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let row = div().flex().flex_none().items_center().justify_between().h(px(40.)).px(px(SPACE_SM));
-    if view.page != Page::Home {
-        let title = if view.page == Page::Pair { "Pair with a code" } else { "Settings" };
-        return row
-            .justify_start()
-            .gap(px(SPACE_XS))
-            .child(
-                Button::new("go-home")
-                    .ghost()
-                    .xs()
-                    .icon(Glyph::ArrowLeft)
-                    .tooltip("Back")
-                    .on_click(
-                        cx.listener(|view, _, window, cx| view.open_page(Page::Home, window, cx)),
-                    ),
-            )
-            .child(ui::text(title))
-            .into_any_element();
-    }
-    let name = view.state.read(cx).config.as_ref().map(|config| config.name.clone());
-    row.pl(px(SPACE_MD))
-        .child(div().min_w_0().children(name.map(|name| ui::muted(name, cx).truncate())))
+/// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
+fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
+    let turn = || Transformation::rotate(radians(side * FAN_TILT));
+    let layer = |size: f32, inset: f32| {
+        icon(Glyph::FanCard, size)
+            .absolute()
+            .top(px(inset))
+            .left(px(inset))
+            .with_transformation(turn())
+    };
+    let tile = div()
+        .absolute()
+        .top(px(4.))
+        .left(px(FAN_WIDTH / 2. + side * FAN_GAP - FAN_SIZE / 2.))
+        .flex()
+        .items_center()
+        .justify_center()
+        .size(px(FAN_SIZE))
+        .child(layer(FAN_SIZE, 0.).text_color(cx.theme().border))
+        .child(layer(FAN_SIZE - 2., 1.).text_color(cx.theme().secondary))
         .child(
-            Button::new("open-settings")
-                .ghost()
-                .xs()
-                .icon(Glyph::Settings)
-                .tooltip("Settings")
-                .on_click(cx.listener(|view, _, window, cx| {
-                    view.open_page(Page::Settings, window, cx);
-                })),
-        )
-        .into_any_element()
+            icon(glyph, 23.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
+        );
+    if !open {
+        return tile.into_any_element();
+    }
+    tile.with_animation(
+        SharedString::from(slot),
+        Animation::new(Duration::from_millis(280)).with_easing(ease_out_quint()),
+        move |tile, delta| {
+            let spread = FAN_GAP + (FAN_OPEN - FAN_GAP) * delta;
+            tile.left(px(FAN_WIDTH / 2. + side * spread - FAN_SIZE / 2.))
+        },
+    )
+    .into_any_element()
 }
 
-fn drop_zone(cx: &mut Context<MainView>) -> AnyElement {
+fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
     let theme = cx.theme();
     let palette = palette(cx);
     let (hover, ring) = (theme.accent, color(palette.primary));
-    ui::frame(cx)
-        .child(
-            ui::well(cx)
-                .id("drop-zone")
-                .flex_row()
-                .items_center()
-                .gap(px(SPACE_MD))
-                .h(px(84.))
-                .px(px(14.))
-                .border_1()
-                .border_color(transparent_black())
-                .cursor_pointer()
-                .hover(move |style| style.bg(hover))
-                .group_drag_over::<ExternalPaths>("window", move |style| {
-                    style.border_color(ring).bg(hover)
-                })
-                .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx)))
-                .child(
-                    div()
-                        .flex()
-                        .flex_none()
-                        .items_center()
-                        .justify_center()
-                        .size(px(40.))
-                        .rounded(px(RADIUS_CONTROL))
-                        .bg(color(palette.primary_fill))
-                        .border_1()
-                        .border_color(color(palette.primary_border))
-                        .child(icon(Glyph::Send, 18.).text_color(color(palette.on_primary))),
-                )
-                .child(
-                    div()
-                        .flex()
-                        .flex_col()
-                        .child(ui::text("Drop files to send"))
-                        .child(ui::muted("or click to choose", cx)),
-                ),
-        )
-        .into_any_element()
-}
-
-fn file_name(path: &Path) -> String {
-    path.file_name()
-        .map_or_else(|| path.display().to_string(), |name| name.to_string_lossy().into_owned())
-}
-
-fn pending_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement {
-    let glyph = if path.is_dir() { Glyph::Folder } else { Glyph::File };
-    div()
+    let core = div()
+        .absolute()
+        .top(px(4.))
+        .left(px((FAN_WIDTH - FAN_SIZE) / 2.))
         .flex()
         .items_center()
+        .justify_center()
+        .size(px(FAN_SIZE))
+        .rounded(px(RADIUS_FIELD))
+        .bg(color(palette.primary_fill))
+        .border_1()
+        .border_color(color(palette.primary_border))
+        .child(icon(Glyph::Send, 27.).text_color(color(palette.on_primary)));
+    let fan = div()
+        .relative()
+        .w(px(FAN_WIDTH))
+        .h(px(70.))
+        .child(fan_tile("fan-left", Glyph::TypeImage, -1., dragging, cx))
+        .child(fan_tile("fan-right", Glyph::TypePdf, 1., dragging, cx))
+        .child(core);
+    let mut well = ui::well(cx)
+        .id("drop-zone")
+        .items_center()
+        .justify_center()
         .gap(px(SPACE_SM))
-        .pl(px(SPACE_SM))
-        .h(px(30.))
-        .child(icon(glyph, 16.).text_color(cx.theme().muted_foreground))
-        .child(ui::text(file_name(path)).flex_1().min_w_0().truncate())
+        .h(px(177.))
+        .border_1()
+        .border_color(transparent_black())
+        .cursor_pointer()
+        .hover(move |style| style.bg(hover))
+        .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx)))
+        .child(fan)
         .child(
-            Button::new(SharedString::from(format!("unpick-{index}")))
-                .ghost()
-                .xs()
-                .icon(Glyph::Cancel)
-                .tooltip("Remove")
-                .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx))),
-        )
-        .into_any_element()
-}
-
-fn pending_card(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let chosen = view.selected.len();
-    let total = view.pending.len();
-    let rows: Vec<_> = view
-        .pending
-        .iter()
-        .take(SHOWN_FILES)
-        .enumerate()
-        .map(|(index, path)| pending_row(index, path, cx))
-        .collect();
-    let more = (total > SHOWN_FILES).then(|| {
-        ui::muted(format!("and {} more", total - SHOWN_FILES), cx).pl(px(SPACE_SM)).pb(px(SPACE_XS))
-    });
-    let send = if chosen == 0 {
-        ui::muted("Choose devices below", cx).flex_1().pl(px(SPACE_SM)).into_any_element()
-    } else {
-        let label =
-            if chosen == 1 { "Send".to_owned() } else { format!("Send to {chosen} devices") };
-        Button::new("send-selected")
-            .primary()
-            .grow()
-            .icon(Glyph::Send)
-            .label(label)
-            .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
-            .into_any_element()
-    };
-    ui::card(Glyph::Upload, "Ready to send", Some(ui::count(total, cx)), cx)
-        .child(
-            ui::well(cx).gap(px(0.)).children(rows).children(more).child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(SPACE_XS))
-                    .pt(px(SPACE_SM))
-                    .child(send)
-                    .child(
-                        Button::new("add-more")
-                            .icon(Glyph::Add)
-                            .tooltip("Add more")
-                            .on_click(cx.listener(|_, _, _, cx| MainView::pick_pending(cx))),
-                    )
-                    .child(
-                        Button::new("clear-pending")
-                            .ghost()
-                            .label("Cancel")
-                            .on_click(cx.listener(|view, _, _, cx| view.clear_pending(cx))),
-                    ),
-            ),
-        )
-        .into_any_element()
+            div()
+                .flex()
+                .flex_col()
+                .items_center()
+                .child(
+                    ui::text(if dragging { "Release to send" } else { "Drop files to send" })
+                        .font_weight(FontWeight::MEDIUM),
+                )
+                .child(ui::muted(
+                    if dragging { "They go to the next step" } else { "or click to choose" },
+                    cx,
+                )),
+        );
+    if dragging {
+        well = well.border_color(ring).bg(hover);
+    }
+    ui::frame(cx).child(well).into_any_element()
 }
 
 pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.read(cx).clone();
-    let fatal = state.fatal.as_ref().map(|error| {
-        let explanation = explain(error);
-        ui::failure(explanation.title, explanation.next, cx)
-    });
     let offers: Vec<_> = state.offers.iter().map(|offer| offers::card(offer, cx)).collect();
-    let prompts: Vec<_> =
-        state.pairing_prompts.iter().map(|prompt| offers::pairing_card(prompt, cx)).collect();
-    let code = state.pairing_code.as_deref().map(|code| offers::pairing_code(code, cx));
     let shared = texts::render(&state, cx);
-    let send = if view.pending.is_empty() { drop_zone(cx) } else { pending_card(view, cx) };
+    let dragging = cx.has_active_drag();
     div()
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
-        .children(fatal)
-        .children(prompts)
-        .children(code)
         .children(offers)
         .children(shared)
-        .child(send)
+        .child(drop_zone(dragging, cx))
         .child(devices::render(&state, view, cx))
-        .children(transfers::render(&state, cx))
         .into_any_element()
 }

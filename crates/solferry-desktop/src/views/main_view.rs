@@ -11,11 +11,10 @@ use gpui_kit::{
     px, svg,
 };
 use iroh::EndpointId;
-use solferry_core::TransferId;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
-use super::{home, pairing, relays, settings};
+use super::{confirm, history, home, nav, pairing, relays, send, settings, toast, toast_timing};
 use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
@@ -24,12 +23,27 @@ use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
-const CONTENT_WIDTH: f32 = 560.0;
+const FLY_FOR: Duration = Duration::from_millis(380);
+const CONTENT_WIDTH: f32 = 720.0;
+const HEADER_HEIGHT: f32 = 60.0;
+const CONTENT_TOP: f32 = 4.0;
+/// The mark's art sits low in its box, and letters read high in theirs.
+const MARK_LIFT: f32 = -2.0;
+const TITLE_BAR: f32 = 34.0;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum SendPhase {
+    Idle,
+    Flying,
+    Sending,
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Page {
     Home,
+    History,
     Pair,
+    Send,
     Settings,
 }
 
@@ -40,8 +54,16 @@ pub struct MainView {
     pub selected: HashSet<EndpointId>,
     pub expanded: Option<EndpointId>,
     pub dialog: Option<Dialog>,
+    pub send_phase: SendPhase,
+    launched: (u64, u64, usize),
+    pub nav_from: Page,
+    pub nav_moves: usize,
     pub copied: bool,
     pub shared_with: Option<EndpointId>,
+    pub toasts_seen: u64,
+    pub pill_seen: u64,
+    pub transfers_open: bool,
+    pub fatal_open: bool,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
@@ -60,10 +82,12 @@ impl MainView {
         let mut asking = state.read(cx).asking();
         cx.observe(&state, move |view, state, cx| {
             let (latest, waiting) = (state.read(cx).paired_count, state.read(cx).asking());
-            if latest != paired_count || waiting > asking {
+            if (latest != paired_count || waiting > asking) && view.page != Page::Send {
                 view.page = Page::Home;
             }
             (paired_count, asking) = (latest, waiting);
+            toast_timing::track(view, &state, cx);
+            view.settle_send(cx);
             cx.notify();
         })
         .detach();
@@ -98,8 +122,16 @@ impl MainView {
             selected: HashSet::new(),
             expanded: None,
             dialog: None,
+            send_phase: SendPhase::Idle,
+            launched: (0, 0, 0),
+            nav_from: Page::Home,
+            nav_moves: 0,
             copied: false,
             shared_with: None,
+            toasts_seen: 0,
+            pill_seen: 0,
+            transfers_open: false,
+            fatal_open: false,
             targets: HashMap::new(),
             code_input,
             name_input,
@@ -113,6 +145,10 @@ impl MainView {
     }
 
     pub fn open_page(&mut self, page: Page, window: &mut Window, cx: &mut Context<Self>) {
+        if page != self.page {
+            self.nav_from = self.page;
+            self.nav_moves += 1;
+        }
         self.page = page;
         if page == Page::Settings {
             settings::load_inputs(self, window, cx);
@@ -121,13 +157,20 @@ impl MainView {
         cx.notify();
     }
 
+    pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, _| state.join_error = None);
+        if self.page == Page::Send {
+            self.clear_pending(cx);
+        } else {
+            self.open_page(Page::Home, window, cx);
+        }
+    }
+
     fn back(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.dialog.take().is_some() {
             cx.notify();
         } else if self.page != Page::Home {
-            self.open_page(Page::Home, window, cx);
-        } else if !self.pending.is_empty() {
-            self.clear_pending(cx);
+            self.leave_page(window, cx);
         }
     }
 
@@ -136,19 +179,15 @@ impl MainView {
         Self::command(Command::Send { targets, paths }, cx);
     }
 
-    pub fn activate_device(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
-        if self.pending.is_empty() {
-            Self::pick_files_for(target, cx);
-        } else {
-            if !self.selected.remove(&id) {
-                self.selected.insert(id);
-                self.targets.insert(id, target);
-            }
-            cx.notify();
+    pub fn toggle_target(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
+        if !self.selected.remove(&id) {
+            self.selected.insert(id);
+            self.targets.insert(id, target);
         }
+        cx.notify();
     }
 
-    fn pick_files_for(target: Target, cx: &mut Context<Self>) {
+    pub fn pick_files_for(target: Target, cx: &mut Context<Self>) {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
@@ -161,25 +200,65 @@ impl MainView {
         let chosen = cx.prompt_for_paths(file_picker());
         cx.spawn(async move |view, cx| {
             let Ok(Ok(Some(paths))) = chosen.await else { return };
+            let _ = view.update(cx, |view, cx| view.stage(paths, cx));
+        })
+        .detach();
+    }
+
+    pub fn stage(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
+        self.pending.extend(paths);
+        self.page = Page::Send;
+        cx.notify();
+    }
+
+    /// Hands the files over at once. The screen waits for the outcome: it leaves when a
+    /// transfer starts, and stays when every device failed, so the toast can say why.
+    pub fn send_selected(&mut self, cx: &mut Context<Self>) {
+        if self.send_phase != SendPhase::Idle {
+            return;
+        }
+        let targets: Vec<Target> =
+            self.selected.iter().filter_map(|id| self.targets.get(id).cloned()).collect();
+        let state = self.state.read(cx);
+        self.launched = (state.sends_started, state.sends_failed, targets.len());
+        Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
+        self.send_phase = SendPhase::Flying;
+        cx.notify();
+        cx.spawn(async move |view, cx| {
+            cx.background_executor().timer(FLY_FOR).await;
             let _ = view.update(cx, |view, cx| {
-                view.pending.extend(paths);
+                view.send_phase = SendPhase::Sending;
+                view.settle_send(cx);
                 cx.notify();
             });
         })
         .detach();
     }
 
-    pub fn send_selected(&mut self, cx: &mut Context<Self>) {
-        let chosen: Vec<EndpointId> = self.selected.iter().copied().collect();
-        let targets = chosen.iter().filter_map(|id| self.targets.remove(id)).collect();
-        let paths = std::mem::take(&mut self.pending);
-        self.send_now(targets, paths, cx);
+    fn settle_send(&mut self, cx: &mut Context<Self>) {
+        if self.send_phase != SendPhase::Sending {
+            return;
+        }
+        let state = self.state.read(cx);
+        let (started, failed, count) = self.launched;
+        let (began, lost) = (state.sends_started > started, state.sends_failed - failed);
+        if began {
+            self.send_phase = SendPhase::Idle;
+            self.clear_pending(cx);
+        } else if lost >= count as u64 {
+            self.send_phase = SendPhase::Idle;
+            cx.notify();
+        }
     }
 
     pub fn clear_pending(&mut self, cx: &mut Context<Self>) {
+        self.send_phase = SendPhase::Idle;
         self.pending.clear();
         self.selected.clear();
         self.targets.clear();
+        if self.page == Page::Send {
+            self.page = Page::Home;
+        }
         cx.notify();
     }
 
@@ -191,40 +270,6 @@ impl MainView {
             self.clear_pending(cx);
         }
         cx.notify();
-    }
-
-    pub fn retry(&mut self, index: usize, cx: &mut Context<Self>) {
-        let failure = self.state.update(cx, |state, cx| {
-            cx.notify();
-            (index < state.failures.len()).then(|| state.failures.remove(index))
-        });
-        if let Some(failure) = failure {
-            let target = Target { addr: failure.addr, name: failure.name };
-            Self::command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
-        }
-    }
-
-    pub fn dismiss(&mut self, index: usize, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            if index < state.failures.len() {
-                state.failures.remove(index);
-            }
-            cx.notify();
-        });
-    }
-
-    pub fn clear(&mut self, id: TransferId, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.transfers.retain(|transfer| transfer.id != id);
-            cx.notify();
-        });
-    }
-
-    pub fn clear_finished(&mut self, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.transfers.retain(crate::state::Transfer::running);
-            cx.notify();
-        });
     }
 
     pub fn show_downloads(&self, cx: &mut Context<Self>) {
@@ -244,6 +289,19 @@ impl MainView {
             });
         })
         .detach();
+    }
+
+    pub fn stop_comparing(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.pairing_code = None;
+            cx.notify();
+        });
+    }
+
+    pub fn decline_first_pairing(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        if let Some(key) = self.state.read(cx).pairing_prompts.first().map(|prompt| prompt.key) {
+            self.answer_pairing(key, false, cx);
+        }
     }
 
     pub fn answer(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
@@ -295,11 +353,19 @@ impl Focusable for MainView {
 }
 
 impl Render for MainView {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
+        let sheet = confirm::sheet(self, cx).or_else(|| match self.page {
+            Page::Send => Some(send::sheet(self, cx)),
+            Page::Pair => Some(pairing::sheet(self, cx)),
+            _ => None,
+        });
+        let toasts = toast::render(self, f32::from(window.viewport_size().width), cx);
+        let room = f32::from(window.viewport_size().height) - HEADER_HEIGHT - nav::CLEARANCE;
+        let tabs = nav::render(self, cx);
         let body = match self.page {
-            Page::Home => home::render(self, cx),
-            Page::Pair => pairing::render(self, cx),
+            Page::Home | Page::Send | Page::Pair => home::render(self, cx),
+            Page::History => history::render(self, room, cx),
             Page::Settings => settings::render(self, cx),
         };
         div()
@@ -323,32 +389,44 @@ impl Render for MainView {
                 view.open_page(Page::Settings, window, cx);
             }))
             .on_drop(cx.listener(|view, paths: &ExternalPaths, _, cx| {
-                view.page = Page::Home;
-                view.pending.extend_from_slice(paths.paths());
-                cx.notify();
+                view.stage(paths.paths().to_vec(), cx);
             }))
-            .child(TitleBar::new().child(brand(cx)))
-            .child(home::toolbar(self, cx))
+            .child(TitleBar::new())
+            .child(div().flex_none().h(px(HEADER_HEIGHT - TITLE_BAR)))
+            .child(brand(cx))
             .child(
                 div().flex_1().min_h_0().child(
                     div()
                         .id("content")
                         .size_full()
                         .p(px(SPACE_SM))
-                        .pt(px(4.))
+                        .pt(px(CONTENT_TOP))
+                        .pb(px(nav::CLEARANCE))
                         .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
                         .overflow_y_scrollbar(),
                 ),
             )
+            .child(tabs)
+            .children(sheet)
             .children(overlay)
+            .children(toasts)
     }
 }
 
+/// Centered over the title bar, which keeps its own window buttons and drag area.
 fn brand(cx: &Context<MainView>) -> impl IntoElement {
     div()
+        .absolute()
+        .top_0()
+        .left_0()
+        .right_0()
+        .h(px(HEADER_HEIGHT + CONTENT_TOP))
         .flex()
         .items_center()
-        .gap(px(6.))
-        .child(svg().path(MARK).size(px(16.)).text_color(color(palette(cx).brand)))
+        .justify_center()
+        .gap(px(7.))
+        .child(
+            svg().path(MARK).size(px(17.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
+        )
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

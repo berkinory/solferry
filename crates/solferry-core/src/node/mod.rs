@@ -31,9 +31,10 @@ pub use pairing::Invite;
 use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
+use crate::history::{History, PastTransfer};
 use crate::relay::RelayLink;
 use crate::route;
-use crate::trust::{Device, TrustStore};
+use crate::trust::{BlockedDevice, Device, TrustStore};
 use crate::{identity, net};
 
 const EVENT_BUFFER: usize = 1024;
@@ -67,6 +68,8 @@ pub(crate) struct Shared {
     pub(crate) inbound_slots: Arc<Semaphore>,
     pub(crate) stranger_slots: Arc<Semaphore>,
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
+    history: Mutex<History>,
+    running: Mutex<HashMap<TransferId, PastTransfer>>,
     uses_relays: bool,
 }
 
@@ -95,6 +98,47 @@ impl Shared {
 
     fn active_map(&self) -> MutexGuard<'_, HashMap<TransferId, Connection>> {
         self.active.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    /// Tells the app what happened, keeping the record first so the app can read it back at once.
+    pub(crate) fn publish(&self, event: Event) {
+        self.remember(&event);
+        let _ = self.events.send(event);
+    }
+
+    fn remember(&self, event: &Event) {
+        let mut running = self.running.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (id, completed) = match event {
+            Event::Started { id, peer, peer_name, label, direction, files, bytes, .. } => {
+                let entry = PastTransfer {
+                    peer: *peer,
+                    peer_name: peer_name.clone(),
+                    label: label.clone(),
+                    direction: *direction,
+                    files: *files,
+                    bytes: *bytes,
+                    finished_ms: 0,
+                    completed: false,
+                };
+                running.insert(*id, entry);
+                return;
+            }
+            Event::Completed { id } => (id, true),
+            Event::Failed { id, error } if !matches!(error, Error::Cancelled) => (id, false),
+            Event::Failed { id, .. } => {
+                running.remove(id);
+                return;
+            }
+            _ => return,
+        };
+        if let Some(entry) = running.remove(id) {
+            let finished = PastTransfer { finished_ms: pairing::now_ms(), completed, ..entry };
+            self.history().add(finished);
+        }
+    }
+
+    fn history(&self) -> MutexGuard<'_, History> {
+        self.history.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub(crate) fn trust(&self) -> MutexGuard<'_, TrustStore> {
@@ -142,6 +186,8 @@ impl Node {
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
             stranger_slots: Arc::new(Semaphore::new(MAX_STRANGERS)),
             active: Mutex::new(HashMap::new()),
+            history: Mutex::new(History::load(&data_dir)),
+            running: Mutex::new(HashMap::new()),
             uses_relays,
         });
         if !isolated {
@@ -204,13 +250,22 @@ impl Node {
     }
 
     #[must_use]
-    pub fn blocked(&self) -> Vec<EndpointId> {
+    pub fn history(&self) -> Vec<PastTransfer> {
+        self.shared.history().entries().to_vec()
+    }
+
+    pub fn clear_history(&self) {
+        self.shared.history().clear();
+    }
+
+    #[must_use]
+    pub fn blocked(&self) -> Vec<BlockedDevice> {
         self.shared.trust().blocked().to_vec()
     }
 
     /// Refuses every connection from this device and forgets it if it was paired.
-    pub fn block(&self, id: EndpointId) -> Result<()> {
-        self.shared.trust().block(id)
+    pub fn block(&self, id: EndpointId, name: Option<String>) -> Result<()> {
+        self.shared.trust().block(id, name)
     }
 
     pub fn unblock(&self, id: EndpointId) -> Result<()> {

@@ -2,16 +2,16 @@ import SwiftUI
 
 private let pulseSeconds = 2.8
 private let breathSeconds = 3.6
-private let radarSize = 208.0
-private let coreSize = 64.0
-private let orbits = [124.0, 200.0]
+private let radarSize = 124.0
+private let coreSize = 40.0
+private let orbits = [76.0, 122.0]
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 private let ghosts: [(glyph: Glyph, x: Double, y: Double, phase: Double)] = [
-    (.apple, -78, -50, 0),
-    (.windows, 80, -36, 0.25),
-    (.android, -64, 68, 0.5),
-    (.linux, 74, 62, 0.75),
+    (.apple, -47, -30, 0),
+    (.windows, 48, -22, 0.25),
+    (.android, -38, 40, 0.5),
+    (.linux, 44, 37, 0.75),
 ]
 
 private func cycle(_ date: Date, _ seconds: Double) -> Double {
@@ -47,10 +47,10 @@ private struct Radar: View {
                         .offset(x: ghost.x, y: ghost.y)
                         .opacity(0.25 + 0.75 * (sin(2 * .pi * (cycle(date, breathSeconds) + ghost.phase)) * 0.5 + 0.5))
                 }
-                Icon(.nearby, tint: palette.onPrimary, size: 28)
+                Icon(.nearby, tint: palette.inkMuted, size: 20)
                     .frame(width: coreSize, height: coreSize)
-                    .background(palette.primaryFill, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous).strokeBorder(palette.primaryBorder))
+                    .background(palette.control, in: RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous).strokeBorder(palette.line))
             }
             .frame(width: radarSize, height: radarSize)
         }
@@ -58,29 +58,17 @@ private struct Radar: View {
     }
 }
 
-/// The whole home screen for someone with no devices yet.
-struct RadarHero: View {
+/// What the nearby card holds for someone with no devices yet.
+struct Searching: View {
     var body: some View {
-        CardFrame {
-            Well(padding: SpaceTokens.xl, spacing: SpaceTokens.sm) {
-                VStack(spacing: SpaceTokens.sm) {
-                    Radar()
-                    Text("Looking for nearby devices").font(.titleText).padding(.top, SpaceTokens.sm)
-                    Muted("Open Solferry on another device on this network and it shows up here.")
-                        .multilineTextAlignment(.center)
-                    NavigationLink(value: Route.addDevice) {
-                        HStack(spacing: 6) {
-                            Icon(.qr, size: 18)
-                            Text("Can't see it? Pair with a code").font(.buttonText)
-                        }
-                        .frame(minHeight: 36)
-                    }
-                    .foregroundStyle(.secondary)
-                    .padding(.top, SpaceTokens.xs)
-                }
-                .frame(maxWidth: .infinity)
-            }
+        VStack(spacing: SpaceTokens.xs) {
+            Radar()
+            Text("Looking for devices").font(.titleText).padding(.top, SpaceTokens.xs)
+            Muted("Open Solferry on another device on this network and it shows up here.")
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(12)
     }
 }
 

@@ -3,56 +3,45 @@ import SwiftUI
 struct HomeScreen: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
-    @Binding var staged: [URL]
     let pick: (PairedDevice?) -> Void
 
     var body: some View {
         let state = engine.state
         ScrollView {
             VStack(spacing: SpaceTokens.sm) {
-                if let problem = state.startProblem { ProblemCard(problem: problem) }
-                ForEach(state.problems) { item in
-                    ProblemCard(problem: item.problem, about: item.name) { engine.dismissProblem(item.id) }
-                }
-                ForEach(state.pairings) { PairingCard(prompt: $0) }
-                if let code = state.pairingCode { CompareCard(code: code) }
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
-                ForEach(state.texts) { TextCard(shared: $0) }
-                if !staged.isEmpty {
-                    StagedCard(count: staged.count) { staged = [] }
-                } else if !state.devices.isEmpty {
-                    SendZone { pick(nil) }
-                }
-                if state.devices.isEmpty, state.strangers.isEmpty { RadarHero() }
-                if !state.devices.isEmpty {
-                    DeviceCard(state: state, picking: !staged.isEmpty) { device in
-                        if staged.isEmpty {
-                            pick(device)
-                        } else {
-                            engine.send(staged, to: device.identity.id)
-                            staged = []
-                        }
-                    }
-                }
-                if !state.devices.isEmpty || !state.strangers.isEmpty { NearbyCard(nearby: state.strangers) }
-                if !state.transfers.isEmpty { TransferCard(transfers: state.transfers) }
+                if let shared = state.text { TextCard(shared: shared) }
+                SendZone { pick(nil) }
+                if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
+                NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
             }
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.xs)
         }
+        .refreshable {
+            engine.bridge.checkPresence()
+            try? await Task.sleep(for: .milliseconds(700))
+        }
         .background(palette.page.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                HStack(spacing: 6) {
-                    Text("Solferry").font(.titleText)
-                    Muted(state.me?.name ?? "").lineLimit(1)
-                }
+            if #available(iOS 26, *) {
+                ToolbarItem(placement: .principal) { Brand() }
+                    .sharedBackgroundVisibility(.hidden)
+            } else {
+                ToolbarItem(placement: .principal) { Brand() }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(value: Route.settings) { Icon(.settings, size: 20) }
-                    .accessibilityLabel("Settings")
-            }
+        }
+    }
+}
+
+private struct Brand: View {
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Icon(.mark, tint: palette.brand, size: 20)
+            Text("Solferry").font(.titleText)
         }
     }
 }
@@ -64,36 +53,38 @@ private struct SendZone: View {
     var body: some View {
         CardFrame {
             Well(padding: 14, action: action) {
-                HStack(spacing: SpaceTokens.md) {
-                    Icon(.send, tint: palette.onPrimary, size: 20)
-                        .frame(width: 44, height: 44)
-                        .background(palette.primaryFill, in: controlShape)
-                        .overlay(controlShape.strokeBorder(palette.primaryBorder))
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Send files")
-                        Muted("Choose what to send, then tap a device")
+                VStack(spacing: SpaceTokens.sm) {
+                    ZStack {
+                        FanTile(glyph: .typeImage, x: -38)
+                        FanTile(glyph: .typePdf, x: 38)
+                        Icon(.send, tint: palette.onPrimary, size: 24)
+                            .frame(width: 56, height: 56)
+                            .glassFill(palette.primaryFill, in: fieldShape)
+                    }
+                    .frame(height: 64)
+                    VStack(spacing: 0) {
+                        Text("Send files").font(.titleText)
+                        Muted("Tap to choose what to send")
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 120)
             }
         }
     }
 }
 
-private struct StagedCard: View {
-    let count: Int
-    let onClear: () -> Void
+private struct FanTile: View {
+    @Environment(\.palette) private var palette
+    let glyph: Glyph
+    let x: Double
 
     var body: some View {
-        Card(glyph: .upload, title: "Ready to send") {
-            Count(value: count)
-        } content: {
-            PaddedWell {
-                HStack {
-                    Muted(count == 1 ? "Tap a device to send this file." : "Tap a device to send these files.")
-                    Spacer()
-                    ActionButton(label: "Cancel", kind: .ghost, scale: .small, action: onClear)
-                }
-            }
-        }
+        Icon(glyph, tint: palette.inkMuted, size: 22)
+            .frame(width: 56, height: 56)
+            .background(palette.control, in: fieldShape)
+            .overlay(fieldShape.strokeBorder(palette.line))
+            .rotationEffect(.degrees(x < 0 ? -11 : 11))
+            .offset(x: x)
     }
 }

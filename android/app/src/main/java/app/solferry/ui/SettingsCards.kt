@@ -22,7 +22,7 @@ import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
-import uniffi.solferry_ffi.Identity
+import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.RelayStatus
 
@@ -56,13 +56,12 @@ fun RelayCard(state: AppState, engine: Engine) {
     LaunchedEffect(state.relays.size) { link = "" }
     val add = { if (link.isNotBlank()) engine.bridge.addRelay(link.trim()) }
     Card(
-        R.drawable.ic_relay, "Your relays",
-        aside = { Button({ links.openUri(GUIDE) }, label = "Set one up", icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+        R.drawable.ic_relay, "Relay",
+        aside = { Button({ links.openUri(GUIDE) }, label = "Setup Guide", icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
     ) {
         PaddedWell {
             Muted("Reach devices on other networks through a relay you run.")
             state.relays.forEach { RelayRow(it, engine) }
-            state.relayProblem?.let { Muted(it.next, color = palette.danger) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Field(
                     link, { link = it }, "https://relay.example.com#token", Modifier.weight(1f),
@@ -80,15 +79,18 @@ fun RelayCard(state: AppState, engine: Engine) {
 }
 
 @Composable
-fun BlockedCard(blocked: List<Identity>, engine: Engine) {
+fun BlockedCard(blocked: List<BlockedDevice>, engine: Engine) {
     val palette = LocalPalette.current
     Card(R.drawable.ic_blocked, "Blocked", aside = { Count(blocked.size) }) {
         Well {
             blocked.forEach { device ->
                 Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
                     Tile(R.drawable.ic_blocked, palette.control, palette.inkMuted)
-                    Mono(device.fingerprint, Modifier.weight(1f))
-                    Button({ engine.bridge.unblock(device.id) }, label = "Unblock", size = ButtonSize.Sm)
+                    Column(Modifier.weight(1f)) {
+                        Text(device.name ?: device.identity.fingerprint, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (device.name != null) Caption(device.identity.fingerprint)
+                    }
+                    Button({ engine.bridge.unblock(device.identity.id) }, label = "Unblock", size = ButtonSize.Sm)
                 }
             }
         }

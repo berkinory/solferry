@@ -1,8 +1,31 @@
 import SwiftUI
 
 enum Glyph: String {
-    case alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
-    case external, folder, key, linux, more, nearby, qr, relay, send, settings, shield, transfers, upload, view, windows
+    case add, alert, android, apple, blocked, cancel, check, clipboard, computer, copy, delete, devices, download
+    case external, file, folder, history, home, key, link, linux, mark, more, nearby, qr, relay, send, settings, shield
+    case cursor, transfers, upload, view, windows
+    case chevronDown = "chevron-down", chevronUp = "chevron-up"
+    case typeArchive = "type-archive", typeAudio = "type-audio", typeCode = "type-code", typeDoc = "type-doc"
+    case typeImage = "type-image", typePackage = "type-package", typePdf = "type-pdf", typeSheet = "type-sheet"
+    case typeSlides = "type-slides", typeText = "type-text", typeVideo = "type-video"
+}
+
+/// The icon for a file, from what its name says it is.
+func fileGlyph(_ name: String) -> Glyph {
+    switch (name as NSString).pathExtension.lowercased() {
+    case "jpg", "jpeg", "png", "gif", "webp", "heic", "heif", "bmp", "tiff", "svg", "raw": .typeImage
+    case "mp4", "mov", "mkv", "avi", "webm", "m4v": .typeVideo
+    case "mp3", "wav", "flac", "aac", "ogg", "m4a", "opus": .typeAudio
+    case "pdf": .typePdf
+    case "doc", "docx", "odt", "rtf", "pages": .typeDoc
+    case "xls", "xlsx", "ods", "csv", "numbers": .typeSheet
+    case "ppt", "pptx", "odp", "key": .typeSlides
+    case "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "bz2": .typeArchive
+    case "txt", "md", "log": .typeText
+    case "rs", "js", "ts", "tsx", "py", "go", "c", "cpp", "h", "java", "kt", "swift", "html", "css", "json", "toml", "yaml", "yml", "sh": .typeCode
+    case "apk", "exe", "msi", "dmg", "pkg", "deb", "rpm", "appimage", "ipa": .typePackage
+    default: .file
+    }
 }
 
 func platformGlyph(_ platform: DevicePlatform?) -> Glyph {
@@ -45,19 +68,34 @@ struct Tile: View {
     }
 }
 
-/// A device's tile: its platform logo in the color its key gives it, so copied names still differ.
+/// A device's tile: its platform logo in its own color while it is there, gray while it isn't.
 struct DeviceTile: View {
     @Environment(\.palette) private var palette
     let identity: Identity
     var platform: DevicePlatform?
+    var online = true
 
     var body: some View {
-        let tone = palette.identity[Int(identity.tone) % palette.identity.count]
-        Tile(glyph: platformGlyph(identity.platform ?? platform), fill: tone.opacity(0.16), tone: tone)
+        let shown = identity.platform ?? platform
+        if online, let brand = brand(shown) {
+            Tile(glyph: platformGlyph(shown), fill: brand, tone: palette.ink)
+        } else {
+            Tile(glyph: platformGlyph(shown), fill: palette.control, tone: palette.inkMuted.opacity(shown == nil ? 1 : 0.6))
+        }
+    }
+
+    private func brand(_ platform: DevicePlatform?) -> Color? {
+        switch platform {
+        case .macos, .ios: palette.platformApple
+        case .android: palette.platformAndroid
+        case .windows: palette.platformWindows
+        case .linux: palette.platformLinux
+        case nil: nil
+        }
     }
 }
 
-struct Mono: View {
+struct Caption: View {
     @Environment(\.palette) private var palette
     let text: String
     var color: Color?
@@ -68,7 +106,7 @@ struct Mono: View {
     }
 
     var body: some View {
-        Text(text).font(.monoText).foregroundStyle(color ?? palette.inkMuted).lineLimit(1)
+        Text(text).font(.captionText).foregroundStyle(color ?? palette.inkMuted).lineLimit(1)
     }
 }
 
@@ -106,6 +144,9 @@ struct StatusLine: View {
     }
 }
 
+/// The navigation bar and the room under the last card.
+private let sheetChrome = 88.0
+
 /// A pushed screen: a title in the bar and cards that scroll clear of the keyboard.
 struct Page<Content: View>: View {
     @Environment(\.palette) private var palette
@@ -125,6 +166,38 @@ struct Page<Content: View>: View {
     }
 }
 
+/// A sheet as tall as what it holds, scrolling only once that outgrows the screen.
+struct SheetPage<Content: View>: View {
+    let title: String
+    let close: () -> Void
+    @ViewBuilder let content: Content
+    @Environment(\.palette) private var palette
+    @State private var height = 0.0
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: SpaceTokens.sm) { content }
+                    .padding(.horizontal, SpaceTokens.md)
+                    .padding(.vertical, SpaceTokens.xs)
+                    .onGeometryChange(for: Double.self) { $0.size.height } action: { height = $0 }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
+            .background { if #unavailable(iOS 26) { palette.page.ignoresSafeArea() } }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: close) { Icon(.cancel, size: 20) }
+                        .accessibilityLabel("Close")
+                }
+            }
+        }
+        .presentationDetents([.height(height + sheetChrome)])
+    }
+}
+
 extension View {
     func confirm(
         _ title: String,
@@ -139,6 +212,19 @@ extension View {
         } message: {
             Text(message)
         }
+    }
+}
+
+/// How long ago a moment was, in the largest unit that still reads naturally.
+func ago(_ ms: UInt64) -> String {
+    let minutes = max(0, Int(Date().timeIntervalSince1970 / 60) - Int(ms / 60000))
+    switch minutes {
+    case 0: return "just now"
+    case 1 ..< 60: return "\(minutes)m ago"
+    case 60 ..< 1440: return "\(minutes / 60)h ago"
+    case 1440 ..< 2880: return "yesterday"
+    case 2880 ..< 43200: return "\(minutes / 1440)d ago"
+    default: return "\(minutes / 43200)mo ago"
     }
 }
 

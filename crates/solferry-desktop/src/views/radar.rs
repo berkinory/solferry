@@ -4,7 +4,7 @@ use std::time::Duration;
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, Div, FontWeight, Hsla, IntoElement,
-    ParentElement, Styled, div, px, white,
+    ParentElement, Styled, div, px,
 };
 
 use super::button::Button;
@@ -12,21 +12,21 @@ use super::main_view::{MainView, Page};
 use super::ui;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_FIELD, SPACE_SM, SPACE_XS};
+use crate::tokens::{RADIUS_FIELD, SPACE_XS};
 
-const SIZE: f32 = 176.0;
-const CORE: f32 = 56.0;
-const ORBITS: [f32; 2] = [108.0, 172.0];
+const SIZE: f32 = 124.0;
+const CORE: f32 = 40.0;
+const ORBITS: [f32; 2] = [72.0, 114.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
-const TILE: f32 = 32.0;
+const TILE: f32 = 38.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [
-    ("ghost-apple", Glyph::Apple, -66.0, -42.0, 0.0),
-    ("ghost-windows", Glyph::Windows, 68.0, -30.0, 0.25),
-    ("ghost-android", Glyph::Android, -54.0, 58.0, 0.5),
-    ("ghost-linux", Glyph::Linux, 62.0, 52.0, 0.75),
+    ("ghost-apple", Glyph::Apple, -44.0, -27.0, 0.0),
+    ("ghost-windows", Glyph::Windows, 44.0, -20.0, 0.25),
+    ("ghost-android", Glyph::Android, -35.0, 38.0, 0.5),
+    ("ghost-linux", Glyph::Linux, 41.0, 34.0, 0.75),
 ];
 
 fn centered(area: f32, size: f32) -> Div {
@@ -69,11 +69,10 @@ fn radar(cx: &Context<MainView>) -> Div {
         .items_center()
         .justify_center()
         .rounded(px(RADIUS_FIELD))
-        .bg(color(palette.primary_fill))
+        .bg(cx.theme().secondary)
         .border_1()
-        .border_color(color(palette.primary_border))
-        .shadow(vec![ui::shadow(white().opacity(0.22), 1., 0., 0., true)])
-        .child(icon(Glyph::Nearby, 24.).text_color(color(palette.on_primary)));
+        .border_color(cx.theme().border)
+        .child(icon(Glyph::Nearby, 20.).text_color(cx.theme().muted_foreground));
     let line = cx.theme().border;
     div()
         .relative()
@@ -85,42 +84,29 @@ fn radar(cx: &Context<MainView>) -> Div {
         .child(core)
 }
 
-pub fn use_code(label: &'static str, cx: &mut Context<MainView>) -> AnyElement {
+pub fn use_code(cx: &mut Context<MainView>) -> AnyElement {
     Button::new("use-code")
         .ghost()
         .xs()
         .icon(Glyph::Qr)
-        .label(label)
+        .label("Use a code")
         .on_click(cx.listener(|view, _, window, cx| view.open_page(Page::Pair, window, cx)))
         .into_any_element()
 }
 
-/// The whole home screen for someone with no devices yet.
-pub fn hero(cx: &mut Context<MainView>) -> AnyElement {
-    let code = use_code("Can't see it? Pair with a code", cx);
-    ui::frame(cx)
+/// What the nearby card holds for someone with no devices yet.
+pub fn searching(cx: &mut Context<MainView>) -> Div {
+    ui::well(cx)
+        .items_center()
+        .gap(px(SPACE_XS))
+        .py(px(13.))
+        .child(radar(cx))
+        .child(ui::text("Looking for devices").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
         .child(
-            ui::well(cx)
-                .items_center()
-                .gap(px(SPACE_SM))
-                .py(px(24.))
-                .child(radar(cx))
-                .child(
-                    ui::text("Looking for nearby devices")
-                        .pt(px(SPACE_SM))
-                        .font_weight(FontWeight::MEDIUM),
-                )
-                .child(
-                    ui::muted(
-                        "Open Solferry on another device on this network and it shows up here.",
-                        cx,
-                    )
-                    .text_center()
-                    .max_w(px(300.)),
-                )
-                .child(div().pt(px(SPACE_XS)).child(code)),
+            ui::muted("Open Solferry on another device on this network and it shows up here.", cx)
+                .text_center()
+                .max_w(px(329.)),
         )
-        .into_any_element()
 }
 
 /// One quiet line for when nothing new is around but the search is still on.
@@ -129,7 +115,7 @@ pub fn scanning(cx: &Context<MainView>) -> AnyElement {
     div()
         .flex()
         .items_center()
-        .gap(px(10.))
+        .gap(px(12.))
         .p(px(7.))
         .child(
             div()

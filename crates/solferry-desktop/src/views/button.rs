@@ -8,7 +8,7 @@ use gpui_kit::{
 use super::ui::shadow;
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
-use crate::tokens::RADIUS_CONTROL;
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FLOOR};
 
 const GROUP: &str = "button";
 
@@ -20,6 +20,7 @@ enum Variant {
     Secondary,
     Ghost,
     Danger,
+    Warning,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -37,7 +38,6 @@ pub struct Button {
     glyph: Option<Glyph>,
     variant: Variant,
     size: Size,
-    grow: bool,
     tooltip: Option<SharedString>,
     on_click: Option<Handler>,
 }
@@ -50,7 +50,6 @@ impl Button {
             glyph: None,
             variant: Variant::Secondary,
             size: Size::Md,
-            grow: false,
             tooltip: None,
             on_click: None,
         }
@@ -81,6 +80,11 @@ impl Button {
         self
     }
 
+    pub fn warning(mut self) -> Self {
+        self.variant = Variant::Warning;
+        self
+    }
+
     pub fn xs(mut self) -> Self {
         self.size = Size::Xs;
         self
@@ -88,11 +92,6 @@ impl Button {
 
     pub fn sm(mut self) -> Self {
         self.size = Size::Sm;
-        self
-    }
-
-    pub fn grow(mut self) -> Self {
-        self.grow = true;
         self
     }
 
@@ -150,15 +149,22 @@ fn look(variant: Variant, cx: &App) -> Look {
             hover_text: color(palette.on_primary),
             border: None,
         },
+        Variant::Warning => Look {
+            fill: Some(color(palette.warning_fill)),
+            hover: color(palette.warning_fill).opacity(0.9),
+            text: color(palette.on_primary),
+            hover_text: color(palette.on_primary),
+            border: None,
+        },
     }
 }
 
 impl RenderOnce for Button {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let (height, padding, text, glyph_size) = match self.size {
-            Size::Xs => (28.0, 8.0, 12.0, 14.0),
-            Size::Sm => (32.0, 12.0, 13.0, 16.0),
-            Size::Md => (36.0, 14.0, 14.0, 16.0),
+            Size::Xs => (32.0, 10.0, 13.0, 16.0),
+            Size::Sm => (36.0, 14.0, 14.0, 18.0),
+            Size::Md => (40.0, 16.0, 15.0, 18.0),
         };
         let look = look(self.variant, cx);
         let (hover, hover_text) = (look.hover, look.hover_text);
@@ -170,9 +176,9 @@ impl RenderOnce for Button {
             .flex_none()
             .items_center()
             .justify_center()
-            .gap(px(6.))
+            .gap(px(7.))
             .h(px(height))
-            .rounded(px(RADIUS_CONTROL))
+            .rounded(px(if self.size == Size::Md { RADIUS_CONTROL } else { RADIUS_FLOOR }))
             .text_size(px(text))
             .font_weight(FontWeight::MEDIUM)
             .text_color(look.text)
@@ -180,9 +186,6 @@ impl RenderOnce for Button {
             .cursor_pointer()
             .hover(move |style| style.bg(hover).text_color(hover_text));
         button = if square { button.w(px(height)) } else { button.px(px(padding)) };
-        if self.grow {
-            button = button.flex_1();
-        }
         if let Some(fill) = look.fill {
             button = button.bg(fill);
         }

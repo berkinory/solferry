@@ -11,6 +11,18 @@ const fn say(title: &'static str, next: &'static str) -> Explanation {
     Explanation { title, next }
 }
 
+/// One short line about something that failed with a particular device.
+#[must_use]
+pub fn about(error: &Error, name: &str) -> String {
+    match error {
+        Error::Unreachable(_) => format!("Can't reach {name}"),
+        Error::Declined => format!("{name} declined"),
+        Error::Busy => format!("{name} is busy"),
+        Error::NotPaired => format!("Pair with {name} first"),
+        other => explain(other).title.to_owned(),
+    }
+}
+
 #[must_use]
 pub fn explain(error: &Error) -> Explanation {
     match error {
@@ -21,9 +33,7 @@ pub fn explain(error: &Error) -> Explanation {
             "Solferry's settings are damaged",
             "Delete the damaged file in Solferry's data folder. You may need to pair devices again.",
         ),
-        Error::NetworkStart(_) => {
-            say("Networking didn't start", "Check that you are connected, then restart Solferry.")
-        }
+        Error::NetworkStart(_) => say("Networking didn't start", "Restart Solferry to try again."),
         Error::InvalidRelayUrl(_) => say(
             "That relay address isn't valid",
             "Paste the full link your relay printed, like https://relay.example.com#token.",
@@ -34,7 +44,7 @@ pub fn explain(error: &Error) -> Explanation {
         ),
         Error::RelayCheckFailed => say("A relay is not working", "See its status in Settings."),
         Error::NotPaired => {
-            say("This device only accepts paired devices", "Pair them first from Add device.")
+            say("Pair with this device first", "Only paired devices can reach it from here.")
         }
         Error::VersionMismatch { .. } => {
             say("Solferry versions don't match", "Update Solferry on both devices.")

@@ -72,11 +72,11 @@ impl Node {
                 }
                 Err(error) => {
                     let event = Event::Failed { id: manifest.id, error: error.clone() };
-                    let _ = self.shared.events.send(event);
+                    self.shared.publish(event);
                     return Err(error);
                 }
                 Ok(report) => {
-                    let _ = self.shared.events.send(Event::Completed { id: manifest.id });
+                    self.shared.publish(Event::Completed { id: manifest.id });
                     return Ok(report);
                 }
             }
@@ -133,7 +133,7 @@ async fn negotiate(
     let bytes: u64 = manifest.entries.iter().map(|entry| entry.size).sum();
     let resumed = segments::total(&progress);
     let files = manifest.entries.iter().filter(|entry| !entry.is_dir).count();
-    let _ = shared.events.send(Event::Started {
+    shared.publish(Event::Started {
         id: manifest.id,
         peer,
         peer_name: hello.name.clone(),

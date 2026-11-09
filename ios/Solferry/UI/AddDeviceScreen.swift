@@ -2,12 +2,13 @@ import SwiftUI
 
 struct AddDeviceScreen: View {
     @Environment(Engine.self) private var engine
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.palette) private var palette
     @State private var code = ""
 
     var body: some View {
         let state = engine.state
-        Page(title: "Pair with a code") {
-            if let problem = state.pairingProblem { ProblemCard(problem: problem) }
+        SheetPage(title: "Pair with a code", close: { dismiss() }) {
             Card(glyph: .qr, title: "Show a code") {
                 PaddedWell {
                     if let invite = state.invite {
@@ -25,9 +26,11 @@ struct AddDeviceScreen: View {
                         ActionButton(label: state.joining ? "Pairing" : "Pair", kind: .primary, action: join)
                             .disabled(state.joining)
                     }
+                    if let error = state.joinError { Muted(error, color: palette.danger) }
                 }
             }
         }
+        .onDisappear { engine.clearJoinError() }
     }
 
     private func join() {

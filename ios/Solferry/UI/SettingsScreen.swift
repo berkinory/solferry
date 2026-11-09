@@ -2,20 +2,6 @@ import SwiftUI
 
 private let guide = URL(string: "https://github.com/berkinory/solferry/blob/main/docs/relay.md")!
 
-private let reaches: [(reach: Reach, label: String, detail: String)] = [
-    (.everyone, "Everyone", "Anyone on your network can see this device and ask to send."),
-    (.paired, "Paired", "Others can see this device, but only paired devices can send."),
-    (.hidden, "Hidden", "This device doesn't show up nearby. Paired devices can still send."),
-]
-
-private func index(of visibility: String) -> Int {
-    switch visibility {
-    case "KnownDevices": 1
-    case "Hidden": 2
-    default: 0
-    }
-}
-
 struct SettingsScreen: View {
     @Environment(Engine.self) private var engine
     @State private var name = ""
@@ -35,13 +21,13 @@ struct SettingsScreen: View {
             Card(glyph: .folder, title: "Save files to") {
                 PaddedWell { Muted("The Solferry folder in the Files app") }
             }
-            VisibilityCard(current: index(of: me?.visibility ?? ""))
+            VisibilityCard(found: me?.visibility != "Hidden")
             RelayCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
-                Mono("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                Caption("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
                 Spacer()
-                Mono(me?.fingerprint ?? "")
+                Caption(me?.fingerprint ?? "")
             }
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.sm)
@@ -56,23 +42,14 @@ struct SettingsScreen: View {
 
 private struct VisibilityCard: View {
     @Environment(Engine.self) private var engine
-    let current: Int
+    let found: Bool
 
     var body: some View {
-        Card(glyph: .view, title: "Who can see this device") {
+        Card(glyph: .view, title: "Let others find me") {
             PaddedWell {
-                HStack(spacing: SpaceTokens.xs) {
-                    ForEach(reaches.indices, id: \.self) { position in
-                        ActionButton(
-                            label: reaches[position].label,
-                            kind: position == current ? .primary : .ghost,
-                            scale: .small,
-                            wide: true
-                        ) { engine.bridge.setReach(reach: reaches[position].reach) }
-                        .accessibilityAddTraits(position == current ? .isSelected : [])
-                    }
+                Toggle(isOn: Binding(get: { found }, set: { engine.bridge.setReach(reach: $0 ? .everyone : .hidden) })) {
+                    Muted(found ? "Devices on your network can see this one and ask to send." : "Nobody new can find this device. Paired devices can still reach it.")
                 }
-                Muted(reaches[current].detail)
             }
         }
     }
@@ -116,13 +93,12 @@ private struct RelayCard: View {
 
     var body: some View {
         let state = engine.state
-        Card(glyph: .relay, title: "Your relays") {
-            ActionButton(label: "Set one up", glyph: .external, kind: .ghost, scale: .small) { openURL(guide) }
+        Card(glyph: .relay, title: "Relay") {
+            ActionButton(label: "Setup Guide", glyph: .external, kind: .ghost, scale: .small) { openURL(guide) }
         } content: {
             PaddedWell {
                 Muted("Reach devices on other networks through a relay you run.")
                 ForEach(state.relays, id: \.link) { RelayRow(relay: $0) }
-                if let problem = state.relayProblem { Muted(problem.next, color: palette.danger) }
                 HStack(spacing: SpaceTokens.sm) {
                     Field(text: $link, placeholder: "https://relay.example.com#token", onSubmit: add) { PasteInto(text: $link) }
                     ActionButton(label: "Add", action: add)
@@ -141,19 +117,22 @@ private struct RelayCard: View {
 private struct BlockedCard: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
-    let blocked: [Identity]
+    let blocked: [BlockedDevice]
 
     var body: some View {
         Card(glyph: .blocked, title: "Blocked") {
             Count(value: blocked.count)
         } content: {
             Well {
-                ForEach(blocked, id: \.id) { device in
+                ForEach(blocked, id: \.identity.id) { device in
                     HStack(spacing: SpaceTokens.md) {
                         Tile(glyph: .blocked, fill: palette.control, tone: palette.inkMuted)
-                        Mono(device.fingerprint)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(device.name ?? device.identity.fingerprint).lineLimit(1)
+                            if device.name != nil { Caption(device.identity.fingerprint) }
+                        }
                         Spacer()
-                        ActionButton(label: "Unblock", scale: .small) { engine.bridge.unblock(peer: device.id) }
+                        ActionButton(label: "Unblock", scale: .small) { engine.bridge.unblock(peer: device.identity.id) }
                     }
                     .padding(SpaceTokens.sm)
                 }

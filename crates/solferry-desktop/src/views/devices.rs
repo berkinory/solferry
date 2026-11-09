@@ -1,4 +1,5 @@
 use gpui_kit::component::ActiveTheme;
+use gpui_kit::component::Sizable;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::{
     AnyElement, App, Context, ElementId, ExternalPaths, Hsla, InteractiveElement, IntoElement,
@@ -6,40 +7,34 @@ use gpui_kit::{
     transparent_black,
 };
 use iroh::{EndpointAddr, EndpointId};
-use solferry_core::{NearbyDevice, Platform, Route};
+use solferry_core::{NearbyDevice, Platform};
 
 use super::button::Button;
 use super::dialog::Dialog;
 use super::main_view::MainView;
 use super::{radar, ui};
-use crate::assets::{Glyph, icon};
+use crate::assets::Glyph;
+use crate::format;
 use crate::service::{Command, Target};
 use crate::state::AppState;
-use crate::theme::{color, palette, route_color};
-use crate::tokens::{RADIUS_CONTROL, SPACE_SM};
+use crate::theme::{color, palette};
+use crate::tokens::{RADIUS_CONTROL, SPACE_SM, SPACE_XS};
 
-enum Dot {
-    Route(Route),
+pub enum Dot {
     Online,
     Offline,
 }
 
-struct Row {
-    id: EndpointId,
-    addr: EndpointAddr,
-    name: String,
-    platform: Option<Platform>,
+pub struct Row {
+    pub id: EndpointId,
+    pub addr: EndpointAddr,
+    pub name: String,
+    pub platform: Option<Platform>,
     detail: &'static str,
     dot: Option<Dot>,
     approval: Option<bool>,
-}
-
-fn near_detail(device: &NearbyDevice) -> (&'static str, Route) {
-    if device.overlay {
-        ("On your overlay network", Route::Overlay)
-    } else {
-        ("On this network", Route::Local)
-    }
+    paired_at_ms: u64,
+    pub online: bool,
 }
 
 /// What a paired device's line says: where it was seen nearby, else whether it answered.
@@ -48,9 +43,8 @@ fn presence(
     id: &EndpointId,
     state: &AppState,
 ) -> (&'static str, Option<Dot>) {
-    if let Some(found) = found {
-        let (detail, route) = near_detail(found);
-        return (detail, Some(Dot::Route(route)));
+    if found.is_some() {
+        return ("Online", Some(Dot::Online));
     }
     match &state.reachable {
         None => ("Paired", None),
@@ -59,7 +53,7 @@ fn presence(
     }
 }
 
-fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
+pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
     let near = |id: &EndpointId| state.nearby.iter().find(|device| device.addr.id == *id);
     let mine = state
         .devices
@@ -67,6 +61,7 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
         .map(|device| {
             let found = near(&device.id);
             let (detail, dot) = presence(found, &device.id, state);
+            let online = matches!(dot, Some(Dot::Online));
             Row {
                 id: device.id,
                 addr: found.map_or_else(|| device.addr(), |found| found.addr.clone()),
@@ -75,6 +70,8 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
                 detail,
                 dot,
                 approval: Some(device.auto_accept),
+                paired_at_ms: device.paired_at_ms,
+                online,
             }
         })
         .collect();
@@ -87,9 +84,11 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
             addr: device.addr.clone(),
             name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
             platform: device.platform,
-            detail: if device.overlay { "Overlay, not paired" } else { "Not paired" },
+            detail: "Not paired",
             dot: None,
             approval: None,
+            paired_at_ms: 0,
+            online: true,
         })
         .collect();
     (mine, others)
@@ -97,38 +96,37 @@ fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
 
 pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let (mine, others) = rows(state);
-    if mine.is_empty() && others.is_empty() {
-        return radar::hero(cx);
-    }
+    let alone = mine.is_empty();
     let paired = (!mine.is_empty()).then(|| {
         let count = ui::count(mine.len(), cx);
         let elements: Vec<_> = mine.into_iter().map(|row| device_row(row, view, cx)).collect();
         ui::card(Glyph::Devices, "Devices", Some(count), cx).child(ui::well(cx).children(elements))
     });
     let found: Vec<_> = others.into_iter().map(|row| device_row(row, view, cx)).collect();
-    let well = if found.is_empty() {
-        ui::well(cx).child(radar::scanning(cx))
-    } else {
+    let well = if !found.is_empty() {
         ui::well(cx).children(found)
+    } else if alone {
+        radar::searching(cx)
+    } else {
+        ui::well(cx).child(radar::scanning(cx))
     };
-    let code = radar::use_code("Use a code", cx);
+    let code = radar::use_code(cx);
     let nearby = ui::card(Glyph::Nearby, "Nearby", Some(code), cx).child(well);
     div().flex().flex_col().gap(px(SPACE_SM)).children(paired).child(nearby).into_any_element()
 }
 
-fn tile(id: &EndpointId, platform: Option<Platform>, selected: bool, cx: &App) -> AnyElement {
+pub fn tile(platform: Option<Platform>, online: bool, selected: bool, cx: &App) -> AnyElement {
     if selected {
         let palette = palette(cx);
         ui::tinted_tile(Glyph::Check, color(palette.primary_fill), color(palette.on_primary))
             .into_any_element()
     } else {
-        ui::device_tile(id, platform, cx).into_any_element()
+        ui::device_tile(platform, online, cx).into_any_element()
     }
 }
 
-fn detail(row: &Row, cx: &App) -> AnyElement {
+pub fn detail(row: &Row, cx: &App) -> AnyElement {
     let tone: Option<Hsla> = row.dot.as_ref().map(|dot| match dot {
-        Dot::Route(route) => route_color(*route, cx),
         Dot::Online => color(palette(cx).success),
         Dot::Offline => cx.theme().muted_foreground.opacity(0.5),
     });
@@ -139,40 +137,29 @@ fn detail(row: &Row, cx: &App) -> AnyElement {
 }
 
 fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let picking = !view.pending.is_empty();
-    let selected = view.selected.contains(&row.id);
     let expanded = view.expanded == Some(row.id);
     let (hover, highlight) = (cx.theme().accent, color(palette(cx).primary));
     let group = SharedString::from(format!("row-{}", row.id));
     let id: ElementId = group.clone().into();
     let target = Target { addr: row.addr.clone(), name: row.name.clone() };
     let drop_target = Target { addr: row.addr.clone(), name: row.name.clone() };
-    let device = row.id;
-    let hint = (!picking && row.approval.is_some()).then(|| {
-        div()
-            .flex_none()
-            .opacity(0.)
-            .group_hover(group.clone(), |style| style.opacity(1.))
-            .child(icon(Glyph::Send, 14.).text_color(cx.theme().muted_foreground))
-    });
     let details = row
         .approval
         .filter(|_| expanded)
-        .map(|auto_accept| device_details(row.id, row.name.clone(), auto_accept, cx));
+        .map(|auto_accept| device_details(&row, auto_accept, view, cx));
     let share = row.approval.is_some().then(|| share_button(&row, view, cx));
     let action = if row.approval.is_some() {
-        more_button(row.id, cx)
+        more_button(row.id, expanded, cx)
     } else {
         pair_button(row.id, row.addr.clone(), cx)
     };
-    let shown = tile(&row.id, row.platform, selected, cx);
+    let shown = tile(row.platform, row.online, false, cx);
     let line = detail(&row, cx);
     let mut body = div()
         .id(id)
-        .group(group)
         .flex()
         .items_center()
-        .gap(px(10.))
+        .gap(px(12.))
         .p(px(7.))
         .rounded(px(RADIUS_CONTROL))
         .border_1()
@@ -185,9 +172,9 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
             let target = Target { addr: drop_target.addr.clone(), name: drop_target.name.clone() };
             view.send_now(vec![target], paths.paths().to_vec(), cx);
         }))
-        .on_click(cx.listener(move |view, _, _, cx| {
+        .on_click(cx.listener(move |_, _, _, cx| {
             let target = Target { addr: target.addr.clone(), name: target.name.clone() };
-            view.activate_device(device, target, cx);
+            MainView::pick_files_for(target, cx);
         }))
         .child(shown)
         .child(
@@ -199,10 +186,9 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 .child(ui::text(row.name).truncate())
                 .child(line),
         )
-        .children(hint)
         .children(share)
         .child(action);
-    if selected || expanded {
+    if expanded {
         body = body.bg(hover);
     }
     div().flex().flex_col().child(body).children(details).into_any_element()
@@ -225,11 +211,11 @@ fn share_button(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEl
         .into_any_element()
 }
 
-fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
+fn more_button(id: EndpointId, open: bool, cx: &mut Context<MainView>) -> AnyElement {
     Button::new(SharedString::from(format!("more-{id}")))
         .ghost()
         .xs()
-        .icon(Glyph::More)
+        .icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown })
         .tooltip("Options")
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
             cx.stop_propagation();
@@ -240,21 +226,36 @@ fn more_button(id: EndpointId, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn device_details(
-    id: EndpointId,
-    name: String,
+    row: &Row,
     auto_accept: bool,
+    view: &MainView,
     cx: &mut Context<MainView>,
 ) -> AnyElement {
-    let line = || div().flex().items_center().justify_between().h(px(36.)).pl(px(50.)).pr(px(7.));
+    let (id, name) = (row.id, row.name.clone());
+    let last = view
+        .state
+        .read(cx)
+        .history
+        .iter()
+        .find(|past| past.peer == id && past.completed)
+        .map(|past| past.finished_ms);
+    let (what, moment) = last.map_or_else(
+        || ("Paired", format::ago(row.paired_at_ms)),
+        |ms| ("Last transfer", format::ago(ms)),
+    );
+    let when = div()
+        .flex()
+        .gap(px(SPACE_XS))
+        .child(ui::muted(what, cx))
+        .child(ui::muted(moment, cx).opacity(0.6));
+    let line = || div().flex().items_center().justify_between().h(px(39.)).pl(px(54.)).pr(px(7.));
     div()
         .flex()
         .flex_col()
         .child(
-            line().child(ui::muted("Key", cx)).child(ui::mono(ui::fingerprint(&id), cx).pr(px(4.))),
-        )
-        .child(
             line().child(ui::muted("Receive without asking", cx)).child(
                 Switch::new(SharedString::from(format!("approval-{id}")))
+                    .large()
                     .checked(auto_accept)
                     .accessibility_label("Receive without asking")
                     .on_click(cx.listener(move |_, enabled: &bool, _, cx| {
@@ -263,8 +264,9 @@ fn device_details(
             ),
         )
         .child(
-            line().child(ui::muted("Remove this device", cx)).child(
+            line().child(when).child(
                 Button::new(SharedString::from(format!("forget-{id}")))
+                    .danger()
                     .xs()
                     .icon(Glyph::Delete)
                     .label("Forget")
@@ -280,6 +282,7 @@ fn device_details(
 fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -> AnyElement {
     Button::new(SharedString::from(format!("pair-{id}")))
         .xs()
+        .icon(Glyph::Link)
         .label("Pair")
         .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
             cx.stop_propagation();

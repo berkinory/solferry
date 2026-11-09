@@ -155,9 +155,9 @@ async fn corrupted_partial_data_is_never_delivered() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn known_devices_mode_refuses_strangers_until_paired() {
+async fn hidden_mode_refuses_strangers_until_paired() {
     let sender = peer("sender", Visibility::Everyone).await;
-    let receiver = peer("receiver", Visibility::KnownDevices).await;
+    let receiver = peer("receiver", Visibility::Hidden).await;
     let source = TempDir::new().unwrap();
     let file = source.path().join("note.txt");
     fs::write(&file, b"hello").unwrap();

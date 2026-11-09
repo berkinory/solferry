@@ -66,6 +66,10 @@ def radii(tokens):
     }
 
 
+# A desktop window is read from further away than a phone.
+DESKTOP_SCALE = 1.08
+
+
 def scales(tokens):
     return {"space": tokens["space"], "radius": radii(tokens), "type": tokens["type"]}
 
@@ -184,6 +188,7 @@ def desktop_theme(tokens):
                 "name": f"Solferry {mode.capitalize()}",
                 "mode": mode,
                 "font.family": tokens["font"]["sans"],
+                "font.size": tokens["type"]["body"],
                 "mono_font.family": tokens["font"]["mono"],
                 "mono_font.size": tokens["type"]["caption"],
                 "radius": tokens["corner"]["control"],
@@ -198,10 +203,11 @@ def desktop_theme(tokens):
 def main():
     tokens = derive(json.loads((HERE / "tokens.json").read_text()))
     check(tokens)
+    desktop = {**tokens, **{group: {name: round(size * DESKTOP_SCALE) for name, size in tokens[group].items()} for group in ("type", "space")}}
     rust_tokens = ROOT / "crates/solferry-desktop/src/tokens.rs"
-    rust_tokens.write_text(rust(tokens))
+    rust_tokens.write_text(rust(desktop))
     subprocess.run(["rustfmt", "--edition", "2024", str(rust_tokens)], check=True, cwd=ROOT)
-    (ROOT / "crates/solferry-desktop/src/theme.json").write_text(desktop_theme(tokens))
+    (ROOT / "crates/solferry-desktop/src/theme.json").write_text(desktop_theme(desktop))
     (HERE / "generated/SolferryTokens.kt").write_text(kotlin(tokens))
     (HERE / "generated/SolferryTokens.swift").write_text(swift(tokens))
 

@@ -25,10 +25,16 @@ enum LightColors {
     static let danger = Color(hex: 0xB91C1C)
     static let dangerFill = Color(hex: 0xDC2626)
     static let dangerWell = Color(hex: 0xFDF0F0)
+    static let warningFill = Color(hex: 0xB45309)
     static let routeLocal = Color(hex: 0x1D4ED8)
     static let routeOverlay = Color(hex: 0x6D28D9)
     static let routeDirect = Color(hex: 0x047857)
     static let routeRelay = Color(hex: 0xA34700)
+    static let successFill = Color(hex: 0x059669)
+    static let platformApple = Color(hex: 0xD4D4D8)
+    static let platformAndroid = Color(hex: 0x3DDC84)
+    static let platformWindows = Color(hex: 0x60B0FF)
+    static let platformLinux = Color(hex: 0xFBBF24)
     static let primaryFill = Color(hex: 0x3730DE)
     static let primaryHover = Color(hex: 0x3A33E8)
     static let primaryBorder = Color(hex: 0x342DD3)
@@ -52,10 +58,16 @@ enum DarkColors {
     static let danger = Color(hex: 0xF87171)
     static let dangerFill = Color(hex: 0x9A4041)
     static let dangerWell = Color(hex: 0x1F1113)
+    static let warningFill = Color(hex: 0x8F5A12)
     static let routeLocal = Color(hex: 0x60A5FA)
     static let routeOverlay = Color(hex: 0xA78BFA)
     static let routeDirect = Color(hex: 0x34D399)
     static let routeRelay = Color(hex: 0xFBBF24)
+    static let successFill = Color(hex: 0x10B981)
+    static let platformApple = Color(hex: 0x52525B)
+    static let platformAndroid = Color(hex: 0x15803D)
+    static let platformWindows = Color(hex: 0x0078D4)
+    static let platformLinux = Color(hex: 0xB45309)
     static let primaryFill = Color(hex: 0x3630DB)
     static let primaryHover = Color(hex: 0x3A33E8)
     static let primaryBorder = Color(hex: 0x3A33E8)
@@ -76,11 +88,11 @@ enum SpaceTokens {
 }
 
 enum RadiusTokens {
-    static let floor: Double = 6
-    static let control: Double = 10
-    static let field: Double = 14
-    static let well: Double = 18
-    static let card: Double = 22
+    static let floor: Double = 10
+    static let control: Double = 14
+    static let field: Double = 18
+    static let well: Double = 22
+    static let card: Double = 26
 }
 
 enum TypeTokens {

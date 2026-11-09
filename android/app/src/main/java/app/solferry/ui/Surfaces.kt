@@ -18,12 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.graphics.Color
@@ -37,6 +39,8 @@ import app.solferry.design.SpaceTokens
 val CardShape = RoundedCornerShape(RadiusTokens.card.dp)
 val WellShape = RoundedCornerShape(RadiusTokens.well.dp)
 val ControlShape = RoundedCornerShape(RadiusTokens.control.dp)
+val FieldShape = RoundedCornerShape(RadiusTokens.field.dp)
+val FloorShape = RoundedCornerShape(RadiusTokens.floor.dp)
 
 /** One line and 3dp of padding, so what it holds sits exactly 4dp inside it. */
 @Composable
@@ -67,7 +71,7 @@ fun Well(
     }
     val press = remember { MutableInteractionSource() }
     val pressed by press.collectIsPressedAsState()
-    val tap = if (onClick != null) Modifier.clickable(press, null, onClick = onClick) else Modifier
+    val tap = if (onClick != null) Modifier.clip(WellShape).clickable(press, ripple(), onClick = onClick) else Modifier
     Column(
         modifier.fillMaxWidth()
             .background(if (pressed) palette.raised else ground, WellShape)
@@ -83,7 +87,7 @@ fun Well(
 /** A well with room for text, spaced for reading rather than for rows. */
 @Composable
 fun PaddedWell(ground: Color = LocalPalette.current.well, content: @Composable ColumnScope.() -> Unit) =
-    Well(ground = ground, padding = SpaceTokens.md.dp, spacing = SpaceTokens.sm.dp, content = content)
+    Well(ground = ground, padding = SpaceTokens.lg.dp, spacing = SpaceTokens.sm.dp, content = content)
 
 /** A frame with an icon and title over the well that holds its rows. */
 @Composable
@@ -96,7 +100,7 @@ fun Card(
     content: @Composable ColumnScope.() -> Unit,
 ) = Frame(line = line) {
     Row(
-        Modifier.fillMaxWidth().height(36.dp).padding(start = SpaceTokens.md.dp, end = SpaceTokens.xs.dp),
+        Modifier.fillMaxWidth().height(36.dp).padding(start = SpaceTokens.lg.dp, end = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Glyph(icon, tone, 16)
@@ -111,4 +115,4 @@ fun Card(
 }
 
 @Composable
-fun Count(value: Int) = Mono(value.toString(), Modifier.padding(end = SpaceTokens.sm.dp))
+fun Count(value: Int) = Caption(value.toString(), Modifier.padding(end = 14.dp))

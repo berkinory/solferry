@@ -79,17 +79,25 @@ final class Engine {
         UIPasteboard.general.string = text
     }
 
-    func send(_ urls: [URL], to peer: String) {
+    /// `discarding` is false from the send screen, which keeps the files for another try.
+    func send(_ urls: [URL], to peers: [String], discarding: Bool = true) {
         let bridge = bridge!
         Task.detached {
-            let files = urls.compactMap(Outbox.open)
-            if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
+            for peer in peers {
+                let files = urls.compactMap(Outbox.open)
+                if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
+            }
+            if discarding { Outbox.discard(urls) }
         }
+    }
+
+    func clearJoinError() {
+        state.joinError = nil
     }
 
     func join(_ code: String) {
         state.joining = true
-        state.pairingProblem = nil
+        state.joinError = nil
         bridge.join(code: code)
     }
 
@@ -119,16 +127,21 @@ final class Engine {
         bridge.answerPairing(key: key, accept: accept)
     }
 
-    func dismissProblem(_ id: UUID) {
-        state.problems.removeAll { $0.id == id }
+    func dismissToast(_ id: Int) {
+        state.toasts.removeAll { $0.id == id }
+    }
+
+    /// Closing the pairing screen says no to whoever asked, or just stops showing our own code.
+    func closePairing() {
+        if let asked = state.pairings.first { answerPairing(asked.key, accept: false) } else { state.pairingCode = nil }
     }
 
     func dismissText(_ id: UInt64) {
-        state.texts.removeAll { $0.id == id }
+        if state.text?.id == id { state.text = nil }
     }
 
     func markCopied(_ id: UInt64) {
-        if let index = state.texts.firstIndex(where: { $0.id == id }) { state.texts[index].copied = true }
+        if state.text?.id == id { state.text?.copied = true }
     }
 
     func clearTransfer(_ id: String) {

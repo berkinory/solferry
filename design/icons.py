@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Writes the app's icons as SVG files for the desktop and vector drawables for Android: interface
+"""Writes the app's icons as SVG files for the desktop, vector drawables for Android and image sets
+for iOS: interface
 icons from @hugeicons/core-free-icons, platform logos from Simple Icons.
 
 Usage: design/icons.py <path to the core-free-icons package>
 """
 
+import json
 import re
 import sys
 import urllib.request
@@ -13,6 +15,8 @@ from pathlib import Path
 
 OUT = Path(__file__).parent.parent / "crates/solferry-desktop/assets/icons"
 ANDROID = Path(__file__).parent.parent / "android/app/src/main/res/drawable"
+IOS = Path(__file__).parent.parent / "ios/Solferry/Assets.xcassets"
+MARK = OUT.parent / "mark.svg"
 ICONS = {
     "add": "Add01Icon",
     "alert": "Alert02Icon",
@@ -20,17 +24,24 @@ ICONS = {
     "blocked": "UnavailableIcon",
     "cancel": "Cancel01Icon",
     "check": "Tick02Icon",
-    "clipboard": "ClipboardIcon",
+    "chevron-down": "ArrowDown01Icon",
+    "chevron-up": "ArrowUp01Icon",
+    "clipboard": "ClipboardPasteIcon",
     "computer": "ComputerIcon",
     "copy": "Copy01Icon",
+    "cursor": "Cursor02Icon",
     "delete": "Delete02Icon",
     "devices": "LaptopPhoneSyncIcon",
-    "download": "Download04Icon",
+    "download": "Download01Icon",
     "external": "LinkSquare02Icon",
     "file": "File01Icon",
     "folder": "Folder01Icon",
     "folder-open": "FolderOpenIcon",
+    "history": "Clock01Icon",
+    "home": "Home01Icon",
     "key": "Key01Icon",
+    "link": "Link01Icon",
+    "loading": "Loading03Icon",
     "more": "MoreHorizontalIcon",
     "nearby": "HotspotIcon",
     "qr": "QrCodeIcon",
@@ -39,8 +50,19 @@ ICONS = {
     "settings": "Settings02Icon",
     "shield": "Shield01Icon",
     "transfers": "ArrowDataTransferHorizontalIcon",
-    "upload": "Upload04Icon",
+    "upload": "Upload01Icon",
     "view": "ViewIcon",
+    "type-archive": "Zip02Icon",
+    "type-audio": "MusicNote01Icon",
+    "type-code": "SourceCodeIcon",
+    "type-doc": "Doc02Icon",
+    "type-image": "Image01Icon",
+    "type-package": "Package01Icon",
+    "type-pdf": "Pdf02Icon",
+    "type-sheet": "Xls02Icon",
+    "type-slides": "Ppt02Icon",
+    "type-text": "Txt02Icon",
+    "type-video": "Video01Icon",
 }
 SIMPLE_ICONS = "https://cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/{}.svg"
 BRANDS = ("apple", "android", "linux")
@@ -79,6 +101,16 @@ def circle_path(element):
     return f"M{cx - r},{cy}a{r},{r} 0 1,0 {2 * r},0a{r},{r} 0 1,0 {-2 * r},0"
 
 
+def rect_path(element):
+    x, y, width, height = (float(element.get(name, 0)) for name in ("x", "y", "width", "height"))
+    r = float(element.get("rx", 0))
+    across, down = width - 2 * r, height - 2 * r
+    return (
+        f"M{x + r},{y}h{across}a{r},{r} 0 0 1 {r},{r}v{down}a{r},{r} 0 0 1 {-r},{r}"
+        f"h{-across}a{r},{r} 0 0 1 {-r},{-r}v{-down}a{r},{r} 0 0 1 {r},{-r}z"
+    )
+
+
 def android_vector(svg):
     """The same icon as an Android vector drawable, tinted by whoever draws it."""
     root = ElementTree.fromstring(svg)
@@ -87,9 +119,9 @@ def android_vector(svg):
     paths = []
     for element in root.iter():
         tag = element.tag.rsplit("}", 1)[-1]
-        if tag not in ("path", "circle"):
+        if tag not in ("path", "circle", "rect"):
             continue
-        data = element.get("d") if tag == "path" else circle_path(element)
+        data = {"path": lambda e: e.get("d"), "circle": circle_path, "rect": rect_path}[tag](element)
         stroke = element.get("stroke")
         fill = element.get("fill", "currentColor" if filled_by_default else "none")
         parts = [f'android:pathData="{data}"']
@@ -119,6 +151,40 @@ def write_android():
         (ANDROID / name).write_text(android_vector(svg.read_text()))
 
 
+def expanded_arcs(svg):
+    """iOS can't read arcs whose flags are packed against the numbers after them."""
+    number = re.compile(r"\s*,?\s*([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)")
+    flag = re.compile(r"\s*,?\s*([01])")
+
+    def spaced(found):
+        arcs, at = [], 0
+        arguments = found.group(2)
+        while arguments[at:].strip(" ,"):
+            values = []
+            for pattern in (number, number, number, flag, flag, number, number):
+                match = pattern.match(arguments, at)
+                values.append(match.group(1))
+                at = match.end()
+            arcs.append(" ".join(values))
+        return found.group(1) + " ".join(arcs) + " "
+
+    return re.sub(r"([aA])([^a-zA-Z]+)", spaced, svg)
+
+
+def write_ios():
+    about = {"info": {"author": "xcode", "version": 1}}
+    for svg in [*sorted(OUT.glob("*.svg")), MARK]:
+        folder = IOS / f"{svg.stem}.imageset"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / svg.name).write_text(expanded_arcs(svg.read_text()).replace("currentColor", "#000000"))
+        contents = {
+            "images": [{"filename": svg.name, "idiom": "universal"}],
+            **about,
+            "properties": {"preserves-vector-representation": True, "template-rendering-intent": "template"},
+        }
+        (folder / "Contents.json").write_text(json.dumps(contents, indent=2) + "\n")
+
+
 def main():
     package = Path(sys.argv[1]) / "dist/esm"
     OUT.mkdir(parents=True, exist_ok=True)
@@ -128,6 +194,8 @@ def main():
         (OUT / f"{name}.svg").write_text(brand(name))
     (OUT / "windows.svg").write_text(WINDOWS)
     write_android()
+    (ANDROID / "ic_mark.xml").write_text(android_vector(MARK.read_text()))
+    write_ios()
 
 
 if __name__ == "__main__":

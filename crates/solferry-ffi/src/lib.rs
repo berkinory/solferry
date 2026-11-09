@@ -12,7 +12,7 @@ use solferry_core::{Config, NamedFile, RelayLink, Visibility};
 use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
-use session::{Session, Shelf, blocked, devices, lock};
+use session::{Session, Shelf, blocked, devices, history, lock};
 pub use types::*;
 
 uniffi::setup_scaffolding!();
@@ -53,7 +53,6 @@ pub struct SharedFile {
 #[derive(Clone, Copy, Debug, uniffi::Enum)]
 pub enum Reach {
     Everyone,
-    Paired,
     Hidden,
 }
 
@@ -119,7 +118,8 @@ impl Solferry {
                 let Some(target) = target else { return };
                 let name = peer_name(&node, &target);
                 if let Err(error) = node.send_named(target, named).await {
-                    listener.update(Update::SendFailed { name, problem: (&error).into() });
+                    let problem = Problem::about(&error, &name);
+                    listener.update(Update::SendFailed { name, problem });
                 }
             },
             Some(peer),
@@ -131,7 +131,11 @@ impl Solferry {
             move |node, listener, target| async move {
                 let Some(target) = target else { return };
                 let name = peer_name(&node, &target);
-                let problem = node.send_text(target, text).await.err().map(|error| (&error).into());
+                let problem = node
+                    .send_text(target, text)
+                    .await
+                    .err()
+                    .map(|error| Problem::about(&error, &name));
                 listener.update(Update::TextShared { name, problem });
             },
             Some(peer),
@@ -184,8 +188,9 @@ impl Solferry {
             move |node, listener, _| async move {
                 if let Some(offer) = offer {
                     let peer = offer.summary.peer;
+                    let name = offer.summary.peer_name.clone();
                     offer.decline();
-                    let _ = node.block(peer);
+                    let _ = node.block(peer, Some(name));
                     listener.update(devices(&node));
                     listener.update(blocked(&node));
                 }
@@ -289,6 +294,16 @@ impl Solferry {
         );
     }
 
+    pub fn clear_history(&self) {
+        self.with_node(
+            move |node, listener, _| async move {
+                node.clear_history();
+                listener.update(history(&node));
+            },
+            None,
+        );
+    }
+
     pub fn add_relay(&self, link: String) {
         if let Err(error) = RelayLink::parse(&link) {
             self.listener.update(Update::RelayFailed { problem: (&error).into() });
@@ -312,7 +327,6 @@ impl Solferry {
         self.change(move |config| {
             config.visibility = match reach {
                 Reach::Everyone => Visibility::Everyone,
-                Reach::Paired => Visibility::KnownDevices,
                 Reach::Hidden => Visibility::Hidden,
             };
         });

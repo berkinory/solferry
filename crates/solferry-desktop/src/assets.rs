@@ -33,36 +33,73 @@ macro_rules! glyphs {
 
 glyphs! {
     Add => "add",
-    Alert => "alert",
     Android => "android",
     Apple => "apple",
-    ArrowLeft => "arrow-left",
     Blocked => "blocked",
     Cancel => "cancel",
     Check => "check",
     Clipboard => "clipboard",
     Computer => "computer",
     Copy => "copy",
+    Cursor => "cursor",
     Delete => "delete",
     Devices => "devices",
     Download => "download",
     External => "external",
+    FanCard => "fan-card",
     File => "file",
     Folder => "folder",
     FolderOpen => "folder-open",
+    History => "history",
+    Home => "home",
     Key => "key",
+    Link => "link",
+    Loading => "loading",
     Linux => "linux",
-    More => "more",
+    ChevronDown => "chevron-down",
+    ChevronUp => "chevron-up",
     Nearby => "nearby",
     Qr => "qr",
     Relay => "relay",
     Send => "send",
     Settings => "settings",
-    Shield => "shield",
-    Transfers => "transfers",
+    TypeArchive => "type-archive",
+    TypeAudio => "type-audio",
+    TypeCode => "type-code",
+    TypeDoc => "type-doc",
+    TypeImage => "type-image",
+    TypePackage => "type-package",
+    TypePdf => "type-pdf",
+    TypeSheet => "type-sheet",
+    TypeSlides => "type-slides",
+    TypeText => "type-text",
+    TypeVideo => "type-video",
     Upload => "upload",
     View => "view",
     Windows => "windows",
+}
+
+/// The icon for a file, from what its name says it is.
+pub fn file_glyph(name: &str) -> Glyph {
+    let extension = name.rsplit_once('.').map_or("", |(_, extension)| extension).to_lowercase();
+    match extension.as_str() {
+        "jpg" | "jpeg" | "png" | "gif" | "webp" | "heic" | "heif" | "bmp" | "tiff" | "svg"
+        | "raw" => Glyph::TypeImage,
+        "mp4" | "mov" | "mkv" | "avi" | "webm" | "m4v" => Glyph::TypeVideo,
+        "mp3" | "wav" | "flac" | "aac" | "ogg" | "m4a" | "opus" => Glyph::TypeAudio,
+        "pdf" => Glyph::TypePdf,
+        "doc" | "docx" | "odt" | "rtf" | "pages" => Glyph::TypeDoc,
+        "xls" | "xlsx" | "ods" | "csv" | "numbers" => Glyph::TypeSheet,
+        "ppt" | "pptx" | "odp" | "key" => Glyph::TypeSlides,
+        "zip" | "rar" | "7z" | "tar" | "gz" | "tgz" | "xz" | "bz2" => Glyph::TypeArchive,
+        "txt" | "md" | "log" => Glyph::TypeText,
+        "rs" | "js" | "ts" | "tsx" | "py" | "go" | "c" | "cpp" | "h" | "java" | "kt" | "swift"
+        | "html" | "css" | "json" | "toml" | "yaml" | "yml" | "sh" => Glyph::TypeCode,
+        "apk" | "exe" | "msi" | "dmg" | "pkg" | "deb" | "rpm" | "appimage" | "ipa" => {
+            Glyph::TypePackage
+        }
+        _ => Glyph::File,
+    }
 }
 
 pub fn icon(glyph: Glyph, size: f32) -> Svg {

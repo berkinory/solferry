@@ -17,9 +17,14 @@ enum Outbox {
             descriptor = Darwin.open(readable.path, O_RDONLY)
         }
         guard descriptor >= 0 else { return nil }
-        // An open descriptor keeps the bytes of a temporary copy alive after its name is gone.
-        if url.path.hasPrefix(directory.path) { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
         return SharedFile(name: url.lastPathComponent, fd: descriptor)
+    }
+
+    /// Open descriptors keep the bytes of a temporary copy alive after its name is gone.
+    nonisolated static func discard(_ urls: [URL]) {
+        for url in urls where url.path.hasPrefix(directory.path) {
+            try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
+        }
     }
 
     static func temporaryCopy(of source: URL) throws -> URL {

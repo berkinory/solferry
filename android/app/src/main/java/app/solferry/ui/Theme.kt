@@ -33,15 +33,22 @@ data class Palette(
     val ink: Color,
     val inkMuted: Color,
     val primary: Color,
+    val brand: Color,
     val primaryFill: Color,
     val primaryHover: Color,
     val primaryBorder: Color,
     val primaryDeep: Color,
     val onPrimary: Color,
     val success: Color,
+    val successFill: Color,
+    val platformApple: Color,
+    val platformAndroid: Color,
+    val platformWindows: Color,
+    val platformLinux: Color,
     val warning: Color,
     val danger: Color,
     val dangerFill: Color,
+    val warningFill: Color,
     val dangerWell: Color,
     val routes: Map<TransferRoute, Color>,
     val identity: List<Color>,
@@ -49,8 +56,8 @@ data class Palette(
 
 private val light = with(LightColors) {
     Palette(
-        false, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
-        primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
+        false, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
+        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, warningFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,
@@ -61,8 +68,8 @@ private val light = with(LightColors) {
 
 private val dark = with(DarkColors) {
     Palette(
-        true, page, well, raised, control, line, ink, inkMuted, primary, primaryFill, primaryHover, primaryBorder,
-        primaryDeep, onPrimary, success, warning, danger, dangerFill, dangerWell,
+        true, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
+        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, warningFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,
@@ -76,11 +83,6 @@ val LocalPalette = staticCompositionLocalOf { light }
 private val sans = FontFamily(
     Font(R.font.inter_tight_regular, FontWeight.Normal),
     Font(R.font.inter_tight_medium, FontWeight.Medium),
-)
-
-val MonoFamily = FontFamily(
-    Font(R.font.geist_mono_regular, FontWeight.Normal),
-    Font(R.font.geist_mono_medium, FontWeight.Medium),
 )
 
 /** A phone reads one step larger than the desktop's dense scale. */
@@ -97,6 +99,7 @@ private val type = Typography(
     bodySmall = style(TypeTokens.caption),
     labelLarge = style(TypeTokens.body, FontWeight.Medium),
     labelMedium = style(TypeTokens.label, FontWeight.Medium),
+    labelSmall = style(11, FontWeight.Medium),
 )
 
 @Composable
@@ -107,6 +110,8 @@ fun SolferryTheme(content: @Composable () -> Unit) {
         (if (night) darkColorScheme() else lightColorScheme()).copy(
             primary = primaryFill, onPrimary = onPrimary, background = page, onBackground = ink,
             surface = page, onSurface = ink, onSurfaceVariant = inkMuted, outline = line, error = danger,
+            surfaceContainerLowest = well, surfaceContainerLow = well, surfaceContainer = raised, surfaceContainerHigh = raised, surfaceContainerHighest = control,
+            outlineVariant = line, primaryContainer = primaryFill, onPrimaryContainer = onPrimary, secondaryContainer = raised, onSecondaryContainer = ink,
         )
     }
     CompositionLocalProvider(LocalPalette provides palette) {

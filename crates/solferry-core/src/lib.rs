@@ -4,6 +4,7 @@ mod config;
 mod error;
 mod event;
 mod explain;
+mod history;
 mod identity;
 mod net;
 mod node;
@@ -17,7 +18,8 @@ mod trust;
 pub use config::{Config, Visibility, default_data_dir};
 pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
-pub use explain::{Explanation, explain};
+pub use explain::{Explanation, about, explain};
+pub use history::PastTransfer;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
     RelayHealth, SendReport,
@@ -26,4 +28,4 @@ pub use platform::Platform;
 pub use relay::RelayLink;
 pub use route::Route;
 pub use transfer::NamedFile;
-pub use trust::Device;
+pub use trust::{BlockedDevice, Device};

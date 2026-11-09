@@ -14,6 +14,7 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Tailscale devices listed automatically
 - Android option to keep receiving while the app is closed
 - iOS app in SwiftUI
+- Transfer history, a separate send screen and tab navigation
 - `solferry relay check` and a one-command relay installer
 - Live route updates during a transfer
 - `solferry` command with JSON event output

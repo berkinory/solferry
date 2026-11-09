@@ -67,8 +67,9 @@ pub async fn list(data_dir: PathBuf) -> Result<()> {
         let approval = if device.auto_accept { "auto" } else { "ask" };
         println!("{:<24} {:<8} {}", device.name, approval, device.id.to_z32());
     }
-    for id in node.blocked() {
-        println!("{:<24} {:<8} {}", "blocked device", "blocked", id.to_z32());
+    for device in node.blocked() {
+        let name = device.name.as_deref().unwrap_or("blocked device");
+        println!("{:<24} {:<8} {}", name, "blocked", device.id.to_z32());
     }
     node.shutdown().await
 }
@@ -99,13 +100,17 @@ fn device_id(node: &Node, query: &str) -> Result<EndpointId> {
 
 pub async fn block(data_dir: PathBuf, query: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    node.block(device_id(&node, query)?)?;
+    node.block(device_id(&node, query)?, None)?;
     node.shutdown().await
 }
 
 pub async fn unblock(data_dir: PathBuf, query: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    let mut matches = node.blocked().into_iter().filter(|id| id.to_z32().starts_with(query));
+    let mut matches = node
+        .blocked()
+        .into_iter()
+        .map(|device| device.id)
+        .filter(|id| id.to_z32().starts_with(query));
     let id = matches.next().ok_or_else(|| Error::UnknownDevice(query.to_owned()))?;
     if matches.next().is_some() {
         return Err(Error::AmbiguousDevice(query.to_owned()));
