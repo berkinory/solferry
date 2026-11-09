@@ -155,7 +155,7 @@ private struct LaunchButton: View {
                 Text(label).font(.launchText).foregroundStyle(palette.onPrimary).contentTransition(.opacity)
             }
             .frame(width: launch == .sent ? 148 : 210, height: 56)
-            .glassEffect(.regular.tint(launch == .sent ? palette.successFill : palette.primaryFill).interactive(), in: fieldShape)
+            .glassFill(launch == .sent ? palette.successFill : palette.primaryFill, in: fieldShape, interactive: true)
         }
         .buttonStyle(.plain)
         .disabled(chosen == 0 || launch != .idle)

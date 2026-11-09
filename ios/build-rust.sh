@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUT=$ROOT/ios/Generated
-export IPHONEOS_DEPLOYMENT_TARGET=26.0
+export IPHONEOS_DEPLOYMENT_TARGET=17.0
 cd "$ROOT"
 
 # Cargo.lock holds libc at 0.2.188: from 0.2.189 it hides BSD routing items netwatch needs on iOS.

@@ -10,7 +10,7 @@ enum ButtonScale {
     var height: Double { self == .medium ? 44 : 36 }
 }
 
-/// The system's glass button styles, wearing the design system's colors and corners.
+/// The system's button styles, glass where it exists, wearing the design system's colors and corners.
 struct ActionButton: View {
     @Environment(\.palette) private var palette
     var label: String?
@@ -23,11 +23,20 @@ struct ActionButton: View {
 
     var body: some View {
         Group {
-            switch kind {
-            case .primary: button.buttonStyle(.glassProminent).tint(palette.primaryFill)
-            case .danger: button.buttonStyle(.glassProminent).tint(palette.dangerFill)
-            case .secondary: button.buttonStyle(.glass).foregroundStyle(palette.ink)
-            case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
+            if #available(iOS 26, *) {
+                switch kind {
+                case .primary: button.buttonStyle(.glassProminent).tint(palette.primaryFill)
+                case .danger: button.buttonStyle(.glassProminent).tint(palette.dangerFill)
+                case .secondary: button.buttonStyle(.glass).foregroundStyle(palette.ink)
+                case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
+                }
+            } else {
+                switch kind {
+                case .primary: button.buttonStyle(.borderedProminent).tint(palette.primaryFill)
+                case .danger: button.buttonStyle(.borderedProminent).tint(palette.dangerFill)
+                case .secondary: button.buttonStyle(.bordered).tint(palette.ink)
+                case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
+                }
             }
         }
         .controlSize(scale == .medium ? .large : .regular)

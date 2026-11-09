@@ -5,6 +5,17 @@ let wellShape = RoundedRectangle(cornerRadius: RadiusTokens.well, style: .contin
 let controlShape = RoundedRectangle(cornerRadius: RadiusTokens.control, style: .continuous)
 let fieldShape = RoundedRectangle(cornerRadius: RadiusTokens.field, style: .continuous)
 
+extension View {
+    /// Tinted Liquid Glass on iOS 26 and later, the plain fill before it.
+    @ViewBuilder func glassFill(_ color: Color, in shape: some Shape, interactive: Bool = false) -> some View {
+        if #available(iOS 26, *) {
+            glassEffect(.regular.tint(color).interactive(interactive), in: shape)
+        } else {
+            background(color, in: shape)
+        }
+    }
+}
+
 /// One line and 3pt of padding, so what it holds sits exactly 4pt inside it.
 struct CardFrame<Content: View>: View {
     @Environment(\.palette) private var palette

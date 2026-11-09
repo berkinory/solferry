@@ -32,8 +32,12 @@ struct HomeScreen: View {
         .background(palette.page.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) { Brand() }
-                .sharedBackgroundVisibility(.hidden)
+            if #available(iOS 26, *) {
+                ToolbarItem(placement: .principal) { Brand() }
+                    .sharedBackgroundVisibility(.hidden)
+            } else {
+                ToolbarItem(placement: .principal) { Brand() }
+            }
         }
     }
 }
@@ -62,7 +66,7 @@ private struct SendZone: View {
                         FanTile(glyph: .typePdf, x: 38)
                         Icon(.send, tint: palette.onPrimary, size: 24)
                             .frame(width: 56, height: 56)
-                            .glassEffect(.regular.tint(palette.primaryFill), in: fieldShape)
+                            .glassFill(palette.primaryFill, in: fieldShape)
                     }
                     .frame(height: 64)
                     VStack(spacing: 0) {

@@ -170,6 +170,7 @@ struct SheetPage<Content: View>: View {
     let title: String
     let close: () -> Void
     @ViewBuilder let content: Content
+    @Environment(\.palette) private var palette
     @State private var height = 0.0
 
     var body: some View {
@@ -182,6 +183,7 @@ struct SheetPage<Content: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollDismissesKeyboard(.interactively)
+            .background { if #unavailable(iOS 26) { palette.page.ignoresSafeArea() } }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
