@@ -39,18 +39,18 @@ import kotlin.math.sin
 
 private const val PULSE_MS = 2800
 private const val TICK_MS = 50L
-private const val SIZE = 172
-private const val CORE = 52
-private val orbits = listOf(104f, 168f)
+private const val SIZE = 124
+private const val CORE = 40
+private val orbits = listOf(76f, 122f)
 
 private data class Ghost(@DrawableRes val icon: Int, val x: Int, val y: Int, val phase: Float)
 
 /** The kinds of device that could turn up, resting on the orbit where they would appear. */
 private val ghosts = listOf(
-    Ghost(R.drawable.ic_apple, -65, -41, 0f),
-    Ghost(R.drawable.ic_windows, 66, -30, 0.25f),
-    Ghost(R.drawable.ic_android, -53, 56, 0.5f),
-    Ghost(R.drawable.ic_linux, 61, 51, 0.75f),
+    Ghost(R.drawable.ic_apple, -47, -30, 0f),
+    Ghost(R.drawable.ic_windows, 48, -22, 0.25f),
+    Ghost(R.drawable.ic_android, -38, 40, 0.5f),
+    Ghost(R.drawable.ic_linux, 44, 37, 0.75f),
 )
 
 /** Runs at 20 fps. These stay on screen as long as the app is open, and a full rate cost a third of a core. */
@@ -92,25 +92,20 @@ private fun Radar() {
             Modifier.size(CORE.dp).background(palette.control, RoundedCornerShape(RadiusTokens.field.dp))
                 .border(1.dp, palette.line, RoundedCornerShape(RadiusTokens.field.dp)),
             contentAlignment = Alignment.Center,
-        ) { Glyph(R.drawable.ic_nearby, palette.inkMuted, 24) }
+        ) { Glyph(R.drawable.ic_nearby, palette.inkMuted, 20) }
     }
 }
 
-/** The whole home screen for someone with no devices yet. */
+/** What the nearby card holds for someone with no devices yet. */
 @Composable
-fun RadarHero(onUseCode: () -> Unit) = Frame {
-    Well(padding = 16.dp, spacing = SpaceTokens.sm.dp) {
-        Column(
-            Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
-        ) {
-            Radar()
-            Text("Looking for nearby devices", Modifier.padding(top = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium)
-            Muted("Open Solferry on another device on this network and it shows up here.", textAlign = TextAlign.Center)
-            Button(onUseCode, Modifier.padding(top = SpaceTokens.xs.dp), label = "Pair with code", icon = R.drawable.ic_qr, size = ButtonSize.Sm)
-        }
-    }
+fun Searching() = Column(
+    Modifier.fillMaxWidth().padding(12.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp),
+) {
+    Radar()
+    Text("Looking for devices", Modifier.padding(top = SpaceTokens.xs.dp), style = MaterialTheme.typography.titleMedium)
+    Muted("Open Solferry on another device on this network and it shows up here.", textAlign = TextAlign.Center)
 }
 
 /** One quiet line for when nothing new is around but the search is still on. */

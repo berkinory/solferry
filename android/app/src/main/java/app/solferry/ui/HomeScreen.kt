@@ -75,11 +75,10 @@ fun HomeScreen(
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         items(state.texts, key = { "text-${it.key}" }) { TextCard(it, engine) }
         item { SendZone { onPickFiles(null) } }
-        if (state.devices.isEmpty() && state.strangers.isEmpty()) item { RadarHero(onUseCode) }
         if (state.devices.isNotEmpty()) {
             item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine) { onPickFiles(it) } }
         }
-        if (state.devices.isNotEmpty() || state.strangers.isNotEmpty()) item { NearbyCard(state.strangers, engine, onUseCode) }
+        item { NearbyCard(state.strangers, state.devices.isEmpty(), engine, onUseCode) }
         if (state.transfers.isNotEmpty()) item { TransferCard(state.transfers, engine) }
     } }
 }

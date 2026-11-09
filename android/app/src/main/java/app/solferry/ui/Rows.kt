@@ -188,13 +188,13 @@ fun DeviceCard(
     }
 
 @Composable
-fun NearbyCard(nearby: List<Nearby>, engine: Engine, onUseCode: () -> Unit) =
+fun NearbyCard(nearby: List<Nearby>, alone: Boolean, engine: Engine, onUseCode: () -> Unit) =
     Card(
         R.drawable.ic_nearby, "Nearby",
         aside = { Button(onUseCode, label = "Use a code", icon = R.drawable.ic_qr, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
     ) {
         Well {
-            if (nearby.isEmpty()) Scanning()
+            if (nearby.isEmpty()) { if (alone) Searching() else Scanning() }
             nearby.forEach { device ->
                 RowBody(null) {
                     DeviceTile(device.identity)
