@@ -18,6 +18,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +49,7 @@ import app.solferry.ui.SolferryTheme
 import app.solferry.ui.Tab
 import app.solferry.ui.TabBar
 import app.solferry.ui.Toaster
+import app.solferry.ui.ToasterOverSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
@@ -98,7 +102,8 @@ class MainActivity : ComponentActivity() {
                     if ((state.offers.isNotEmpty() || state.pairings.isNotEmpty()) && shared.isEmpty()) screen = Screen.Home
                 }
                 BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
-                CompositionLocalProvider(LocalToaster provides { place -> Toaster(state, engine, place, inSheet = true) }) { Box(Modifier.fillMaxSize()) {
+                val statusTop = WindowInsets.statusBars.getTop(LocalDensity.current)
+                CompositionLocalProvider(LocalToaster provides { ToasterOverSheet(state, engine, statusTop) }) { Box(Modifier.fillMaxSize()) {
                     AnimatedContent(
                         screen,
                         Modifier.fillMaxSize(),

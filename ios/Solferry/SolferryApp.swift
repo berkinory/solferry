@@ -53,7 +53,7 @@ private struct RootView: View {
         }
         .environment(\.addDevice) { pairing = true }
         .sensoryFeedback(.selection, trigger: place)
-        .overlay(alignment: .top) { if presented.wrappedValue == nil { Toaster() } }
+        .onAppear { ToastWindow.show(engine) }
         .sheet(item: presented) { sheet in
             switch sheet {
             case .pairing: PairingScreen()

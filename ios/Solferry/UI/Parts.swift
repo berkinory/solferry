@@ -194,7 +194,6 @@ struct SheetPage<Content: View>: View {
                 }
             }
         }
-        .overlay(alignment: .top) { Toaster().padding(.top, SpaceTokens.sm) }
         .presentationDetents([.height(height + sheetChrome)])
     }
 }

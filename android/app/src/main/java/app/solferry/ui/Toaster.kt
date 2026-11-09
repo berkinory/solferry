@@ -58,8 +58,15 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.Phase
@@ -265,6 +272,20 @@ private fun FatalRow(problem: Problem, reason: String) {
                 }
             }
         }
+    }
+}
+
+/** A sheet is its own window, so over one the toasts float in a popup at the top of the screen. */
+@Composable
+fun ToasterOverSheet(state: AppState, engine: Engine, top: Int) {
+    val position = remember(top) {
+        object : PopupPositionProvider {
+            override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize) =
+                IntOffset((windowSize.width - popupContentSize.width) / 2, top)
+        }
+    }
+    Popup(popupPositionProvider = position, properties = PopupProperties(focusable = false, clippingEnabled = false)) {
+        Toaster(state, engine, Modifier.padding(bottom = 24.dp), inSheet = true)
     }
 }
 
