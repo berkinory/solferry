@@ -101,7 +101,7 @@ private fun RowScope.Label(text: String, wide: Boolean = false) {
         },
         label = "toast label",
     ) { shown ->
-        Text(shown, color = ground, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(shown, color = ground, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.MiddleEllipsis)
     }
 }
 
@@ -153,10 +153,10 @@ private fun Percent(fraction: Float) =
 @Composable
 private fun RunningRow(transfer: Transfer, engine: Engine, wide: Boolean = false) {
     val waiting = transfer.phase == Phase.Reconnecting
-    val verb = if (waiting) "Reconnecting" else if (transfer.sending) "Sending" else "Receiving"
+    val line = if (waiting) "Reconnecting to ${transfer.peerName}" else "${if (transfer.sending) "Sending" else "Receiving"} ${transfer.label}"
     PillRow(closes = true, wide = wide) {
         Ring(transfer.fraction, if (waiting) RECONNECTING else LocalPalette.current.page)
-        Label("$verb ${transfer.label}", wide)
+        Label(line, wide)
         Percent(transfer.fraction)
         Close("Cancel") { engine.bridge.cancel(transfer.id) }
     }
@@ -195,6 +195,7 @@ private fun Pill(transfers: List<Transfer>, engine: Engine) {
                     Ring(fraction, ground)
                     Label("${running.size} transfers", spread)
                     Percent(fraction)
+                    Glyph(if (open) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down, ground.copy(alpha = 0.76f), 15)
                 }
                 is PillFace.Ended -> transfers.firstOrNull()?.let {
                     val (tone, title) = it.outcome

@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,16 +24,6 @@ import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.Reach
-
-private val reaches = listOf(
-    Triple(Reach.EVERYONE, "Everyone", "Anyone on your network can see this device and ask to send."),
-    Triple(Reach.HIDDEN, "Hidden", "This device doesn't show up nearby. Paired devices can still send."),
-)
-
-private fun reachOf(visibility: String) = when (visibility) {
-    "Hidden" -> Reach.HIDDEN
-    else -> Reach.EVERYONE
-}
 
 @Composable
 fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
@@ -63,19 +50,16 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
     Card(R.drawable.ic_folder, "Save files to") {
         PaddedWell { Muted("Downloads/Solferry") }
     }
-    Card(R.drawable.ic_view, "Who can see this device") {
+    Card(R.drawable.ic_view, "Let others find me") {
         PaddedWell {
-            val current = reachOf(me?.visibility.orEmpty())
-            val palette = LocalPalette.current
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                reaches.forEachIndexed { index, (reach, label, _) ->
-                    SegmentedButton(
-                        reach == current, { engine.setReach(reach) }, SegmentedButtonDefaults.itemShape(index, reaches.size, ControlShape), icon = {},
-                        colors = SegmentedButtonDefaults.colors(activeContainerColor = palette.primaryFill, activeContentColor = palette.onPrimary, inactiveContainerColor = palette.page, inactiveContentColor = palette.inkMuted, activeBorderColor = palette.primaryFill, inactiveBorderColor = palette.line),
-                    ) { Text(label, maxLines = 1) }
-                }
+            val found = me?.visibility != "Hidden"
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Muted(
+                    if (found) "Devices on your network can see this one and ask to send." else "Nobody new can find this device. Paired devices can still reach it.",
+                    Modifier.weight(1f),
+                )
+                Toggle(found, { engine.setReach(if (it) Reach.EVERYONE else Reach.HIDDEN) }, "Let others find me")
             }
-            Muted(reaches.first { it.first == current }.third)
         }
     }
     Card(R.drawable.ic_download, "Receive in the background") {

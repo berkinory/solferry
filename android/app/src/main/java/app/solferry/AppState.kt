@@ -108,11 +108,11 @@ data class AppState(
         is Update.PairingFailed ->
             (if (joining) this else toast(Tone.Error, update.problem.title))
                 .copy(pairingCode = null, joining = false, pairingProblem = update.problem)
-        is Update.SendFailed -> toast(Tone.Error, "${update.name}: ${update.problem.title}")
+        is Update.SendFailed -> toast(Tone.Error, update.problem.title)
         is Update.TextReceived -> copy(
             texts = (listOf(ReceivedText(now, update.name, update.text, update.autoCopy)) + texts).take(MAX_TEXTS),
         )
-        is Update.TextShared -> update.problem?.let { toast(Tone.Error, "${update.name}: ${it.title}") } ?: this
+        is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title) } ?: this
     }
 
     fun toast(tone: Tone, title: String) =
