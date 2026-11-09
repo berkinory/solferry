@@ -75,7 +75,7 @@ private struct SendZone: View {
     }
 }
 
-struct FanTile: View {
+private struct FanTile: View {
     @Environment(\.palette) private var palette
     let glyph: Glyph
     let x: Double

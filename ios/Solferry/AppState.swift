@@ -1,6 +1,5 @@
 import Foundation
 
-private let speedSmoothing = 0.2
 private let maxTexts = 3
 private let maxToasts = 3
 
@@ -13,35 +12,17 @@ struct Transfer: Identifiable {
     let peerName: String
     let label: String
     let sending: Bool
-    var route: TransferRoute
     var transferred: UInt64 = 0
     var total: UInt64
-    var bytesPerSecond = 0.0
     var phase = Phase.active
     var problem: Problem?
-    var sampledAt: UInt64 = 0
-    var sampledBytes: UInt64 = 0
 
     var running: Bool { phase == .active || phase == .reconnecting }
     var fraction: Double { total == 0 ? 1 : Double(transferred) / Double(total) }
-    var outcome: (tone: Tone, title: String, detail: String) {
-        if let problem { return (.failure, problem.title, problem.next) }
-        return (.success, "\(sending ? "Sent" : "Received") \(label)", "\(sending ? "To" : "From") \(peerName)  ·  \(bytes(total))")
-    }
-
-    mutating func sample(_ bytes: UInt64, total: UInt64, now: UInt64) {
-        let elapsed = Double(now - sampledAt) / 1e9
-        if sampledAt != 0, elapsed > 0 {
-            let moved = Double(bytes) - Double(sampledBytes)
-            bytesPerSecond += (moved / elapsed - bytesPerSecond) * speedSmoothing
-        }
-        transferred = bytes
-        self.total = total
-        sampledAt = now
-        sampledBytes = bytes
-        phase = .active
-    }
-}
+    var outcome: (tone: Tone, title: String) {
+        if let problem { return (.failure, problem.title) }
+        return (.success, "\(sending ? "Sent" : "Received") \(label)")
+    }}
 
 struct PairingPrompt: Identifiable {
     let key: UInt64
@@ -75,7 +56,6 @@ struct Toast: Identifiable {
     let id: Int
     let tone: Tone
     let title: String
-    let detail: String
 }
 
 struct AppState {
@@ -121,11 +101,15 @@ struct AppState {
         case let .blocked(list): blocked = list
         case let .started(id, peerName, label, sending, route, bytes):
             transfers.removeAll { $0.id == id || !$0.running }
-            let started = Transfer(id: id, peerName: peerName, label: label, sending: sending, route: route, total: bytes)
+            let started = Transfer(id: id, peerName: peerName, label: label, sending: sending, total: bytes)
             transfers.insert(started, at: 0)
         case let .progress(id, transferred, total):
-            change(id) { $0.sample(transferred, total: total, now: now) }
-        case let .routeChanged(id, route): change(id) { $0.route = route }
+            change(id) {
+                $0.transferred = transferred
+                $0.total = total
+                $0.phase = .active
+            }
+        case .routeChanged: break
         case let .reconnecting(id): change(id) { $0.phase = .reconnecting }
         case let .completed(id):
             change(id) {
@@ -152,7 +136,7 @@ struct AppState {
         case let .pairingCode(code): pairingCode = code
         case let .invite(code): invite = code
         case let .paired(device):
-            toast(.success, "Paired with \(device.name)", "It can send to you now.")
+            toast(.success, "Paired with \(device.name)")
             pairingCode = nil
             invite = nil
             pairingProblem = nil
@@ -162,23 +146,23 @@ struct AppState {
             pairedCount += 1
             reachable?.insert(device.identity.id)
         case let .pairingFailed(problem):
-            if !joining { toast(.failure, problem.title, problem.next) }
+            if !joining { toast(.failure, problem.title) }
             pairingCode = nil
             joining = false
             pairingProblem = problem
         case let .sendFailed(name, problem):
-            toast(.failure, problem.title, "\(name): \(problem.next)")
+            toast(.failure, "\(name): \(problem.title)")
         case let .textReceived(name, text, autoCopy):
             texts.insert(ReceivedText(id: now, name: name, text: text, copied: autoCopy), at: 0)
             texts = Array(texts.prefix(maxTexts))
         case let .textShared(name, problem):
-            if let problem { toast(.failure, problem.title, "\(name): \(problem.next)") }
+            if let problem { toast(.failure, "\(name): \(problem.title)") }
         }
     }
 
-    mutating func toast(_ tone: Tone, _ title: String, _ detail: String) {
+    mutating func toast(_ tone: Tone, _ title: String) {
         toastsMade += 1
-        toasts.append(Toast(id: toastsMade, tone: tone, title: title, detail: detail))
+        toasts.append(Toast(id: toastsMade, tone: tone, title: title))
         toasts = Array(toasts.suffix(maxToasts))
     }
 
@@ -186,7 +170,7 @@ struct AppState {
     private mutating func settle(_ id: String) {
         guard transfers.contains(where: \.running), let index = transfers.firstIndex(where: { $0.id == id }) else { return }
         let ended = transfers.remove(at: index).outcome
-        toast(ended.tone, ended.title, ended.detail)
+        toast(ended.tone, ended.title)
     }
 
     private mutating func change(_ id: String, _ edit: (inout Transfer) -> Void) {

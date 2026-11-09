@@ -3,6 +3,7 @@ import SwiftUI
 private let successSeconds = 3.0
 private let failureSeconds = 5.0
 private let pillShape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+private let reconnecting = Color(red: 0.961, green: 0.62, blue: 0.043)
 private let spring = Animation.spring(response: 0.38, dampingFraction: 0.82)
 
 /// In from above: a little smaller, blurred, and clear by the time it lands.
@@ -16,22 +17,6 @@ private struct Landing: Transition {
     }
 }
 
-private func routeName(_ route: TransferRoute) -> String {
-    switch route {
-    case .local: "local network"
-    case .overlay: "overlay network"
-    case .direct: "direct"
-    case .relay: "relay"
-    }
-}
-
-private func motion(_ transfer: Transfer) -> String {
-    let who = "\(transfer.sending ? "To" : "From") \(transfer.peerName)"
-    if transfer.phase == .reconnecting { return "\(who)  ·  Reconnecting" }
-    if transfer.bytesPerSecond <= 1 { return "\(who)  ·  \(routeName(transfer.route))" }
-    return "\(who)  ·  \(bytes(UInt64(transfer.bytesPerSecond)))/s  ·  \(routeName(transfer.route))"
-}
-
 /// One pill for what is moving over the brand, and short messages underneath it.
 struct Toaster: View {
     @Environment(Engine.self) private var engine
@@ -43,13 +28,13 @@ struct Toaster: View {
             ForEach(state.toasts) { ToastRow(toast: $0).transition(Landing()) }
         }
         .padding(.horizontal, SpaceTokens.lg)
-        .frame(maxWidth: 440)
+        .padding(.top, 2)
         .animation(spring, value: state.toasts.map(\.id))
         .animation(spring, value: state.transfers.isEmpty)
     }
 }
 
-/// The design system's foreground as the fill, so the pill flips with the theme by itself.
+/// The design system's foreground as the fill, sized by what it says, so it flips with the theme.
 private struct Shell<Content: View>: View {
     @Environment(\.palette) private var palette
     @ViewBuilder let content: Content
@@ -57,23 +42,34 @@ private struct Shell<Content: View>: View {
     var body: some View {
         content
             .foregroundStyle(palette.page)
-            .glassFill(palette.ink, in: pillShape, interactive: true)
-            .shadow(color: .black.opacity(0.25), radius: 12, y: 5)
+            .background(palette.ink, in: pillShape)
+            .shadow(color: .black.opacity(0.28), radius: 14, y: 6)
     }
 }
 
-private struct Lines: View {
-    @Environment(\.palette) private var palette
-    let title: String
-    let detail: String
+/// One line that comes up from below whenever it changes.
+private struct Label: View {
+    let text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title).font(.system(size: 13, weight: .medium)).lineLimit(1)
-            Text(detail).font(.system(size: 11.5)).foregroundStyle(palette.page.opacity(0.62)).lineLimit(1)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .move(edge: .top).combined(with: .opacity)))
+        Text(text)
+            .font(.system(size: 14, weight: .medium))
+            .lineLimit(1)
+            .id(text)
+            .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .move(edge: .top).combined(with: .opacity)))
+    }
+}
+
+/// The row every toast is built from: 16 points in, wider on the side with no button.
+private struct PillRow<Content: View>: View {
+    var closes = false
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        HStack(spacing: SpaceTokens.md) { content }
+            .padding(.leading, 16)
+            .padding(.trailing, closes ? 8 : 20)
+            .frame(height: 44)
     }
 }
 
@@ -84,8 +80,8 @@ private struct Badge: View {
     let tone: Tone
 
     var body: some View {
-        Icon(tone == .success ? .check : .cancel, tint: .white, size: 11)
-            .frame(width: 18, height: 18)
+        Icon(tone == .success ? .check : .cancel, tint: .white, size: 10)
+            .frame(width: 16, height: 16)
             .background(tone == .success ? palette.successFill : palette.dangerFill, in: Circle())
             .scaleEffect(landed ? 1 : 0.6)
             .onAppear { withAnimation(.spring(response: 0.34, dampingFraction: 0.42)) { landed = true } }
@@ -93,15 +89,15 @@ private struct Badge: View {
 }
 
 private struct Ring: View {
-    @Environment(\.palette) private var palette
     let fraction: Double
+    let tone: Color
 
     var body: some View {
         ZStack {
-            Circle().stroke(palette.page.opacity(0.2), lineWidth: 2.5)
+            Circle().stroke(tone.opacity(0.25), lineWidth: 2)
             Circle()
                 .trim(from: 0, to: min(max(fraction, 0), 1))
-                .stroke(palette.page, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .stroke(tone, style: StrokeStyle(lineWidth: 2, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeOut(duration: 0.24), value: fraction)
         }
@@ -116,7 +112,7 @@ private struct Dismiss: View {
 
     var body: some View {
         Button(action: action) {
-            Icon(.cancel, tint: palette.page.opacity(0.62), size: 14).frame(width: 32, height: 32).contentShape(Rectangle())
+            Icon(.cancel, tint: palette.page.opacity(0.76), size: 13).frame(width: 28, height: 28).contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
@@ -127,20 +123,30 @@ private struct RunningRow: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
     let transfer: Transfer
+    var wide = false
 
     var body: some View {
-        HStack(spacing: SpaceTokens.md) {
-            Ring(fraction: transfer.fraction)
-            Lines(title: transfer.label, detail: motion(transfer))
-            Text("\(Int(transfer.fraction * 100))%")
-                .font(.system(size: 12))
-                .foregroundStyle(palette.page.opacity(0.62))
-                .contentTransition(.numericText())
+        let waiting = transfer.phase == .reconnecting
+        let verb = waiting ? "Reconnecting" : transfer.sending ? "Sending" : "Receiving"
+        PillRow(closes: true) {
+            Ring(fraction: transfer.fraction, tone: waiting ? reconnecting : palette.page)
+            Label(text: "\(verb) \(transfer.label)")
+            if wide { Spacer(minLength: 0) }
+            Percent(fraction: transfer.fraction)
             Dismiss(label: "Cancel") { engine.bridge.cancel(transfer: transfer.id) }
         }
-        .padding(.leading, 14)
-        .padding(.trailing, 6)
-        .frame(height: 44)
+    }
+}
+
+private struct Percent: View {
+    @Environment(\.palette) private var palette
+    let fraction: Double
+
+    var body: some View {
+        Text("\(Int(fraction * 100))%")
+            .font(.system(size: 13))
+            .foregroundStyle(palette.page.opacity(0.76))
+            .contentTransition(.numericText())
     }
 }
 
@@ -155,15 +161,17 @@ private struct TransferPill: View {
 
     var body: some View {
         Shell {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 face
                 if open, running.count > 1 {
-                    ForEach(running) { RunningRow(transfer: $0).transition(.opacity) }
+                    ForEach(running) { RunningRow(transfer: $0, wide: true).transition(.opacity) }
                 }
             }
+            .frame(width: open && running.count > 1 ? 320 : nil, alignment: .leading)
         }
         .clipShape(pillShape)
         .animation(spring, value: running.count)
+        .animation(spring, value: running.first?.phase)
         .animation(spring, value: open)
         .keyframeAnimator(initialValue: 0.0, trigger: shakes) { view, shift in
             view.offset(x: shift)
@@ -190,28 +198,23 @@ private struct TransferPill: View {
     private var many: some View {
         let moved = running.reduce(UInt64(0)) { $0 + $1.transferred }
         let total = max(running.reduce(UInt64(0)) { $0 + $1.total }, 1)
-        let out = running.filter(\.sending).count
-        let detail = out == 0 ? "Receiving \(running.count)" : out == running.count ? "Sending \(running.count)" : "Sending \(out), receiving \(running.count - out)"
-        return HStack(spacing: SpaceTokens.md) {
-            Ring(fraction: Double(moved) / Double(total))
-            Lines(title: "\(running.count) transfers", detail: detail)
-            Icon(.more, tint: palette.page.opacity(0.62), size: 15).padding(.trailing, 8)
+        let fraction = Double(moved) / Double(total)
+        return PillRow {
+            Ring(fraction: fraction, tone: palette.page)
+            Label(text: "\(running.count) transfers")
+            if open { Spacer(minLength: 0) }
+            Percent(fraction: fraction)
         }
-        .padding(.leading, 14)
-        .padding(.trailing, 6)
-        .frame(height: 44)
         .contentShape(Rectangle())
         .onTapGesture { open.toggle() }
     }
 
     private func endedRow(_ ended: Transfer) -> some View {
         let outcome = ended.outcome
-        return HStack(spacing: SpaceTokens.md) {
+        return PillRow {
             Badge(tone: outcome.tone)
-            Lines(title: outcome.title, detail: outcome.detail)
+            Label(text: outcome.title)
         }
-        .padding(.horizontal, 14)
-        .frame(height: 44)
         .sensoryFeedback(outcome.tone == .success ? .success : .error, trigger: ended.id)
         .task(id: ended.id) {
             if outcome.tone == .failure { shakes += 1 }
@@ -228,14 +231,11 @@ private struct ToastRow: View {
 
     var body: some View {
         Shell {
-            HStack(spacing: SpaceTokens.md) {
+            PillRow(closes: toast.tone == .failure) {
                 Badge(tone: toast.tone)
-                Lines(title: toast.title, detail: toast.detail)
-                Dismiss(label: "Dismiss") { engine.dismissToast(toast.id) }
+                Label(text: toast.title)
+                if toast.tone == .failure { Dismiss(label: "Dismiss") { engine.dismissToast(toast.id) } }
             }
-            .padding(.leading, 14)
-            .padding(.trailing, 6)
-            .frame(height: 44)
         }
         .keyframeAnimator(initialValue: 0.0, trigger: shakes) { view, shift in
             view.offset(x: shift)

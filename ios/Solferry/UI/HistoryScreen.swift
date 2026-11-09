@@ -24,15 +24,11 @@ private struct NoHistory: View {
 
     var body: some View {
         VStack(spacing: SpaceTokens.xs) {
-            ZStack {
-                FanTile(glyph: .upload, x: -38)
-                FanTile(glyph: .download, x: 38)
-                Icon(.history, tint: palette.ink, size: 24)
-                    .frame(width: 56, height: 56)
-                    .background(palette.raised, in: fieldShape)
-                    .overlay(fieldShape.strokeBorder(palette.line))
-            }
-            .padding(.bottom, SpaceTokens.md)
+            Icon(.history, tint: palette.inkMuted, size: 24)
+                .frame(width: 56, height: 56)
+                .background(palette.control, in: fieldShape)
+                .overlay(fieldShape.strokeBorder(palette.line))
+                .padding(.bottom, SpaceTokens.md)
             Text("No transfers yet").font(.titleText)
             Muted("Files you send or receive show up here.")
         }
