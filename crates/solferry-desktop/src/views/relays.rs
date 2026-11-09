@@ -68,7 +68,7 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
     div()
         .flex()
         .items_center()
-        .gap(px(14.))
+        .gap(px(12.))
         .child(ui::tile(Glyph::Relay, cx))
         .child(
             div()

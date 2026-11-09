@@ -13,9 +13,10 @@ use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
 
-const FAN_GAP: f32 = 50.0;
-const FAN_OPEN: f32 = 70.0;
-const FAN_SIZE: f32 = 72.0;
+const FAN_WIDTH: f32 = 150.0;
+const FAN_GAP: f32 = 41.0;
+const FAN_OPEN: f32 = 58.0;
+const FAN_SIZE: f32 = 60.0;
 const FAN_TILT: f32 = 0.2;
 
 /// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
@@ -31,7 +32,7 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
     let tile = div()
         .absolute()
         .top(px(4.))
-        .left(px(70. + side * FAN_GAP - FAN_SIZE / 2.))
+        .left(px(FAN_WIDTH / 2. + side * FAN_GAP - FAN_SIZE / 2.))
         .flex()
         .items_center()
         .justify_center()
@@ -39,7 +40,7 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
         .child(layer(FAN_SIZE, 0.).text_color(cx.theme().border))
         .child(layer(FAN_SIZE - 2., 1.).text_color(cx.theme().secondary))
         .child(
-            icon(glyph, 28.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
+            icon(glyph, 23.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
         );
     if !open {
         return tile.into_any_element();
@@ -49,7 +50,7 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
         Animation::new(Duration::from_millis(280)).with_easing(ease_out_quint()),
         move |tile, delta| {
             let spread = FAN_GAP + (FAN_OPEN - FAN_GAP) * delta;
-            tile.left(px(70. + side * spread - FAN_SIZE / 2.))
+            tile.left(px(FAN_WIDTH / 2. + side * spread - FAN_SIZE / 2.))
         },
     )
     .into_any_element()
@@ -62,20 +63,20 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
     let core = div()
         .absolute()
         .top(px(4.))
-        .left(px(54.))
+        .left(px((FAN_WIDTH - FAN_SIZE) / 2.))
         .flex()
         .items_center()
         .justify_center()
-        .size(px(72.))
+        .size(px(FAN_SIZE))
         .rounded(px(RADIUS_FIELD))
         .bg(color(palette.primary_fill))
         .border_1()
         .border_color(color(palette.primary_border))
-        .child(icon(Glyph::Send, 32.).text_color(color(palette.on_primary)));
+        .child(icon(Glyph::Send, 27.).text_color(color(palette.on_primary)));
     let fan = div()
         .relative()
-        .w(px(181.))
-        .h(px(84.))
+        .w(px(FAN_WIDTH))
+        .h(px(70.))
         .child(fan_tile("fan-left", Glyph::TypeImage, -1., dragging, cx))
         .child(fan_tile("fan-right", Glyph::TypePdf, 1., dragging, cx))
         .child(core);
@@ -84,7 +85,7 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
         .items_center()
         .justify_center()
         .gap(px(SPACE_SM))
-        .h(px(213.))
+        .h(px(177.))
         .border_1()
         .border_color(transparent_black())
         .cursor_pointer()

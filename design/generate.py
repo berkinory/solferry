@@ -67,7 +67,7 @@ def radii(tokens):
 
 
 # A desktop window is read from further away than a phone.
-DESKTOP_SCALE = 1.3
+DESKTOP_SCALE = 1.08
 
 
 def scales(tokens):

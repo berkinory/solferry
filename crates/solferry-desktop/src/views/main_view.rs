@@ -25,7 +25,10 @@ use crate::tokens::{SPACE_SM, TYPE_LABEL};
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const FLY_FOR: Duration = Duration::from_millis(380);
 const CONTENT_WIDTH: f32 = 720.0;
-const HEADER_HEIGHT: f32 = 72.0;
+const HEADER_HEIGHT: f32 = 60.0;
+const CONTENT_TOP: f32 = 4.0;
+/// The mark's art sits low in its box, and letters read high in theirs.
+const MARK_LIFT: f32 = -2.0;
 const TITLE_BAR: f32 = 34.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -397,7 +400,7 @@ impl Render for MainView {
                         .id("content")
                         .size_full()
                         .p(px(SPACE_SM))
-                        .pt(px(4.))
+                        .pt(px(CONTENT_TOP))
                         .pb(px(nav::CLEARANCE))
                         .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
                         .overflow_y_scrollbar(),
@@ -417,11 +420,13 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .top_0()
         .left_0()
         .right_0()
-        .h(px(HEADER_HEIGHT))
+        .h(px(HEADER_HEIGHT + CONTENT_TOP))
         .flex()
         .items_center()
         .justify_center()
-        .gap(px(8.))
-        .child(svg().path(MARK).size(px(20.)).text_color(color(palette(cx).brand)))
+        .gap(px(7.))
+        .child(
+            svg().path(MARK).size(px(17.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
+        )
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

@@ -14,12 +14,12 @@ use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_XS};
 
-const SIZE: f32 = 152.0;
-const CORE: f32 = 50.0;
+const SIZE: f32 = 124.0;
+const CORE: f32 = 40.0;
 const ORBITS: [f32; 2] = [72.0, 114.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
-const TILE: f32 = 48.0;
+const TILE: f32 = 38.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [
@@ -72,7 +72,7 @@ fn radar(cx: &Context<MainView>) -> Div {
         .bg(cx.theme().secondary)
         .border_1()
         .border_color(cx.theme().border)
-        .child(icon(Glyph::Nearby, 24.).text_color(cx.theme().muted_foreground));
+        .child(icon(Glyph::Nearby, 20.).text_color(cx.theme().muted_foreground));
     let line = cx.theme().border;
     div()
         .relative()
@@ -99,13 +99,13 @@ pub fn searching(cx: &mut Context<MainView>) -> Div {
     ui::well(cx)
         .items_center()
         .gap(px(SPACE_XS))
-        .py(px(16.))
+        .py(px(13.))
         .child(radar(cx))
         .child(ui::text("Looking for devices").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
         .child(
             ui::muted("Open Solferry on another device on this network and it shows up here.", cx)
                 .text_center()
-                .max_w(px(396.)),
+                .max_w(px(329.)),
         )
 }
 
@@ -115,8 +115,8 @@ pub fn scanning(cx: &Context<MainView>) -> AnyElement {
     div()
         .flex()
         .items_center()
-        .gap(px(14.))
-        .p(px(9.))
+        .gap(px(12.))
+        .p(px(7.))
         .child(
             div()
                 .relative()

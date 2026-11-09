@@ -29,7 +29,7 @@ pub fn present(
         .flex_none()
         .items_center()
         .justify_center()
-        .h(px(59.))
+        .h(px(49.))
         .child(ui::text(title).font_weight(FontWeight::MEDIUM))
         .child(
             div().absolute().left(px(SPACE_SM)).child(
