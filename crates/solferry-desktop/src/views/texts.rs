@@ -14,8 +14,8 @@ use crate::tokens::{SPACE_SM, SPACE_XS};
 
 const PREVIEW_LINES: usize = 4;
 
-pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Vec<AnyElement> {
-    state.texts.iter().map(|shared| card(shared, cx)).collect()
+pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Option<AnyElement> {
+    state.text.as_ref().map(|shared| card(shared, cx))
 }
 
 fn card(shared: &SharedText, cx: &mut Context<MainView>) -> AnyElement {
@@ -83,7 +83,7 @@ impl MainView {
 
     pub fn mark_copied(&mut self, key: u64, cx: &mut Context<MainView>) {
         self.state.update(cx, |state, cx| {
-            for shared in state.texts.iter_mut().filter(|shared| shared.key == key) {
+            if let Some(shared) = state.text.as_mut().filter(|shared| shared.key == key) {
                 shared.copied = true;
             }
             cx.notify();
@@ -92,7 +92,7 @@ impl MainView {
 
     pub fn dismiss_text(&mut self, key: u64, cx: &mut Context<MainView>) {
         self.state.update(cx, |state, cx| {
-            state.texts.retain(|shared| shared.key != key);
+            state.text.take_if(|shared| shared.key == key);
             cx.notify();
         });
     }

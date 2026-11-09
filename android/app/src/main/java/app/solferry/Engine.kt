@@ -128,10 +128,10 @@ class Engine(private val context: Context) : Listener {
 
     fun stopComparing() = mutable.update { it.copy(pairingCode = null) }
 
-    fun dismissText(key: Long) = mutable.update { state -> state.copy(texts = state.texts.filter { it.key != key }) }
+    fun dismissText(key: Long) = mutable.update { state -> if (state.text?.key == key) state.copy(text = null) else state }
 
     fun markCopied(key: Long) = mutable.update { state ->
-        state.copy(texts = state.texts.map { if (it.key == key) it.copy(copied = true) else it })
+        if (state.text?.key == key) state.copy(text = state.text.copy(copied = true)) else state
     }
 
     fun clear(id: String) = mutable.update { state -> state.copy(transfers = state.transfers.filter { it.id != id }) }

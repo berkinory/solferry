@@ -1,6 +1,5 @@
 import Foundation
 
-private let maxTexts = 3
 private let maxToasts = 3
 
 enum Phase {
@@ -74,7 +73,7 @@ struct AppState {
     var pairingCode: String?
     var invite: String?
     var joining = false
-    var texts: [ReceivedText] = []
+    var text: ReceivedText?
     var toasts: [Toast] = []
     var toastsMade = 0
     var sendsStarted = 0
@@ -155,8 +154,7 @@ struct AppState {
             sendsFailed += 1
             toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):
-            texts.insert(ReceivedText(id: now, name: name, text: text, copied: autoCopy), at: 0)
-            texts = Array(texts.prefix(maxTexts))
+            self.text = ReceivedText(id: now, name: name, text: text, copied: autoCopy)
         case let .textShared(_, problem):
             if let problem { toast(.failure, problem.title) }
         }

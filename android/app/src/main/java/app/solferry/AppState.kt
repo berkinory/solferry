@@ -9,7 +9,6 @@ import uniffi.solferry_ffi.Problem
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.Update
 
-private const val MAX_TEXTS = 3
 private const val MAX_TOASTS = 3
 
 enum class Phase { Active, Reconnecting, Done, Failed }
@@ -61,7 +60,7 @@ data class AppState(
     val pairingCode: String? = null,
     val invite: String? = null,
     val joining: Boolean = false,
-    val texts: List<ReceivedText> = emptyList(),
+    val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
     val sendsStarted: Int = 0,
@@ -110,7 +109,7 @@ data class AppState(
         is Update.PairingFailed -> toast(Tone.Error, update.problem.title).copy(pairingCode = null, joining = false)
         is Update.SendFailed -> toast(Tone.Error, update.problem.title).copy(sendsFailed = sendsFailed + 1)
         is Update.TextReceived -> copy(
-            texts = (listOf(ReceivedText(now, update.name, update.text, update.autoCopy)) + texts).take(MAX_TEXTS),
+            text = ReceivedText(now, update.name, update.text, update.autoCopy),
         )
         is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title) } ?: this
     }

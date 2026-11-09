@@ -66,7 +66,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
     ) {
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
-        items(state.texts, key = { "text-${it.key}" }) { TextCard(it, engine) }
+        state.text?.let { item(key = "text-${it.key}") { TextCard(it, engine) } }
         item { SendZone { onPickFiles(null) } }
         if (state.devices.isNotEmpty()) {
             item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine) { onPickFiles(it) } }

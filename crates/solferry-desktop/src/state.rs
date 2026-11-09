@@ -10,7 +10,6 @@ use solferry_core::{
 use crate::format;
 use crate::service::Update;
 
-const MAX_TEXTS: usize = 3;
 const MAX_TOASTS: usize = 3;
 
 #[derive(Clone)]
@@ -73,7 +72,6 @@ pub struct PairingPrompt {
 #[derive(Clone)]
 pub struct SharedText {
     pub key: u64,
-    pub peer: EndpointId,
     pub name: String,
     pub text: String,
     pub copied: bool,
@@ -99,7 +97,7 @@ pub struct AppState {
     pub sends_started: u64,
     pub sends_failed: u64,
     pub offers: Vec<Offer>,
-    pub texts: Vec<SharedText>,
+    pub text: Option<SharedText>,
     texts_seen: u64,
     pub pairing_prompts: Vec<PairingPrompt>,
     pub pairing_code: Option<String>,
@@ -207,13 +205,10 @@ impl AppState {
     fn on_event(&mut self, event: Event) {
         match event {
             Event::Paired { device } => self.add_device(device),
-            Event::TextReceived { peer, peer_name, text, auto_copy } => {
+            Event::TextReceived { peer_name, text, auto_copy, .. } => {
                 self.texts_seen += 1;
                 let key = self.texts_seen;
-                self.texts.retain(|shared| shared.peer != peer);
-                self.texts
-                    .insert(0, SharedText { key, peer, name: peer_name, text, copied: auto_copy });
-                self.texts.truncate(MAX_TEXTS);
+                self.text = Some(SharedText { key, name: peer_name, text, copied: auto_copy });
             }
             Event::Started { id, peer_name, label, direction, bytes, .. } => {
                 self.transfers.retain(|transfer| transfer.id != id && transfer.running());

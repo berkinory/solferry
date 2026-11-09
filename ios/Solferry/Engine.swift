@@ -132,11 +132,11 @@ final class Engine {
     }
 
     func dismissText(_ id: UInt64) {
-        state.texts.removeAll { $0.id == id }
+        if state.text?.id == id { state.text = nil }
     }
 
     func markCopied(_ id: UInt64) {
-        if let index = state.texts.firstIndex(where: { $0.id == id }) { state.texts[index].copied = true }
+        if state.text?.id == id { state.text?.copied = true }
     }
 
     func clearTransfer(_ id: String) {

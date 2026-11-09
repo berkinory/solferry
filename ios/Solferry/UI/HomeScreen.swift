@@ -10,7 +10,7 @@ struct HomeScreen: View {
         ScrollView {
             VStack(spacing: SpaceTokens.sm) {
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
-                ForEach(state.texts) { TextCard(shared: $0) }
+                if let shared = state.text { TextCard(shared: shared) }
                 SendZone { pick(nil) }
                 if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
                 NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
