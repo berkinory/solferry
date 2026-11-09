@@ -7,8 +7,8 @@ use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions, OfferSummary,
-    PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
+    BlockedDevice, Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions,
+    OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -47,11 +47,11 @@ pub enum Update {
         id: EndpointId,
         config: Box<Config>,
         devices: Vec<Device>,
-        blocked: Vec<EndpointId>,
+        blocked: Vec<BlockedDevice>,
     },
     StartFailed(Error),
     Devices(Vec<Device>),
-    Blocked(Vec<EndpointId>),
+    Blocked(Vec<BlockedDevice>),
     RelayHealth(Vec<RelayHealth>),
     Nearby(Vec<NearbyDevice>),
     Reachable(HashSet<EndpointId>),
@@ -274,10 +274,10 @@ async fn run(
             }
             Command::BlockOffer(offer) => {
                 let Some(offer) = pending.lock().await.remove(&offer) else { continue };
-                let peer = offer.summary.peer;
+                let (peer, name) = (offer.summary.peer, offer.summary.peer_name.clone());
                 offer.decline();
                 if let Some(active) = &session
-                    && active.node.block(peer).is_ok()
+                    && active.node.block(peer, Some(name)).is_ok()
                 {
                     let _ = updates.unbounded_send(Update::Devices(active.node.devices()));
                     let _ = updates.unbounded_send(Update::Blocked(active.node.blocked()));

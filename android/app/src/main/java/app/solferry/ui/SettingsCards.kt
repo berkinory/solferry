@@ -22,7 +22,7 @@ import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
-import uniffi.solferry_ffi.Identity
+import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.RelayStatus
 
@@ -79,15 +79,18 @@ fun RelayCard(state: AppState, engine: Engine) {
 }
 
 @Composable
-fun BlockedCard(blocked: List<Identity>, engine: Engine) {
+fun BlockedCard(blocked: List<BlockedDevice>, engine: Engine) {
     val palette = LocalPalette.current
     Card(R.drawable.ic_blocked, "Blocked", aside = { Count(blocked.size) }) {
         Well {
             blocked.forEach { device ->
                 Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
                     Tile(R.drawable.ic_blocked, palette.control, palette.inkMuted)
-                    Caption(device.fingerprint, Modifier.weight(1f))
-                    Button({ engine.bridge.unblock(device.id) }, label = "Unblock", size = ButtonSize.Sm)
+                    Column(Modifier.weight(1f)) {
+                        Text(device.name ?: device.identity.fingerprint, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (device.name != null) Caption(device.identity.fingerprint)
+                    }
+                    Button({ engine.bridge.unblock(device.identity.id) }, label = "Unblock", size = ButtonSize.Sm)
                 }
             }
         }

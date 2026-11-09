@@ -11,7 +11,9 @@ use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
 use crate::Listener;
-use crate::types::{HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, Update, identity};
+use crate::types::{
+    BlockedDevice, HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, Update, identity,
+};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
 const RELAY_WAIT: Duration = Duration::from_secs(5);
@@ -53,7 +55,11 @@ pub fn history(node: &Node) -> Update {
 }
 
 pub fn blocked(node: &Node) -> Update {
-    Update::Blocked { devices: node.blocked().iter().map(|id| identity(id, None)).collect() }
+    let devices = node
+        .blocked()
+        .into_iter()
+        .map(|device| BlockedDevice { identity: identity(&device.id, None), name: device.name });
+    Update::Blocked { devices: devices.collect() }
 }
 
 /// The relays this device was given, with what is known about each so far.

@@ -8,7 +8,7 @@ use crate::relay::RelayLink;
 use crate::store;
 
 const DEVICES_FILE: &str = "devices.json";
-const BLOCKED_FILE: &str = "blocked.json";
+const BLOCKED_FILE: &str = "blocked_devices.json";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Device {
@@ -37,12 +37,19 @@ impl Device {
     }
 }
 
+/// A device refused from now on, under the name it last went by.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BlockedDevice {
+    pub id: EndpointId,
+    pub name: Option<String>,
+}
+
 #[derive(Debug)]
 pub(crate) struct TrustStore {
     path: PathBuf,
     devices: Vec<Device>,
     blocked_path: PathBuf,
-    blocked: Vec<EndpointId>,
+    blocked: Vec<BlockedDevice>,
 }
 
 impl TrustStore {
@@ -77,18 +84,19 @@ impl TrustStore {
         Ok(())
     }
 
-    pub(crate) fn blocked(&self) -> &[EndpointId] {
+    pub(crate) fn blocked(&self) -> &[BlockedDevice] {
         &self.blocked
     }
 
     pub(crate) fn is_blocked(&self, id: &EndpointId) -> bool {
-        self.blocked.contains(id)
+        self.blocked.iter().any(|blocked| blocked.id == *id)
     }
 
-    pub(crate) fn block(&mut self, id: EndpointId) -> Result<()> {
+    pub(crate) fn block(&mut self, id: EndpointId, name: Option<String>) -> Result<()> {
+        let name = name.or_else(|| self.get(&id).map(|device| device.name.clone()));
         self.remove(&id)?;
         if !self.is_blocked(&id) {
-            self.blocked.push(id);
+            self.blocked.push(BlockedDevice { id, name });
             store::write_json(&self.blocked_path, &self.blocked)?;
         }
         Ok(())
@@ -96,7 +104,7 @@ impl TrustStore {
 
     pub(crate) fn unblock(&mut self, id: &EndpointId) -> Result<()> {
         if self.is_blocked(id) {
-            self.blocked.retain(|blocked| blocked != id);
+            self.blocked.retain(|blocked| blocked.id != *id);
             store::write_json(&self.blocked_path, &self.blocked)?;
         }
         Ok(())

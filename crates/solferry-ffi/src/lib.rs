@@ -188,8 +188,9 @@ impl Solferry {
             move |node, listener, _| async move {
                 if let Some(offer) = offer {
                     let peer = offer.summary.peer;
+                    let name = offer.summary.peer_name.clone();
                     offer.decline();
-                    let _ = node.block(peer);
+                    let _ = node.block(peer, Some(name));
                     listener.update(devices(&node));
                     listener.update(blocked(&node));
                 }

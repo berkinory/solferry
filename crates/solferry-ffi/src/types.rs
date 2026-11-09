@@ -91,6 +91,12 @@ impl From<&NearbyDevice> for Nearby {
 
 /// A transfer that is over, as the history screen lists it.
 #[derive(Clone, Debug, uniffi::Record)]
+pub struct BlockedDevice {
+    pub identity: Identity,
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, uniffi::Record)]
 pub struct HistoryEntry {
     pub peer: String,
     pub name: String,
@@ -222,7 +228,7 @@ pub enum Update {
         problem: Problem,
     },
     Blocked {
-        devices: Vec<Identity>,
+        devices: Vec<BlockedDevice>,
     },
     /// Paired devices that answered the last presence check.
     Reachable {

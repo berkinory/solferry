@@ -34,7 +34,7 @@ use crate::event::{Event, TransferId};
 use crate::history::{History, PastTransfer};
 use crate::relay::RelayLink;
 use crate::route;
-use crate::trust::{Device, TrustStore};
+use crate::trust::{BlockedDevice, Device, TrustStore};
 use crate::{identity, net};
 
 const EVENT_BUFFER: usize = 1024;
@@ -259,13 +259,13 @@ impl Node {
     }
 
     #[must_use]
-    pub fn blocked(&self) -> Vec<EndpointId> {
+    pub fn blocked(&self) -> Vec<BlockedDevice> {
         self.shared.trust().blocked().to_vec()
     }
 
     /// Refuses every connection from this device and forgets it if it was paired.
-    pub fn block(&self, id: EndpointId) -> Result<()> {
-        self.shared.trust().block(id)
+    pub fn block(&self, id: EndpointId, name: Option<String>) -> Result<()> {
+        self.shared.trust().block(id, name)
     }
 
     pub fn unblock(&self, id: EndpointId) -> Result<()> {

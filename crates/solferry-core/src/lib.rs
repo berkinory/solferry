@@ -28,4 +28,4 @@ pub use platform::Platform;
 pub use relay::RelayLink;
 pub use route::Route;
 pub use transfer::NamedFile;
-pub use trust::Device;
+pub use trust::{BlockedDevice, Device};

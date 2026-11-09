@@ -117,19 +117,22 @@ private struct RelayCard: View {
 private struct BlockedCard: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
-    let blocked: [Identity]
+    let blocked: [BlockedDevice]
 
     var body: some View {
         Card(glyph: .blocked, title: "Blocked") {
             Count(value: blocked.count)
         } content: {
             Well {
-                ForEach(blocked, id: \.id) { device in
+                ForEach(blocked, id: \.identity.id) { device in
                     HStack(spacing: SpaceTokens.md) {
                         Tile(glyph: .blocked, fill: palette.control, tone: palette.inkMuted)
-                        Caption(device.fingerprint)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(device.name ?? device.identity.fingerprint).lineLimit(1)
+                            if device.name != nil { Caption(device.identity.fingerprint) }
+                        }
                         Spacer()
-                        ActionButton(label: "Unblock", scale: .small) { engine.bridge.unblock(peer: device.id) }
+                        ActionButton(label: "Unblock", scale: .small) { engine.bridge.unblock(peer: device.identity.id) }
                     }
                     .padding(SpaceTokens.sm)
                 }

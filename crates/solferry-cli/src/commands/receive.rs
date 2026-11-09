@@ -97,7 +97,7 @@ async fn handle_pairing(node: &Node, request: PairingRequest, json: bool) {
 }
 
 fn block(node: &Node, peer: EndpointId) {
-    if let Err(error) = node.block(peer) {
+    if let Err(error) = node.block(peer, None) {
         eprintln!("{}", crate::explain::render(&error));
     }
 }
