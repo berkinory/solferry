@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum ButtonKind {
-    case primary, secondary, ghost, danger
+    case primary, secondary, ghost, danger, warning
 }
 
 enum ButtonScale {
@@ -27,6 +27,7 @@ struct ActionButton: View {
                 switch kind {
                 case .primary: button.buttonStyle(.glassProminent).tint(palette.primaryFill)
                 case .danger: button.buttonStyle(.glassProminent).tint(palette.dangerFill)
+                case .warning: button.buttonStyle(.glassProminent).tint(palette.warningFill)
                 case .secondary: button.buttonStyle(.glass).foregroundStyle(palette.ink)
                 case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
                 }
@@ -34,6 +35,7 @@ struct ActionButton: View {
                 switch kind {
                 case .primary: button.buttonStyle(.borderedProminent).tint(palette.primaryFill)
                 case .danger: button.buttonStyle(.borderedProminent).tint(palette.dangerFill)
+                case .warning: button.buttonStyle(.borderedProminent).tint(palette.warningFill)
                 case .secondary: button.buttonStyle(.bordered).tint(palette.ink)
                 case .ghost: button.buttonStyle(.borderless).tint(palette.inkMuted)
                 }

@@ -5,7 +5,7 @@ struct Palette {
     let night: Bool
     let page, well, raised, control, line, ink, inkMuted: Color
     let primary, brand, primaryFill, primaryHover, primaryBorder, primaryDeep, onPrimary: Color
-    let success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, dangerWell: Color
+    let success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, warningFill, dangerWell: Color
     let routeLocal, routeOverlay, routeDirect, routeRelay: Color
     let identity: [Color]
 
@@ -25,7 +25,7 @@ struct Palette {
         primary: LightColors.primary, brand: LightColors.brand, primaryFill: LightColors.primaryFill, primaryHover: LightColors.primaryHover,
         primaryBorder: LightColors.primaryBorder, primaryDeep: LightColors.primaryDeep, onPrimary: LightColors.onPrimary,
         success: LightColors.success, successFill: LightColors.successFill, platformApple: LightColors.platformApple, platformAndroid: LightColors.platformAndroid, platformWindows: LightColors.platformWindows, platformLinux: LightColors.platformLinux, warning: LightColors.warning, danger: LightColors.danger,
-        dangerFill: LightColors.dangerFill, dangerWell: LightColors.dangerWell,
+        dangerFill: LightColors.dangerFill, warningFill: LightColors.warningFill, dangerWell: LightColors.dangerWell,
         routeLocal: LightColors.routeLocal, routeOverlay: LightColors.routeOverlay,
         routeDirect: LightColors.routeDirect, routeRelay: LightColors.routeRelay,
         identity: IdentityColors.light
@@ -38,7 +38,7 @@ struct Palette {
         primary: DarkColors.primary, brand: DarkColors.brand, primaryFill: DarkColors.primaryFill, primaryHover: DarkColors.primaryHover,
         primaryBorder: DarkColors.primaryBorder, primaryDeep: DarkColors.primaryDeep, onPrimary: DarkColors.onPrimary,
         success: DarkColors.success, successFill: DarkColors.successFill, platformApple: DarkColors.platformApple, platformAndroid: DarkColors.platformAndroid, platformWindows: DarkColors.platformWindows, platformLinux: DarkColors.platformLinux, warning: DarkColors.warning, danger: DarkColors.danger,
-        dangerFill: DarkColors.dangerFill, dangerWell: DarkColors.dangerWell,
+        dangerFill: DarkColors.dangerFill, warningFill: DarkColors.warningFill, dangerWell: DarkColors.dangerWell,
         routeLocal: DarkColors.routeLocal, routeOverlay: DarkColors.routeOverlay,
         routeDirect: DarkColors.routeDirect, routeRelay: DarkColors.routeRelay,
         identity: IdentityColors.dark

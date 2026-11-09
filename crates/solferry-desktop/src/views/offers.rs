@@ -30,14 +30,17 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         1 => "1 file".to_owned(),
         count => format!("{count} files"),
     };
-    let warning = (!summary.paired).then(|| {
-        ui::muted("Not paired. Accept only if you expected this.", cx)
-            .text_color(color(palette(cx).warning))
-    });
+    let weight = format!("{files}, {}", format::bytes(summary.bytes));
+    let detail = if summary.paired {
+        weight
+    } else {
+        format!("{weight}  ·  {}", ui::fingerprint(&summary.peer))
+    };
+    let first = (summary.files == 1).then(|| ui::muted(summary.first_path.clone(), cx).truncate());
     let name = summary.peer_name.clone();
     let block = (!summary.paired).then(|| {
         Button::new(SharedString::from(format!("block-{key}")))
-            .ghost()
+            .danger()
             .sm()
             .label("Block")
             .on_click(cx.listener(move |view, _, _, cx| {
@@ -59,7 +62,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(12.))
+                        .gap(px(14.))
                         .child(ui::device_tile(summary.platform, true, cx))
                         .child(
                             div()
@@ -71,18 +74,10 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                     ui::text(format!("{} wants to send", summary.peer_name))
                                         .truncate(),
                                 )
-                                .child(ui::caption(
-                                    format!(
-                                        "{files}, {}  ·  {}",
-                                        format::bytes(summary.bytes),
-                                        ui::fingerprint(&summary.peer)
-                                    ),
-                                    cx,
-                                )),
+                                .child(ui::caption(detail, cx)),
                         ),
                 )
-                .child(ui::muted(summary.first_path.clone(), cx).truncate())
-                .children(warning)
+                .children(first)
                 .child(
                     actions()
                         .child(
@@ -98,6 +93,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                         .children(always)
                         .child(
                             Button::new(SharedString::from(format!("decline-{key}")))
+                                .warning()
                                 .sm()
                                 .label("Decline")
                                 .on_click(

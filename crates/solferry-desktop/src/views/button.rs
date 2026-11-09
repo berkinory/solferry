@@ -20,6 +20,7 @@ enum Variant {
     Secondary,
     Ghost,
     Danger,
+    Warning,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -76,6 +77,11 @@ impl Button {
 
     pub fn danger(mut self) -> Self {
         self.variant = Variant::Danger;
+        self
+    }
+
+    pub fn warning(mut self) -> Self {
+        self.variant = Variant::Warning;
         self
     }
 
@@ -143,15 +149,22 @@ fn look(variant: Variant, cx: &App) -> Look {
             hover_text: color(palette.on_primary),
             border: None,
         },
+        Variant::Warning => Look {
+            fill: Some(color(palette.warning_fill)),
+            hover: color(palette.warning_fill).opacity(0.9),
+            text: color(palette.on_primary),
+            hover_text: color(palette.on_primary),
+            border: None,
+        },
     }
 }
 
 impl RenderOnce for Button {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let (height, padding, text, glyph_size) = match self.size {
-            Size::Xs => (34.0, 11.0, 14.0, 17.0),
-            Size::Sm => (38.0, 15.0, 15.0, 19.0),
-            Size::Md => (44.0, 17.0, 16.0, 20.0),
+            Size::Xs => (40.0, 13.0, 16.0, 20.0),
+            Size::Sm => (44.0, 17.0, 17.0, 21.0),
+            Size::Md => (50.0, 19.0, 18.0, 23.0),
         };
         let look = look(self.variant, cx);
         let (hover, hover_text) = (look.hover, look.hover_text);
@@ -163,7 +176,7 @@ impl RenderOnce for Button {
             .flex_none()
             .items_center()
             .justify_center()
-            .gap(px(7.))
+            .gap(px(8.))
             .h(px(height))
             .rounded(px(if self.size == Size::Md { RADIUS_CONTROL } else { RADIUS_FLOOR }))
             .text_size(px(text))

@@ -48,6 +48,7 @@ data class Palette(
     val warning: Color,
     val danger: Color,
     val dangerFill: Color,
+    val warningFill: Color,
     val dangerWell: Color,
     val routes: Map<TransferRoute, Color>,
     val identity: List<Color>,
@@ -56,7 +57,7 @@ data class Palette(
 private val light = with(LightColors) {
     Palette(
         false, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
-        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, dangerWell,
+        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, warningFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,
@@ -68,7 +69,7 @@ private val light = with(LightColors) {
 private val dark = with(DarkColors) {
     Palette(
         true, page, well, raised, control, line, ink, inkMuted, primary, brand, primaryFill, primaryHover, primaryBorder,
-        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, dangerWell,
+        primaryDeep, onPrimary, success, successFill, platformApple, platformAndroid, platformWindows, platformLinux, warning, danger, dangerFill, warningFill, dangerWell,
         mapOf(
             TransferRoute.LOCAL to routeLocal, TransferRoute.OVERLAY to routeOverlay,
             TransferRoute.DIRECT to routeDirect, TransferRoute.RELAY to routeRelay,

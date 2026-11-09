@@ -63,10 +63,10 @@ private struct RequestBody: View {
             Caption(prompt.peer.fingerprint)
         }
         CardFrame { Well(padding: 12) { Digits(code: prompt.code) } }
-        Muted("Accept only if the other screen shows the same code.").multilineTextAlignment(.center)
+        Muted("Confirm only if the other screen shows the same code.").multilineTextAlignment(.center)
         HStack(spacing: SpaceTokens.sm) {
-            ActionButton(label: "Decline") { engine.answerPairing(prompt.key, accept: false) }
-            ActionButton(label: "Same code", glyph: .check, kind: .primary, wide: true) { engine.answerPairing(prompt.key, accept: true) }
+            ActionButton(label: "Confirm", glyph: .check, kind: .primary) { engine.answerPairing(prompt.key, accept: true) }
+            ActionButton(label: "Decline", kind: .warning) { engine.answerPairing(prompt.key, accept: false) }
         }
         .padding(.top, SpaceTokens.sm)
     }
@@ -94,10 +94,9 @@ struct OfferCard: View {
                 Asker(
                     peer: incoming.sender,
                     title: "\(incoming.name) wants to send",
-                    detail: "\(files), \(bytes(incoming.bytes))  ·  \(incoming.sender.fingerprint)"
+                    detail: "\(files), \(bytes(incoming.bytes))" + (incoming.paired ? "" : "  ·  \(incoming.sender.fingerprint)")
                 )
-                Text(incoming.firstPath).lineLimit(1).truncationMode(.middle).foregroundStyle(palette.inkMuted)
-                if !incoming.paired { Muted("Not paired. Accept only if you expected this.", color: palette.warning) }
+                if incoming.files == 1 { Text(incoming.firstPath).lineLimit(1).truncationMode(.middle).foregroundStyle(palette.inkMuted) }
                 ViewThatFits(in: .horizontal) {
                     answers
                     VStack(spacing: SpaceTokens.sm) { answers }
@@ -116,8 +115,8 @@ struct OfferCard: View {
         HStack(spacing: SpaceTokens.sm) {
             ActionButton(label: "Accept", kind: .primary, wide: true) { engine.answerOffer(incoming.key, accept: true) }
             if incoming.paired { ActionButton(label: "Always accept") { engine.acceptAlways(incoming.key) } }
-            ActionButton(label: "Decline") { engine.answerOffer(incoming.key, accept: false) }
-            if !incoming.paired { ActionButton(label: "Block", kind: .ghost) { blocking = true } }
+            ActionButton(label: "Decline", kind: .warning) { engine.answerOffer(incoming.key, accept: false) }
+            if !incoming.paired { ActionButton(label: "Block", kind: .danger) { blocking = true } }
         }
     }
 }

@@ -42,7 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.solferry.design.SpaceTokens
 
-enum class ButtonKind { Primary, Secondary, Ghost, Danger }
+enum class ButtonKind { Primary, Secondary, Ghost, Danger, Warning }
 
 enum class ButtonSize { Sm, Md }
 
@@ -84,6 +84,11 @@ fun Button(
         ButtonKind.Danger -> androidx.compose.material3.Button(
             onClick, sized, enabled, shape,
             ButtonDefaults.buttonColors(containerColor = palette.dangerFill, contentColor = palette.onPrimary),
+            contentPadding = padding,
+        ) { content(palette.onPrimary) }
+        ButtonKind.Warning -> androidx.compose.material3.Button(
+            onClick, sized, enabled, shape,
+            ButtonDefaults.buttonColors(containerColor = palette.warningFill, contentColor = palette.onPrimary),
             contentPadding = padding,
         ) { content(palette.onPrimary) }
         ButtonKind.Secondary -> OutlinedButton(

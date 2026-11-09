@@ -68,10 +68,10 @@ fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet("Pairing req
         Caption(prompt.peer.fingerprint)
     }
     Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
-    Muted("Accept only if the other screen shows the same code.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
-    Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-        Button({ engine.answerPairing(prompt.key, false); close() }, label = "Decline")
-        Button({ engine.answerPairing(prompt.key, true); close() }, Modifier.weight(1f), label = "Same code", icon = R.drawable.ic_check, kind = ButtonKind.Primary)
+    Muted("Confirm only if the other screen shows the same code.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+    Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.CenterHorizontally)) {
+        Button({ engine.answerPairing(prompt.key, true); close() }, label = "Confirm", icon = R.drawable.ic_check, kind = ButtonKind.Primary)
+        Button({ engine.answerPairing(prompt.key, false); close() }, label = "Decline", kind = ButtonKind.Warning)
     }
 }
 
@@ -88,14 +88,13 @@ fun OfferCard(incoming: Incoming, engine: Engine) {
     val files = if (incoming.files == 1UL) "1 file" else "${incoming.files} files"
     Card(R.drawable.ic_download, "Incoming files", palette.primary) {
         PaddedWell {
-            Asker(incoming.sender, "${incoming.name} wants to send", "$files, ${bytes(incoming.bytes.toLong())}  ·  ${incoming.sender.fingerprint}")
-            Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
-            if (!incoming.paired) Muted("Not paired. Accept only if you expected this.", color = palette.warning)
+            Asker(incoming.sender, "${incoming.name} wants to send", "$files, ${bytes(incoming.bytes.toLong())}" + if (incoming.paired) "" else "  ·  ${incoming.sender.fingerprint}")
+            if (incoming.files == 1UL) Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
             Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Button({ engine.answerOffer(incoming.key, true) }, Modifier.weight(1f), label = "Accept", kind = ButtonKind.Primary)
                 if (incoming.paired) Button({ engine.acceptAlways(incoming.key) }, label = "Always accept")
-                Button({ engine.answerOffer(incoming.key, false) }, label = "Decline")
-                if (!incoming.paired) Button({ blocking = true }, label = "Block", kind = ButtonKind.Ghost)
+                Button({ engine.answerOffer(incoming.key, false) }, label = "Decline", kind = ButtonKind.Warning)
+                if (!incoming.paired) Button({ blocking = true }, label = "Block", kind = ButtonKind.Danger)
             }
         }
     }

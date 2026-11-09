@@ -8,9 +8,9 @@ use crate::assets::Glyph;
 use crate::state::PairingPrompt;
 use crate::tokens::{RADIUS_FLOOR, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const DIGIT_WIDTH: f32 = 44.0;
-const DIGIT_HEIGHT: f32 = 60.0;
-const DIGIT_SIZE: f32 = 26.0;
+const DIGIT_WIDTH: f32 = 50.0;
+const DIGIT_HEIGHT: f32 = 68.0;
+const DIGIT_SIZE: f32 = 30.0;
 
 fn digit(value: char, cx: &Context<MainView>) -> AnyElement {
     div()
@@ -40,7 +40,7 @@ fn digits(code: &str, cx: &Context<MainView>) -> Div {
             .flex_row()
             .justify_center()
             .gap(px(SPACE_MD))
-            .py(px(20.))
+            .py(px(23.))
             .child(group().children(first))
             .child(group().children(all)),
     )
@@ -57,23 +57,22 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
         .child(ui::device_tile(prompt.platform, true, cx))
         .child(ui::text(format!("{} wants to pair", prompt.name)).truncate().max_w_full())
         .child(ui::caption(ui::fingerprint(&prompt.peer), cx));
-    let answers = div()
-        .flex()
-        .justify_center()
-        .gap(px(SPACE_SM))
-        .pt(px(SPACE_MD))
-        .child(
-            Button::new("pair-decline")
-                .label("Decline")
-                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx))),
-        )
-        .child(
-            Button::new("pair-accept")
-                .primary()
-                .icon(Glyph::Check)
-                .label("Same code")
-                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx))),
-        );
+    let answers =
+        div()
+            .flex()
+            .justify_center()
+            .gap(px(SPACE_SM))
+            .pt(px(SPACE_MD))
+            .child(
+                Button::new("pair-accept").primary().icon(Glyph::Check).label("Confirm").on_click(
+                    cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx)),
+                ),
+            )
+            .child(
+                Button::new("pair-decline").warning().label("Decline").on_click(
+                    cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx)),
+                ),
+            );
     let content = div()
         .flex()
         .flex_col()
@@ -84,7 +83,7 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
                 .flex()
                 .justify_center()
                 .pt(px(SPACE_SM))
-                .child(ui::muted("Accept only if the other screen shows the same code.", cx)),
+                .child(ui::muted("Confirm only if the other screen shows the same code.", cx)),
         )
         .child(answers);
     super::sheet::present("Pairing request", content, MainView::decline_first_pairing, cx)

@@ -18,6 +18,7 @@ pub struct Palette {
     pub danger: u32,
     pub danger_fill: u32,
     pub danger_well: u32,
+    pub warning_fill: u32,
     pub route_local: u32,
     pub route_overlay: u32,
     pub route_direct: u32,
@@ -50,6 +51,7 @@ pub const LIGHT: Palette = Palette {
     danger: 0xb9_1c1c,
     danger_fill: 0xdc_2626,
     danger_well: 0xfd_f0f0,
+    warning_fill: 0xb4_5309,
     route_local: 0x1d_4ed8,
     route_overlay: 0x6d_28d9,
     route_direct: 0x04_7857,
@@ -82,6 +84,7 @@ pub const DARK: Palette = Palette {
     danger: 0xf8_7171,
     danger_fill: 0x9a_4041,
     danger_well: 0x1f_1113,
+    warning_fill: 0x8f_5a12,
     route_local: 0x60_a5fa,
     route_overlay: 0xa7_8bfa,
     route_direct: 0x34_d399,
@@ -105,18 +108,18 @@ pub const FONT_SANS: &str = "Inter Tight";
 pub const FONT_MONO: &str = "Geist Mono";
 
 pub const SPACE_XS: f32 = 5.0;
-pub const SPACE_SM: f32 = 9.0;
-pub const SPACE_MD: f32 = 14.0;
-pub const SPACE_LG: f32 = 18.0;
-pub const SPACE_XL: f32 = 28.0;
-pub const SPACE_XXL: f32 = 37.0;
+pub const SPACE_SM: f32 = 10.0;
+pub const SPACE_MD: f32 = 16.0;
+pub const SPACE_LG: f32 = 21.0;
+pub const SPACE_XL: f32 = 31.0;
+pub const SPACE_XXL: f32 = 42.0;
 pub const RADIUS_FLOOR: f32 = 10.0;
 pub const RADIUS_CONTROL: f32 = 14.0;
 pub const RADIUS_FIELD: f32 = 18.0;
 pub const RADIUS_WELL: f32 = 22.0;
 pub const RADIUS_CARD: f32 = 26.0;
-pub const TYPE_CAPTION: f32 = 14.0;
-pub const TYPE_LABEL: f32 = 15.0;
-pub const TYPE_BODY: f32 = 16.0;
-pub const TYPE_TITLE: f32 = 21.0;
-pub const TYPE_CODE: f32 = 32.0;
+pub const TYPE_CAPTION: f32 = 16.0;
+pub const TYPE_LABEL: f32 = 17.0;
+pub const TYPE_BODY: f32 = 18.0;
+pub const TYPE_TITLE: f32 = 23.0;
+pub const TYPE_CODE: f32 = 36.0;
