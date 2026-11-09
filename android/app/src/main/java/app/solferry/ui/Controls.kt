@@ -2,14 +2,21 @@ package app.solferry.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
@@ -17,21 +24,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import app.solferry.design.SpaceTokens
 
 enum class ButtonKind { Primary, Secondary, Ghost, Danger }
 
@@ -120,20 +129,31 @@ fun Field(
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val palette = LocalPalette.current
-    OutlinedTextField(
+    val typed = MaterialTheme.typography.bodyLarge
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    BasicTextField(
         value, onChange, modifier,
         singleLine = true,
-        textStyle = MaterialTheme.typography.bodyLarge,
-        placeholder = { Text(placeholder, maxLines = 1) },
-        trailingIcon = trailing?.let { { Row(verticalAlignment = Alignment.CenterVertically, content = it) } },
+        textStyle = typed.copy(color = palette.ink),
+        cursorBrush = SolidColor(palette.primary),
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        shape = ControlShape,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = palette.primary, unfocusedBorderColor = palette.line, cursorColor = palette.primary,
-            focusedContainerColor = palette.page, unfocusedContainerColor = palette.page,
-            focusedPlaceholderColor = palette.inkMuted, unfocusedPlaceholderColor = palette.inkMuted,
-        ),
+        interactionSource = interaction,
+        decorationBox = { input ->
+            Row(
+                Modifier.fillMaxWidth().height(44.dp).background(palette.page, ControlShape)
+                    .border(1.dp, if (focused) palette.primary else palette.line, ControlShape)
+                    .padding(start = SpaceTokens.md.dp, end = if (trailing == null) SpaceTokens.md.dp else SpaceTokens.xs.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) Text(placeholder, style = typed, color = palette.inkMuted, maxLines = 1)
+                    input()
+                }
+                trailing?.invoke(this)
+            }
+        },
     )
 }
 
