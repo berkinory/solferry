@@ -33,9 +33,7 @@ pub fn explain(error: &Error) -> Explanation {
             "Solferry's settings are damaged",
             "Delete the damaged file in Solferry's data folder. You may need to pair devices again.",
         ),
-        Error::NetworkStart(_) => {
-            say("Networking didn't start", "Check that you are connected, then restart Solferry.")
-        }
+        Error::NetworkStart(_) => say("Networking didn't start", "Restart Solferry to try again."),
         Error::InvalidRelayUrl(_) => say(
             "That relay address isn't valid",
             "Paste the full link your relay printed, like https://relay.example.com#token.",

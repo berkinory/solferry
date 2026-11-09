@@ -78,7 +78,10 @@ pub async fn start(
     let (node, mut offers) = match Node::start(NodeOptions { data_dir, isolated: false }).await {
         Ok(started) => started,
         Err(error) => {
-            listener.update(Update::StartFailed { problem: (&error).into() });
+            listener.update(Update::StartFailed {
+                problem: (&error).into(),
+                reason: error.to_string(),
+            });
             return None;
         }
     };

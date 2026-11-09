@@ -237,6 +237,7 @@ pub enum Update {
     },
     StartFailed {
         problem: Problem,
+        reason: String,
     },
     Devices {
         devices: Vec<PairedDevice>,
