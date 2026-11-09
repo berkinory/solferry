@@ -3,14 +3,14 @@ use gpui_kit::{AnyElement, Context, Div, FontWeight, IntoElement, ParentElement,
 
 use super::button::Button;
 use super::main_view::MainView;
-use super::{send, ui};
+use super::ui;
 use crate::assets::Glyph;
 use crate::state::PairingPrompt;
 use crate::tokens::{RADIUS_FLOOR, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const DIGIT_WIDTH: f32 = 38.0;
-const DIGIT_HEIGHT: f32 = 52.0;
-const DIGIT_SIZE: f32 = 22.0;
+const DIGIT_WIDTH: f32 = 44.0;
+const DIGIT_HEIGHT: f32 = 60.0;
+const DIGIT_SIZE: f32 = 26.0;
 
 fn digit(value: char, cx: &Context<MainView>) -> AnyElement {
     div()
@@ -40,7 +40,7 @@ fn digits(code: &str, cx: &Context<MainView>) -> Div {
             .flex_row()
             .justify_center()
             .gap(px(SPACE_MD))
-            .py(px(18.))
+            .py(px(20.))
             .child(group().children(first))
             .child(group().children(all)),
     )
@@ -53,7 +53,7 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
         .flex_col()
         .items_center()
         .gap(px(SPACE_XS))
-        .pt(px(SPACE_XS))
+        .py(px(SPACE_XS))
         .child(ui::device_tile(prompt.platform, true, cx))
         .child(ui::text(format!("{} wants to pair", prompt.name)).truncate().max_w_full())
         .child(ui::caption(ui::fingerprint(&prompt.peer), cx));
@@ -78,7 +78,6 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .child(peer)
-        .child(send::connector(true, cx))
         .child(digits(&prompt.code, cx))
         .child(
             div()
@@ -92,16 +91,12 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn compare(code: &str, cx: &mut Context<MainView>) -> AnyElement {
-    let content = div()
-        .flex()
-        .flex_col()
-        .pt(px(SPACE_XS))
-        .child(digits(code, cx))
-        .child(div().flex().justify_center().pt(px(SPACE_SM)).child(ui::muted(
+    let content = div().flex().flex_col().pt(px(SPACE_XS)).child(digits(code, cx)).child(
+        div().flex().justify_center().pt(px(SPACE_SM)).child(ui::muted(
             "Check that the other device shows this code, then accept there.",
             cx,
-        )))
-        .child(div().flex().justify_center().child(send::connector(true, cx)));
+        )),
+    );
     super::sheet::present("Compare codes", content, MainView::stop_comparing, cx)
 }
 

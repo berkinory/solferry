@@ -67,7 +67,6 @@ fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet("Pairing req
         Text("${prompt.name} wants to pair", maxLines = 1, overflow = TextOverflow.Ellipsis)
         Caption(prompt.peer.fingerprint)
     }
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) { Connector(true) }
     Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
     Muted("Accept only if the other screen shows the same code.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
     Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
@@ -80,7 +79,6 @@ fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet("Pairing req
 fun CompareSheet(code: String, engine: Engine) = Sheet("Compare codes", { engine.stopComparing() }) {
     Frame { Well(padding = 12.dp) { Digits(code) } }
     Muted("Check that the other device shows this code, then accept there.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) { Connector(true) }
 }
 
 @Composable

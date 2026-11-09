@@ -62,7 +62,6 @@ private struct RequestBody: View {
             Text("\(prompt.name) wants to pair").lineLimit(1)
             Caption(prompt.peer.fingerprint)
         }
-        Connector(live: true)
         CardFrame { Well(padding: 12) { Digits(code: prompt.code) } }
         Muted("Accept only if the other screen shows the same code.").multilineTextAlignment(.center)
         HStack(spacing: SpaceTokens.sm) {
@@ -79,7 +78,6 @@ private struct CompareBody: View {
     var body: some View {
         CardFrame { Well(padding: 12) { Digits(code: code) } }
         Muted("Check that the other device shows this code, then accept there.").multilineTextAlignment(.center)
-        Connector(live: true)
     }
 }
 
