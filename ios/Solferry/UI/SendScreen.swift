@@ -100,7 +100,7 @@ private struct FileRow: View {
 }
 
 /// Dots running from the files down to the devices, lit once there is somewhere to go.
-private struct Connector: View {
+struct Connector: View {
     @Environment(\.palette) private var palette
     let live: Bool
     private let dots = 5

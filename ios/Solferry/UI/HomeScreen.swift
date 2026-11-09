@@ -10,17 +10,11 @@ struct HomeScreen: View {
         ScrollView {
             VStack(spacing: SpaceTokens.sm) {
                 if let problem = state.startProblem { ProblemCard(problem: problem) }
-                ForEach(state.problems) { item in
-                    ProblemCard(problem: item.problem, about: item.name) { engine.dismissProblem(item.id) }
-                }
-                ForEach(state.pairings) { PairingCard(prompt: $0) }
-                if let code = state.pairingCode { CompareCard(code: code) }
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 ForEach(state.texts) { TextCard(shared: $0) }
                 SendZone { pick(nil) }
                 if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
                 NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
-                if !state.transfers.isEmpty { TransferCard(transfers: state.transfers) }
             }
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.xs)
@@ -81,7 +75,7 @@ private struct SendZone: View {
     }
 }
 
-private struct FanTile: View {
+struct FanTile: View {
     @Environment(\.palette) private var palette
     let glyph: Glyph
     let x: Double

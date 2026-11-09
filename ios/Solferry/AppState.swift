@@ -2,6 +2,7 @@ import Foundation
 
 private let speedSmoothing = 0.2
 private let maxTexts = 3
+private let maxToasts = 3
 
 enum Phase {
     case active, reconnecting, done, failed
@@ -23,6 +24,10 @@ struct Transfer: Identifiable {
 
     var running: Bool { phase == .active || phase == .reconnecting }
     var fraction: Double { total == 0 ? 1 : Double(transferred) / Double(total) }
+    var outcome: (tone: Tone, title: String, detail: String) {
+        if let problem { return (.failure, problem.title, problem.next) }
+        return (.success, "\(sending ? "Sent" : "Received") \(label)", "\(sending ? "To" : "From") \(peerName)  ·  \(bytes(total))")
+    }
 
     mutating func sample(_ bytes: UInt64, total: UInt64, now: UInt64) {
         let elapsed = Double(now - sampledAt) / 1e9
@@ -61,10 +66,16 @@ struct Me {
     let visibility: String
 }
 
-struct NamedProblem: Identifiable {
-    let id = UUID()
-    let name: String
-    let problem: Problem
+enum Tone {
+    case success, failure
+}
+
+/// A short message under the transfer pill, gone after a few seconds.
+struct Toast: Identifiable {
+    let id: Int
+    let tone: Tone
+    let title: String
+    let detail: String
 }
 
 struct AppState {
@@ -85,7 +96,8 @@ struct AppState {
     var pairingProblem: Problem?
     var joining = false
     var texts: [ReceivedText] = []
-    var problems: [NamedProblem] = []
+    var toasts: [Toast] = []
+    var toastsMade = 0
     var pairedCount = 0
 
     var strangers: [Nearby] { nearby.filter { !$0.known } }
@@ -108,7 +120,7 @@ struct AppState {
         case let .relayFailed(problem): relayProblem = problem
         case let .blocked(list): blocked = list
         case let .started(id, peerName, label, sending, route, bytes):
-            transfers.removeAll { $0.id == id }
+            transfers.removeAll { $0.id == id || !$0.running }
             let started = Transfer(id: id, peerName: peerName, label: label, sending: sending, route: route, total: bytes)
             transfers.insert(started, at: 0)
         case let .progress(id, transferred, total):
@@ -120,10 +132,17 @@ struct AppState {
                 $0.phase = .done
                 $0.transferred = $0.total
             }
+            settle(id)
+        case let .cancelled(id): transfers.removeAll { $0.id == id }
         case let .failed(id, problem):
-            change(id) {
-                $0.phase = .failed
-                $0.problem = problem
+            if transfers.first(where: { $0.id == id })?.sending == true {
+                transfers.removeAll { $0.id == id }
+            } else {
+                change(id) {
+                    $0.phase = .failed
+                    $0.problem = problem
+                }
+                settle(id)
             }
         case let .offer(incoming): offers.append(incoming)
         case let .offerGone(key): offers.removeAll { $0.key == key }
@@ -133,6 +152,7 @@ struct AppState {
         case let .pairingCode(code): pairingCode = code
         case let .invite(code): invite = code
         case let .paired(device):
+            toast(.success, "Paired with \(device.name)", "It can send to you now.")
             pairingCode = nil
             invite = nil
             pairingProblem = nil
@@ -142,17 +162,31 @@ struct AppState {
             pairedCount += 1
             reachable?.insert(device.identity.id)
         case let .pairingFailed(problem):
+            if !joining { toast(.failure, problem.title, problem.next) }
             pairingCode = nil
             joining = false
             pairingProblem = problem
         case let .sendFailed(name, problem):
-            problems.append(NamedProblem(name: name, problem: problem))
+            toast(.failure, problem.title, "\(name): \(problem.next)")
         case let .textReceived(name, text, autoCopy):
             texts.insert(ReceivedText(id: now, name: name, text: text, copied: autoCopy), at: 0)
             texts = Array(texts.prefix(maxTexts))
         case let .textShared(name, problem):
-            if let problem { problems.append(NamedProblem(name: name, problem: problem)) }
+            if let problem { toast(.failure, problem.title, "\(name): \(problem.next)") }
         }
+    }
+
+    mutating func toast(_ tone: Tone, _ title: String, _ detail: String) {
+        toastsMade += 1
+        toasts.append(Toast(id: toastsMade, tone: tone, title: title, detail: detail))
+        toasts = Array(toasts.suffix(maxToasts))
+    }
+
+    /// The last transfer to end keeps the pill for a moment. One ending beside others moves to a toast underneath.
+    private mutating func settle(_ id: String) {
+        guard transfers.contains(where: \.running), let index = transfers.firstIndex(where: { $0.id == id }) else { return }
+        let ended = transfers.remove(at: index).outcome
+        toast(ended.tone, ended.title, ended.detail)
     }
 
     private mutating func change(_ id: String, _ edit: (inout Transfer) -> Void) {

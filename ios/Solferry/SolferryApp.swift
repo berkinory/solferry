@@ -3,6 +3,12 @@ import SwiftUI
 
 private let presenceEverySeconds = 20.0
 
+private enum Presented: Identifiable {
+    case pairing, code, send
+
+    var id: Self { self }
+}
+
 enum Place: Hashable {
     case home, history, settings
 }
@@ -47,8 +53,14 @@ private struct RootView: View {
         }
         .environment(\.addDevice) { pairing = true }
         .sensoryFeedback(.selection, trigger: place)
-        .sheet(isPresented: $pairing) { AddDeviceScreen() }
-        .sheet(isPresented: $sending, onDismiss: { staged = [] }) { SendScreen(files: $staged) }
+        .overlay(alignment: .top) { Toaster() }
+        .sheet(item: presented) { sheet in
+            switch sheet {
+            case .pairing: PairingScreen()
+            case .code: AddDeviceScreen()
+            case .send: SendScreen(files: $staged)
+            }
+        }
         .confirmationDialog("Send", isPresented: $choosing) {
             Button("Photos and videos") { browsingPhotos = true }
             Button("Files") { browsing = true }
@@ -67,6 +79,26 @@ private struct RootView: View {
             while phase == .active, !Task.isCancelled {
                 engine.bridge.checkPresence()
                 try? await Task.sleep(for: .seconds(presenceEverySeconds))
+            }
+        }
+    }
+
+    /// One sheet at a time, and a device asking to pair goes ahead of the others.
+    private var presented: Binding<Presented?> {
+        Binding {
+            let state = engine.state
+            if !state.pairings.isEmpty || state.pairingCode != nil { return .pairing }
+            if pairing { return .code }
+            return sending ? .send : nil
+        } set: { value in
+            guard value == nil else { return }
+            if !engine.state.pairings.isEmpty || engine.state.pairingCode != nil {
+                engine.closePairing()
+            } else if pairing {
+                pairing = false
+            } else {
+                sending = false
+                staged = []
             }
         }
     }

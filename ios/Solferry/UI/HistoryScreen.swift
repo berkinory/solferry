@@ -5,19 +5,10 @@ struct HistoryScreen: View {
 
     var body: some View {
         let history = engine.state.history
-        Page(title: "History") {
-            if history.isEmpty {
-                Card(glyph: .history, title: "History") {
-                    PaddedWell {
-                        VStack(spacing: 2) {
-                            Text("No transfers yet")
-                            Muted("Files you send or receive are listed here.")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, SpaceTokens.lg)
-                    }
-                }
-            } else {
+        if history.isEmpty {
+            NoHistory()
+        } else {
+            Page(title: "History") {
                 Card(glyph: .history, title: "History") {
                     ActionButton(label: "Clear", kind: .ghost, scale: .small) { engine.bridge.clearHistory() }
                 } content: {
@@ -25,6 +16,30 @@ struct HistoryScreen: View {
                 }
             }
         }
+    }
+}
+
+private struct NoHistory: View {
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        VStack(spacing: SpaceTokens.xs) {
+            ZStack {
+                FanTile(glyph: .upload, x: -38)
+                FanTile(glyph: .download, x: 38)
+                Icon(.history, tint: palette.ink, size: 24)
+                    .frame(width: 56, height: 56)
+                    .background(palette.raised, in: fieldShape)
+                    .overlay(fieldShape.strokeBorder(palette.line))
+            }
+            .padding(.bottom, SpaceTokens.md)
+            Text("No transfers yet").font(.titleText)
+            Muted("Files you send or receive show up here.")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(palette.page.ignoresSafeArea())
+        .navigationTitle("History")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

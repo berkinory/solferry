@@ -4,16 +4,11 @@ private let guide = URL(string: "https://github.com/berkinory/solferry/blob/main
 
 private let reaches: [(reach: Reach, label: String, detail: String)] = [
     (.everyone, "Everyone", "Anyone on your network can see this device and ask to send."),
-    (.paired, "Paired", "Others can see this device, but only paired devices can send."),
     (.hidden, "Hidden", "This device doesn't show up nearby. Paired devices can still send."),
 ]
 
 private func index(of visibility: String) -> Int {
-    switch visibility {
-    case "KnownDevices": 1
-    case "Hidden": 2
-    default: 0
-    }
+    visibility == "Hidden" ? 1 : 0
 }
 
 struct SettingsScreen: View {

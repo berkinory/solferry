@@ -38,37 +38,48 @@ private struct Asker: View {
     }
 }
 
-struct PairingCard: View {
+/// Pairing takes over the screen the way sending does.
+struct PairingScreen: View {
     @Environment(Engine.self) private var engine
-    @Environment(\.palette) private var palette
-    let prompt: PairingPrompt
 
     var body: some View {
-        Card(glyph: .shield, title: "Pairing request", tone: palette.primary) {
-            PaddedWell {
-                Asker(peer: prompt.peer, title: "\(prompt.name) wants to pair", detail: prompt.peer.fingerprint)
-                Digits(code: prompt.code)
-                Muted("Accept only if the other screen shows the same code.")
-                HStack(spacing: SpaceTokens.sm) {
-                    ActionButton(label: "Same code", kind: .primary, wide: true) { engine.answerPairing(prompt.key, accept: true) }
-                    ActionButton(label: "Decline") { engine.answerPairing(prompt.key, accept: false) }
-                }
-            }
+        let state = engine.state
+        if let asked = state.pairings.first {
+            SheetPage(title: "Pairing request", close: engine.closePairing) { RequestBody(prompt: asked) }
+        } else if let code = state.pairingCode {
+            SheetPage(title: "Compare codes", close: engine.closePairing) { CompareBody(code: code) }
         }
     }
 }
 
-struct CompareCard: View {
-    @Environment(\.palette) private var palette
+private struct RequestBody: View {
+    @Environment(Engine.self) private var engine
+    let prompt: PairingPrompt
+
+    var body: some View {
+        VStack(spacing: SpaceTokens.xs) {
+            DeviceTile(identity: prompt.peer)
+            Text("\(prompt.name) wants to pair").lineLimit(1)
+            Caption(prompt.peer.fingerprint)
+        }
+        Connector(live: true)
+        CardFrame { Well(padding: 12) { Digits(code: prompt.code) } }
+        Muted("Accept only if the other screen shows the same code.").multilineTextAlignment(.center)
+        HStack(spacing: SpaceTokens.sm) {
+            ActionButton(label: "Decline") { engine.answerPairing(prompt.key, accept: false) }
+            ActionButton(label: "Same code", glyph: .check, kind: .primary, wide: true) { engine.answerPairing(prompt.key, accept: true) }
+        }
+        .padding(.top, SpaceTokens.sm)
+    }
+}
+
+private struct CompareBody: View {
     let code: String
 
     var body: some View {
-        Card(glyph: .shield, title: "Compare codes", tone: palette.primary) {
-            PaddedWell {
-                Digits(code: code)
-                Muted("Check that the other device shows this code, then accept there.")
-            }
-        }
+        CardFrame { Well(padding: 12) { Digits(code: code) } }
+        Muted("Check that the other device shows this code, then accept there.").multilineTextAlignment(.center)
+        Connector(live: true)
     }
 }
 

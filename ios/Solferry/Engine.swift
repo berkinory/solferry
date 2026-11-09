@@ -122,8 +122,13 @@ final class Engine {
         bridge.answerPairing(key: key, accept: accept)
     }
 
-    func dismissProblem(_ id: UUID) {
-        state.problems.removeAll { $0.id == id }
+    func dismissToast(_ id: Int) {
+        state.toasts.removeAll { $0.id == id }
+    }
+
+    /// Closing the pairing screen says no to whoever asked, or just stops showing our own code.
+    func closePairing() {
+        if let asked = state.pairings.first { answerPairing(asked.key, accept: false) } else { state.pairingCode = nil }
     }
 
     func dismissText(_ id: UInt64) {
