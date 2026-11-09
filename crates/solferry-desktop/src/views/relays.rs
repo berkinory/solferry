@@ -1,3 +1,4 @@
+use gpui_kit::component::Sizable;
 use gpui_kit::component::input::Input;
 use gpui_kit::{
     AnyElement, Context, Hsla, IntoElement, ParentElement, SharedString, Styled, Window, div, px,
@@ -23,10 +24,10 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
         .ghost()
         .xs()
         .icon(Glyph::External)
-        .label("Set one up")
+        .label("Setup Guide")
         .on_click(cx.listener(|_, _, _, cx| cx.open_url(GUIDE)))
         .into_any_element();
-    ui::card(Glyph::Relay, "Your relays", Some(guide), cx)
+    ui::card(Glyph::Relay, "Relay", Some(guide), cx)
         .child(
             ui::padded_well(cx)
                 .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
@@ -35,7 +36,9 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
                     div()
                         .flex()
                         .gap(px(SPACE_XS))
-                        .child(div().flex_1().min_w_0().child(Input::new(&view.relay_input)))
+                        .child(
+                            div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()),
+                        )
                         .child(
                             Button::new("add-relay")
                                 .sm()
@@ -66,7 +69,7 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
     div()
         .flex()
         .items_center()
-        .gap(px(10.))
+        .gap(px(12.))
         .child(ui::tile(Glyph::Relay, cx))
         .child(
             div()

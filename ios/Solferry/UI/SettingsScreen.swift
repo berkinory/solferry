@@ -93,8 +93,8 @@ private struct RelayCard: View {
 
     var body: some View {
         let state = engine.state
-        Card(glyph: .relay, title: "Your relays") {
-            ActionButton(label: "Set one up", glyph: .external, kind: .ghost, scale: .small) { openURL(guide) }
+        Card(glyph: .relay, title: "Relay") {
+            ActionButton(label: "Setup Guide", glyph: .external, kind: .ghost, scale: .small) { openURL(guide) }
         } content: {
             PaddedWell {
                 Muted("Reach devices on other networks through a relay you run.")

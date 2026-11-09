@@ -56,8 +56,8 @@ fun RelayCard(state: AppState, engine: Engine) {
     LaunchedEffect(state.relays.size) { link = "" }
     val add = { if (link.isNotBlank()) engine.bridge.addRelay(link.trim()) }
     Card(
-        R.drawable.ic_relay, "Your relays",
-        aside = { Button({ links.openUri(GUIDE) }, label = "Set one up", icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+        R.drawable.ic_relay, "Relay",
+        aside = { Button({ links.openUri(GUIDE) }, label = "Setup Guide", icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
     ) {
         PaddedWell {
             Muted("Reach devices on other networks through a relay you run.")
