@@ -13,7 +13,6 @@ const APP_DIR: &str = "solferry";
 pub enum Visibility {
     #[default]
     Everyone,
-    KnownDevices,
     Hidden,
 }
 

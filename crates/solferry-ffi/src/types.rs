@@ -262,6 +262,9 @@ pub enum Update {
     Completed {
         id: String,
     },
+    Cancelled {
+        id: String,
+    },
     Failed {
         id: String,
         problem: Problem,
@@ -334,6 +337,7 @@ impl Update {
             }
             Event::Reconnecting { id, .. } => Self::Reconnecting { id: id.to_string() },
             Event::Completed { id } => Self::Completed { id: id.to_string() },
+            Event::Failed { id, error: Error::Cancelled } => Self::Cancelled { id: id.to_string() },
             Event::Failed { id, error } => {
                 Self::Failed { id: id.to_string(), problem: error.into() }
             }

@@ -34,7 +34,7 @@ pub fn explain(error: &Error) -> Explanation {
         ),
         Error::RelayCheckFailed => say("A relay is not working", "See its status in Settings."),
         Error::NotPaired => {
-            say("This device only accepts paired devices", "Pair them first from Add device.")
+            say("Pair with this device first", "Only paired devices can reach it from here.")
         }
         Error::VersionMismatch { .. } => {
             say("Solferry versions don't match", "Update Solferry on both devices.")

@@ -53,7 +53,6 @@ pub struct SharedFile {
 #[derive(Clone, Copy, Debug, uniffi::Enum)]
 pub enum Reach {
     Everyone,
-    Paired,
     Hidden,
 }
 
@@ -322,7 +321,6 @@ impl Solferry {
         self.change(move |config| {
             config.visibility = match reach {
                 Reach::Everyone => Visibility::Everyone,
-                Reach::Paired => Visibility::KnownDevices,
                 Reach::Hidden => Visibility::Hidden,
             };
         });
