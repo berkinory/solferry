@@ -63,8 +63,6 @@ glyphs! {
     Relay => "relay",
     Send => "send",
     Settings => "settings",
-    Shield => "shield",
-    Transfers => "transfers",
     TypeArchive => "type-archive",
     TypeAudio => "type-audio",
     TypeCode => "type-code",

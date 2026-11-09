@@ -5,7 +5,7 @@ use std::time::Instant;
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
     Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary, PastTransfer, Platform,
-    RelayHealth, TransferId,
+    RelayHealth, TransferId, explain,
 };
 
 use crate::format;
@@ -13,6 +13,7 @@ use crate::service::Update;
 
 const SPEED_SMOOTHING: f64 = 0.2;
 const MAX_TEXTS: usize = 3;
+const MAX_TOASTS: usize = 3;
 
 #[derive(Clone)]
 pub enum Phase {
@@ -41,7 +42,23 @@ pub struct FailedSend {
     pub name: String,
     pub addr: EndpointAddr,
     pub paths: Vec<PathBuf>,
-    pub error: Error,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Tone {
+    Success,
+    Error,
+}
+
+/// A short message under the transfer pill, gone after a few seconds.
+#[derive(Clone)]
+pub struct Toast {
+    pub key: u64,
+    pub tone: Tone,
+    pub title: String,
+    pub detail: String,
+    pub retry: Option<FailedSend>,
+    pub leaving: bool,
 }
 
 #[derive(Clone)]
@@ -79,10 +96,13 @@ pub struct AppState {
     pub reachable: Option<HashSet<EndpointId>>,
     pub transfers: Vec<Transfer>,
     pub history: Vec<PastTransfer>,
-    pub failures: Vec<FailedSend>,
+    pub toasts: Vec<Toast>,
+    toasts_made: u64,
+    /// Goes up each time the last transfer ends, which starts the pill's way out.
+    pub pill_settled: u64,
+    pub pill_leaving: bool,
     pub offers: Vec<Offer>,
     pub texts: Vec<SharedText>,
-    pub text_failure: Option<(String, Error)>,
     texts_seen: u64,
     pub pairing_prompts: Vec<PairingPrompt>,
     pub pairing_code: Option<String>,
@@ -139,21 +159,66 @@ impl AppState {
             }
             Update::PairingFailed(error) => {
                 self.pairing_code = None;
+                if !self.joining {
+                    let explanation = explain(&error);
+                    self.toast(Tone::Error, explanation.title, explanation.next, None);
+                }
                 self.joining = false;
                 self.pairing_error = Some(error);
             }
             Update::TextShared { name, result } => {
-                self.text_failure = result.err().map(|error| (name, error));
+                if let Err(error) = result {
+                    self.text_failed(&name, &error);
+                }
             }
             Update::SendFailed { name, addr, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
-                    self.failures.push(FailedSend { name, addr, paths, error });
+                    let explanation = explain(&error);
+                    let detail = format!("{name}: {}", explanation.next);
+                    let retry = FailedSend { name, addr, paths };
+                    self.toast(Tone::Error, explanation.title, detail, Some(retry));
                 }
             }
         }
     }
 
+    pub fn toast(
+        &mut self,
+        tone: Tone,
+        title: impl Into<String>,
+        detail: impl Into<String>,
+        retry: Option<FailedSend>,
+    ) {
+        self.toasts_made += 1;
+        let key = self.toasts_made;
+        let (title, detail) = (title.into(), detail.into());
+        self.toasts.push(Toast { key, tone, title, detail, retry, leaving: false });
+        if self.toasts.len() > MAX_TOASTS {
+            self.toasts.remove(0);
+        }
+    }
+
+    pub fn text_failed(&mut self, name: &str, error: &Error) {
+        if matches!(error, Error::NothingToSend) {
+            self.toast(Tone::Error, "Your clipboard has no text", "Copy some text first.", None);
+        } else {
+            let explanation = explain(error);
+            self.toast(
+                Tone::Error,
+                explanation.title,
+                format!("{name}: {}", explanation.next),
+                None,
+            );
+        }
+    }
+
     fn add_device(&mut self, device: Device) {
+        self.toast(
+            Tone::Success,
+            format!("Paired with {}", device.name),
+            "It can send to you now.",
+            None,
+        );
         self.invite = None;
         self.pairing_error = None;
         self.joining = false;
@@ -180,7 +245,9 @@ impl AppState {
                 self.texts.truncate(MAX_TEXTS);
             }
             Event::Started { id, peer_name, label, direction, route, bytes, .. } => {
-                self.transfers.retain(|transfer| transfer.id != id);
+                self.transfers.retain(|transfer| transfer.id != id && transfer.running());
+                self.pill_leaving = false;
+                self.pill_settled += 1;
                 self.transfers.insert(
                     0,
                     Transfer {
@@ -217,20 +284,35 @@ impl AppState {
                     transfer.transferred = transfer.total;
                     transfer.phase = Phase::Done;
                 }
+                self.settle(id);
             }
             Event::Failed { id, error } => self.fail(id, error),
         }
     }
 
     fn fail(&mut self, id: TransferId, error: Error) {
-        if matches!(error, Error::Cancelled) {
+        let Some(transfer) = self.transfer(id) else { return };
+        if matches!(error, Error::Cancelled) || transfer.direction == Direction::Sending {
             self.transfers.retain(|transfer| transfer.id != id);
-        } else if let Some(transfer) = self.transfer(id) {
-            match transfer.direction {
-                Direction::Receiving => transfer.phase = Phase::Failed(error),
-                Direction::Sending => self.transfers.retain(|transfer| transfer.id != id),
-            }
+            return;
         }
+        transfer.phase = Phase::Failed(error);
+        self.settle(id);
+    }
+
+    /// The last transfer to end keeps the pill for a moment. One ending beside others moves
+    /// to a toast underneath, so the pill stays on what is still running.
+    fn settle(&mut self, id: TransferId) {
+        if !self.transfers.iter().any(Transfer::running) {
+            self.pill_settled += 1;
+            return;
+        }
+        let Some(index) = self.transfers.iter().position(|transfer| transfer.id == id) else {
+            return;
+        };
+        let ended = self.transfers.remove(index);
+        let (tone, title, detail) = ended.outcome();
+        self.toast(tone, title, detail, None);
     }
 
     fn transfer(&mut self, id: TransferId) -> Option<&mut Transfer> {
@@ -241,6 +323,23 @@ impl AppState {
 impl Transfer {
     pub fn running(&self) -> bool {
         matches!(self.phase, Phase::Active | Phase::Reconnecting)
+    }
+
+    pub fn outcome(&self) -> (Tone, String, String) {
+        if let Phase::Failed(error) = &self.phase {
+            let explanation = explain(error);
+            return (Tone::Error, explanation.title.to_owned(), explanation.next.to_owned());
+        }
+        let (verb, from) = match self.direction {
+            Direction::Sending => ("Sent", "To"),
+            Direction::Receiving => ("Received", "From"),
+        };
+        let size = format::bytes(self.total);
+        (
+            Tone::Success,
+            format!("{verb} {}", self.title),
+            format!("{from} {}  ·  {size}", self.peer),
+        )
     }
 
     fn record(&mut self, transferred: u64, total: u64) {

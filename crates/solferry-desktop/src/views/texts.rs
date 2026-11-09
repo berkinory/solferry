@@ -11,32 +11,11 @@ use crate::assets::Glyph;
 use crate::service::{Command, Target};
 use crate::state::{AppState, SharedText};
 use crate::tokens::{SPACE_SM, SPACE_XS};
-use solferry_core::Error;
-use solferry_core::explain;
 
 const PREVIEW_LINES: usize = 4;
 
 pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Vec<AnyElement> {
-    let failure = state.text_failure.as_ref().map(|(name, error)| {
-        let (title, next) = if matches!(error, Error::NothingToSend) {
-            ("Your clipboard has no text", "Copy some text, then send it again.".to_owned())
-        } else {
-            let explanation = explain(error);
-            (explanation.title, format!("Sharing text with {name}. {}", explanation.next))
-        };
-        ui::failure(title, next, cx)
-            .child(
-                div().p(px(SPACE_XS)).child(
-                    Button::new("text-failure-dismiss")
-                        .ghost()
-                        .sm()
-                        .label("Dismiss")
-                        .on_click(cx.listener(|view, _, _, cx| view.dismiss_text_failure(cx))),
-                ),
-            )
-            .into_any_element()
-    });
-    failure.into_iter().chain(state.texts.iter().map(|shared| card(shared, cx))).collect()
+    state.texts.iter().map(|shared| card(shared, cx)).collect()
 }
 
 fn card(shared: &SharedText, cx: &mut Context<MainView>) -> AnyElement {
@@ -84,8 +63,7 @@ impl MainView {
             cx.read_from_clipboard().and_then(|item| item.text()).filter(|text| !text.is_empty());
         let Some(text) = text else {
             self.state.update(cx, |state, cx| {
-                state.text_failure =
-                    Some((target.name.clone(), solferry_core::Error::NothingToSend));
+                state.text_failed(&target.name, &solferry_core::Error::NothingToSend);
                 cx.notify();
             });
             return;
@@ -115,13 +93,6 @@ impl MainView {
     pub fn dismiss_text(&mut self, key: u64, cx: &mut Context<MainView>) {
         self.state.update(cx, |state, cx| {
             state.texts.retain(|shared| shared.key != key);
-            cx.notify();
-        });
-    }
-
-    pub fn dismiss_text_failure(&mut self, cx: &mut Context<MainView>) {
-        self.state.update(cx, |state, cx| {
-            state.text_failure = None;
             cx.notify();
         });
     }

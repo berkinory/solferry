@@ -109,7 +109,7 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
 }
 
 /// Dots running from the files down to the devices, lit once there is somewhere to go.
-fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
+pub fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
     let tone = if live { color(palette(cx).primary) } else { cx.theme().muted_foreground };
     let dots: Vec<_> = (0..DOTS)
         .map(|index| {

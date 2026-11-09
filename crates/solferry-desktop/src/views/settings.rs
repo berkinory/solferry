@@ -14,16 +14,11 @@ use crate::assets::Glyph;
 use crate::service::Command;
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const VISIBILITY: [(Visibility, &str, &str); 3] = [
+const VISIBILITY: [(Visibility, &str, &str); 2] = [
     (
         Visibility::Everyone,
         "Everyone",
         "Anyone on your network can see this device and ask to send.",
-    ),
-    (
-        Visibility::KnownDevices,
-        "Paired",
-        "Others can see this device, but only paired devices can send.",
     ),
     (
         Visibility::Hidden,

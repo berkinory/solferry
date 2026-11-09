@@ -1,4 +1,5 @@
 mod button;
+mod confirm;
 mod devices;
 mod dialog;
 mod history;
@@ -14,7 +15,8 @@ mod send;
 mod settings;
 mod sheet;
 mod texts;
-mod transfers;
+mod toast;
+mod toast_timing;
 mod ui;
 
 pub use main_view::MainView;

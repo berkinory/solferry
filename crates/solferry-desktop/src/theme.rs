@@ -2,7 +2,6 @@ use std::borrow::Cow;
 
 use gpui_kit::component::{ActiveTheme, Theme, ThemeRegistry};
 use gpui_kit::{App, Hsla, Rgba, rgb};
-use solferry_core::Route;
 
 use crate::tokens::{DARK, LIGHT, Palette};
 
@@ -32,15 +31,4 @@ pub fn palette(cx: &App) -> &'static Palette {
 pub fn color(value: u32) -> Hsla {
     let color: Rgba = rgb(value);
     color.into()
-}
-
-/// The color that identifies how a transfer travels.
-pub fn route_color(route: Route, cx: &App) -> Hsla {
-    let palette = palette(cx);
-    color(match route {
-        Route::Local => palette.route_local,
-        Route::Overlay => palette.route_overlay,
-        Route::Direct => palette.route_direct,
-        Route::Relay => palette.route_relay,
-    })
 }

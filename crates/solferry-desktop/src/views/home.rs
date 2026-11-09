@@ -8,7 +8,7 @@ use gpui_kit::{
 };
 
 use super::main_view::MainView;
-use super::{devices, offers, texts, transfers, ui};
+use super::{devices, offers, texts, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
@@ -20,7 +20,7 @@ const FAN_SIZE: f32 = 56.0;
 const FAN_TILT: f32 = 0.2;
 
 /// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
-fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
+pub fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -> AnyElement {
     let turn = || Transformation::rotate(radians(side * FAN_TILT));
     let layer = |size: f32, inset: f32| {
         icon(Glyph::FanCard, size)
@@ -119,9 +119,6 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         ui::failure(explanation.title, explanation.next, cx)
     });
     let offers: Vec<_> = state.offers.iter().map(|offer| offers::card(offer, cx)).collect();
-    let prompts: Vec<_> =
-        state.pairing_prompts.iter().map(|prompt| offers::pairing_card(prompt, cx)).collect();
-    let code = state.pairing_code.as_deref().map(|code| offers::pairing_code(code, cx));
     let shared = texts::render(&state, cx);
     let dragging = cx.has_active_drag();
     div()
@@ -129,12 +126,9 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex_col()
         .gap(px(SPACE_SM))
         .children(fatal)
-        .children(prompts)
-        .children(code)
         .children(offers)
         .children(shared)
         .child(drop_zone(dragging, cx))
         .child(devices::render(&state, view, cx))
-        .children(transfers::render(&state, cx))
         .into_any_element()
 }
