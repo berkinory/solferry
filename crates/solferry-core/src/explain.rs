@@ -84,6 +84,9 @@ pub fn explain(error: &Error) -> Explanation {
         Error::TicketExpired => {
             say("That code expired", "Codes last 10 minutes. Create a new one.")
         }
+        Error::Update(_) => {
+            say("Couldn't update Solferry", "Try again later, or download it from GitHub.")
+        }
         Error::PairingRefused => {
             say("Pairing was refused", "Ask them to accept, or create a new code.")
         }

@@ -43,7 +43,9 @@ data class PairingPrompt(val key: ULong, val peer: Identity, val name: String, v
 
 data class ReceivedText(val key: Long, val name: String, val text: String, val copied: Boolean)
 
-data class Me(val id: String, val fingerprint: String, val name: String, val visibility: String)
+data class Me(val id: String, val fingerprint: String, val name: String, val visibility: String, val checkUpdates: Boolean? = null)
+
+data class AvailableUpdate(val version: String, val page: String)
 
 data class AppState(
     val me: Me? = null,
@@ -62,6 +64,7 @@ data class AppState(
     val invite: String? = null,
     val joining: Boolean = false,
     val joinError: String? = null,
+    val update: AvailableUpdate? = null,
     val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
@@ -73,7 +76,7 @@ data class AppState(
     val strangers get() = nearby.filter { !it.known }
 
     fun apply(update: Update, now: Long): AppState = when (update) {
-        is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility), startProblem = null)
+        is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility, update.checkUpdates), startProblem = null)
         is Update.StartFailed -> copy(startProblem = update.problem, startReason = update.reason)
         is Update.Devices -> copy(devices = update.devices)
         is Update.History -> copy(history = update.entries)
@@ -82,6 +85,7 @@ data class AppState(
         is Update.Relays -> copy(relays = update.relays)
         is Update.RelayFailed -> toast(Tone.Error, update.problem.title)
         is Update.Blocked -> copy(blocked = update.devices)
+        is Update.UpdateAvailable -> toast(Tone.Success, "Solferry ${update.version} is available").copy(update = AvailableUpdate(update.version, update.page))
         is Update.Started -> copy(
             sendsStarted = sendsStarted + if (update.sending) 1 else 0,
             transfers = listOf(

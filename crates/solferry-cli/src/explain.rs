@@ -45,6 +45,7 @@ fn advice(error: &Error) -> Advice {
         Error::HashMismatch(_) => "Send again. The damaged copy was discarded.",
         Error::ConnectionLost => "Try again. Transfers continue where they stopped.",
         Error::InvalidTicket => "Copy the whole code, starting with sf1.",
+        Error::Update(_) => "Try again later, or download it from GitHub.",
         Error::TicketExpired => "Codes last 10 minutes. Create a new one with `solferry pair`.",
         Error::PairingRefused => "Ask them to accept, or create a new code with `solferry pair`.",
         Error::UnknownDevice(_) => {

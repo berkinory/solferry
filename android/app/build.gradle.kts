@@ -14,6 +14,9 @@ val buildRust = tasks.register<Exec>("buildRust") {
     outputs.dir(rustOut)
 }
 
+val releaseVersion = Regex("""(?m)^version = "([^"]+)"""")
+    .find(rootDir.resolve("../Cargo.toml").readText())!!.groupValues[1]
+
 android {
     namespace = "app.solferry"
     compileSdk = 37
@@ -22,8 +25,8 @@ android {
         applicationId = "app.solferry"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersion.split(".").fold(0) { code, part -> code * 100 + part.toInt() }
+        versionName = releaseVersion
     }
 
     signingConfigs {
@@ -44,6 +47,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 

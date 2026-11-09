@@ -9,6 +9,7 @@ use solferry_core::{
 
 use crate::format;
 use crate::service::Update;
+use crate::updater::Status;
 
 const MAX_TOASTS: usize = 3;
 
@@ -46,11 +47,17 @@ pub enum Tone {
 
 /// A short message under the transfer pill, gone after a few seconds.
 #[derive(Clone)]
+pub enum Action {
+    Retry(FailedSend),
+    Restart,
+}
+
+#[derive(Clone)]
 pub struct Toast {
     pub key: u64,
     pub tone: Tone,
     pub title: String,
-    pub retry: Option<FailedSend>,
+    pub action: Option<Action>,
     pub leaving: bool,
 }
 
@@ -89,6 +96,7 @@ pub struct AppState {
     pub transfers: Vec<Transfer>,
     pub history: Vec<PastTransfer>,
     pub toasts: Vec<Toast>,
+    pub updater: Status,
     toasts_made: u64,
     /// Goes up each time the last transfer ends, which starts the pill's way out.
     pub pill_settled: u64,
@@ -133,6 +141,19 @@ impl AppState {
                 self.devices = devices;
             }
             Update::Blocked(blocked) => self.blocked = blocked,
+            Update::Updater(status) => {
+                if let Status::Ready { version } = &status
+                    && self.updater != status
+                {
+                    let title = format!("Solferry {version} is ready");
+                    self.toast(Tone::Success, title, Some(Action::Restart));
+                }
+                self.updater = status;
+            }
+            Update::InstallFailed => {
+                self.toast(Tone::Error, "Couldn't install the update", None);
+            }
+            Update::Restarting => {}
             Update::RelayHealth(health) => self.relay_health = health,
             Update::Nearby(found) => self.nearby = found,
             Update::Reachable(reachable) => self.reachable = Some(reachable),
@@ -171,16 +192,20 @@ impl AppState {
                 self.sends_failed += 1;
                 if !matches!(error, Error::Cancelled) {
                     let title = about(&error, &name);
-                    self.toast(Tone::Error, title, Some(FailedSend { name, addr, paths }));
+                    self.toast(
+                        Tone::Error,
+                        title,
+                        Some(Action::Retry(FailedSend { name, addr, paths })),
+                    );
                 }
             }
         }
     }
 
-    pub fn toast(&mut self, tone: Tone, title: impl Into<String>, retry: Option<FailedSend>) {
+    pub fn toast(&mut self, tone: Tone, title: impl Into<String>, action: Option<Action>) {
         self.toasts_made += 1;
         let key = self.toasts_made;
-        self.toasts.push(Toast { key, tone, title: title.into(), retry, leaving: false });
+        self.toasts.push(Toast { key, tone, title: title.into(), action, leaving: false });
         if self.toasts.len() > MAX_TOASTS {
             self.toasts.remove(0);
         }

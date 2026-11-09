@@ -58,6 +58,8 @@ pub enum Error {
     InvalidTicket,
     #[error("pairing code expired")]
     TicketExpired,
+    #[error("update failed: {0}")]
+    Update(String),
     #[error("pairing was refused")]
     PairingRefused,
     #[error("unknown device {0}")]

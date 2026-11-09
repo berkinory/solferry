@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
+import app.solferry.BuildConfig
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
@@ -71,9 +72,10 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
         }
     }
     RelayCard(state, engine)
+    me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
     if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        Caption("Solferry 0.1.0", Modifier.weight(1f))
+        Caption("Solferry ${BuildConfig.VERSION_NAME}", Modifier.weight(1f))
         Caption(me?.fingerprint.orEmpty())
     }
 }

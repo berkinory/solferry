@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
+import app.solferry.AvailableUpdate
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
@@ -73,6 +74,25 @@ fun RelayCard(state: AppState, engine: Engine) {
                     },
                 )
                 Button(add, label = "Add")
+            }
+        }
+    }
+}
+
+@Composable
+fun UpdatesCard(enabled: Boolean, update: AvailableUpdate?, engine: Engine) {
+    val links = LocalUriHandler.current
+    Card(R.drawable.ic_download, "Updates") {
+        PaddedWell {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Muted("Check for updates automatically", Modifier.weight(1f))
+                Toggle(enabled, { engine.setCheckUpdates(it) }, "Check for updates automatically")
+            }
+            if (update != null) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                    Muted("Solferry ${update.version} is available", Modifier.weight(1f))
+                    Button({ links.openUri(update.page) }, label = "Download", icon = R.drawable.ic_external, size = ButtonSize.Sm)
+                }
             }
         }
     }

@@ -16,7 +16,7 @@ use super::toast_timing::EXIT;
 use crate::assets::{Glyph, icon};
 use crate::format;
 use crate::service::Command;
-use crate::state::{AppState, Phase, Toast, Tone, Transfer};
+use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer};
 use crate::theme::{color, palette};
 
 const WIDTH: f32 = 360.0;
@@ -316,7 +316,8 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
     let key = toast.key;
     let leaving = toast.leaving;
     let failed = toast.tone == Tone::Error;
-    let retry = toast.retry.is_some().then(|| {
+    let restart = matches!(toast.action, Some(Action::Restart));
+    let retry = toast.action.is_some().then(|| {
         let toast = toast.clone();
         div()
             .id(SharedString::from(format!("toast-retry-{key}")))
@@ -324,14 +325,15 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
             .text_size(px(14.))
             .font_weight(FontWeight::MEDIUM)
             .cursor_pointer()
-            .child("Try again")
-            .on_click(cx.listener(move |view, _, _, cx| view.retry_toast(&toast, cx)))
+            .child(if restart { "Restart" } else { "Try again" })
+            .on_click(cx.listener(move |view, _, _, cx| view.run_toast_action(&toast, cx)))
     });
-    let close = failed.then(|| {
+    let closes = failed || restart;
+    let close = closes.then(|| {
         dismiss(SharedString::from(format!("toast-close-{key}")), cx)
             .on_click(cx.listener(move |view, _, _, cx| view.dismiss_toast(key, cx)))
     });
-    let body = row(failed)
+    let body = row(closes)
         .child(badge(SharedString::from(format!("toast-badge-{key}")), toast.tone, cx))
         .child(label(SharedString::from(format!("toast-text-{key}")), toast.title.clone(), false))
         .children(retry)

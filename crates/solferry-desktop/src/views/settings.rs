@@ -6,11 +6,11 @@ use gpui_kit::{
     Window, div, px,
 };
 use iroh::EndpointId;
-use solferry_core::{BlockedDevice, Config, Visibility};
+use solferry_core::{BlockedDevice, Config, Visibility, update};
 
 use super::button::Button;
 use super::main_view::MainView;
-use super::{relays, ui};
+use super::{relays, ui, updates};
 use crate::assets::Glyph;
 use crate::service::Command;
 use crate::tokens::{SPACE_MD, SPACE_SM, SPACE_XS};
@@ -42,6 +42,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         return ui::muted("Starting...", cx).into_any_element();
     };
     let blocked = state.blocked.clone();
+    let status = state.updater.clone();
     let id = state.id;
     div()
         .flex()
@@ -50,6 +51,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(device_section(view, &config, cx))
         .child(visibility_section(&config, cx))
         .child(relays::section(view, &config, cx))
+        .children(update::enabled().then(|| updates::section(config.check_updates, &status, cx)))
         .children(blocked_section(&blocked, cx))
         .child(about(id, cx))
         .into_any_element()

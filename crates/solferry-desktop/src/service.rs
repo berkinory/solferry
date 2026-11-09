@@ -13,6 +13,7 @@ use solferry_core::{
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
+use crate::updater::Updater;
 use crate::watch;
 
 const ONLINE_WAIT: Duration = Duration::from_secs(5);
@@ -39,10 +40,16 @@ pub enum Command {
     Unblock(EndpointId),
     ClearHistory,
     Apply(Config),
+    CheckForUpdates,
+    InstallUpdate,
+    SetCheckUpdates(bool),
     Quit,
 }
 
 pub enum Update {
+    Updater(crate::updater::Status),
+    InstallFailed,
+    Restarting,
     Ready {
         id: EndpointId,
         config: Box<Config>,
@@ -239,9 +246,18 @@ async fn run(
     let pending: Pending = Arc::default();
     let pairing: PendingPairings = Arc::default();
     let mut session = start(&data_dir, &updates, &pending, &pairing).await;
+    let updater = Updater::new(data_dir.clone(), updates.clone());
+    updater.follow();
     while let Some(command) = commands.next().await {
         match command {
             Command::Quit => break,
+            Command::CheckForUpdates => updater.check_now(),
+            Command::InstallUpdate => updater.install(),
+            Command::SetCheckUpdates(enabled) => {
+                if let Ok(config) = Config::load(&data_dir) {
+                    let _ = Config { check_updates: enabled, ..config }.save(&data_dir);
+                }
+            }
             Command::Apply(config) => {
                 if let Some(active) = session.take() {
                     stop(active).await;
@@ -369,6 +385,9 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
             | Command::AnswerPairing { .. }
             | Command::BlockOffer(_)
             | Command::Apply(_)
+            | Command::CheckForUpdates
+            | Command::InstallUpdate
+            | Command::SetCheckUpdates(_)
             | Command::Quit => {}
         }
     });

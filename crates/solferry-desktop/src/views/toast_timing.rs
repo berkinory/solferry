@@ -4,18 +4,20 @@ use gpui_kit::{AsyncApp, Context, Entity};
 
 use super::main_view::MainView;
 use crate::service::{Command, Target};
-use crate::state::{AppState, Phase, Toast, Tone, Transfer};
+use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer};
 
 pub const EXIT: Duration = Duration::from_millis(220);
 const SUCCESS_STAYS: Duration = Duration::from_secs(3);
 const ERROR_STAYS: Duration = Duration::from_secs(5);
 const RETRY_STAYS: Duration = Duration::from_secs(9);
 
-fn stays(tone: Tone, retry: bool) -> Duration {
-    match (tone, retry) {
-        (_, true) => RETRY_STAYS,
-        (Tone::Success, _) => SUCCESS_STAYS,
-        (Tone::Error, _) => ERROR_STAYS,
+/// How long a toast stays on its own. One that offers a restart waits for an answer.
+fn stays(toast: &Toast) -> Option<Duration> {
+    match (&toast.action, toast.tone) {
+        (Some(Action::Restart), _) => None,
+        (Some(Action::Retry(_)), _) => Some(RETRY_STAYS),
+        (None, Tone::Success) => Some(SUCCESS_STAYS),
+        (None, Tone::Error) => Some(ERROR_STAYS),
     }
 }
 
@@ -26,7 +28,7 @@ pub fn track(view: &mut MainView, state: &Entity<AppState>, cx: &mut Context<Mai
         .toasts
         .iter()
         .filter(|toast| toast.key > view.toasts_seen)
-        .map(|toast| (toast.key, stays(toast.tone, toast.retry.is_some())))
+        .filter_map(|toast| Some((toast.key, stays(toast)?)))
         .collect();
     let settled = read.pill_settled;
     let running = read.transfers.iter().any(Transfer::running);
@@ -89,10 +91,14 @@ impl MainView {
         .detach();
     }
 
-    pub fn retry_toast(&mut self, toast: &Toast, cx: &mut Context<Self>) {
-        if let Some(failure) = toast.retry.clone() {
-            let target = Target { addr: failure.addr, name: failure.name };
-            Self::command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
+    pub fn run_toast_action(&mut self, toast: &Toast, cx: &mut Context<Self>) {
+        match toast.action.clone() {
+            Some(Action::Retry(failure)) => {
+                let target = Target { addr: failure.addr, name: failure.name };
+                Self::command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
+            }
+            Some(Action::Restart) => Self::command(Command::InstallUpdate, cx),
+            None => {}
         }
         self.dismiss_toast(toast.key, cx);
     }

@@ -319,6 +319,13 @@ impl Solferry {
         self.change(move |config| config.relays.retain(|existing| *existing != link));
     }
 
+    /// Saved without restarting the node, since nothing it runs depends on this.
+    pub fn set_check_updates(&self, enabled: bool) {
+        if let Ok(config) = Config::load(&self.data_dir) {
+            let _ = Config { check_updates: enabled, ..config }.save(&self.data_dir);
+        }
+    }
+
     pub fn rename(&self, name: String) {
         self.change(move |config| config.name = name);
     }
