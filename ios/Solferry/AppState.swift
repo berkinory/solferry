@@ -61,11 +61,11 @@ struct Toast: Identifiable {
 struct AppState {
     var me: Me?
     var startProblem: Problem?
+    var startReason = ""
     var devices: [PairedDevice] = []
     var nearby: [Nearby] = []
     var reachable: Set<String>?
     var relays: [Relay] = []
-    var relayProblem: Problem?
     var blocked: [Identity] = []
     var transfers: [Transfer] = []
     var history: [HistoryEntry] = []
@@ -73,7 +73,6 @@ struct AppState {
     var pairings: [PairingPrompt] = []
     var pairingCode: String?
     var invite: String?
-    var pairingProblem: Problem?
     var joining = false
     var texts: [ReceivedText] = []
     var toasts: [Toast] = []
@@ -91,15 +90,16 @@ struct AppState {
         case let .ready(id, fingerprint, name, _, visibility):
             me = Me(id: id, fingerprint: fingerprint, name: name, visibility: visibility)
             startProblem = nil
-        case let .startFailed(problem): startProblem = problem
+        case let .startFailed(problem, reason):
+            startProblem = problem
+            startReason = reason
         case let .devices(list): devices = list
         case let .history(entries): history = entries
         case let .nearby(list): nearby = list
         case let .reachable(ids): reachable = Set(ids)
         case let .relays(list):
             relays = list
-            relayProblem = nil
-        case let .relayFailed(problem): relayProblem = problem
+        case let .relayFailed(problem): toast(.failure, problem.title)
         case let .blocked(list): blocked = list
         case let .started(id, peerName, label, sending, route, bytes):
             transfers.removeAll { $0.id == id || !$0.running }
@@ -142,17 +142,15 @@ struct AppState {
             toast(.success, "Paired with \(device.name)")
             pairingCode = nil
             invite = nil
-            pairingProblem = nil
             joining = false
             devices.removeAll { $0.identity.id == device.identity.id }
             devices.append(device)
             pairedCount += 1
             reachable?.insert(device.identity.id)
         case let .pairingFailed(problem):
-            if !joining { toast(.failure, problem.title) }
+            toast(.failure, problem.title)
             pairingCode = nil
             joining = false
-            pairingProblem = problem
         case let .sendFailed(_, problem):
             sendsFailed += 1
             toast(.failure, problem.title)

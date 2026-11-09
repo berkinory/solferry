@@ -143,19 +143,3 @@ struct TextCard: View {
         }
     }
 }
-
-struct ProblemCard: View {
-    @Environment(\.palette) private var palette
-    let problem: Problem
-    var about: String?
-    var onDismiss: (() -> Void)?
-
-    var body: some View {
-        Card(glyph: .alert, title: problem.title, tone: palette.danger, line: palette.danger.opacity(0.5)) {
-            PaddedWell(ground: palette.dangerWell) {
-                Muted([about, problem.next].compactMap { $0 }.joined(separator: ". "))
-                if let onDismiss { ActionButton(label: "Dismiss", kind: .ghost, scale: .small, action: onDismiss) }
-            }
-        }
-    }
-}

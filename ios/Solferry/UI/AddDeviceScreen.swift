@@ -8,7 +8,6 @@ struct AddDeviceScreen: View {
     var body: some View {
         let state = engine.state
         SheetPage(title: "Pair with a code", close: { dismiss() }) {
-            if let problem = state.pairingProblem { ProblemCard(problem: problem) }
             Card(glyph: .qr, title: "Show a code") {
                 PaddedWell {
                     if let invite = state.invite {

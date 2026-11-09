@@ -9,7 +9,6 @@ struct HomeScreen: View {
         let state = engine.state
         ScrollView {
             VStack(spacing: SpaceTokens.sm) {
-                if let problem = state.startProblem { ProblemCard(problem: problem) }
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 ForEach(state.texts) { TextCard(shared: $0) }
                 SendZone { pick(nil) }

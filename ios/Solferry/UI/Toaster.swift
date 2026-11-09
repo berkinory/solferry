@@ -24,6 +24,7 @@ struct Toaster: View {
     var body: some View {
         let state = engine.state
         VStack(spacing: 6) {
+            if let problem = state.startProblem { FatalRow(problem: problem, reason: state.startReason) }
             if !state.transfers.isEmpty { TransferPill(transfers: state.transfers).transition(Landing()) }
             ForEach(state.toasts) { ToastRow(toast: $0).transition(Landing()) }
         }
@@ -223,6 +224,42 @@ private struct TransferPill: View {
             try? await Task.sleep(for: .seconds(outcome.tone == .success ? successSeconds : failureSeconds))
             engine.clearTransfer(ended.id)
         }
+    }
+}
+
+/// Stays until the app can network again, and opens to say why.
+private struct FatalRow: View {
+    @Environment(\.palette) private var palette
+    @State private var opened = false
+    let problem: Problem
+    let reason: String
+
+    var body: some View {
+        Shell {
+            VStack(alignment: .leading, spacing: 0) {
+                PillRow {
+                    Badge(tone: .failure)
+                    Label(text: problem.title)
+                    if opened { Spacer(minLength: 0) }
+                    Icon(opened ? .chevronUp : .chevronDown, tint: palette.page.opacity(0.76), size: 15)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { withAnimation(spring) { opened.toggle() } }
+                if opened {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(problem.next)
+                        Text(reason)
+                    }
+                    .font(.system(size: 13))
+                    .foregroundStyle(palette.page.opacity(0.76))
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 14)
+                    .transition(.opacity)
+                }
+            }
+            .frame(maxWidth: opened ? 360 : nil, alignment: .leading)
+        }
+        .clipShape(pillShape)
     }
 }
 
