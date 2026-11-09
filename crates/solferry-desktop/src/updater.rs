@@ -13,7 +13,7 @@ use solferry_core::{Config, Error, Result, update};
 use crate::service::Update;
 
 const FIRST_CHECK: Duration = Duration::from_secs(30);
-const CHECK_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
+const CHECK_EVERY: Duration = Duration::from_hours(6);
 const STAGE_DIR: &str = "updates";
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -251,7 +251,7 @@ impl Updater {
     pub fn install(&self) {
         let staged = self.staged.lock().unwrap_or_else(PoisonError::into_inner).clone();
         let Some((payload, target)) = staged else { return };
-        let (updates, folder) = (self.updates.clone(), self.data_dir.join(STAGE_DIR));
+        let (out, folder) = (self.updates.clone(), self.data_dir.join(STAGE_DIR));
         tokio::task::spawn_blocking(move || {
             let result = replace(&target, &payload).and_then(|()| relaunch(&target));
             let update = match result {
@@ -264,7 +264,7 @@ impl Updater {
                     Update::InstallFailed
                 }
             };
-            let _ = updates.unbounded_send(update);
+            let _ = out.unbounded_send(update);
         });
     }
 }

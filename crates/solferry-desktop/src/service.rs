@@ -246,13 +246,13 @@ async fn run(
     let pending: Pending = Arc::default();
     let pairing: PendingPairings = Arc::default();
     let mut session = start(&data_dir, &updates, &pending, &pairing).await;
-    let updater = Updater::new(data_dir.clone(), updates.clone());
-    updater.follow();
+    let releases = Updater::new(data_dir.clone(), updates.clone());
+    releases.follow();
     while let Some(command) = commands.next().await {
         match command {
             Command::Quit => break,
-            Command::CheckForUpdates => updater.check_now(),
-            Command::InstallUpdate => updater.install(),
+            Command::CheckForUpdates => releases.check_now(),
+            Command::InstallUpdate => releases.install(),
             Command::SetCheckUpdates(enabled) => {
                 if let Ok(config) = Config::load(&data_dir) {
                     let _ = Config { check_updates: enabled, ..config }.save(&data_dir);
