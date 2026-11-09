@@ -7,10 +7,8 @@ import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
 import uniffi.solferry_ffi.Problem
 import uniffi.solferry_ffi.Relay
-import uniffi.solferry_ffi.TransferRoute
 import uniffi.solferry_ffi.Update
 
-private const val SPEED_SMOOTHING = 0.2
 private const val MAX_TEXTS = 3
 private const val MAX_TOASTS = 3
 
@@ -19,28 +17,23 @@ enum class Phase { Active, Reconnecting, Done, Failed }
 enum class Tone { Success, Error }
 
 /** A short message under the transfer pill, gone after a few seconds. */
-data class Toast(val key: Long, val tone: Tone, val title: String, val detail: String)
+data class Toast(val key: Long, val tone: Tone, val title: String)
 
 data class Transfer(
     val id: String,
     val peerName: String,
     val label: String,
     val sending: Boolean,
-    val route: TransferRoute,
     val transferred: Long = 0,
     val total: Long,
-    val bytesPerSecond: Double = 0.0,
     val phase: Phase = Phase.Active,
     val problem: Problem? = null,
-    val sampledAt: Long = 0,
-    val sampledBytes: Long = 0,
 ) {
     val running get() = phase == Phase.Active || phase == Phase.Reconnecting
     val fraction get() = if (total == 0L) 1f else transferred.toFloat() / total
-    val outcome: Triple<Tone, String, String> get() {
-        problem?.let { return Triple(Tone.Error, it.title, it.next) }
-        val (verb, from) = if (sending) "Sent" to "To" else "Received" to "From"
-        return Triple(Tone.Success, "$verb $label", "$from $peerName  ·  ${app.solferry.ui.bytes(total)}")
+    val outcome: Pair<Tone, String> get() {
+        problem?.let { return Tone.Error to it.title }
+        return Tone.Success to "${if (sending) "Sent" else "Received"} $label"
     }
 }
 
@@ -89,11 +82,11 @@ data class AppState(
         is Update.Blocked -> copy(blocked = update.devices)
         is Update.Started -> copy(
             transfers = listOf(
-                Transfer(update.id, update.peerName, update.label, update.sending, update.route, total = update.bytes.toLong()),
+                Transfer(update.id, update.peerName, update.label, update.sending, total = update.bytes.toLong()),
             ) + transfers.filter { it.id != update.id && it.running },
         )
-        is Update.Progress -> transfer(update.id) { it.sample(update.transferred.toLong(), update.total.toLong(), now) }
-        is Update.RouteChanged -> transfer(update.id) { it.copy(route = update.route) }
+        is Update.Progress -> transfer(update.id) { it.copy(transferred = update.transferred.toLong(), total = update.total.toLong(), phase = Phase.Active) }
+        is Update.RouteChanged -> this
         is Update.Reconnecting -> transfer(update.id) { it.copy(phase = Phase.Reconnecting) }
         is Update.Completed -> transfer(update.id) { it.copy(phase = Phase.Done, transferred = it.total) }.settle(update.id)
         is Update.Cancelled -> copy(transfers = transfers.filter { it.id != update.id })
@@ -106,41 +99,33 @@ data class AppState(
         is Update.PairingGone -> copy(pairings = pairings.filter { it.key != update.key })
         is Update.PairingCode -> copy(pairingCode = update.code)
         is Update.Invite -> copy(invite = update.code)
-        is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}", "It can send to you now.").copy(
+        is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}").copy(
             pairingCode = null, invite = null, pairingProblem = null, joining = false,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
             reachable = reachable?.plus(update.device.identity.id),
         )
         is Update.PairingFailed ->
-            (if (joining) this else toast(Tone.Error, update.problem.title, update.problem.next))
+            (if (joining) this else toast(Tone.Error, update.problem.title))
                 .copy(pairingCode = null, joining = false, pairingProblem = update.problem)
-        is Update.SendFailed -> toast(Tone.Error, update.problem.title, "${update.name}: ${update.problem.next}")
+        is Update.SendFailed -> toast(Tone.Error, "${update.name}: ${update.problem.title}")
         is Update.TextReceived -> copy(
             texts = (listOf(ReceivedText(now, update.name, update.text, update.autoCopy)) + texts).take(MAX_TEXTS),
         )
-        is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title, "${update.name}: ${it.next}") } ?: this
+        is Update.TextShared -> update.problem?.let { toast(Tone.Error, "${update.name}: ${it.title}") } ?: this
     }
 
-    fun toast(tone: Tone, title: String, detail: String) =
-        copy(toasts = (toasts + Toast(toastsMade + 1, tone, title, detail)).takeLast(MAX_TOASTS), toastsMade = toastsMade + 1)
+    fun toast(tone: Tone, title: String) =
+        copy(toasts = (toasts + Toast(toastsMade + 1, tone, title)).takeLast(MAX_TOASTS), toastsMade = toastsMade + 1)
 
     /** The last transfer to end keeps the pill for a moment. One ending beside others moves to a toast underneath. */
     private fun settle(id: String): AppState {
         val ended = transfers.find { it.id == id } ?: return this
         if (transfers.none { it.running }) return this
-        val (tone, title, detail) = ended.outcome
-        return copy(transfers = transfers - ended).toast(tone, title, detail)
+        val (tone, title) = ended.outcome
+        return copy(transfers = transfers - ended).toast(tone, title)
     }
 
     private fun transfer(id: String, change: (Transfer) -> Transfer) =
         copy(transfers = transfers.map { if (it.id == id) change(it) else it })
-}
-
-private fun Transfer.sample(bytes: Long, total: Long, now: Long): Transfer {
-    val elapsed = (now - sampledAt) / 1e9
-    val speed = if (sampledAt == 0L || elapsed <= 0) bytesPerSecond else {
-        bytesPerSecond + ((bytes - sampledBytes) / elapsed - bytesPerSecond) * SPEED_SMOOTHING
-    }
-    return copy(transferred = bytes, total = total, bytesPerSecond = speed, sampledAt = now, sampledBytes = bytes, phase = Phase.Active)
 }

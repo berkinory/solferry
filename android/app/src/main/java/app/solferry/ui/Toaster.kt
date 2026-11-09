@@ -1,8 +1,9 @@
 package app.solferry.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
@@ -26,12 +27,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,46 +68,52 @@ import app.solferry.Toast
 import app.solferry.Tone
 import app.solferry.Transfer
 import kotlinx.coroutines.delay
-import uniffi.solferry_ffi.TransferRoute
 
 private const val SUCCESS_STAYS_MS = 3000L
 private const val ERROR_STAYS_MS = 5000L
 private const val EXIT_MS = 220L
 
 private val PillShape = RoundedCornerShape(20.dp)
+private val RECONNECTING = Color(0xFFF59E0B)
 private val enter: EnterTransition =
     slideInVertically(spring(dampingRatio = 0.82f, stiffness = 340f)) { -it / 3 } + fadeIn() + scaleIn(initialScale = 0.96f)
 private val exit: ExitTransition =
     slideOutVertically(tween(EXIT_MS.toInt())) { -it / 4 } + fadeOut(tween(EXIT_MS.toInt())) + scaleOut(targetScale = 0.96f)
 
-private fun routeName(route: TransferRoute) = when (route) {
-    TransferRoute.LOCAL -> "local network"
-    TransferRoute.OVERLAY -> "overlay network"
-    TransferRoute.DIRECT -> "direct"
-    TransferRoute.RELAY -> "relay"
-}
-
-private fun Transfer.motion(): String {
-    val who = "${if (sending) "To" else "From"} $peerName"
-    if (phase == Phase.Reconnecting) return "$who  ·  Reconnecting"
-    if (bytesPerSecond <= 1) return "$who  ·  ${routeName(route)}"
-    return "$who  ·  ${bytes(bytesPerSecond.toLong())}/s  ·  ${routeName(route)}"
-}
-
-/** Foreground fill and page-colored text, so the pill flips with the theme by itself. */
+/** Foreground fill and page-colored text, sized by what it says, so it flips with the theme. */
 @Composable
 private fun Shell(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val palette = LocalPalette.current
-    Box(modifier.fillMaxWidth().shadow(10.dp, PillShape).clip(PillShape).background(palette.ink)) { content() }
+    Box(
+        modifier.widthIn(max = 380.dp).shadow(14.dp, PillShape, spotColor = Color.Black.copy(alpha = 0.3f)).clip(PillShape)
+            .background(palette.ink).animateContentSize(spring(dampingRatio = 0.86f, stiffness = 340f)),
+    ) { content() }
+}
+
+/** One line that comes up from below whenever it changes. */
+@Composable
+private fun RowScope.Label(text: String, wide: Boolean = false) {
+    val ground = LocalPalette.current.page
+    AnimatedContent(
+        text, Modifier.weight(1f, fill = wide),
+        transitionSpec = {
+            (slideInVertically(tween(420)) { it } + fadeIn(tween(320))) togetherWith (slideOutVertically(tween(160)) { -it } + fadeOut(tween(120)))
+        },
+        label = "toast label",
+    ) { shown ->
+        Text(shown, color = ground, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
 }
 
 @Composable
-private fun Lines(title: String, detail: String, modifier: Modifier = Modifier) {
-    val ground = LocalPalette.current.page
-    Column(modifier) {
-        Text(title, color = ground, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(detail, color = ground.copy(alpha = 0.62f), fontSize = 11.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
+private fun PillRow(onClick: (() -> Unit)? = null, closes: Boolean, wide: Boolean = false, content: @Composable RowScope.() -> Unit) {
+    val press = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+    Row(
+        press.then(if (wide) Modifier.fillMaxWidth() else Modifier).height(44.dp).padding(start = 16.dp, end = if (closes) 8.dp else 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        content = content,
+    )
 }
 
 /** A filled circle with a mark that lands with a small overshoot. */
@@ -113,37 +123,42 @@ private fun Badge(tone: Tone) {
     val size = remember { Animatable(0.6f) }
     LaunchedEffect(Unit) { size.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = 420f)) }
     Box(
-        Modifier.size(18.dp).scale(size.value).background(if (tone == Tone.Success) palette.successFill else palette.dangerFill, CircleShape),
+        Modifier.size(16.dp).scale(size.value).background(if (tone == Tone.Success) palette.successFill else palette.dangerFill, CircleShape),
         contentAlignment = Alignment.Center,
-    ) { Glyph(if (tone == Tone.Success) R.drawable.ic_check else R.drawable.ic_cancel, Color.White, 11) }
+    ) { Glyph(if (tone == Tone.Success) R.drawable.ic_check else R.drawable.ic_cancel, Color.White, 10) }
 }
 
 @Composable
-private fun Ring(fraction: Float) {
-    val ground = LocalPalette.current.page
+private fun Ring(fraction: Float, tone: Color) {
     val shown by animateFloatAsState(fraction.coerceIn(0f, 1f), tween(240))
+    val color by animateColorAsState(tone)
     CircularProgressIndicator(
-        { shown }, Modifier.size(18.dp), color = ground, trackColor = ground.copy(alpha = 0.2f),
-        strokeWidth = 2.5.dp, strokeCap = StrokeCap.Round, gapSize = 0.dp,
+        { shown }, Modifier.size(16.dp), color = color, trackColor = color.copy(alpha = 0.25f),
+        strokeWidth = 2.dp, strokeCap = StrokeCap.Round, gapSize = 0.dp,
     )
 }
 
 @Composable
-private fun Mark(@DrawableRes icon: Int, description: String, onClick: () -> Unit) {
+private fun Close(description: String, onClick: () -> Unit) {
     val ground = LocalPalette.current.page
-    Box(Modifier.size(32.dp).clip(CircleShape).clickable(onClickLabel = description, onClick = onClick), contentAlignment = Alignment.Center) {
-        Glyph(icon, ground.copy(alpha = 0.62f), 14)
+    Box(Modifier.size(28.dp).clip(RoundedCornerShape(6.dp)).clickable(onClickLabel = description, onClick = onClick), contentAlignment = Alignment.Center) {
+        Glyph(R.drawable.ic_cancel, ground.copy(alpha = 0.76f), 13)
     }
 }
 
 @Composable
-private fun RunningRow(transfer: Transfer, engine: Engine) {
-    val ground = LocalPalette.current.page
-    Row(Modifier.fillMaxWidth().height(46.dp).padding(start = 14.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Ring(transfer.fraction)
-        Lines(transfer.label, transfer.motion(), Modifier.weight(1f))
-        Text("${(transfer.fraction * 100).toInt()}%", color = ground.copy(alpha = 0.62f), fontSize = 12.sp)
-        Mark(R.drawable.ic_cancel, "Cancel") { engine.bridge.cancel(transfer.id) }
+private fun Percent(fraction: Float) =
+    Text("${(fraction * 100).toInt()}%", color = LocalPalette.current.page.copy(alpha = 0.76f), fontSize = 13.sp)
+
+@Composable
+private fun RunningRow(transfer: Transfer, engine: Engine, wide: Boolean = false) {
+    val waiting = transfer.phase == Phase.Reconnecting
+    val verb = if (waiting) "Reconnecting" else if (transfer.sending) "Sending" else "Receiving"
+    PillRow(closes = true, wide = wide) {
+        Ring(transfer.fraction, if (waiting) RECONNECTING else LocalPalette.current.page)
+        Label("$verb ${transfer.label}", wide)
+        Percent(transfer.fraction)
+        Close("Cancel") { engine.bridge.cancel(transfer.id) }
     }
 }
 
@@ -171,46 +186,28 @@ private fun Pill(transfers: List<Transfer>, engine: Engine) {
         }
     }
     Shell(Modifier.shaking(transfers.firstOrNull()?.takeIf { it.phase == Phase.Failed }?.id)) {
-        Column {
-            AnimatedContent(
-                face,
-                transitionSpec = {
-                    (slideInVertically(tween(320)) { it / 2 } + fadeIn(tween(240))) togetherWith (slideOutVertically(tween(120)) { -it / 2 } + fadeOut(tween(100)))
-                },
-                label = "pill",
-            ) { shown ->
-                when (shown) {
-                    is PillFace.One -> running.find { it.id == shown.id }?.let { RunningRow(it, engine) } ?: Box(Modifier.height(46.dp))
-                    is PillFace.Many -> Row(
-                        Modifier.fillMaxWidth().height(46.dp).clickable { open = !open }.padding(horizontal = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Ring(running.sumOf { it.transferred }.toFloat() / running.sumOf { it.total }.coerceAtLeast(1))
-                        val out = running.count { it.sending }
-                        val detail = when (out) {
-                            0 -> "Receiving ${running.size}"
-                            running.size -> "Sending ${running.size}"
-                            else -> "Sending $out, receiving ${running.size - out}"
-                        }
-                        Lines("${running.size} transfers", detail, Modifier.weight(1f))
-                        Glyph(R.drawable.ic_more, ground.copy(alpha = 0.62f), 15)
+        val spread = open && running.size > 1
+        Column(if (spread) Modifier.width(320.dp) else Modifier.width(IntrinsicSize.Max)) {
+            when (face) {
+                is PillFace.One -> running.firstOrNull()?.let { RunningRow(it, engine) }
+                is PillFace.Many -> PillRow({ open = !open }, closes = false, wide = spread) {
+                    val fraction = running.sumOf { it.transferred }.toFloat() / running.sumOf { it.total }.coerceAtLeast(1)
+                    Ring(fraction, ground)
+                    Label("${running.size} transfers", spread)
+                    Percent(fraction)
+                }
+                is PillFace.Ended -> transfers.firstOrNull()?.let {
+                    val (tone, title) = it.outcome
+                    PillRow(closes = false) {
+                        Badge(tone)
+                        Label(title)
                     }
-                    is PillFace.Ended -> transfers.find { it.id == shown.id }?.let { EndedRow(it) } ?: Box(Modifier.height(46.dp))
                 }
             }
             AnimatedVisibility(open && running.size > 1, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                Column { running.forEach { key(it.id) { RunningRow(it, engine) } } }
+                Column { running.forEach { key(it.id) { RunningRow(it, engine, wide = true) } } }
             }
         }
-    }
-}
-
-@Composable
-private fun EndedRow(transfer: Transfer) {
-    val (tone, title, detail) = transfer.outcome
-    Row(Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Badge(tone)
-        Lines(title, detail, Modifier.weight(1f))
     }
 }
 
@@ -228,23 +225,22 @@ private fun Modifier.shaking(id: Any?): Modifier {
 @Composable
 private fun ToastRow(toast: Toast, engine: Engine) {
     val visible = remember { MutableTransitionState(false).apply { targetState = true } }
+    val failed = toast.tone == Tone.Error
     LaunchedEffect(toast.key) {
-        delay(if (toast.tone == Tone.Success) SUCCESS_STAYS_MS else ERROR_STAYS_MS)
+        delay(if (failed) ERROR_STAYS_MS else SUCCESS_STAYS_MS)
         visible.targetState = false
-    }
-    AnimatedVisibility(visible, enter = expandVertically(spring(dampingRatio = 0.86f, stiffness = 340f)) + enter, exit = exit + shrinkVertically(tween(EXIT_MS.toInt()))) {
-        Shell(Modifier.padding(top = 6.dp).shaking(toast.key.takeIf { toast.tone == Tone.Error })) {
-            Row(Modifier.fillMaxWidth().height(46.dp).padding(start = 14.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Badge(toast.tone)
-                Lines(toast.title, toast.detail, Modifier.weight(1f))
-                Mark(R.drawable.ic_cancel, "Dismiss") {
-                    visible.targetState = false
-                }
-            }
-        }
     }
     LaunchedEffect(visible.isIdle, visible.currentState) {
         if (visible.isIdle && !visible.currentState) engine.dismissToast(toast.key)
+    }
+    AnimatedVisibility(visible, enter = expandVertically(spring(dampingRatio = 0.86f, stiffness = 340f)) + enter, exit = exit + shrinkVertically(tween(EXIT_MS.toInt()))) {
+        Shell(Modifier.padding(top = 6.dp).shaking(toast.key.takeIf { failed })) {
+            PillRow(closes = failed) {
+                Badge(toast.tone)
+                Label(toast.title)
+                if (failed) Close("Dismiss") { visible.targetState = false }
+            }
+        }
     }
 }
 
@@ -253,7 +249,7 @@ private fun ToastRow(toast: Toast, engine: Engine) {
 fun Toaster(state: AppState, engine: Engine, modifier: Modifier = Modifier) {
     var kept by remember { mutableStateOf(state.transfers) }
     if (state.transfers.isNotEmpty()) kept = state.transfers
-    Column(modifier.statusBarsPadding().padding(top = 3.dp).padding(horizontal = 16.dp).widthIn(max = 440.dp).fillMaxWidth()) {
+    Column(modifier.statusBarsPadding().padding(top = 4.dp).padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         AnimatedVisibility(state.transfers.isNotEmpty(), enter = enter, exit = exit) { Pill(kept, engine) }
         state.toasts.forEach { key(it.key) { ToastRow(it, engine) } }
     }

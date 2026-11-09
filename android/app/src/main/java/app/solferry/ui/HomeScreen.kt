@@ -112,7 +112,7 @@ private fun SendZone(onClick: () -> Unit) {
 }
 
 @Composable
-fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
+private fun FanTile(@DrawableRes icon: Int, offset: Dp, tilt: Float) {
     val palette = LocalPalette.current
     Box(
         Modifier.offset(x = offset).rotate(tilt).size(56.dp).background(palette.control, FieldShape).border(1.dp, palette.line, FieldShape),

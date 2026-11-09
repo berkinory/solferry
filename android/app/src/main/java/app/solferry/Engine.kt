@@ -79,7 +79,7 @@ class Engine(private val context: Context) : Listener {
     }
 
     private fun saveFailed(name: String) = mutable.update {
-        it.toast(Tone.Error, "Couldn't save to Downloads", "$name: Free up some space and reopen Solferry.")
+        it.toast(Tone.Error, "$name: Couldn't save to Downloads")
     }
 
     fun copy(text: String) {
@@ -109,7 +109,7 @@ class Engine(private val context: Context) : Listener {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
         val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
         if (text.isNullOrEmpty()) {
-            mutable.update { it.toast(Tone.Error, emptyClipboard.title, emptyClipboard.next) }
+            mutable.update { it.toast(Tone.Error, emptyClipboard.title) }
         } else {
             bridge.sendText(peer, text)
         }

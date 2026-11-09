@@ -49,10 +49,8 @@ private fun NoHistory() = Column(Modifier.fillMaxSize()) {
         verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp, Alignment.CenterVertically),
     ) {
         Box(Modifier.padding(bottom = SpaceTokens.md.dp), contentAlignment = Alignment.Center) {
-            FanTile(R.drawable.ic_upload, (-38).dp, -11f)
-            FanTile(R.drawable.ic_download, 38.dp, 11f)
-            Box(Modifier.size(56.dp).background(palette.raised, FieldShape).border(1.dp, palette.line, FieldShape), contentAlignment = Alignment.Center) {
-                Glyph(R.drawable.ic_history, palette.ink, 24)
+            Box(Modifier.size(56.dp).background(palette.control, FieldShape).border(1.dp, palette.line, FieldShape), contentAlignment = Alignment.Center) {
+                Glyph(R.drawable.ic_history, palette.inkMuted, 24)
             }
         }
         Text("No transfers yet", style = MaterialTheme.typography.titleMedium)
