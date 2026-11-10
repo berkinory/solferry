@@ -51,6 +51,7 @@ private struct DeviceRow: View {
     let online: Bool?
     let lastTransfer: UInt64?
     let onPick: (PairedDevice) -> Void
+    let onText: (PairedDevice) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,7 +69,9 @@ private struct DeviceRow: View {
                 .onTapGesture { onPick(device) }
                 .accessibilityAddTraits(.isButton)
                 HStack(spacing: 2) {
-                    ClipboardButton { engine.bridge.sendText(peer: device.identity.id, text: $0) }
+                    ActionButton(glyph: .typeText, kind: .ghost, scale: .small, description: "Send text to \(device.name)") {
+                        onText(device)
+                    }
                     ActionButton(glyph: .more, kind: .ghost, scale: .small, description: "Options for \(device.name)") {
                         withAnimation(.easeOut(duration: MotionTokens.standard / 1000)) { open.toggle() }
                     }
@@ -117,6 +120,7 @@ private struct DeviceRow: View {
 struct DeviceCard: View {
     let state: AppState
     let onPick: (PairedDevice) -> Void
+    let onText: (PairedDevice) -> Void
 
     var body: some View {
         Card(glyph: .devices, title: "Devices") {
@@ -129,7 +133,8 @@ struct DeviceCard: View {
                         near: state.nearby.first { $0.identity.id == device.identity.id },
                         online: state.reachable?.contains(device.identity.id),
                         lastTransfer: state.history.first { $0.peer == device.identity.id && $0.completed }?.finishedMs,
-                        onPick: onPick
+                        onPick: onPick,
+                        onText: onText
                     )
                 }
             }

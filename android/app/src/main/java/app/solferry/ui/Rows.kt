@@ -80,6 +80,7 @@ private fun DeviceRow(
     lastTransfer: Long?,
     engine: Engine,
     onPick: (PairedDevice) -> Unit,
+    onText: (PairedDevice) -> Unit,
 ) {
     val palette = LocalPalette.current
     var open by remember { mutableStateOf(false) }
@@ -97,8 +98,8 @@ private fun DeviceRow(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     Button(
-                        { engine.shareClipboard(device.identity.id, device.name) }, icon = R.drawable.ic_clipboard,
-                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Send clipboard to ${device.name}",
+                        { onText(device) }, icon = R.drawable.ic_type_text,
+                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Send text to ${device.name}",
                     )
                     Button(
                         { open = !open }, icon = R.drawable.ic_more,
@@ -138,6 +139,7 @@ fun DeviceCard(
     history: List<HistoryEntry>,
     engine: Engine,
     onPick: (PairedDevice) -> Unit,
+    onText: (PairedDevice) -> Unit,
 ) =
     Card(R.drawable.ic_devices, "Devices", aside = { Count(devices.size) }) {
         Well {
@@ -145,7 +147,7 @@ fun DeviceCard(
                 key(device.identity.id) {
                     val online = reachable?.contains(device.identity.id)
                     val last = history.firstOrNull { it.peer == device.identity.id && it.completed }?.finishedMs?.toLong()
-                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, engine, onPick)
+                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, engine, onPick, onText)
                 }
             }
         }
