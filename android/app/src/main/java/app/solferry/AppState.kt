@@ -69,6 +69,8 @@ data class AppState(
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
     val standby: Boolean = false,
+    /** Null while files go to Downloads/Solferry. */
+    val saveFolder: SaveFolder? = null,
     val pairedCount: Int = 0,
 ) {
     val strangers get() = nearby.filter { !it.known }

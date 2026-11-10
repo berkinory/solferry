@@ -12,6 +12,7 @@ import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.provider.Settings
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import java.io.FileNotFoundException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ import kotlin.concurrent.thread
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
 class Engine(private val context: Context) : Listener {
     private val settings = context.getSharedPreferences("solferry", Context.MODE_PRIVATE)
-    private val mutable = MutableStateFlow(AppState(standby = settings.getBoolean(STANDBY, false)))
+    private val mutable = MutableStateFlow(AppState(standby = settings.getBoolean(STANDBY, false), saveFolder = savedFolder()))
     val state: StateFlow<AppState> = mutable
     private val main = Handler(Looper.getMainLooper())
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
@@ -38,7 +39,8 @@ class Engine(private val context: Context) : Listener {
 
     init {
         thread(name = "solferry-recover") {
-            if (!Exporter.recover(context, received)) main.post { saveFailed("Downloads") }
+            val folder = destination()
+            if (!Exporter.recover(context, received, folder)) main.post { saveFailed("Received files", folder) }
         }
     }
 
@@ -62,8 +64,12 @@ class Engine(private val context: Context) : Listener {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
                     thread(name = "solferry-export") {
-                        val saved = Exporter.export(context, received)
-                        main.post { if (saved) Notifier.received(context, done.label, done.peerName) else saveFailed(done.peerName) }
+                        val folder = destination()
+                        val saved = Exporter.export(context, received, folder)
+                        main.post {
+                            if (saved) Notifier.received(context, done.label, done.peerName, folder?.name ?: Exporter.DOWNLOADS)
+                            else saveFailed(done.peerName, folder)
+                        }
                     }
                 }
             }
@@ -81,8 +87,47 @@ class Engine(private val context: Context) : Listener {
         StandbyService.sync(context, on)
     }
 
-    private fun saveFailed(name: String) = mutable.update {
-        it.toast(Tone.Error, "$name: Couldn't save to Downloads")
+    private fun saveFailed(name: String, folder: SaveFolder?) = mutable.update {
+        it.toast(Tone.Error, "$name: Couldn't save to ${folder?.name ?: "Downloads"}")
+    }
+
+    @Synchronized
+    fun chooseFolder(tree: Uri) {
+        val picked = SaveFolder.take(context, tree) ?: return mutable.update { it.toast(Tone.Error, "Couldn't use that folder") }
+        state.value.saveFolder?.takeIf { it.tree != tree }?.let { SaveFolder.release(context, it.tree) }
+        keepFolder(picked)
+    }
+
+    @Synchronized
+    fun resetFolder() {
+        state.value.saveFolder?.let { SaveFolder.release(context, it.tree) }
+        keepFolder(null)
+    }
+
+    /** The picked folder if it still works. Once it doesn't, files go to Downloads/Solferry and the user hears about it once. */
+    @Synchronized
+    private fun destination(): SaveFolder? {
+        val picked = state.value.saveFolder ?: return null
+        val current = SaveFolder.check(context, picked.tree)
+        if (current == null) {
+            SaveFolder.release(context, picked.tree)
+            mutable.update { it.toast(Tone.Error, "Lost access to ${picked.name}, saving to ${Exporter.DOWNLOADS}") }
+        }
+        if (current != picked) keepFolder(current)
+        return current
+    }
+
+    private fun keepFolder(folder: SaveFolder?) {
+        settings.edit {
+            if (folder == null) remove(SAVE_FOLDER).remove(SAVE_FOLDER_NAME)
+            else putString(SAVE_FOLDER, folder.tree.toString()).putString(SAVE_FOLDER_NAME, folder.name)
+        }
+        mutable.update { it.copy(saveFolder = folder) }
+    }
+
+    private fun savedFolder(): SaveFolder? {
+        val tree = settings.getString(SAVE_FOLDER, null) ?: return null
+        return SaveFolder(tree.toUri(), settings.getString(SAVE_FOLDER_NAME, null).orEmpty())
     }
 
     fun copy(text: String) {
@@ -189,5 +234,7 @@ class Engine(private val context: Context) : Listener {
 
     private companion object {
         const val STANDBY = "standby"
+        const val SAVE_FOLDER = "save_folder"
+        const val SAVE_FOLDER_NAME = "save_folder_name"
     }
 }

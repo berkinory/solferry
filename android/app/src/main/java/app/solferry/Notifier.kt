@@ -73,8 +73,8 @@ object Notifier {
     fun text(context: Context, name: String, copied: Boolean) =
         show(context, "Text from $name", if (copied) "Copied to your clipboard" else "Open Solferry to copy it")
 
-    fun received(context: Context, label: String, name: String) =
-        show(context, "Files received", "$label from $name, in Downloads/Solferry")
+    fun received(context: Context, label: String, name: String, folder: String) =
+        show(context, "Files received", "$label from $name, in $folder")
 
     /** Before Android 13 there is no permission to ask for, only the switch in system settings. */
     private fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
