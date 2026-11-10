@@ -30,6 +30,12 @@ futures = "0.3"
 gethostname = "1"
 gpui-kit = "0.9"
 hex = "0.4"
+http-body-util = "0.1"
+hyper = { version = "1", default-features = false, features = [
+  "http1",
+  "server",
+] }
+hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
 indicatif = "0.18"
 keyring = { version = "3.6", default-features = false }
 ksni = { version = "0.3", default-features = false, features = [
@@ -60,6 +66,7 @@ tokio = { version = "1", features = [
   "fs",
   "io-util",
   "macros",
+  "net",
   "rt-multi-thread",
   "signal",
   "sync",

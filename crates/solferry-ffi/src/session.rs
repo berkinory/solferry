@@ -26,6 +26,7 @@ pub struct Shelf {
     pub pairings: Mutex<HashMap<u64, PairingRequest>>,
     pub nearby: Mutex<HashMap<EndpointId, NearbyDevice>>,
     pub transfers: Mutex<HashMap<String, TransferId>>,
+    pub link: Mutex<Option<solferry_core::Link>>,
 }
 
 pub struct Session {

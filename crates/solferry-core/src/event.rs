@@ -70,6 +70,11 @@ pub enum Event {
     Completed {
         id: TransferId,
     },
+    /// A browser sent a file through a receive link. It is saved under `name`.
+    LinkReceived {
+        name: String,
+        bytes: u64,
+    },
     Failed {
         id: TransferId,
         error: Error,

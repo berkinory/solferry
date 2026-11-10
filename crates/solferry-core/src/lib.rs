@@ -6,6 +6,7 @@ mod event;
 mod explain;
 mod history;
 mod identity;
+mod link;
 mod net;
 mod node;
 mod platform;
@@ -21,6 +22,7 @@ pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
 pub use explain::{Explanation, about, explain};
 pub use history::PastTransfer;
+pub use link::{Link, LinkFile};
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
     RelayHealth, SendReport,

@@ -15,6 +15,7 @@ struct HomeScreen: View {
                 SendZone { pick(nil) }
                 if !state.devices.isEmpty { DeviceCard(state: state, onPick: { pick($0) }, onText: text) }
                 NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
+                BrowserCard()
             }
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.xs)

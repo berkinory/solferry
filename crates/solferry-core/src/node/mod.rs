@@ -1,6 +1,7 @@
 mod confirm;
 mod health;
 mod inbound;
+mod link;
 mod nearby;
 mod outbound;
 mod overlay;

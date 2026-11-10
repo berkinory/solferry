@@ -48,6 +48,7 @@ fn advice(error: &Error) -> Advice {
         Error::Update(_) => "Try again later, or download it from GitHub.",
         Error::TicketExpired => "Codes last 10 minutes. Create a new one with `solferry pair`.",
         Error::OwnTicket => "Run `solferry join` with it on the other device instead.",
+        Error::NoLocalNetwork => "Join Wi-Fi or a hotspot, then share again.",
         Error::PairingRefused => "Ask them to accept, or create a new code with `solferry pair`.",
         Error::UnknownDevice(_) => {
             "See `solferry devices` and `solferry nearby` for available names."
