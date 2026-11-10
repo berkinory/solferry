@@ -4,6 +4,7 @@ struct HomeScreen: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
     let pick: (PairedDevice?) -> Void
+    let text: (PairedDevice) -> Void
 
     var body: some View {
         let state = engine.state
@@ -12,7 +13,7 @@ struct HomeScreen: View {
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 if let shared = state.text { TextCard(shared: shared) }
                 SendZone { pick(nil) }
-                if !state.devices.isEmpty { DeviceCard(state: state) { pick($0) } }
+                if !state.devices.isEmpty { DeviceCard(state: state, onPick: { pick($0) }, onText: text) }
                 NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
             }
             .padding(.horizontal, SpaceTokens.md)

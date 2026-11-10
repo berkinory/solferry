@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use gpui_kit::component::input::{InputEvent, InputState};
+use gpui_kit::component::input::{InputEvent, InputState, TextareaState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Theme, TitleBar};
 use gpui_kit::{
@@ -14,7 +14,9 @@ use iroh::EndpointId;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
-use super::{confirm, history, home, nav, pairing, relays, send, settings, toast, toast_timing};
+use super::{
+    confirm, history, home, nav, pairing, relays, send, settings, texts, toast, toast_timing,
+};
 use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
@@ -44,6 +46,7 @@ pub enum Page {
     Pair,
     Send,
     Settings,
+    Text,
 }
 
 pub struct MainView {
@@ -57,7 +60,7 @@ pub struct MainView {
     pub nav_from: Page,
     pub nav_moves: usize,
     pub copied: bool,
-    pub shared_with: Option<EndpointId>,
+    pub texting: Option<Target>,
     pub toasts_seen: u64,
     pub pill_seen: u64,
     pub transfers_open: bool,
@@ -66,6 +69,7 @@ pub struct MainView {
     pub code_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
     pub relay_input: Entity<InputState>,
+    pub text_input: Entity<TextareaState>,
     focus: FocusHandle,
 }
 
@@ -89,6 +93,8 @@ impl MainView {
         })
         .detach();
         let code_input = cx.new(|cx| InputState::new(window, cx).placeholder("Paste a sf1 code"));
+        let text_input =
+            cx.new(|cx| TextareaState::new(window, cx).placeholder("Type or paste text"));
         let name_input = cx.new(|cx| InputState::new(window, cx).placeholder("This device's name"));
         let relay_input =
             cx.new(|cx| InputState::new(window, cx).placeholder("https://relay.example.com#token"));
@@ -123,7 +129,7 @@ impl MainView {
             nav_from: Page::Home,
             nav_moves: 0,
             copied: false,
-            shared_with: None,
+            texting: None,
             toasts_seen: 0,
             pill_seen: 0,
             transfers_open: false,
@@ -132,6 +138,7 @@ impl MainView {
             code_input,
             name_input,
             relay_input,
+            text_input,
             focus,
         }
     }
@@ -342,13 +349,14 @@ impl Render for MainView {
         let sheet = confirm::sheet(self, cx).or_else(|| match self.page {
             Page::Send => Some(send::sheet(self, cx)),
             Page::Pair => Some(pairing::sheet(self, cx)),
+            Page::Text => Some(texts::sheet(self, cx)),
             _ => None,
         });
         let toasts = toast::render(self, f32::from(window.viewport_size().width), cx);
         let room = f32::from(window.viewport_size().height) - HEADER_HEIGHT - nav::CLEARANCE;
         let tabs = nav::render(self, cx);
         let body = match self.page {
-            Page::Home | Page::Send | Page::Pair => home::render(self, cx),
+            Page::Home | Page::Send | Page::Pair | Page::Text => home::render(self, cx),
             Page::History => history::render(self, room, cx),
             Page::Settings => settings::render(self, cx),
         };

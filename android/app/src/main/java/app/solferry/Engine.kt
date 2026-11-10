@@ -122,15 +122,6 @@ class Engine(private val context: Context) : Listener {
         return clip?.getItemAt(0)?.coerceToText(context)?.toString()
     }
 
-    fun shareClipboard(peer: String, name: String) {
-        val text = pasted()
-        if (text.isNullOrEmpty()) {
-            mutable.update { it.toast(Tone.Error, emptyClipboard.title) }
-        } else {
-            bridge.sendText(peer, text)
-        }
-    }
-
     fun clearJoinError() = mutable.update { it.copy(joinError = null) }
 
     fun join(code: String) {
@@ -198,6 +189,5 @@ class Engine(private val context: Context) : Listener {
 
     private companion object {
         const val STANDBY = "standby"
-        val emptyClipboard = uniffi.solferry_ffi.Problem("Your clipboard has no text", "Copy some text, then send it again.")
     }
 }

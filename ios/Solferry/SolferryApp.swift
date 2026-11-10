@@ -4,7 +4,7 @@ import SwiftUI
 private let presenceEverySeconds = 20.0
 
 private enum Presented: Identifiable {
-    case pairing, code, send
+    case pairing, code, send, text
 
     var id: Self { self }
 }
@@ -34,6 +34,7 @@ private struct RootView: View {
     @State private var sending = false
     @State private var staged: [URL] = []
     @State private var target: PairedDevice?
+    @State private var texting: PairedDevice?
     @State private var choosing = false
     @State private var browsing = false
     @State private var browsingPhotos = false
@@ -41,7 +42,7 @@ private struct RootView: View {
 
     var body: some View {
         TabView(selection: $place) {
-            NavigationStack { HomeScreen(pick: pick) }
+            NavigationStack { HomeScreen(pick: pick) { texting = $0 } }
             .tabItem { Label { Text("Transfer") } icon: { Image(decorative: Glyph.home.rawValue).renderingMode(.template) } }
             .tag(Place.home)
             NavigationStack { HistoryScreen() }
@@ -59,6 +60,7 @@ private struct RootView: View {
             case .pairing: PairingScreen()
             case .code: AddDeviceScreen()
             case .send: SendScreen(files: $staged)
+            case .text: if let texting { TextScreen(device: texting) }
             }
         }
         .confirmationDialog("Send", isPresented: $choosing) {
@@ -89,6 +91,7 @@ private struct RootView: View {
             let state = engine.state
             if !state.pairings.isEmpty || state.pairingCode != nil { return .pairing }
             if pairing { return .code }
+            if texting != nil { return .text }
             return sending ? .send : nil
         } set: { value in
             guard value == nil else { return }
@@ -96,6 +99,8 @@ private struct RootView: View {
                 engine.closePairing()
             } else if pairing {
                 pairing = false
+            } else if texting != nil {
+                texting = nil
             } else {
                 sending = false
                 Outbox.discard(staged)

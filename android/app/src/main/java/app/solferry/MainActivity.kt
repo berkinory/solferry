@@ -50,6 +50,7 @@ import app.solferry.ui.SolferryTheme
 import app.solferry.ui.SourceSheet
 import app.solferry.ui.Tab
 import app.solferry.ui.TabBar
+import app.solferry.ui.TextSheet
 import app.solferry.ui.Toaster
 import app.solferry.ui.ToasterOverSheet
 import kotlinx.coroutines.delay
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
                 var pairing by rememberSaveable { mutableStateOf(false) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
                 var choosing by rememberSaveable { mutableStateOf(false) }
+                var texting by remember { mutableStateOf<PairedDevice?>(null) }
                 val picked: (List<Uri>) -> Unit = { uris ->
                     val device = target
                     if (uris.isNotEmpty()) {
@@ -129,6 +131,7 @@ class MainActivity : ComponentActivity() {
                             Screen.Home -> HomeScreen(
                                 state, engine,
                                 onPickFiles = { device -> target = device; choosing = true },
+                                onText = { texting = it },
                                 onUseCode = { pairing = true },
                             )
                             Screen.History -> HistoryScreen(state, engine)
@@ -150,6 +153,7 @@ class MainActivity : ComponentActivity() {
                             onFiles = { files.launch(arrayOf("*/*")) },
                         ) { choosing = false }
                     }
+                    texting?.let { device -> TextSheet(device, engine) { texting = null } }
                     if (pairing) AddDeviceSheet(state, engine) { pairing = false }
                     val asked = state.pairings.firstOrNull()
                     val code = state.pairingCode
@@ -166,7 +170,7 @@ class MainActivity : ComponentActivity() {
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
-                    val sheetOpen = shared.isNotEmpty() || choosing || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
+                    val sheetOpen = shared.isNotEmpty() || choosing || texting != null || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
                     if (!sheetOpen) Toaster(state, engine, Modifier.align(Alignment.TopCenter))
                 } }
             }

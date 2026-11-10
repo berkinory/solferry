@@ -48,6 +48,7 @@ fun HomeScreen(
     state: AppState,
     engine: Engine,
     onPickFiles: (PairedDevice?) -> Unit,
+    onText: (PairedDevice) -> Unit,
     onUseCode: () -> Unit,
 ) = Column(Modifier.fillMaxSize()) {
     HomeBar()
@@ -68,7 +69,7 @@ fun HomeScreen(
         state.text?.let { item(key = "text-${it.key}") { TextCard(it, engine) } }
         item { SendZone { onPickFiles(null) } }
         if (state.devices.isNotEmpty()) {
-            item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine) { onPickFiles(it) } }
+            item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine, { onPickFiles(it) }, onText) }
         }
         item { NearbyCard(state.strangers, state.devices.isEmpty(), engine, onUseCode) }
     } }
