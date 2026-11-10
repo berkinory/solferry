@@ -152,6 +152,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         route,
         files,
         bytes,
+        platform: crate::Platform::parse(&hello.platform),
     });
     shared.track(id, connection);
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));

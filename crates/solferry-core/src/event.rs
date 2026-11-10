@@ -44,6 +44,7 @@ pub enum Event {
         route: Route,
         files: usize,
         bytes: u64,
+        platform: Option<crate::Platform>,
     },
     RouteChanged {
         id: TransferId,

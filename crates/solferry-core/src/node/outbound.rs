@@ -142,6 +142,7 @@ async fn negotiate(
         route,
         files,
         bytes,
+        platform: crate::Platform::parse(&hello.platform),
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
     let final_route = tokio::select! {

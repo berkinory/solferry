@@ -12,16 +12,10 @@ struct HistoryScreen: View {
                 Card(glyph: .history, title: "History") {
                     ActionButton(label: "Clear", kind: .ghost, scale: .small) { engine.bridge.clearHistory() }
                 } content: {
-                    Well { ForEach(Array(history.enumerated()), id: \.offset) { Past(entry: $0.element, platform: platform(of: $0.element)) } }
+                    Well { ForEach(Array(history.enumerated()), id: \.offset) { Past(entry: $0.element) } }
                 }
             }
         }
-    }
-
-    private func platform(of entry: HistoryEntry) -> DevicePlatform? {
-        let state = engine.state
-        return state.devices.first { $0.identity.id == entry.peer }?.identity.platform
-            ?? state.nearby.first { $0.identity.id == entry.peer }?.identity.platform
     }
 }
 
@@ -48,7 +42,6 @@ private struct NoHistory: View {
 private struct Past: View {
     @Environment(\.palette) private var palette
     let entry: HistoryEntry
-    let platform: DevicePlatform?
 
     var body: some View {
         HStack(spacing: SpaceTokens.md) {
@@ -58,7 +51,7 @@ private struct Past: View {
                 let tone = entry.completed ? palette.inkMuted : palette.danger
                 HStack(spacing: SpaceTokens.xs) {
                     Muted(entry.sending ? "To" : "From", color: tone).fixedSize()
-                    Icon(platformGlyph(platform), tint: tone, size: 14)
+                    Icon(platformGlyph(entry.platform), tint: tone, size: 14)
                     Muted(entry.name, color: tone).lineLimit(1)
                     Muted("·  \(entry.completed ? bytes(entry.bytes) : "Failed")", color: tone).fixedSize()
                 }

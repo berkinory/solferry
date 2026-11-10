@@ -106,6 +106,7 @@ pub struct HistoryEntry {
     pub bytes: u64,
     pub finished_ms: u64,
     pub completed: bool,
+    pub platform: Option<DevicePlatform>,
 }
 
 impl From<&PastTransfer> for HistoryEntry {
@@ -119,6 +120,7 @@ impl From<&PastTransfer> for HistoryEntry {
             bytes: past.bytes,
             finished_ms: past.finished_ms,
             completed: past.completed,
+            platform: past.platform.map(Into::into),
         }
     }
 }

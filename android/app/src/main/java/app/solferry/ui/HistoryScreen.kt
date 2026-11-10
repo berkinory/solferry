@@ -21,7 +21,6 @@ import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
-import uniffi.solferry_ffi.DevicePlatform
 import uniffi.solferry_ffi.HistoryEntry
 
 @Composable
@@ -34,11 +33,7 @@ fun HistoryScreen(state: AppState, engine: Engine) {
                 R.drawable.ic_history, "History",
                 aside = { Button({ engine.bridge.clearHistory() }, label = "Clear", kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
             ) {
-                Well { state.history.forEach { entry ->
-                    val platform = state.devices.firstOrNull { it.identity.id == entry.peer }?.identity?.platform
-                        ?: state.nearby.firstOrNull { it.identity.id == entry.peer }?.identity?.platform
-                    Past(entry, platform)
-                } }
+                Well { state.history.forEach { Past(it) } }
             }
         }
     }
@@ -64,7 +59,7 @@ private fun NoHistory() = Column(Modifier.fillMaxSize()) {
 }
 
 @Composable
-private fun Past(entry: HistoryEntry, platform: DevicePlatform?) {
+private fun Past(entry: HistoryEntry) {
     val palette = LocalPalette.current
     Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
         Tile(if (entry.sending) R.drawable.ic_upload else R.drawable.ic_download, palette.control, palette.inkMuted)
@@ -74,7 +69,7 @@ private fun Past(entry: HistoryEntry, platform: DevicePlatform?) {
             val tone = if (entry.completed) palette.inkMuted else palette.danger
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
                 Muted(if (entry.sending) "To" else "From", color = tone)
-                Glyph(platformIcon(platform), tone, 14)
+                Glyph(platformIcon(entry.platform), tone, 14)
                 Text(entry.name, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyMedium, color = tone, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Muted("·  $outcome", color = tone)
             }
