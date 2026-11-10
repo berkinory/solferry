@@ -14,7 +14,7 @@ IDENTITY=${SOLFERRY_SIGN_IDENTITY:-}
 # release stops, so a DMG Gatekeeper would refuse never goes out.
 NOTARY_WAIT=5m
 if [ "${SOLFERRY_PUBLISH:-}" = true ]; then
-    NOTARY_WAIT=150m
+    NOTARY_WAIT=30m
 fi
 
 notarize() {
