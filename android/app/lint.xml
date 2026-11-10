@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- UniFFI's generated bindings check for java.lang.ref.Cleaner at runtime before using it. -->
+    <issue id="NewApi">
+        <ignore path="build/generated/rust/**" />
+    </issue>
+</lint>

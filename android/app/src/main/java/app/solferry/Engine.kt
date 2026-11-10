@@ -11,6 +11,7 @@ import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.provider.Settings
+import androidx.core.content.edit
 import java.io.FileNotFoundException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,7 +76,7 @@ class Engine(private val context: Context) : Listener {
     fun resumeStandby() = StandbyService.sync(context, state.value.standby)
 
     fun setStandby(on: Boolean) {
-        settings.edit().putBoolean(STANDBY, on).apply()
+        settings.edit { putBoolean(STANDBY, on) }
         mutable.update { it.copy(standby = on) }
         StandbyService.sync(context, on)
     }
@@ -116,9 +117,13 @@ class Engine(private val context: Context) : Listener {
         return PickedFile(uri, displayName(uri), size)
     }
 
+    fun pasted(): String? {
+        val clip = context.getSystemService(ClipboardManager::class.java).primaryClip?.takeIf { it.itemCount > 0 }
+        return clip?.getItemAt(0)?.coerceToText(context)?.toString()
+    }
+
     fun shareClipboard(peer: String, name: String) {
-        val clipboard = context.getSystemService(ClipboardManager::class.java)
-        val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
+        val text = pasted()
         if (text.isNullOrEmpty()) {
             mutable.update { it.toast(Tone.Error, emptyClipboard.title) }
         } else {
