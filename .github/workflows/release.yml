@@ -316,7 +316,7 @@ jobs:
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           gh release download "v$VERSION" --pattern SHA256SUMS
-          git clone "https://x-access-token:$TAP_TOKEN@github.com/berkinory/homebrew-solferry.git" tap
+          git clone "https://x-access-token:$TAP_TOKEN@github.com/berkinory/homebrew-brew.git" tap
           packaging/homebrew/render.py SHA256SUMS "$VERSION" tap
           cd tap
           git config user.name "solferry-release"

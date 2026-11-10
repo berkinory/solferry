@@ -22,8 +22,8 @@ There is no account and no upload step. Files go straight from one device to ano
 Downloads are on the [releases page](https://github.com/berkinory/solferry/releases). On macOS and Linux, Homebrew works too:
 
 ```sh
-brew tap berkinory/solferry
-brew trust berkinory/solferry
+brew tap berkinory/brew
+brew trust berkinory/brew
 brew install --cask solferry   # the macOS app
 brew install solferry-cli      # the command line tool
 ```
