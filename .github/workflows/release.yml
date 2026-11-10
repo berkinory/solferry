@@ -1,63 +1,166 @@
 name: release
 
+# A v* tag publishes. Running it by hand builds and packages everything and publishes nothing.
 on:
   workflow_dispatch:
   push:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  SOLFERRY_UPDATE_KEY: ${{ vars.SOLFERRY_UPDATE_KEY }}
 
 jobs:
-  build:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: version
+        run: |
+          VERSION=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          PUBLISH=false
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            PUBLISH=true
+            [ "$GITHUB_REF_NAME" = "v$VERSION" ] || {
+              echo "::error::Tag $GITHUB_REF_NAME doesn't match the workspace version $VERSION"
+              exit 1
+            }
+            [ -n "$SOLFERRY_UPDATE_KEY" ] || {
+              echo "::error::The repository variable SOLFERRY_UPDATE_KEY is missing"
+              exit 1
+            }
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "publish=$PUBLISH" >> "$GITHUB_OUTPUT"
+
+  desktop:
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
-          - { os: windows-latest, target: x86_64-pc-windows-msvc }
-          - { os: macos-latest, target: aarch64-apple-darwin }
+          - { platform: macos-aarch64, os: macos-15, target: aarch64-apple-darwin }
+          - { platform: macos-x86_64, os: macos-15, target: x86_64-apple-darwin }
+          - { platform: windows-x86_64, os: windows-2025, target: x86_64-pc-windows-msvc }
+          - { platform: windows-aarch64, os: windows-11-arm, target: aarch64-pc-windows-msvc }
+          - { platform: linux-x86_64, os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, cli: x86_64-unknown-linux-musl }
+          - { platform: linux-aarch64, os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, cli: aarch64-unknown-linux-musl }
     runs-on: ${{ matrix.os }}
+    env:
+      RELEASE: target/${{ matrix.target }}/dist
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
+      SOLFERRY_VERSION: ${{ needs.prepare.outputs.version }}
+      SOLFERRY_PLATFORM: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}${{ matrix.cli && format(',{0}', matrix.cli) || '' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
       - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-x11-dev libwayland-dev libvulkan-dev libfreetype-dev libfontconfig-dev
-      - run: cargo build --release --locked -p solferry-cli -p solferry-desktop --target ${{ matrix.target }}
-      - name: Package
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools libxkbcommon-x11-dev libwayland-dev libvulkan-dev libfreetype-dev libfontconfig-dev zstd
+
+      - if: runner.os == 'Windows'
+        name: Link the C runtime statically
+        shell: bash
+        run: echo "RUSTFLAGS=-C target-feature=+crt-static" >> "$GITHUB_ENV"
+
+      - name: Build
         shell: bash
         run: |
+          cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop
+          cargo build --profile dist --locked --target ${{ matrix.cli || matrix.target }} -p solferry-cli
           mkdir dist
-          cd target/${{ matrix.target }}/release
-          ASSETS="$GITHUB_WORKSPACE/crates/solferry-desktop/assets"
-          if [ -f solferry.exe ]; then
-            7z a "$GITHUB_WORKSPACE/dist/solferry-${{ matrix.target }}.zip" solferry.exe solferry-desktop.exe
-          elif [ "$RUNNER_OS" = macOS ]; then
-            "$GITHUB_WORKSPACE/packaging/macos/bundle.sh" .
-            ditto -c -k --keepParent Solferry.app "$GITHUB_WORKSPACE/dist/Solferry-${{ matrix.target }}.zip"
-            tar czf "$GITHUB_WORKSPACE/dist/solferry-cli-${{ matrix.target }}.tar.gz" solferry
-          else
-            cp "$ASSETS/solferry.desktop" .
-            cp "$ASSETS/icon.png" solferry.png
-            tar czf "$GITHUB_WORKSPACE/dist/solferry-${{ matrix.target }}.tar.gz" solferry solferry-desktop solferry.desktop solferry.png
+
+      - if: runner.os == 'macOS'
+        name: Load the signing certificate
+        env:
+          CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$CERTIFICATE" ]; then
+            if [ "${{ needs.prepare.outputs.publish }}" = true ]; then
+              echo "::error::A release needs the macOS signing secrets"
+              exit 1
+            fi
+            echo "::warning::No signing certificate, this build is signed ad hoc"
+            exit 0
           fi
-      - if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          echo "$CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+          rm "$RUNNER_TEMP/certificate.p12"
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' | head -1)
+          [ -n "$IDENTITY" ] || { echo "::error::The certificate has no Developer ID Application identity"; exit 1; }
+          echo "SOLFERRY_SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
+      - if: runner.os == 'macOS'
+        name: Package for macOS
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: packaging/macos/package.sh "$RELEASE" "$SOLFERRY_PLATFORM" dist
+
+      - if: runner.os == 'Linux'
+        name: Package for Linux
+        run: |
+          packaging/linux/package.sh "$RELEASE/solferry-desktop" "$SOLFERRY_PLATFORM" dist
+          tar -C "target/${{ matrix.cli }}/dist" -czf "dist/solferry-cli-$SOLFERRY_PLATFORM.tar.gz" solferry
+
+      - if: runner.os == 'Windows'
+        name: Package for Windows
+        shell: bash
+        run: |
+          cp "$RELEASE/solferry-desktop.exe" "dist/Solferry-$SOLFERRY_PLATFORM.exe"
+          (cd "$RELEASE" && 7z a -mx=9 "$GITHUB_WORKSPACE/dist/solferry-cli-$SOLFERRY_PLATFORM.zip" solferry.exe)
+          choco install innosetup --no-progress -y
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" packaging/windows/solferry.iss
+
+      - uses: actions/upload-artifact@v7
         with:
-          files: dist/*
+          name: desktop-${{ matrix.platform }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   android:
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
-      - uses: actions/setup-java@v5
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
-      - run: cargo install cargo-ndk --locked
+          cache: gradle
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk
       - name: Build the signed APK
         working-directory: android
         env:
@@ -68,9 +171,156 @@ jobs:
           export SOLFERRY_KEYSTORE="$RUNNER_TEMP/release.jks"
           base64 -d <<< "$KEYSTORE_BASE64" > "$SOLFERRY_KEYSTORE"
           ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" ./gradlew assembleRelease --console=plain
+          rm "$SOLFERRY_KEYSTORE"
           mkdir "$GITHUB_WORKSPACE/dist"
           cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/dist/Solferry-android.apk"
-      - if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      - uses: actions/upload-artifact@v7
         with:
-          files: dist/*
+          name: android
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  relay:
+    needs: prepare
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, os: ubuntu-24.04 }
+          - { arch: arm64, os: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - if: needs.prepare.outputs.publish == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: deploy/relay
+          platforms: linux/${{ matrix.arch }}
+          cache-from: type=gha,scope=relay-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=relay-${{ matrix.arch }}
+          outputs: ${{ needs.prepare.outputs.publish == 'true' && 'type=image,name=ghcr.io/berkinory/solferry-relay,push-by-digest=true,name-canonical=true,push=true' || 'type=cacheonly' }}
+      - if: needs.prepare.outputs.publish == 'true'
+        run: |
+          mkdir digests
+          touch "digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+      - if: needs.prepare.outputs.publish == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: relay-digest-${{ matrix.arch }}
+          path: digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: [prepare, desktop, android, relay]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      PUBLISH: ${{ needs.prepare.outputs.publish }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIGNING_KEY: ${{ secrets.SOLFERRY_UPDATE_SIGNING_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: "{desktop-*,android}"
+          merge-multiple: true
+
+      - name: Write the checksums and the signed update manifest
+        run: |
+          packaging/release/manifest.py dist "$VERSION"
+          if [ -z "$SIGNING_KEY" ]; then
+            [ "$PUBLISH" = false ] || { echo "::error::SOLFERRY_UPDATE_SIGNING_KEY is missing"; exit 1; }
+            echo "::warning::No update signing key, the manifest stays unsigned"
+            exit 0
+          fi
+          KEY="$RUNNER_TEMP/update.pem"
+          (umask 077; printf '%s\n' "$SIGNING_KEY" > "$KEY")
+          openssl pkeyutl -sign -rawin -inkey "$KEY" -in dist/latest.json -out "$RUNNER_TEMP/raw.sig"
+          xxd -p -c 64 "$RUNNER_TEMP/raw.sig" > dist/latest.json.sig
+          rm "$KEY"
+          # Refuses a signing key that doesn't belong to the key the apps were built with.
+          PUBLIC_DER=$(printf '302a300506032b6570032100%s' "$SOLFERRY_UPDATE_KEY" | xxd -r -p | base64 -w0)
+          printf -- '-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----\n' "$PUBLIC_DER" > "$RUNNER_TEMP/update.pub"
+          openssl pkeyutl -verify -rawin -pubin -inkey "$RUNNER_TEMP/update.pub" -in dist/latest.json -sigfile "$RUNNER_TEMP/raw.sig"
+
+      - name: Keep the result of a dry run
+        if: env.PUBLISH != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: manifest
+          path: |
+            dist/SHA256SUMS
+            dist/latest.json
+            dist/latest.json.sig
+          retention-days: 1
+
+      - if: env.PUBLISH == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          path: digests
+          pattern: relay-digest-*
+          merge-multiple: true
+
+      - if: env.PUBLISH == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v4
+        if: env.PUBLISH == 'true'
+
+      - name: Publish the relay image
+        if: env.PUBLISH == 'true'
+        run: |
+          IMAGE=ghcr.io/berkinory/solferry-relay
+          SOURCES=$(find digests -type f -printf "$IMAGE@sha256:%f ")
+          docker buildx imagetools create -t "$IMAGE:$VERSION" -t "$IMAGE:latest" $SOURCES
+
+      - name: Publish the release
+        if: env.PUBLISH == 'true'
+        run: |
+          gh release create "v$VERSION" dist/* --draft --verify-tag --generate-notes --title "Solferry $VERSION"
+          gh release edit "v$VERSION" --draft=false --latest
+
+  homebrew:
+    needs: [prepare, publish]
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Update the Homebrew tap
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          gh release download "v$VERSION" --pattern SHA256SUMS
+          git clone "https://x-access-token:$TAP_TOKEN@github.com/berkinory/homebrew-solferry.git" tap
+          packaging/homebrew/render.py SHA256SUMS "$VERSION" tap
+          cd tap
+          git config user.name "solferry-release"
+          git config user.email "solferry-release@users.noreply.github.com"
+          git add Casks Formula
+          git diff --cached --quiet || git commit -m "Solferry $VERSION"
+          git push

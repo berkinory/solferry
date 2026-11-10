@@ -40,8 +40,14 @@ noq-proto = "1.4"
 prost = "0.14"
 qrcode = { version = "0.14", default-features = false }
 rand = "0.10"
-reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+reqwest = { version = "0.13", default-features = false, features = [
+  "rustls-no-provider",
+] }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+  "std",
+  "tls12",
+] }
 rustls-pki-types = { version = "1", features = ["std"] }
 semver = "1"
 serde = { version = "1", features = ["derive"] }
@@ -80,3 +86,8 @@ module_name_repetitions = "allow"
 lto = "thin"
 codegen-units = 1
 strip = true
+
+# What gets published. Slower to build than release, smaller and faster to run.
+[profile.dist]
+inherits = "release"
+lto = "fat"
