@@ -1,5 +1,7 @@
 package app.solferry.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.AvailableUpdate
 import app.solferry.Engine
+import app.solferry.Exporter
 import app.solferry.R
 import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.BlockedDevice
@@ -72,6 +75,20 @@ fun RelayCard(state: AppState, engine: Engine) {
                     },
                 )
                 Button(add, label = "Add")
+            }
+        }
+    }
+}
+
+@Composable
+fun SaveFolderCard(state: AppState, engine: Engine) {
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree -> tree?.let(engine::chooseFolder) }
+    Card(R.drawable.ic_folder, "Save files to") {
+        PaddedWell {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Muted(state.saveFolder?.name ?: Exporter.DOWNLOADS, Modifier.weight(1f))
+                if (state.saveFolder != null) Button(engine::resetFolder, label = "Reset", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
+                Button({ picker.launch(state.saveFolder?.tree) }, label = "Change", icon = R.drawable.ic_folder, size = ButtonSize.Sm)
             }
         }
     }

@@ -49,9 +49,7 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
         }
     }
     RelayCard(state, engine)
-    Card(R.drawable.ic_folder, "Save files to") {
-        PaddedWell { Muted("Downloads/Solferry") }
-    }
+    SaveFolderCard(state, engine)
     Card(R.drawable.ic_view, "Let others find me") {
         PaddedWell {
             val found = me?.visibility != "Hidden"
