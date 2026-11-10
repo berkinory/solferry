@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,14 +75,9 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeBar() {
-    val palette = LocalPalette.current
-    Row(
-        Modifier.fillMaxWidth().statusBarsPadding().height(52.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-    ) {
-        Glyph(R.drawable.ic_mark, palette.brand, 20)
+private fun HomeBar() = Toolbar {
+    Row(Modifier.padding(start = SpaceTokens.sm.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Glyph(R.drawable.ic_mark, LocalPalette.current.brand, 20)
         Text("Solferry", style = MaterialTheme.typography.titleMedium)
     }
 }
