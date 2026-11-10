@@ -2,12 +2,13 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use iroh::endpoint::{Connection, RecvStream, SendStream};
+use iroh::endpoint::{ConnectOptions, Connection, RecvStream, SendStream};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_proto::{ALPN_TRANSFER, Decision, Offer, OfferReply, read_frame, write_frame};
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
+use crate::net::local_transport_config;
 use crate::event::{Direction, Event, TransferId};
 use crate::route::{self, Route, current_route};
 use crate::transfer::segments;
@@ -91,11 +92,17 @@ async fn attempt(
     reached: &mut bool,
 ) -> Result<SendReport> {
     let peer = target.id;
-    let connection = shared
+    let mut options = ConnectOptions::new();
+    if route::on_local_network(&target) {
+        options = options.with_transport_config(local_transport_config()?);
+    }
+    let unreachable = |error: &dyn std::fmt::Display| Error::Unreachable(error.to_string());
+    let connecting = shared
         .endpoint
-        .connect(target, ALPN_TRANSFER)
+        .connect_with_opts(target, ALPN_TRANSFER, options)
         .await
-        .map_err(|error| Error::Unreachable(error.to_string()))?;
+        .map_err(|error| unreachable(&error))?;
+    let connection = connecting.await.map_err(|error| unreachable(&error))?;
     *reached = true;
     shared.track(manifest.id, &connection);
     let result = async {
