@@ -6,7 +6,7 @@ use iroh::endpoint::{Builder, PortmapperConfig, QuicTransportConfig, presets};
 use iroh::tls::CaTlsConfig;
 use iroh::{Endpoint, RelayMap, RelayMode, SecretKey};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use noq_proto::congestion::Bbr3Config;
+use noq_proto::congestion::{Bbr3Config, ControllerFactory, CubicConfig};
 use rustls_pki_types::CertificateDer;
 use rustls_pki_types::pem::PemObject;
 
@@ -89,9 +89,19 @@ fn private_roots(path: &Path) -> Result<CaTlsConfig> {
 }
 
 fn transport_config() -> Result<QuicTransportConfig> {
+    transport(Arc::new(Bbr3Config::default()))
+}
+
+/// For a peer on this device's own network. Measured over Wi-Fi, Cubic moved files up to twice
+/// as fast as BBR3, but it collapses on lossy internet paths, where BBR3 stays.
+pub(crate) fn local_transport_config() -> Result<QuicTransportConfig> {
+    transport(Arc::new(CubicConfig::default()))
+}
+
+fn transport(controller: Arc<dyn ControllerFactory + Send + Sync>) -> Result<QuicTransportConfig> {
     let idle = IDLE_TIMEOUT.try_into().map_err(|_| Error::NetworkStart("idle timeout".into()))?;
     Ok(QuicTransportConfig::builder()
-        .congestion_controller_factory(Arc::new(Bbr3Config::default()))
+        .congestion_controller_factory(controller)
         .stream_receive_window(STREAM_WINDOW.into())
         .receive_window(CONNECTION_WINDOW.into())
         .send_window(u64::from(CONNECTION_WINDOW))
