@@ -37,6 +37,13 @@ pub fn qr_code(text: String) -> Option<QrMatrix> {
     Some(QrMatrix { width, dark })
 }
 
+/// This device's private LAN addresses, to type into another device that can't find it.
+#[uniffi::export]
+#[must_use]
+pub fn lan_addresses() -> Vec<String> {
+    solferry_core::lan_addresses().iter().map(ToString::to_string).collect()
+}
+
 #[uniffi::export(with_foreign)]
 pub trait Listener: Send + Sync {
     fn update(&self, update: Update);
@@ -208,19 +215,32 @@ impl Solferry {
     pub fn pair_nearby(&self, peer: String) {
         self.with_node(
             move |node, listener, target| async move {
-                let Some(target) = target else { return };
-                let shown = listener.clone();
-                let show =
-                    move |code: &str| shown.update(Update::PairingCode { code: code.to_owned() });
-                match node.pair_nearby(target, show).await {
-                    Ok(device) => listener.update(Update::Paired { device: (&device).into() }),
-                    Err(error) => {
-                        listener.update(Update::PairingFailed { problem: (&error).into() });
-                    }
+                if let Some(target) = target {
+                    pair(&node, &listener, target).await;
                 }
-                listener.update(devices(&node));
             },
             Some(peer),
+        );
+    }
+
+    /// Pairs by comparing codes with the device answering at this IP address, for one on another
+    /// subnet or on a network that hides it.
+    pub fn pair_address(&self, address: String) {
+        let memory = self.shelf.clone();
+        self.with_node(
+            move |node, listener, _| async move {
+                match node.find_address(&address).await {
+                    Ok(device) => {
+                        let target = device.addr.clone();
+                        lock(&memory.nearby).insert(target.id, device);
+                        pair(&node, &listener, target).await;
+                    }
+                    Err(error) => {
+                        listener.update(Update::AddressFailed { problem: (&error).into() });
+                    }
+                }
+            },
+            None,
         );
     }
 
@@ -402,6 +422,16 @@ impl Solferry {
             *active = session::start(data_dir, &memory, &listener).await;
         });
     }
+}
+
+async fn pair(node: &solferry_core::Node, listener: &Arc<dyn Listener>, target: EndpointAddr) {
+    let shown = listener.clone();
+    let show = move |code: &str| shown.update(Update::PairingCode { code: code.to_owned() });
+    match node.pair_nearby(target, show).await {
+        Ok(device) => listener.update(Update::Paired { device: (&device).into() }),
+        Err(error) => listener.update(Update::PairingFailed { problem: (&error).into() }),
+    }
+    listener.update(devices(node));
 }
 
 /// Where to reach a device: the address it was just seen at nearby, else what pairing stored.
