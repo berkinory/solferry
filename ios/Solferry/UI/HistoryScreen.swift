@@ -47,17 +47,18 @@ private struct Past: View {
         HStack(spacing: SpaceTokens.md) {
             Tile(glyph: entry.sending ? .upload : .download, fill: palette.control, tone: palette.inkMuted)
             VStack(alignment: .leading, spacing: 0) {
-                Text(entry.label).lineLimit(1)
-                let tone = entry.completed ? palette.inkMuted : palette.danger
+                HStack(spacing: SpaceTokens.sm) {
+                    Text(entry.label).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Muted(entry.completed ? bytes(entry.bytes) : "Failed", color: entry.completed ? palette.inkMuted : palette.danger).fixedSize()
+                }
                 HStack(spacing: SpaceTokens.xs) {
-                    Muted(entry.sending ? "To" : "From", color: tone).fixedSize()
-                    Icon(platformGlyph(entry.platform), tint: tone, size: 14)
-                    Muted(entry.name, color: tone).lineLimit(1)
-                    Muted("·  \(entry.completed ? bytes(entry.bytes) : "Failed")", color: tone).fixedSize()
+                    Icon(platformGlyph(entry.platform), tint: palette.inkMuted, size: 14)
+                    Muted(entry.name).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Caption(ago(entry.finishedMs)).fixedSize()
                 }
             }
-            Spacer(minLength: 0)
-            Caption(ago(entry.finishedMs))
         }
         .padding(SpaceTokens.sm)
     }
