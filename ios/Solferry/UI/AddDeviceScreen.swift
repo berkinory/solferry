@@ -29,13 +29,43 @@ struct AddDeviceScreen: View {
                     if let error = state.joinError { Muted(error, color: palette.danger) }
                 }
             }
+            AddressCard()
         }
-        .onDisappear { engine.clearJoinError() }
+        .onDisappear { engine.clearPairingErrors() }
     }
 
     private func join() {
         let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { engine.join(trimmed) }
+    }
+}
+
+/// For a device on another subnet, or on a network that keeps devices from finding each other.
+private struct AddressCard: View {
+    @Environment(Engine.self) private var engine
+    @Environment(\.palette) private var palette
+    @State private var address = ""
+    @State private var own = lanAddresses()
+
+    var body: some View {
+        let state = engine.state
+        Card(glyph: .link, title: "Enter an IP address") {
+            PaddedWell {
+                HStack(spacing: SpaceTokens.sm) {
+                    Field(text: $address, placeholder: "192.168.1.20", onSubmit: pair)
+                        .keyboardType(.numbersAndPunctuation)
+                    ActionButton(label: state.pairingAddress ? "Pairing" : "Pair", kind: .primary, action: pair)
+                        .disabled(state.pairingAddress)
+                }
+                if let error = state.addressError { Muted(error, color: palette.danger) }
+                if !own.isEmpty { Muted("This device is at \(own.joined(separator: ", ")).") }
+            }
+        }
+    }
+
+    private func pair() {
+        let trimmed = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { engine.pairAddress(trimmed) }
     }
 }
 

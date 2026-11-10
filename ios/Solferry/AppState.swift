@@ -74,6 +74,8 @@ struct AppState {
     var invite: String?
     var joining = false
     var joinError: String?
+    var pairingAddress = false
+    var addressError: String?
     var text: ReceivedText?
     var toasts: [Toast] = []
     var toastsMade = 0
@@ -141,14 +143,26 @@ struct AppState {
             pairingCode = nil
             invite = nil
             joining = false
+            pairingAddress = false
+            addressError = nil
             devices.removeAll { $0.identity.id == device.identity.id }
             devices.append(device)
             pairedCount += 1
             reachable?.insert(device.identity.id)
+        case let .addressFailed(problem):
+            addressError = problem.title
+            pairingAddress = false
         case let .pairingFailed(problem):
-            if joining { joinError = problem.title } else { toast(.failure, problem.title) }
+            if joining {
+                joinError = problem.title
+            } else if pairingAddress {
+                addressError = problem.title
+            } else {
+                toast(.failure, problem.title)
+            }
             pairingCode = nil
             joining = false
+            pairingAddress = false
         case let .sendFailed(_, problem):
             toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):

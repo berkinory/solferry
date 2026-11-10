@@ -90,14 +90,21 @@ final class Engine {
         }
     }
 
-    func clearJoinError() {
+    func clearPairingErrors() {
         state.joinError = nil
+        state.addressError = nil
     }
 
     func join(_ code: String) {
         state.joining = true
         state.joinError = nil
         bridge.join(code: code)
+    }
+
+    func pairAddress(_ address: String) {
+        state.pairingAddress = true
+        state.addressError = nil
+        bridge.pairAddress(address: address)
     }
 
     func answerOffer(_ key: UInt64, accept: Bool) {
