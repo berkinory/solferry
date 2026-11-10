@@ -63,6 +63,12 @@ final class Engine {
         case let .offerGone(key): Notifier.settleOffer(key)
         case let .pairingRequest(key, _, name, _): Notifier.pairing(key: key, name: name)
         case let .pairingGone(key): Notifier.settlePairing(key)
+        case let .linkReceived(name, _):
+            let folder = destination()
+            Task.detached { [weak self] in
+                let saved = Exporter.export(to: folder)
+                await self?.exported(saved, by: name, to: folder)
+            }
         case let .completed(id):
             if let done = state.transfers.first(where: { $0.id == id }), !done.sending {
                 let (folder, name, label) = (destination(), done.peerName, done.label)

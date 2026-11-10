@@ -61,7 +61,8 @@ class Engine(private val context: Context) : Listener {
             is Update.PairingRequest -> Notifier.pairing(context, update.key, update.name)
             is Update.PairingGone -> Notifier.settlePairing(context, update.key)
             is Update.LinkReceived -> thread(name = "solferry-export") {
-                if (!Exporter.export(context, received)) main.post { saveFailed("a browser") }
+                val folder = destination()
+                if (!Exporter.export(context, received, folder)) main.post { saveFailed(update.name, folder) }
             }
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
