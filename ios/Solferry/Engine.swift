@@ -116,6 +116,15 @@ final class Engine {
         UIPasteboard.general.string = text
     }
 
+    func shareLink(_ urls: [URL]) {
+        let bridge = bridge!
+        Task.detached {
+            let files = urls.compactMap(Outbox.open)
+            if !files.isEmpty { bridge.shareLink(files: files) }
+            Outbox.discard(urls)
+        }
+    }
+
     func send(_ urls: [URL], to peers: [String]) {
         let bridge = bridge!
         Task.detached {

@@ -136,7 +136,7 @@ fn restore_modified(path: &Path, modified_ms: u64) {
     }
 }
 
-fn free_path(target: PathBuf) -> PathBuf {
+pub(crate) fn free_path(target: PathBuf) -> PathBuf {
     if !target.exists() {
         return target;
     }

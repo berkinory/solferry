@@ -60,6 +60,9 @@ class Engine(private val context: Context) : Listener {
             is Update.OfferGone -> Notifier.settleOffer(context, update.key)
             is Update.PairingRequest -> Notifier.pairing(context, update.key, update.name)
             is Update.PairingGone -> Notifier.settlePairing(context, update.key)
+            is Update.LinkReceived -> thread(name = "solferry-export") {
+                if (!Exporter.export(context, received)) main.post { saveFailed("a browser") }
+            }
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
@@ -135,8 +138,16 @@ class Engine(private val context: Context) : Listener {
         clipboard.setPrimaryClip(ClipData.newPlainText("Solferry", text))
     }
 
-    /** Opens each picked document for the core, which reads it through /proc/self/fd and closes it. */
     fun sendUris(peer: String, uris: List<Uri>) {
+        open(uris)?.let { bridge.sendFiles(peer, it) }
+    }
+
+    fun shareLink(uris: List<Uri>) {
+        open(uris)?.let { bridge.shareLink(it) }
+    }
+
+    /** Opens each picked document for the core, which reads it through /proc/self/fd and closes it. */
+    private fun open(uris: List<Uri>): List<SharedFile>? {
         val opened = mutableListOf<ParcelFileDescriptor>()
         val files = try {
             uris.map { uri ->
@@ -148,9 +159,9 @@ class Engine(private val context: Context) : Listener {
             // These come from other apps, whose providers can refuse or fail in any way.
             opened.forEach { it.close() }
             mutable.update { it.toast(Tone.Error, "Couldn't open that file, try sharing it again") }
-            return
+            return null
         }
-        if (files.isNotEmpty()) bridge.sendFiles(peer, files.map { (name, file) -> SharedFile(name, file.detachFd()) })
+        return files.map { (name, file) -> SharedFile(name, file.detachFd()) }.takeIf { it.isNotEmpty() }
     }
 
     /** What a picked document is called and how big it is, for the send screen. */

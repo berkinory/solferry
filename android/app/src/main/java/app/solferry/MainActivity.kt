@@ -42,6 +42,7 @@ import app.solferry.ui.AddDeviceSheet
 import app.solferry.ui.CompareSheet
 import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
+import app.solferry.ui.LinkSheet
 import app.solferry.ui.LocalToaster
 import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
@@ -144,6 +145,7 @@ class MainActivity : ComponentActivity() {
                             files = remember(shared) { shared.map(engine::describe) },
                             onRemove = { file -> shared = shared - file.uri },
                             onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
+                            onShareLink = { engine.shareLink(shared); shared = emptyList() },
                             onClose = { shared = emptyList() },
                         )
                     }
@@ -154,6 +156,7 @@ class MainActivity : ComponentActivity() {
                         ) { choosing = false }
                     }
                     texting?.let { device -> TextSheet(device, engine) { texting = null } }
+                    state.link?.let { LinkSheet(it, engine) }
                     if (pairing) AddDeviceSheet(state, engine) { pairing = false }
                     val asked = state.pairings.firstOrNull()
                     val code = state.pairingCode
@@ -170,7 +173,7 @@ class MainActivity : ComponentActivity() {
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
-                    val sheetOpen = shared.isNotEmpty() || choosing || texting != null || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
+                    val sheetOpen = shared.isNotEmpty() || choosing || texting != null || state.link != null || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
                     if (!sheetOpen) Toaster(state, engine, Modifier.align(Alignment.TopCenter))
                 } }
             }

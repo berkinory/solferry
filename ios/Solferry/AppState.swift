@@ -32,6 +32,13 @@ struct PairingPrompt: Identifiable {
     var id: UInt64 { key }
 }
 
+/// A link a browser can open. `received` lists what browsers sent through it so far.
+struct LinkState {
+    let urls: [String]
+    let receiving: Bool
+    var received: [String] = []
+}
+
 struct ReceivedText: Identifiable {
     let id: UInt64
     let name: String
@@ -75,6 +82,7 @@ struct AppState {
     var joining = false
     var joinError: String?
     var text: ReceivedText?
+    var link: LinkState?
     var toasts: [Toast] = []
     var toastsMade = 0
     var pairedCount = 0
@@ -157,6 +165,14 @@ struct AppState {
             self.text = ReceivedText(id: now, name: name, text: text, copied: autoCopy)
         case let .textShared(_, problem):
             if let problem { toast(.failure, problem.title) }
+        case let .linkReady(urls, receiving): link = LinkState(urls: urls, receiving: receiving)
+        case .linkStopped: link = nil
+        case let .linkFailed(problem):
+            link = nil
+            toast(.failure, problem.title)
+        case let .linkReceived(name, _):
+            link?.received.append(name)
+            toast(.success, "Received \(name)")
         }
     }
 

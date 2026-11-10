@@ -4,7 +4,7 @@ import SwiftUI
 private let presenceEverySeconds = 20.0
 
 private enum Presented: Identifiable {
-    case pairing, code, send, text
+    case pairing, code, send, text, link
 
     var id: Self { self }
 }
@@ -61,6 +61,7 @@ private struct RootView: View {
             case .code: AddDeviceScreen()
             case .send: SendScreen(files: $staged)
             case .text: if let texting { TextScreen(device: texting) }
+            case .link: if let link = engine.state.link { LinkScreen(link: link) }
             }
         }
         .confirmationDialog("Send", isPresented: $choosing) {
@@ -92,6 +93,7 @@ private struct RootView: View {
             if !state.pairings.isEmpty || state.pairingCode != nil { return .pairing }
             if pairing { return .code }
             if texting != nil { return .text }
+            if state.link != nil { return .link }
             return sending ? .send : nil
         } set: { value in
             guard value == nil else { return }
@@ -101,6 +103,8 @@ private struct RootView: View {
                 pairing = false
             } else if texting != nil {
                 texting = nil
+            } else if engine.state.link != nil {
+                engine.bridge.stopLink()
             } else {
                 sending = false
                 Outbox.discard(staged)

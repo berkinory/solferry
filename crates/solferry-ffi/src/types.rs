@@ -338,6 +338,20 @@ pub enum Update {
         name: String,
         problem: Option<Problem>,
     },
+    /// A link is up. `urls` has one address per local network, the likeliest first.
+    LinkReady {
+        urls: Vec<String>,
+        receiving: bool,
+    },
+    LinkFailed {
+        problem: Problem,
+    },
+    LinkStopped,
+    /// A browser sent a file through the receive link.
+    LinkReceived {
+        name: String,
+        bytes: u64,
+    },
 }
 
 impl Update {
@@ -372,6 +386,9 @@ impl Update {
             }
             Event::Reconnecting { id, .. } => Self::Reconnecting { id: id.to_string() },
             Event::Completed { id } => Self::Completed { id: id.to_string() },
+            Event::LinkReceived { name, bytes } => {
+                Self::LinkReceived { name: name.clone(), bytes: *bytes }
+            }
             Event::Failed { id, error: Error::Cancelled } => Self::Cancelled { id: id.to_string() },
             Event::Failed { id, error } => {
                 Self::Failed { id: id.to_string(), problem: error.into() }

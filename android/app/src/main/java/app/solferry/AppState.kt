@@ -37,6 +37,9 @@ data class Transfer(
     }
 }
 
+/** A link a browser can open. `received` lists what browsers sent through it so far. */
+data class LinkState(val urls: List<String>, val receiving: Boolean, val received: List<String> = emptyList())
+
 data class PickedFile(val uri: android.net.Uri, val name: String, val size: Long?)
 
 data class PairingPrompt(val key: ULong, val peer: Identity, val name: String, val code: String)
@@ -67,6 +70,7 @@ data class AppState(
     val update: AvailableUpdate? = null,
     val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
+    val link: LinkState? = null,
     val toastsMade: Long = 0,
     val standby: Boolean = false,
     /** Null while files go to Downloads/Solferry. */
@@ -114,6 +118,10 @@ data class AppState(
             text = ReceivedText(now, update.name, update.text, update.autoCopy),
         )
         is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title) } ?: this
+        is Update.LinkReady -> copy(link = LinkState(update.urls, update.receiving))
+        is Update.LinkStopped -> copy(link = null)
+        is Update.LinkFailed -> toast(Tone.Error, update.problem.title).copy(link = null)
+        is Update.LinkReceived -> toast(Tone.Success, "Received ${update.name}").copy(link = link?.let { it.copy(received = it.received + update.name) })
     }
 
     fun toast(tone: Tone, title: String) =

@@ -48,6 +48,11 @@ struct SendScreen: View {
                 dismiss()
             }
             .padding(.top, SpaceTokens.sm)
+            ActionButton(label: "Share via link", glyph: .link, kind: .ghost, wide: true) {
+                engine.shareLink(files)
+                files = []
+                dismiss()
+            }
         }
         .onAppear { appeared = true }
     }
