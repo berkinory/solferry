@@ -78,6 +78,8 @@ struct AppState {
     var toasts: [Toast] = []
     var toastsMade = 0
     var pairedCount = 0
+    /// Nil while files go to the Solferry folder in Files.
+    var saveFolder: SaveFolder?
 
     var strangers: [Nearby] { nearby.filter { !$0.known } }
     var asking: Int { offers.count + pairings.count }

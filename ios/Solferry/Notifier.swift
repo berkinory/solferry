@@ -20,8 +20,8 @@ enum Notifier {
         show("Text from \(name)", copied ? "Copied to your clipboard" : "Open Solferry to copy it")
     }
 
-    static func received(label: String, name: String) {
-        show("Files received", "\(label) from \(name), in Files")
+    static func received(label: String, name: String, folder: String) {
+        show("Files received", "\(label) from \(name), in \(folder)")
     }
 
     static func settleOffer(_ key: UInt64) {
