@@ -47,6 +47,7 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
             }
         }
     }
+    RelayCard(state, engine)
     Card(R.drawable.ic_folder, "Save files to") {
         PaddedWell { Muted("Downloads/Solferry") }
     }
@@ -70,7 +71,6 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
             }
         }
     }
-    RelayCard(state, engine)
     if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
         Caption("Solferry 0.1.0", Modifier.weight(1f))

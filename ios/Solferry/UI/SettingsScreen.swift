@@ -18,11 +18,11 @@ struct SettingsScreen: View {
                     }
                 }
             }
+            RelayCard()
             Card(glyph: .folder, title: "Save files to") {
                 PaddedWell { Muted("The Solferry folder in the Files app") }
             }
             VisibilityCard(found: me?.visibility != "Hidden")
-            RelayCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
                 Caption("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
