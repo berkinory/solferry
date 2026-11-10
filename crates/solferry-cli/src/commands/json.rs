@@ -22,21 +22,31 @@ pub fn encode(event: &Event) -> Value {
             "peer": device.id.to_z32(),
             "peer_name": device.name,
         }),
-        Event::Started { id, peer, peer_name, label, direction, route, files, bytes } => json!({
-            "event": "started",
-            "id": id.to_string(),
-            "peer": peer.to_z32(),
-            "peer_name": peer_name,
-            "label": label,
-            "direction": direction_name(*direction),
-            "route": route_name(*route),
-            "files": files,
-            "bytes": bytes,
-        }),
+        Event::Started { id, peer, peer_name, label, direction, route, files, bytes, .. } => {
+            json!({
+                "event": "started",
+                "id": id.to_string(),
+                "peer": peer.to_z32(),
+                "peer_name": peer_name,
+                "label": label,
+                "direction": direction_name(*direction),
+                "route": route_name(*route),
+                "files": files,
+                "bytes": bytes,
+            })
+        }
         Event::RouteChanged { id, route } => json!({
             "event": "route_changed",
             "id": id.to_string(),
             "route": route_name(*route),
+        }),
+        Event::Waiting { id, peer, peer_name, label, bytes } => json!({
+            "event": "waiting",
+            "id": id.to_string(),
+            "peer": peer.to_z32(),
+            "peer_name": peer_name,
+            "label": label,
+            "bytes": bytes,
         }),
         Event::Progress { id, transferred, total } => json!({
             "event": "progress",

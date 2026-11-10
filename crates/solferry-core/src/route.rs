@@ -1,8 +1,8 @@
 use std::net::{IpAddr, Ipv4Addr};
 
 use futures::StreamExt;
-use iroh::TransportAddr;
 use iroh::endpoint::{Connection, Path};
+use iroh::{EndpointAddr, TransportAddr};
 use tokio::sync::broadcast;
 
 use crate::event::{Event, TransferId};
@@ -83,6 +83,21 @@ pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
 /// Whether an unpaired device at `ip` may ask to send files: never across a relay or the internet.
 pub(crate) fn shares_network(ip: IpAddr) -> bool {
     is_local(ip) || (is_overlay(ip) && overlay_address().is_some())
+}
+
+/// Whether `addr` lists an address inside a subnet this device is on right now. Link-local
+/// addresses are left out: every interface shares their prefix, so they prove nothing.
+pub(crate) fn on_local_network(addr: &EndpointAddr) -> bool {
+    let interfaces = netdev::get_interfaces();
+    addr.ip_addrs().any(|target| match target.ip().to_canonical() {
+        IpAddr::V4(ip) if ip.is_private() => {
+            interfaces.iter().any(|interface| interface.ipv4.iter().any(|net| net.contains(&ip)))
+        }
+        IpAddr::V6(ip) if ip.is_unique_local() => {
+            interfaces.iter().any(|interface| interface.ipv6.iter().any(|net| net.contains(&ip)))
+        }
+        _ => false,
+    })
 }
 
 /// The route file data is using right now.

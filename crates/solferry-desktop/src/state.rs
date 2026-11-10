@@ -15,6 +15,7 @@ const MAX_TOASTS: usize = 3;
 
 #[derive(Clone)]
 pub enum Phase {
+    Waiting,
     Active,
     Reconnecting,
     Done,
@@ -101,9 +102,6 @@ pub struct AppState {
     /// Goes up each time the last transfer ends, which starts the pill's way out.
     pub pill_settled: u64,
     pub pill_leaving: bool,
-    /// Counted so the send screen can tell how the send it started turned out.
-    pub sends_started: u64,
-    pub sends_failed: u64,
     pub offers: Vec<Offer>,
     pub text: Option<SharedText>,
     texts_seen: u64,
@@ -189,7 +187,6 @@ impl AppState {
                 }
             }
             Update::SendFailed { name, addr, paths, error } => {
-                self.sends_failed += 1;
                 if !matches!(error, Error::Cancelled) {
                     let title = about(&error, &name);
                     self.toast(
@@ -243,23 +240,12 @@ impl AppState {
                 let key = self.texts_seen;
                 self.text = Some(SharedText { key, name: peer_name, text, copied: auto_copy });
             }
+            Event::Waiting { id, peer_name, label, bytes, .. } => {
+                let transfer = Transfer::new(id, label, peer_name, Direction::Sending, bytes);
+                self.begin(Transfer { phase: Phase::Waiting, ..transfer });
+            }
             Event::Started { id, peer_name, label, direction, bytes, .. } => {
-                self.transfers.retain(|transfer| transfer.id != id && transfer.running());
-                self.pill_leaving = false;
-                self.pill_settled += 1;
-                self.sends_started += u64::from(direction == Direction::Sending);
-                self.transfers.insert(
-                    0,
-                    Transfer {
-                        id,
-                        title: label,
-                        peer: peer_name,
-                        direction,
-                        transferred: 0,
-                        total: bytes,
-                        phase: Phase::Active,
-                    },
-                );
+                self.begin(Transfer::new(id, label, peer_name, direction, bytes));
             }
             Event::RouteChanged { .. } => {}
             Event::Progress { id, transferred, total } => {
@@ -308,14 +294,25 @@ impl AppState {
         self.toast(tone, title, None);
     }
 
+    fn begin(&mut self, transfer: Transfer) {
+        self.transfers.retain(|known| known.id != transfer.id && known.running());
+        self.pill_leaving = false;
+        self.pill_settled += 1;
+        self.transfers.insert(0, transfer);
+    }
+
     fn transfer(&mut self, id: TransferId) -> Option<&mut Transfer> {
         self.transfers.iter_mut().find(|transfer| transfer.id == id)
     }
 }
 
 impl Transfer {
+    fn new(id: TransferId, title: String, peer: String, direction: Direction, total: u64) -> Self {
+        Self { id, title, peer, direction, transferred: 0, total, phase: Phase::Active }
+    }
+
     pub fn running(&self) -> bool {
-        matches!(self.phase, Phase::Active | Phase::Reconnecting)
+        matches!(self.phase, Phase::Waiting | Phase::Active | Phase::Reconnecting)
     }
 
     pub fn outcome(&self) -> (Tone, String) {

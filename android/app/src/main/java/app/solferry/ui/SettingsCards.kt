@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,7 +51,6 @@ private fun RelayRow(relay: Relay, engine: Engine) {
 fun RelayCard(state: AppState, engine: Engine) {
     val palette = LocalPalette.current
     val links = LocalUriHandler.current
-    val clipboard = LocalClipboardManager.current
     var link by remember { mutableStateOf("") }
     LaunchedEffect(state.relays.size) { link = "" }
     val add = { if (link.isNotBlank()) engine.bridge.addRelay(link.trim()) }
@@ -68,7 +66,7 @@ fun RelayCard(state: AppState, engine: Engine) {
                     link, { link = it }, "https://relay.example.com#token", Modifier.weight(1f),
                     trailing = {
                         Button(
-                            { clipboard.getText()?.text?.let { link = it.trim() } }, icon = R.drawable.ic_clipboard,
+                            { engine.pasted()?.let { link = it.trim() } }, icon = R.drawable.ic_clipboard,
                             kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Paste",
                         )
                     },

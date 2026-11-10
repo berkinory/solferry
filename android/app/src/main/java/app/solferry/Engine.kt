@@ -8,8 +8,11 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.provider.Settings
+import androidx.core.content.edit
+import java.io.FileNotFoundException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -73,7 +76,7 @@ class Engine(private val context: Context) : Listener {
     fun resumeStandby() = StandbyService.sync(context, state.value.standby)
 
     fun setStandby(on: Boolean) {
-        settings.edit().putBoolean(STANDBY, on).apply()
+        settings.edit { putBoolean(STANDBY, on) }
         mutable.update { it.copy(standby = on) }
         StandbyService.sync(context, on)
     }
@@ -89,11 +92,20 @@ class Engine(private val context: Context) : Listener {
 
     /** Opens each picked document for the core, which reads it through /proc/self/fd and closes it. */
     fun sendUris(peer: String, uris: List<Uri>) {
-        val files = uris.mapNotNull { uri ->
-            val fd = context.contentResolver.openFileDescriptor(uri, "r")?.detachFd() ?: return@mapNotNull null
-            SharedFile(displayName(uri), fd)
+        val opened = mutableListOf<ParcelFileDescriptor>()
+        val files = try {
+            uris.map { uri ->
+                val file = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException(uri.toString())
+                opened += file
+                displayName(uri) to file
+            }
+        } catch (_: Exception) {
+            // These come from other apps, whose providers can refuse or fail in any way.
+            opened.forEach { it.close() }
+            mutable.update { it.toast(Tone.Error, "Couldn't open that file, try sharing it again") }
+            return
         }
-        if (files.isNotEmpty()) bridge.sendFiles(peer, files)
+        if (files.isNotEmpty()) bridge.sendFiles(peer, files.map { (name, file) -> SharedFile(name, file.detachFd()) })
     }
 
     /** What a picked document is called and how big it is, for the send screen. */
@@ -105,9 +117,13 @@ class Engine(private val context: Context) : Listener {
         return PickedFile(uri, displayName(uri), size)
     }
 
+    fun pasted(): String? {
+        val clip = context.getSystemService(ClipboardManager::class.java).primaryClip?.takeIf { it.itemCount > 0 }
+        return clip?.getItemAt(0)?.coerceToText(context)?.toString()
+    }
+
     fun shareClipboard(peer: String, name: String) {
-        val clipboard = context.getSystemService(ClipboardManager::class.java)
-        val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString()
+        val text = pasted()
         if (text.isNullOrEmpty()) {
             mutable.update { it.toast(Tone.Error, emptyClipboard.title) }
         } else {

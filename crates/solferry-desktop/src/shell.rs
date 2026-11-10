@@ -74,6 +74,10 @@ fn handle_update(update: Update, cx: &mut App) {
 }
 
 fn notify(update: &Update, cx: &mut App) {
+    let window = cx.global::<Shell>().window;
+    if window.is_some_and(|w| w.update(cx, |_, w, _| w.is_window_active()).unwrap_or(false)) {
+        return;
+    }
     let state = cx.global::<Shell>().state.read(cx);
     let (title, body) = match update {
         Update::Offer { summary, .. } => {

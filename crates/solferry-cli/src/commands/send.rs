@@ -8,6 +8,7 @@ use solferry_core::{Direction, Error, Event, Node, Result, Route};
 use tokio::sync::broadcast;
 
 const NEARBY_WINDOW: Duration = Duration::from_secs(3);
+const DRAIN_WAIT: Duration = Duration::from_secs(2);
 const BAR_TEMPLATE: &str = "{msg} [{bar:32}] {bytes}/{total_bytes} {bytes_per_sec} eta {eta}";
 
 pub async fn run(
@@ -18,7 +19,7 @@ pub async fn run(
 ) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let addrs = resolve(&node, &targets).await?;
-    let progress = if json {
+    let mut progress = if json {
         tokio::spawn(super::json::print_events(node.events()))
     } else {
         tokio::spawn(show_progress(node.events()))
@@ -47,8 +48,12 @@ pub async fn run(
             }
         }
     }
-    progress.abort();
-    node.shutdown().await?;
+    let shutdown = node.shutdown().await;
+    // Shutdown closes the event channel, so the printer ends once it has printed the last event.
+    if tokio::time::timeout(DRAIN_WAIT, &mut progress).await.is_err() {
+        progress.abort();
+    }
+    shutdown?;
     failure.map_or(Ok(()), Err)
 }
 
@@ -120,7 +125,10 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
             Event::Progress { transferred, .. } => bar.set_position(transferred),
             Event::Completed { .. } | Event::Failed { .. } => bar.finish_and_clear(),
             Event::Reconnecting { .. } => bar.set_message("reconnecting"),
-            Event::Started { .. } | Event::Paired { .. } | Event::TextReceived { .. } => {}
+            Event::Waiting { .. }
+            | Event::Started { .. }
+            | Event::Paired { .. }
+            | Event::TextReceived { .. } => {}
         }
     }
 }

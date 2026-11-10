@@ -12,7 +12,7 @@ import uniffi.solferry_ffi.Update
 
 private const val MAX_TOASTS = 3
 
-enum class Phase { Active, Reconnecting, Done, Failed }
+enum class Phase { Waiting, Active, Reconnecting, Done, Failed }
 
 enum class Tone { Success, Error }
 
@@ -29,7 +29,7 @@ data class Transfer(
     val phase: Phase = Phase.Active,
     val problem: Problem? = null,
 ) {
-    val running get() = phase == Phase.Active || phase == Phase.Reconnecting
+    val running get() = phase == Phase.Waiting || phase == Phase.Active || phase == Phase.Reconnecting
     val fraction get() = if (total == 0L) 1f else transferred.toFloat() / total
     val outcome: Pair<Tone, String> get() {
         problem?.let { return Tone.Error to it.title }
@@ -68,8 +68,6 @@ data class AppState(
     val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
     val toastsMade: Long = 0,
-    val sendsStarted: Int = 0,
-    val sendsFailed: Int = 0,
     val standby: Boolean = false,
     val pairedCount: Int = 0,
 ) {
@@ -86,12 +84,8 @@ data class AppState(
         is Update.RelayFailed -> toast(Tone.Error, update.problem.title)
         is Update.Blocked -> copy(blocked = update.devices)
         is Update.UpdateAvailable -> toast(Tone.Success, "Solferry ${update.version} is available").copy(update = AvailableUpdate(update.version, update.page))
-        is Update.Started -> copy(
-            sendsStarted = sendsStarted + if (update.sending) 1 else 0,
-            transfers = listOf(
-                Transfer(update.id, update.peerName, update.label, update.sending, total = update.bytes.toLong()),
-            ) + transfers.filter { it.id != update.id && it.running },
-        )
+        is Update.Waiting -> begin(Transfer(update.id, update.peerName, update.label, true, total = update.bytes.toLong(), phase = Phase.Waiting))
+        is Update.Started -> begin(Transfer(update.id, update.peerName, update.label, update.sending, total = update.bytes.toLong()))
         is Update.Progress -> transfer(update.id) { it.copy(transferred = update.transferred.toLong(), total = update.total.toLong(), phase = Phase.Active) }
         is Update.RouteChanged -> this
         is Update.Reconnecting -> transfer(update.id) { it.copy(phase = Phase.Reconnecting) }
@@ -113,7 +107,7 @@ data class AppState(
             reachable = reachable?.plus(update.device.identity.id),
         )
         is Update.PairingFailed -> (if (joining) copy(joinError = update.problem.title) else toast(Tone.Error, update.problem.title)).copy(pairingCode = null, joining = false)
-        is Update.SendFailed -> toast(Tone.Error, update.problem.title).copy(sendsFailed = sendsFailed + 1)
+        is Update.SendFailed -> toast(Tone.Error, update.problem.title)
         is Update.TextReceived -> copy(
             text = ReceivedText(now, update.name, update.text, update.autoCopy),
         )
@@ -130,6 +124,8 @@ data class AppState(
         val (tone, title) = ended.outcome
         return copy(transfers = transfers - ended).toast(tone, title)
     }
+
+    private fun begin(transfer: Transfer) = copy(transfers = listOf(transfer) + transfers.filter { it.id != transfer.id && it.running })
 
     private fun transfer(id: String, change: (Transfer) -> Transfer) =
         copy(transfers = transfers.map { if (it.id == id) change(it) else it })

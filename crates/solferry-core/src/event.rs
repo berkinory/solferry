@@ -35,6 +35,14 @@ pub enum Event {
         text: String,
         auto_copy: bool,
     },
+    /// A send is reaching the other device and waiting for it to accept.
+    Waiting {
+        id: TransferId,
+        peer: EndpointId,
+        peer_name: String,
+        label: String,
+        bytes: u64,
+    },
     Started {
         id: TransferId,
         peer: EndpointId,
@@ -44,6 +52,7 @@ pub enum Event {
         route: Route,
         files: usize,
         bytes: u64,
+        platform: Option<crate::Platform>,
     },
     RouteChanged {
         id: TransferId,

@@ -22,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -39,7 +37,6 @@ fun AddDeviceSheet(
     onClose: () -> Unit,
 ) = Sheet("Pair with a code", { engine.clearJoinError(); onClose() }) {
     var code by remember { mutableStateOf("") }
-    val clipboard = LocalClipboardManager.current
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }
     Card(R.drawable.ic_qr, "Show a code") {
         PaddedWell {
@@ -48,7 +45,7 @@ fun AddDeviceSheet(
                 Muted("For a device on another network, or when this one can't be found nearby. Show a code here and enter it there.")
                 Button({ engine.bridge.invite() }, Modifier.fillMaxWidth(), label = "Show code", icon = R.drawable.ic_qr, kind = ButtonKind.Primary)
             } else {
-                Invite(invite) { clipboard.setText(AnnotatedString(invite)) }
+                Invite(invite) { engine.copy(invite) }
             }
         }
     }
@@ -61,7 +58,7 @@ fun AddDeviceSheet(
                     keyboardActions = KeyboardActions(onGo = { join() }),
                     trailing = {
                         Button(
-                            { clipboard.getText()?.text?.let { code = it.trim() } }, icon = R.drawable.ic_clipboard,
+                            { engine.pasted()?.let { code = it.trim() } }, icon = R.drawable.ic_clipboard,
                             kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Paste",
                         )
                     },

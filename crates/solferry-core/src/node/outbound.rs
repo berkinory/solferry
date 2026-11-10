@@ -2,13 +2,14 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use iroh::endpoint::{Connection, RecvStream, SendStream};
+use iroh::endpoint::{ConnectOptions, Connection, RecvStream, SendStream};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_proto::{ALPN_TRANSFER, Decision, Offer, OfferReply, read_frame, write_frame};
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
 use crate::event::{Direction, Event, TransferId};
+use crate::net::local_transport_config;
 use crate::route::{self, Route, current_route};
 use crate::transfer::segments;
 use crate::transfer::{Manifest, Meter, NamedFile, exchange_hello, remote_failure};
@@ -57,6 +58,14 @@ impl Node {
 
     async fn deliver(&self, target: EndpointAddr, manifest: Arc<Manifest>) -> Result<SendReport> {
         let started = Instant::now();
+        let peer_name = self.shared.trust().get(&target.id).map(|device| device.name.clone());
+        let _ = self.shared.events.send(Event::Waiting {
+            id: manifest.id,
+            peer: target.id,
+            peer_name: peer_name.unwrap_or_else(|| target.id.fmt_short().to_string()),
+            label: transfer_label(&manifest.entries),
+            bytes: manifest.entries.iter().map(|entry| entry.size).sum(),
+        });
         let mut delay = RETRY_BASE;
         let mut reached = false;
         loop {
@@ -91,11 +100,19 @@ async fn attempt(
     reached: &mut bool,
 ) -> Result<SendReport> {
     let peer = target.id;
-    let connection = shared
+    let mut options = ConnectOptions::new();
+    let local = route::on_local_network(&target);
+    tracing::info!(local, "connecting to send");
+    if local {
+        options = options.with_transport_config(local_transport_config()?);
+    }
+    let unreachable = |error: &dyn std::fmt::Display| Error::Unreachable(error.to_string());
+    let connecting = shared
         .endpoint
-        .connect(target, ALPN_TRANSFER)
+        .connect_with_opts(target, ALPN_TRANSFER, options)
         .await
-        .map_err(|error| Error::Unreachable(error.to_string()))?;
+        .map_err(|error| unreachable(&error))?;
+    let connection = connecting.await.map_err(|error| unreachable(&error))?;
     *reached = true;
     shared.track(manifest.id, &connection);
     let result = async {
@@ -142,6 +159,7 @@ async fn negotiate(
         route,
         files,
         bytes,
+        platform: crate::Platform::parse(&hello.platform),
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
     let final_route = tokio::select! {

@@ -21,7 +21,6 @@ import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
-import uniffi.solferry_ffi.DevicePlatform
 import uniffi.solferry_ffi.HistoryEntry
 
 @Composable
@@ -34,11 +33,7 @@ fun HistoryScreen(state: AppState, engine: Engine) {
                 R.drawable.ic_history, "History",
                 aside = { Button({ engine.bridge.clearHistory() }, label = "Clear", kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
             ) {
-                Well { state.history.forEach { entry ->
-                    val platform = state.devices.firstOrNull { it.identity.id == entry.peer }?.identity?.platform
-                        ?: state.nearby.firstOrNull { it.identity.id == entry.peer }?.identity?.platform
-                    Past(entry, platform)
-                } }
+                Well { state.history.forEach { Past(it) } }
             }
         }
     }
@@ -64,21 +59,20 @@ private fun NoHistory() = Column(Modifier.fillMaxSize()) {
 }
 
 @Composable
-private fun Past(entry: HistoryEntry, platform: DevicePlatform?) {
+private fun Past(entry: HistoryEntry) {
     val palette = LocalPalette.current
     Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
         Tile(if (entry.sending) R.drawable.ic_upload else R.drawable.ic_download, palette.control, palette.inkMuted)
         Column(Modifier.weight(1f)) {
-            Text(entry.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val outcome = if (entry.completed) bytes(entry.bytes.toLong()) else "Failed"
-            val tone = if (entry.completed) palette.inkMuted else palette.danger
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Text(entry.label, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Muted(if (entry.completed) bytes(entry.bytes.toLong()) else "Failed", color = if (entry.completed) palette.inkMuted else palette.danger)
+            }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
-                Muted(if (entry.sending) "To" else "From", color = tone)
-                Glyph(platformIcon(platform), tone, 14)
-                Text(entry.name, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyMedium, color = tone, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Muted("·  $outcome", color = tone)
+                Glyph(platformIcon(entry.platform), palette.inkMuted, 14)
+                Text(entry.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = palette.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Caption(ago(entry.finishedMs.toLong()))
             }
         }
-        Caption(ago(entry.finishedMs.toLong()))
     }
 }

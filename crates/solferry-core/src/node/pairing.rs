@@ -84,6 +84,9 @@ impl Node {
         if ticket.expires_at_ms < now_ms() {
             return Err(Error::TicketExpired);
         }
+        if ticket.endpoint_id.as_slice() == self.id().as_bytes() {
+            return Err(Error::OwnTicket);
+        }
         self.online_within(ONLINE_WAIT).await;
         let relays = ticket.relay_urls.clone();
         let direct_addrs = ticket.direct_addrs.clone();

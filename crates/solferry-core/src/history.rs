@@ -20,6 +20,7 @@ pub struct PastTransfer {
     pub bytes: u64,
     pub finished_ms: u64,
     pub completed: bool,
+    pub platform: Option<crate::Platform>,
 }
 
 #[derive(Debug)]

@@ -1,6 +1,7 @@
 package app.solferry
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +9,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -20,6 +22,9 @@ object Notifier {
     private const val OFFER = "offer"
     private const val PAIRING = "pairing"
     private var next = 100
+
+    /** While someone is looking at the app, it shows these itself. */
+    var appVisible = false
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -71,16 +76,22 @@ object Notifier {
     fun received(context: Context, label: String, name: String) =
         show(context, "Files received", "$label from $name, in Downloads/Solferry")
 
-    private fun allowed(context: Context) =
+    /** Before Android 13 there is no permission to ask for, only the switch in system settings. */
+    private fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    } else {
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
 
     /** Swaps what an ongoing notification says, for a service that is already running. */
+    @SuppressLint("MissingPermission") // allowed() checks it
     fun replace(context: Context, id: Int, notification: Notification) {
         if (allowed(context)) NotificationManagerCompat.from(context).notify(id, notification)
     }
 
+    @SuppressLint("MissingPermission") // allowed() checks it
     private fun show(context: Context, title: String, body: String, tag: String? = null, id: Int = next++) {
-        if (!allowed(context)) return
+        if (appVisible || !allowed(context)) return
         val notification = NotificationCompat.Builder(context, ASKS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
             .setContentTitle(title)

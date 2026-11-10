@@ -7,7 +7,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,8 +45,6 @@ import app.solferry.design.MotionTokens
 import app.solferry.design.SpaceTokens
 import kotlinx.coroutines.delay
 import uniffi.solferry_ffi.Identity
-
-private enum class Launch { Idle, Flying, Sending }
 
 private data class Target(val identity: Identity, val name: String, val detail: String)
 
@@ -92,7 +88,7 @@ fun SendSheet(
         }
     }
     Box(Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), contentAlignment = Alignment.Center) {
-        LaunchButton(chosen.size, state.sendsStarted, state.sendsFailed, { onSend(chosen) }, close)
+        LaunchButton(chosen.size, { onSend(chosen) }, close)
     }
 }
 
@@ -136,52 +132,34 @@ fun Connector(live: Boolean) {
     }
 }
 
+/** Lets the cursor fly, then closes the sheet. The transfer pill takes over from there. */
 @Composable
-private fun LaunchButton(chosen: Int, started: Int, failed: Int, onLaunch: () -> Unit, onDone: () -> Unit) {
+private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) {
     val palette = LocalPalette.current
-    var launch by remember { mutableStateOf(Launch.Idle) }
-    var launched by remember { mutableStateOf(Triple(0, 0, 0)) }
+    var flying by remember { mutableStateOf(false) }
     val haptics = LocalHapticFeedback.current
-    LaunchedEffect(launch) { if (launch == Launch.Flying) { delay(FLY_MS); launch = Launch.Sending } }
-    LaunchedEffect(launch, started, failed) {
-        if (launch != Launch.Sending) return@LaunchedEffect
-        val (startedBefore, failedBefore, count) = launched
-        if (started > startedBefore) onDone() else if (failed - failedBefore >= count) launch = Launch.Idle
-    }
-    val fly by animateFloatAsState(if (launch == Launch.Idle) 0f else 1f, tween(380, easing = FastOutLinearInEasing))
-    val enabled = chosen > 0 && launch == Launch.Idle
-    val label = when {
-        launch == Launch.Sending -> "Sending"
-        chosen > 1 -> "Send to $chosen devices"
-        else -> "Send"
-    }
+    LaunchedEffect(flying) { if (flying) { delay(FLY_MS); onDone() } }
+    val fly by animateFloatAsState(if (flying) 1f else 0f, tween(380, easing = FastOutLinearInEasing))
+    val label = if (chosen > 1) "Send to $chosen devices" else "Send"
     val density = LocalDensity.current
     Box(
         Modifier.width(210.dp).height(56.dp).graphicsLayer { alpha = if (chosen > 0) 1f else 0.5f }.clip(FieldShape)
-            .background(palette.primaryFill).clickable(enabled = enabled) {
+            .background(palette.primaryFill).clickable(enabled = chosen > 0 && !flying) {
                 haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                launched = Triple(started, failed, chosen)
                 onLaunch()
-                launch = Launch.Flying
+                flying = true
             },
         contentAlignment = Alignment.Center,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-            val symbol = if (launch == Launch.Flying) Launch.Idle else launch
-            AnimatedContent(symbol, transitionSpec = { (fadeIn() + scaleIn()) togetherWith fadeOut() }) { shown ->
-                if (shown == Launch.Sending) {
-                    CircularProgressIndicator(Modifier.size(20.dp), color = palette.onPrimary, strokeWidth = 2.dp)
-                } else {
-                    Box(
-                        Modifier.graphicsLayer {
-                            rotationZ = 90f
-                            translationX = with(density) { fly * 36.dp.toPx() }
-                            translationY = with(density) { fly * -36.dp.toPx() }
-                            alpha = 1 - fly
-                        },
-                    ) { Glyph(R.drawable.ic_cursor, palette.onPrimary, 22) }
-                }
-            }
+            Box(
+                Modifier.graphicsLayer {
+                    rotationZ = 90f
+                    translationX = with(density) { fly * 36.dp.toPx() }
+                    translationY = with(density) { fly * -36.dp.toPx() }
+                    alpha = 1 - fly
+                },
+            ) { Glyph(R.drawable.ic_cursor, palette.onPrimary, 22) }
             AnimatedContent(label, transitionSpec = { fadeIn() togetherWith fadeOut() }) {
                 Text(it, style = MaterialTheme.typography.titleMedium, color = palette.onPrimary)
             }

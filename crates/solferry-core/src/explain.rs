@@ -87,6 +87,9 @@ pub fn explain(error: &Error) -> Explanation {
         Error::Update(_) => {
             say("Couldn't update Solferry", "Try again later, or download it from GitHub.")
         }
+        Error::OwnTicket => {
+            say("That's this device's own code", "Enter it on the other device instead.")
+        }
         Error::PairingRefused => {
             say("Pairing was refused", "Ask them to accept, or create a new code.")
         }

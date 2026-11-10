@@ -3,7 +3,7 @@ import Foundation
 private let maxToasts = 3
 
 enum Phase {
-    case active, reconnecting, done, failed
+    case waiting, active, reconnecting, done, failed
 }
 
 struct Transfer: Identifiable {
@@ -16,7 +16,7 @@ struct Transfer: Identifiable {
     var phase = Phase.active
     var problem: Problem?
 
-    var running: Bool { phase == .active || phase == .reconnecting }
+    var running: Bool { phase == .waiting || phase == .active || phase == .reconnecting }
     var fraction: Double { total == 0 ? 1 : Double(transferred) / Double(total) }
     var outcome: (tone: Tone, title: String) {
         if let problem { return (.failure, problem.title) }
@@ -77,8 +77,6 @@ struct AppState {
     var text: ReceivedText?
     var toasts: [Toast] = []
     var toastsMade = 0
-    var sendsStarted = 0
-    var sendsFailed = 0
     var pairedCount = 0
 
     var strangers: [Nearby] { nearby.filter { !$0.known } }
@@ -102,11 +100,10 @@ struct AppState {
         case let .relayFailed(problem): toast(.failure, problem.title)
         case let .blocked(list): blocked = list
         case .updateAvailable: break
-        case let .started(id, peerName, label, sending, route, bytes):
-            transfers.removeAll { $0.id == id || !$0.running }
-            if sending { sendsStarted += 1 }
-            let started = Transfer(id: id, peerName: peerName, label: label, sending: sending, total: bytes)
-            transfers.insert(started, at: 0)
+        case let .waiting(id, peerName, label, bytes):
+            begin(Transfer(id: id, peerName: peerName, label: label, sending: true, total: bytes, phase: .waiting))
+        case let .started(id, peerName, label, sending, _, bytes):
+            begin(Transfer(id: id, peerName: peerName, label: label, sending: sending, total: bytes))
         case let .progress(id, transferred, total):
             change(id) {
                 $0.transferred = transferred
@@ -153,7 +150,6 @@ struct AppState {
             pairingCode = nil
             joining = false
         case let .sendFailed(_, problem):
-            sendsFailed += 1
             toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):
             self.text = ReceivedText(id: now, name: name, text: text, copied: autoCopy)
@@ -173,6 +169,11 @@ struct AppState {
         guard transfers.contains(where: \.running), let index = transfers.firstIndex(where: { $0.id == id }) else { return }
         let ended = transfers.remove(at: index).outcome
         toast(ended.tone, ended.title)
+    }
+
+    private mutating func begin(_ transfer: Transfer) {
+        transfers.removeAll { $0.id == transfer.id || !$0.running }
+        transfers.insert(transfer, at: 0)
     }
 
     private mutating func change(_ id: String, _ edit: (inout Transfer) -> Void) {

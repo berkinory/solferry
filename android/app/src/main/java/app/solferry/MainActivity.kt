@@ -61,6 +61,16 @@ private const val PRESENCE_EVERY_MS = 20_000L
 class MainActivity : ComponentActivity() {
     private var shared by mutableStateOf<List<Uri>>(emptyList())
 
+    override fun onStart() {
+        super.onStart()
+        Notifier.appVisible = true
+    }
+
+    override fun onStop() {
+        Notifier.appVisible = false
+        super.onStop()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

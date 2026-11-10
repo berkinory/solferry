@@ -151,17 +151,19 @@ fn row(close: bool) -> Div {
 fn running_row(transfer: &Transfer, wide: bool, budget: usize, cx: &mut Context<MainView>) -> Div {
     let id = transfer.id;
     let waiting = matches!(transfer.phase, Phase::Reconnecting);
-    let line = match (waiting, transfer.direction) {
-        (true, _) => phrase("Reconnecting to", &transfer.peer, budget),
+    let pending = matches!(transfer.phase, Phase::Waiting);
+    let line = match (&transfer.phase, transfer.direction) {
+        (Phase::Waiting, _) => phrase("Waiting for", &transfer.peer, budget),
+        (Phase::Reconnecting, _) => phrase("Reconnecting to", &transfer.peer, budget),
         (_, Direction::Sending) => phrase("Sending", &transfer.title, budget),
         (_, Direction::Receiving) => phrase("Receiving", &transfer.title, budget),
     };
     let tone = if waiting { rgb(RECONNECTING).into() } else { cx.theme().background };
-    let key = SharedString::from(format!("pill-text-{id}-{waiting}"));
+    let key = SharedString::from(format!("pill-text-{id}-{waiting}-{pending}"));
     row(true)
         .child(ring(transfer.fraction(), tone, RING))
         .child(label(key, line, wide))
-        .child(percent(transfer.fraction(), cx))
+        .children((!pending).then(|| percent(transfer.fraction(), cx)))
         .child(
             dismiss(SharedString::from(format!("pill-cancel-{id}")), cx).on_click(
                 cx.listener(move |_, _, _, cx| MainView::command(Command::Cancel(id), cx)),

@@ -109,7 +109,17 @@ impl Shared {
     fn remember(&self, event: &Event) {
         let mut running = self.running.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         let (id, completed) = match event {
-            Event::Started { id, peer, peer_name, label, direction, files, bytes, .. } => {
+            Event::Started {
+                id,
+                peer,
+                peer_name,
+                label,
+                direction,
+                files,
+                bytes,
+                platform,
+                ..
+            } => {
                 let entry = PastTransfer {
                     peer: *peer,
                     peer_name: peer_name.clone(),
@@ -119,6 +129,7 @@ impl Shared {
                     bytes: *bytes,
                     finished_ms: 0,
                     completed: false,
+                    platform: *platform,
                 };
                 running.insert(*id, entry);
                 return;
