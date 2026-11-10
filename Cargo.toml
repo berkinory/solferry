@@ -16,7 +16,7 @@ solferry-proto = { path = "crates/solferry-proto" }
 
 iroh = "1.4"
 iroh-mdns-address-lookup = "0.6"
-netdev = "0.46"
+netdev = "0.47"
 
 anyhow = "1"
 bytes = "1"
