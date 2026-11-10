@@ -1,2 +1,2 @@
 [files]
-extend-exclude = ["LICENSE", "Cargo.lock"]
+extend-exclude = ["LICENSE", "Cargo.lock", "vendor"]
