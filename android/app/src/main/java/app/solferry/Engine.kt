@@ -140,6 +140,11 @@ class Engine(private val context: Context) : Listener {
 
     fun setReach(reach: Reach) = bridge.setReach(reach)
 
+    fun setCheckUpdates(enabled: Boolean) {
+        bridge.setCheckUpdates(enabled)
+        mutable.update { it.copy(me = it.me?.copy(checkUpdates = enabled)) }
+    }
+
     fun cancelRunning() = state.value.transfers.filter { it.running }.forEach { bridge.cancel(it.id) }
 
     fun dismissToast(key: Long) = mutable.update { state -> state.copy(toasts = state.toasts.filter { it.key != key }) }

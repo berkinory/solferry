@@ -26,6 +26,8 @@ pub struct Config {
     pub relay_ca_file: Option<PathBuf>,
     pub visibility: Visibility,
     pub download_dir: PathBuf,
+    /// Whether the desktop and Android apps look for new releases.
+    pub check_updates: bool,
 }
 
 impl Default for Config {
@@ -38,6 +40,7 @@ impl Default for Config {
             download_dir: dirs::download_dir()
                 .or_else(dirs::home_dir)
                 .unwrap_or_else(|| PathBuf::from(".")),
+            check_updates: true,
         }
     }
 }

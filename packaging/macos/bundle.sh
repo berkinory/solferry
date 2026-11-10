@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds Solferry.app next to the given release binary and signs it ad hoc.
+# Builds Solferry.app next to the given release binary. Signs it with SOLFERRY_SIGN_IDENTITY, or ad hoc without one.
 set -euo pipefail
 
 RELEASE=${1:-target/release}
@@ -18,5 +18,9 @@ for size in 16 32 128 256 512; do
     sips -z $double $double "$ROOT/crates/solferry-desktop/assets/icon.png" --out "$ICONS/icon_${size}x${size}@2x.png" >/dev/null
 done
 iconutil -c icns "$ICONS" -o "$APP/Contents/Resources/solferry.icns"
-codesign --force --deep --sign - "$APP"
+if [ -n "${SOLFERRY_SIGN_IDENTITY:-}" ]; then
+    codesign --force --options runtime --timestamp --sign "$SOLFERRY_SIGN_IDENTITY" "$APP"
+else
+    codesign --force --sign - "$APP"
+fi
 echo "$APP"

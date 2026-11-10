@@ -10,6 +10,7 @@ mod theme;
 #[allow(dead_code)]
 mod tokens;
 mod tray;
+mod updater;
 mod views;
 mod watch;
 

@@ -17,6 +17,19 @@ There is no account and no upload step. Files go straight from one device to ano
 | Across the internet | with your own relay | no | yes |
 | Resume after interruption | yes | no | yes |
 
+## Install
+
+Downloads are on the [releases page](https://github.com/berkinory/solferry/releases). On macOS and Linux, Homebrew works too:
+
+```sh
+brew tap berkinory/brew
+brew trust berkinory/brew
+brew install --cask solferry   # the macOS app
+brew install solferry-cli      # the command line tool
+```
+
+The desktop apps update themselves unless you turn that off in Settings.
+
 ## Desktop app
 
 ```sh

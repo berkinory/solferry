@@ -19,5 +19,6 @@ mod texts;
 mod toast;
 mod toast_timing;
 mod ui;
+mod updates;
 
 pub use main_view::MainView;

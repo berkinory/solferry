@@ -14,6 +14,7 @@ mod route;
 mod store;
 mod transfer;
 mod trust;
+pub mod update;
 
 pub use config::{Config, Visibility, default_data_dir};
 pub use error::{Error, Result};

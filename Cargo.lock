@@ -7765,6 +7765,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b55fb86dfd3a2f5f76ea78310a88f96c4ea21a3031f8d212443d56123fd0521"
 
 [[package]]
+name = "self-replace"
+version = "1.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "609c5606d9d357b26e4ee1a7a01beac396628d0fa01ebbade2a09cefb88e65af"
+dependencies = [
+ "fastrand",
+ "tempfile",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "self_cell"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8168,6 +8179,7 @@ dependencies = [
  "bytes",
  "data-encoding",
  "dirs 7.0.0",
+ "ed25519-dalek",
  "fs4",
  "futures",
  "gethostname",
@@ -8179,15 +8191,20 @@ dependencies = [
  "noq-proto",
  "prost",
  "rand 0.10.3",
+ "reqwest",
+ "rustls",
  "rustls-pki-types",
+ "semver",
  "serde",
  "serde_json",
+ "sha2 0.11.1",
  "solferry-proto",
  "tempfile",
  "thiserror 2.0.21",
  "tokio",
  "tracing",
  "walkdir",
+ "webpki-roots",
  "xattr",
 ]
 
@@ -8200,7 +8217,9 @@ dependencies = [
  "iroh",
  "ksni",
  "qrcode",
+ "self-replace",
  "solferry-core",
+ "tempfile",
  "tokio",
  "tracing",
  "tracing-subscriber",

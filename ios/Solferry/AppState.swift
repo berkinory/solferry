@@ -85,7 +85,7 @@ struct AppState {
 
     mutating func apply(_ update: Update, now: UInt64) {
         switch update {
-        case let .ready(id, fingerprint, name, _, visibility):
+        case let .ready(id, fingerprint, name, _, visibility, _):
             me = Me(id: id, fingerprint: fingerprint, name: name, visibility: visibility)
             startProblem = nil
         case let .startFailed(problem, reason):
@@ -99,6 +99,7 @@ struct AppState {
             relays = list
         case let .relayFailed(problem): toast(.failure, problem.title)
         case let .blocked(list): blocked = list
+        case .updateAvailable: break
         case let .waiting(id, peerName, label, bytes):
             begin(Transfer(id: id, peerName: peerName, label: label, sending: true, total: bytes, phase: .waiting))
         case let .started(id, peerName, label, sending, _, bytes):

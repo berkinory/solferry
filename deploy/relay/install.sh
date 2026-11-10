@@ -50,7 +50,9 @@ cd "$HERE"
 umask 077
 printf 'RELAY_HOSTNAME=%s\n' "$HOSTNAME_ARG" > .env
 # shellcheck disable=SC2086
-docker compose -p solferry-relay $FILES up -d --build
+docker compose -p solferry-relay $FILES pull --quiet --ignore-pull-failures
+# shellcheck disable=SC2086
+docker compose -p solferry-relay $FILES up -d
 
 if command -v ufw-docker >/dev/null; then
     ufw-docker allow solferry-relay-relay-1 7842/udp || say "Could not open UDP 7842, direct paths may not work."

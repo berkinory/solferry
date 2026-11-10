@@ -153,6 +153,16 @@ impl MainView {
         cx.notify();
     }
 
+    pub fn set_check_updates(&mut self, enabled: bool, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            if let Some(config) = &mut state.config {
+                config.check_updates = enabled;
+            }
+            cx.notify();
+        });
+        Self::command(Command::SetCheckUpdates(enabled), cx);
+    }
+
     pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.state.update(cx, |state, _| state.join_error = None);
         if self.page == Page::Send {

@@ -242,6 +242,12 @@ pub enum Update {
         name: String,
         download_dir: String,
         visibility: String,
+        /// `None` when this build has no update channel.
+        check_updates: Option<bool>,
+    },
+    UpdateAvailable {
+        version: String,
+        page: String,
     },
     StartFailed {
         problem: Problem,

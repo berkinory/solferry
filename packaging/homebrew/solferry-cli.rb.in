@@ -1,0 +1,35 @@
+class SolferryCli < Formula
+  desc "Send files between your devices without an account"
+  homepage "https://github.com/berkinory/solferry"
+  license "MIT"
+
+  on_macos do
+    on_arm do
+      url "https://github.com/berkinory/solferry/releases/download/v@VERSION@/solferry-cli-macos-aarch64.tar.gz"
+      sha256 "@CLI_MACOS_AARCH64@"
+    end
+    on_intel do
+      url "https://github.com/berkinory/solferry/releases/download/v@VERSION@/solferry-cli-macos-x86_64.tar.gz"
+      sha256 "@CLI_MACOS_X86_64@"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "https://github.com/berkinory/solferry/releases/download/v@VERSION@/solferry-cli-linux-aarch64.tar.gz"
+      sha256 "@CLI_LINUX_AARCH64@"
+    end
+    on_intel do
+      url "https://github.com/berkinory/solferry/releases/download/v@VERSION@/solferry-cli-linux-x86_64.tar.gz"
+      sha256 "@CLI_LINUX_X86_64@"
+    end
+  end
+
+  def install
+    bin.install "solferry"
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/solferry --version")
+  end
+end

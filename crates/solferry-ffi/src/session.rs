@@ -5,7 +5,7 @@ use std::time::Duration;
 use iroh::EndpointId;
 use solferry_core::{
     Event, IncomingOffer, NearbyDevice, Node, NodeOptions, PairingRequest, RelayHealth, RelayLink,
-    TransferId,
+    TransferId, update,
 };
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
@@ -98,6 +98,7 @@ pub async fn start(
         name: config.name.clone(),
         download_dir: config.download_dir.display().to_string(),
         visibility: format!("{:?}", config.visibility),
+        check_updates: update::enabled().then_some(config.check_updates),
     });
     listener.update(devices(&node));
     listener.update(blocked(&node));
@@ -105,6 +106,17 @@ pub async fn start(
     listener.update(relays(&node, &[]));
 
     let mut tasks = Vec::new();
+    if config.check_updates {
+        let out = listener.clone();
+        tasks.push(spawn(async move {
+            if let Ok(Some(release)) = update::check().await {
+                out.update(Update::UpdateAvailable {
+                    version: release.version,
+                    page: release.page,
+                });
+            }
+        }));
+    }
     let (checker, out) = (node.clone(), listener.clone());
     tasks.push(spawn(async move {
         let health = checker.relay_health(RELAY_WAIT).await;

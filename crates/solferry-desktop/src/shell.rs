@@ -54,6 +54,10 @@ pub fn start(service: Handle, updates: UnboundedReceiver<Update>, tray: TrayEven
 }
 
 fn handle_update(update: Update, cx: &mut App) {
+    if matches!(update, Update::Restarting) {
+        quit(cx);
+        return;
+    }
     notify(&update, cx);
     if let Update::Transfer(Event::TextReceived { text, auto_copy: true, .. }) = &update {
         cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
