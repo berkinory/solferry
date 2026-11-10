@@ -57,6 +57,14 @@ impl Node {
 
     async fn deliver(&self, target: EndpointAddr, manifest: Arc<Manifest>) -> Result<SendReport> {
         let started = Instant::now();
+        let peer_name = self.shared.trust().get(&target.id).map(|device| device.name.clone());
+        let _ = self.shared.events.send(Event::Waiting {
+            id: manifest.id,
+            peer: target.id,
+            peer_name: peer_name.unwrap_or_else(|| target.id.fmt_short().to_string()),
+            label: transfer_label(&manifest.entries),
+            bytes: manifest.entries.iter().map(|entry| entry.size).sum(),
+        });
         let mut delay = RETRY_BASE;
         let mut reached = false;
         loop {

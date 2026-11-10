@@ -161,11 +161,15 @@ private fun Percent(fraction: Float) =
 @Composable
 private fun RunningRow(transfer: Transfer, engine: Engine, wide: Boolean = false) {
     val waiting = transfer.phase == Phase.Reconnecting
-    val line = if (waiting) "Reconnecting to ${transfer.peerName}" else "${if (transfer.sending) "Sending" else "Receiving"} ${transfer.label}"
+    val line = when {
+        transfer.phase == Phase.Waiting -> "Waiting for ${transfer.peerName}"
+        waiting -> "Reconnecting to ${transfer.peerName}"
+        else -> "${if (transfer.sending) "Sending" else "Receiving"} ${transfer.label}"
+    }
     PillRow(closes = true, wide = wide) {
         Ring(transfer.fraction, if (waiting) RECONNECTING else LocalPalette.current.page)
         Label(line, wide)
-        Percent(transfer.fraction)
+        if (transfer.phase != Phase.Waiting) Percent(transfer.fraction)
         Close("Cancel") { engine.bridge.cancel(transfer.id) }
     }
 }

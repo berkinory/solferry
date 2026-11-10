@@ -181,7 +181,7 @@ fn forward_events(node: &Node, out: Arc<dyn Listener>, kept: Arc<Shelf>) -> Abor
         loop {
             match events.recv().await {
                 Ok(event) => {
-                    if let Event::Started { id, .. } = &event {
+                    if let Event::Waiting { id, .. } | Event::Started { id, .. } = &event {
                         lock(&kept.transfers).insert(id.to_string(), *id);
                     }
                     out.update(Update::from_event(&event));

@@ -3,9 +3,9 @@ use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, Context, FontWeight, Hsla, InteractiveElement,
-    IntoElement, ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation,
-    div, ease_out_quint, percentage, point, px,
+    Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
+    ease_out_quint, percentage, point, px,
 };
 
 use super::devices::{self, Row};
@@ -143,23 +143,11 @@ fn cursor_at(delta: f32) -> Transformation {
         .with_translation(point(px(delta * 34.), px(delta * -34.)))
 }
 
-fn spinner(tone: Hsla) -> AnyElement {
-    icon(Glyph::Loading, 22.)
-        .text_color(tone)
-        .with_animation(
-            "send-spinner",
-            Animation::new(Duration::from_millis(800)).repeat(),
-            |glyph, delta| glyph.with_transformation(Transformation::rotate(percentage(delta))),
-        )
-        .into_any_element()
-}
-
 fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let palette = palette(cx);
     let chosen = view.selected.len();
     let phase = view.send_phase;
     let label = match (phase, chosen) {
-        (SendPhase::Sending, _) => "Sending".to_owned(),
         (_, 0 | 1) => "Send".to_owned(),
         (_, many) => format!("Send to {many} devices"),
     };
@@ -177,7 +165,6 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 |glyph, delta| glyph.with_transformation(cursor_at(delta * delta)),
             )
             .into_any_element(),
-        SendPhase::Sending => spinner(on_primary),
     };
     let fill = color(palette.primary_fill);
     let button = div()
@@ -202,7 +189,7 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             .hover(|style| style.opacity(0.92))
             .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
             .into_any_element(),
-        _ => button.into_any_element(),
+        SendPhase::Flying => button.into_any_element(),
     };
     div().flex().justify_center().pt(px(SPACE_LG)).pb(px(SPACE_SM)).child(button).into_any_element()
 }

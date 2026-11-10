@@ -40,6 +40,12 @@ pub fn encode(event: &Event) -> Value {
             "id": id.to_string(),
             "route": route_name(*route),
         }),
+        Event::Waiting { id, peer_name, bytes, .. } => json!({
+            "event": "waiting",
+            "id": id.to_string(),
+            "peer": peer_name,
+            "bytes": bytes,
+        }),
         Event::Progress { id, transferred, total } => json!({
             "event": "progress",
             "id": id.to_string(),

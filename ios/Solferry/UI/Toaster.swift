@@ -129,12 +129,16 @@ private struct RunningRow: View {
 
     var body: some View {
         let waiting = transfer.phase == .reconnecting
-        let line = waiting ? "Reconnecting to \(transfer.peerName)" : "\(transfer.sending ? "Sending" : "Receiving") \(transfer.label)"
+        let line = switch transfer.phase {
+        case .waiting: "Waiting for \(transfer.peerName)"
+        case .reconnecting: "Reconnecting to \(transfer.peerName)"
+        default: "\(transfer.sending ? "Sending" : "Receiving") \(transfer.label)"
+        }
         PillRow(closes: true) {
             Ring(fraction: transfer.fraction, tone: waiting ? reconnecting : palette.page)
             Label(text: line)
             if wide { Spacer(minLength: 0) }
-            Percent(fraction: transfer.fraction)
+            if transfer.phase != .waiting { Percent(fraction: transfer.fraction) }
             Dismiss(label: "Cancel") { engine.bridge.cancel(transfer: transfer.id) }
         }
     }

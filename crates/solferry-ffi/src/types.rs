@@ -256,6 +256,12 @@ pub enum Update {
     Nearby {
         devices: Vec<Nearby>,
     },
+    Waiting {
+        id: String,
+        peer_name: String,
+        label: String,
+        bytes: u64,
+    },
     Started {
         id: String,
         peer_name: String,
@@ -337,6 +343,12 @@ impl Update {
                 name: peer_name.clone(),
                 text: text.clone(),
                 auto_copy: *auto_copy,
+            },
+            Event::Waiting { id, peer_name, label, bytes, .. } => Self::Waiting {
+                id: id.to_string(),
+                peer_name: peer_name.clone(),
+                label: label.clone(),
+                bytes: *bytes,
             },
             Event::Started { id, peer_name, label, direction, route, bytes, .. } => Self::Started {
                 id: id.to_string(),
