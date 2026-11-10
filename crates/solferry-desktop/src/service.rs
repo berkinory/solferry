@@ -32,6 +32,7 @@ pub enum Command {
     AcceptAlways(u64),
     BlockOffer(u64),
     PairNearby { addr: EndpointAddr },
+    PairAddress { address: String },
     AnswerPairing { key: u64, accept: bool },
     Invite,
     Join { code: String },
@@ -81,6 +82,7 @@ pub enum Update {
     Invite(String),
     Paired(Device),
     PairingFailed(Error),
+    AddressFailed(Error),
     SendFailed {
         name: String,
         addr: EndpointAddr,
@@ -339,18 +341,13 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
                 let _ = updates.send(Update::TextShared { name, result }).await;
             }
             Command::Cancel(id) => node.cancel(id),
-            Command::PairNearby { addr } => {
-                let shown = updates.clone();
-                let show = move |code: &str| {
-                    let _ = shown.unbounded_send(Update::PairingCode(code.to_owned()));
-                };
-                let result = match node.pair_nearby(addr, show).await {
-                    Ok(device) => Update::Paired(device),
-                    Err(error) => Update::PairingFailed(error),
-                };
-                let _ = updates.send(result).await;
-                let _ = updates.send(Update::Devices(node.devices())).await;
-            }
+            Command::PairNearby { addr } => pair(&node, addr, &mut updates).await,
+            Command::PairAddress { address } => match node.find_address(&address).await {
+                Ok(device) => pair(&node, device.addr, &mut updates).await,
+                Err(error) => {
+                    let _ = updates.send(Update::AddressFailed(error)).await;
+                }
+            },
             Command::Invite => {
                 node.online_within(ONLINE_WAIT).await;
                 let code = node.invite().code().to_owned();
@@ -391,4 +388,17 @@ fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
             | Command::Quit => {}
         }
     });
+}
+
+async fn pair(node: &Node, addr: EndpointAddr, updates: &mut UnboundedSender<Update>) {
+    let shown = updates.clone();
+    let show = move |code: &str| {
+        let _ = shown.unbounded_send(Update::PairingCode(code.to_owned()));
+    };
+    let result = match node.pair_nearby(addr, show).await {
+        Ok(device) => Update::Paired(device),
+        Err(error) => Update::PairingFailed(error),
+    };
+    let _ = updates.send(result).await;
+    let _ = updates.send(Update::Devices(node.devices())).await;
 }

@@ -8,6 +8,7 @@ use super::ui;
 use crate::assets::Glyph;
 use crate::qr;
 use crate::service::Command;
+use crate::state::AppState;
 use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, SPACE_XS};
 
@@ -22,6 +23,19 @@ pub fn join(view: &MainView, cx: &mut Context<MainView>) {
         cx.notify();
     });
     MainView::command(Command::Join { code }, cx);
+}
+
+pub fn pair_address(view: &MainView, cx: &mut Context<MainView>) {
+    let address = view.address_input.read(cx).value().trim().to_owned();
+    if address.is_empty() {
+        return;
+    }
+    view.state.update(cx, |state, cx| {
+        state.pairing_address = true;
+        state.address_error = None;
+        cx.notify();
+    });
+    MainView::command(Command::PairAddress { address }, cx);
 }
 
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
@@ -62,8 +76,42 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                         }),
                     ),
             ),
-        );
+        )
+        .child(address_card(view, &state, cx));
     super::sheet::present("Pair with a code", content, MainView::leave_page, cx)
+}
+
+/// For a device on another subnet, or on a network that keeps devices from finding each other.
+fn address_card(view: &MainView, state: &AppState, cx: &mut Context<MainView>) -> AnyElement {
+    let label = if state.pairing_address { "Pairing..." } else { "Pair" };
+    let own = solferry_core::lan_addresses();
+    let own = (!own.is_empty()).then(|| {
+        let list: Vec<String> = own.iter().map(ToString::to_string).collect();
+        ui::muted(format!("This device is at {}.", list.join(", ")), cx)
+    });
+    let error =
+        state.address_error.map(|error| ui::muted(error, cx).text_color(color(palette(cx).danger)));
+    ui::card(Glyph::Link, "Enter an IP address", None, cx)
+        .child(
+            ui::padded_well(cx)
+                .child(
+                    div()
+                        .flex()
+                        .gap(px(SPACE_XS))
+                        .child(
+                            div().flex_1().min_w_0().child(Input::new(&view.address_input).large()),
+                        )
+                        .child(
+                            Button::new("pair-address")
+                                .primary()
+                                .label(label)
+                                .on_click(cx.listener(|view, _, _, cx| pair_address(view, cx))),
+                        ),
+                )
+                .children(error)
+                .children(own),
+        )
+        .into_any_element()
 }
 
 fn invite_prompt(cx: &mut Context<MainView>) -> AnyElement {
