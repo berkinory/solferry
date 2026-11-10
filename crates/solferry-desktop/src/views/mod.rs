@@ -5,6 +5,7 @@ mod dialog;
 mod history;
 mod home;
 pub mod keys;
+mod link;
 mod main_view;
 mod nav;
 mod offers;
