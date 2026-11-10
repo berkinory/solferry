@@ -117,6 +117,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          SOLFERRY_PUBLISH: ${{ needs.prepare.outputs.publish }}
         run: packaging/macos/package.sh "$RELEASE" "$SOLFERRY_PLATFORM" dist
 
       - if: runner.os == 'Linux'
