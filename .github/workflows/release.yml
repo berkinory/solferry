@@ -25,7 +25,11 @@ jobs:
         run: |
           VERSION=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
           PUBLISH=false
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
+          case "$VERSION" in *-*)
+            echo "::error::Pre-release versions like $VERSION aren't supported, Android needs a numeric version code"
+            exit 1
+          esac
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF_TYPE" = tag ]; then
             PUBLISH=true
             [ "$GITHUB_REF_NAME" = "v$VERSION" ] || {
               echo "::error::Tag $GITHUB_REF_NAME doesn't match the workspace version $VERSION"
@@ -169,12 +173,14 @@ jobs:
           SOLFERRY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           SOLFERRY_ABIS: arm64-v8a
         run: |
-          export SOLFERRY_KEYSTORE="$RUNNER_TEMP/release.jks"
-          base64 -d <<< "$KEYSTORE_BASE64" > "$SOLFERRY_KEYSTORE"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            export SOLFERRY_KEYSTORE="$RUNNER_TEMP/release.jks"
+            base64 -d <<< "$KEYSTORE_BASE64" > "$SOLFERRY_KEYSTORE"
+          fi
           ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" ./gradlew assembleRelease --console=plain
-          rm "$SOLFERRY_KEYSTORE"
+          rm -f "$RUNNER_TEMP/release.jks"
           mkdir "$GITHUB_WORKSPACE/dist"
-          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/dist/Solferry-android.apk"
+          cp app/build/outputs/apk/release/app-release*.apk "$GITHUB_WORKSPACE/dist/Solferry-android.apk"
       - uses: actions/upload-artifact@v7
         with:
           name: android
