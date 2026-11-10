@@ -26,6 +26,8 @@ const MANIFEST_URL: &str = match option_env!("SOLFERRY_UPDATE_URL") {
 };
 const MANIFEST_LIMIT: u64 = 64 * 1024;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(15);
+/// A download that goes quiet this long fails, so later checks are not stuck behind it.
+const READ_TIMEOUT: Duration = Duration::from_secs(30);
 const CHECK_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -72,6 +74,7 @@ fn client() -> Result<reqwest::Client> {
     reqwest::Client::builder()
         .tls_backend_preconfigured(tls)
         .connect_timeout(CONNECT_TIMEOUT)
+        .read_timeout(READ_TIMEOUT)
         .build()
         .map_err(failed)
 }
