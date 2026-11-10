@@ -93,7 +93,9 @@ async fn attempt(
 ) -> Result<SendReport> {
     let peer = target.id;
     let mut options = ConnectOptions::new();
-    if route::on_local_network(&target) {
+    let local = route::on_local_network(&target);
+    tracing::info!(local, "connecting to send");
+    if local {
         options = options.with_transport_config(local_transport_config()?);
     }
     let unreachable = |error: &dyn std::fmt::Display| Error::Unreachable(error.to_string());
