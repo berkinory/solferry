@@ -8,8 +8,8 @@ use solferry_proto::{ALPN_TRANSFER, Decision, Offer, OfferReply, read_frame, wri
 
 use super::{Node, Shared};
 use crate::error::{Error, Result};
-use crate::net::local_transport_config;
 use crate::event::{Direction, Event, TransferId};
+use crate::net::local_transport_config;
 use crate::route::{self, Route, current_route};
 use crate::transfer::segments;
 use crate::transfer::{Manifest, Meter, NamedFile, exchange_hello, remote_failure};

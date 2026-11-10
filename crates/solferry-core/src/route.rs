@@ -1,8 +1,8 @@
 use std::net::{IpAddr, Ipv4Addr};
 
 use futures::StreamExt;
-use iroh::{EndpointAddr, TransportAddr};
 use iroh::endpoint::{Connection, Path};
+use iroh::{EndpointAddr, TransportAddr};
 use tokio::sync::broadcast;
 
 use crate::event::{Event, TransferId};
