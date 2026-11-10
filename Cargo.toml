@@ -1,5 +1,6 @@
 [workspace]
 members = ["crates/*"]
+exclude = ["vendor"]
 resolver = "3"
 
 [workspace.package]
@@ -91,3 +92,8 @@ strip = true
 [profile.dist]
 inherits = "release"
 lto = "fat"
+
+# iroh-mdns only sends on the default route's interface, which misses a phone's own hotspot.
+# vendor/iroh-mdns-address-lookup/PATCH.md says what changed. Drop this once upstream has it.
+[patch.crates-io]
+iroh-mdns-address-lookup = { path = "vendor/iroh-mdns-address-lookup" }
