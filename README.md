@@ -23,6 +23,7 @@ Downloads are on the [releases page](https://github.com/berkinory/solferry/relea
 
 ```sh
 brew tap berkinory/solferry
+brew trust berkinory/solferry
 brew install --cask solferry   # the macOS app
 brew install solferry-cli      # the command line tool
 ```
