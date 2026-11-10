@@ -88,7 +88,7 @@ private struct Invite: View {
 }
 
 /// Draws the code on a white plate so it scans in both themes.
-private struct QrCode: View {
+struct QrCode: View {
     let text: String
 
     var body: some View {
@@ -104,7 +104,7 @@ private struct QrCode: View {
             .frame(width: 200, height: 200)
             .padding(16)
             .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .accessibilityLabel("Pairing QR code")
+            .accessibilityLabel("QR code")
         }
     }
 }

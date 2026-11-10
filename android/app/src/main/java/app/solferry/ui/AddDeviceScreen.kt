@@ -108,7 +108,7 @@ private fun ColumnScope.Invite(invite: String, onCopy: () -> Unit) {
 
 /** Draws the code on a white plate so it scans in both themes. */
 @Composable
-private fun Qr(text: String) {
+fun Qr(text: String) {
     val matrix = remember(text) { qrCode(text) } ?: return
     val width = matrix.width.toInt()
     Canvas(Modifier.size(232.dp).background(Color.White, RoundedCornerShape(16.dp)).padding(16.dp)) {

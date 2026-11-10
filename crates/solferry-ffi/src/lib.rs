@@ -1,6 +1,7 @@
 //! The bridge mobile apps use: one object that runs the node and reports everything through a
 //! listener. Every call returns at once; outcomes arrive as updates.
 
+mod link;
 mod session;
 mod types;
 

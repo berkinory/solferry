@@ -1,5 +1,6 @@
 mod device;
 mod json;
+mod link;
 mod receive;
 mod send;
 mod settings;
@@ -24,6 +25,7 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Send { paths, targets, text: None } => {
             send::run(data_dir, paths, targets, cli.json).await
         }
+        Command::Link { paths } => link::run(data_dir, paths, cli.json).await,
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }

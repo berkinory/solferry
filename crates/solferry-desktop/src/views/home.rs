@@ -8,7 +8,7 @@ use gpui_kit::{
 };
 
 use super::main_view::MainView;
-use super::{devices, offers, texts, ui};
+use super::{devices, link, offers, texts, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
@@ -125,5 +125,6 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .children(shared)
         .child(drop_zone(dragging, cx))
         .child(devices::render(&state, view, cx))
+        .child(link::card(cx))
         .into_any_element()
 }

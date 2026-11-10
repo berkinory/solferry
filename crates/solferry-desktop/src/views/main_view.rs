@@ -358,12 +358,15 @@ impl Focusable for MainView {
 impl Render for MainView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
-        let sheet = confirm::sheet(self, cx).or_else(|| match self.page {
-            Page::Send => Some(send::sheet(self, cx)),
-            Page::Pair => Some(pairing::sheet(self, cx)),
-            Page::Text => Some(texts::sheet(self, cx)),
-            _ => None,
-        });
+        let link = self.state.read(cx).link.clone();
+        let sheet = confirm::sheet(self, cx)
+            .or_else(|| link.map(|link| super::link::sheet(self, &link, cx)))
+            .or_else(|| match self.page {
+                Page::Send => Some(send::sheet(self, cx)),
+                Page::Pair => Some(pairing::sheet(self, cx)),
+                Page::Text => Some(texts::sheet(self, cx)),
+                _ => None,
+            });
         let toasts = toast::render(self, f32::from(window.viewport_size().width), cx);
         let room = f32::from(window.viewport_size().height) - HEADER_HEIGHT - nav::CLEARANCE;
         let tabs = nav::render(self, cx);

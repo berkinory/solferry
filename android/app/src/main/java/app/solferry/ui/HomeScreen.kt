@@ -72,6 +72,7 @@ fun HomeScreen(
             item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine, { onPickFiles(it) }, onText) }
         }
         item { NearbyCard(state.strangers, state.devices.isEmpty(), engine, onUseCode) }
+        item { BrowserCard(engine) }
     } }
 }
 

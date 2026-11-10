@@ -8,12 +8,13 @@ use gpui_kit::{
     ease_out_quint, percentage, point, px,
 };
 
+use super::button::Button;
 use super::devices::{self, Row};
 use super::main_view::{MainView, SendPhase};
 use super::{radar, ui};
 use crate::assets::{Glyph, file_glyph, icon};
 use crate::format;
-use crate::service::Target;
+use crate::service::{Command, Target};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
@@ -210,6 +211,19 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(div().flex().flex_col().children(files))
         .child(connector(!view.selected.is_empty(), cx))
         .child(ui::frame(cx).child(well))
-        .child(send_button(view, cx));
+        .child(send_button(view, cx))
+        .child(
+            div().flex().justify_center().child(
+                Button::new("share-link")
+                    .ghost()
+                    .sm()
+                    .icon(Glyph::Link)
+                    .label("Share via link")
+                    .on_click(cx.listener(|view, _, _, cx| {
+                        MainView::command(Command::Link(view.pending.clone()), cx);
+                        view.clear_pending(cx);
+                    })),
+            ),
+        );
     super::sheet::present("Send", content, |view, _, cx| view.clear_pending(cx), cx)
 }

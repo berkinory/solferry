@@ -28,6 +28,10 @@ const VIRTUAL_PREFIXES: [&str; 11] = [
     "vethernet",
 ];
 
+/// Interface name prefixes of cellular links. Carriers hand out private addresses too, but
+/// nobody on the local network can reach them.
+const CELLULAR_PREFIXES: [&str; 4] = ["rmnet", "ccmni", "pdp_ip", "wwan"];
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
     Local,
@@ -85,13 +89,16 @@ pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
     })
 }
 
-/// This device's private IPv4 networks, leaving out overlays, containers and virtual machines.
+/// This device's private IPv4 networks that others can join, leaving out cellular links, overlays,
+/// containers and virtual machines.
 pub(crate) fn lan_networks() -> Vec<Ipv4Net> {
     netdev::get_interfaces()
         .into_iter()
         .filter(|interface| interface.is_up() && !interface.is_loopback())
         .filter(|interface| {
-            !named(interface, &TUNNEL_PREFIXES) && !named(interface, &VIRTUAL_PREFIXES)
+            !named(interface, &TUNNEL_PREFIXES)
+                && !named(interface, &VIRTUAL_PREFIXES)
+                && !named(interface, &CELLULAR_PREFIXES)
         })
         .flat_map(|interface| interface.ipv4)
         .filter(|net| net.addr().is_private())

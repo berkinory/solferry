@@ -3,15 +3,19 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
+use futures::StreamExt;
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
-use futures::{SinkExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    BlockedDevice, Config, Device, Error, Event, IncomingOffer, NearbyDevice, Node, NodeOptions,
-    OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
+    BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, LinkFile, NearbyDevice, Node,
+    NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
+
+mod dispatch;
+
+use dispatch::dispatch;
 
 use crate::updater::Updater;
 use crate::watch;
@@ -25,29 +29,59 @@ pub struct Target {
 }
 
 pub enum Command {
-    Send { targets: Vec<Target>, paths: Vec<PathBuf> },
-    SendText { target: Target, text: String },
+    Send {
+        targets: Vec<Target>,
+        paths: Vec<PathBuf>,
+    },
+    SendText {
+        target: Target,
+        text: String,
+    },
     Cancel(TransferId),
-    Answer { offer: u64, accept: bool },
+    Answer {
+        offer: u64,
+        accept: bool,
+    },
     AcceptAlways(u64),
     BlockOffer(u64),
-    PairNearby { addr: EndpointAddr },
-    PairAddress { address: String },
-    AnswerPairing { key: u64, accept: bool },
+    PairNearby {
+        addr: EndpointAddr,
+    },
+    PairAddress {
+        address: String,
+    },
+    AnswerPairing {
+        key: u64,
+        accept: bool,
+    },
     Invite,
-    Join { code: String },
+    Join {
+        code: String,
+    },
     Forget(EndpointId),
-    SetAutoAccept { id: EndpointId, enabled: bool },
+    SetAutoAccept {
+        id: EndpointId,
+        enabled: bool,
+    },
     Unblock(EndpointId),
     ClearHistory,
     Apply(Config),
     CheckForUpdates,
     InstallUpdate,
     SetCheckUpdates(bool),
+    /// Shares these paths with browsers, or takes files from them when there are none.
+    Link(Vec<PathBuf>),
+    StopLink,
     Quit,
 }
 
 pub enum Update {
+    LinkReady {
+        urls: Vec<String>,
+        receiving: bool,
+    },
+    LinkStopped,
+    LinkFailed(Error),
     Updater(crate::updater::Status),
     InstallFailed,
     Restarting,
@@ -248,6 +282,7 @@ async fn run(
     let pending: Pending = Arc::default();
     let pairing: PendingPairings = Arc::default();
     let mut session = start(&data_dir, &updates, &pending, &pairing).await;
+    let mut link: Option<Link> = None;
     let releases = Updater::new(data_dir.clone(), updates.clone());
     releases.follow();
     while let Some(command) = commands.next().await {
@@ -260,7 +295,21 @@ async fn run(
                     let _ = Config { check_updates: enabled, ..config }.save(&data_dir);
                 }
             }
+            Command::Link(paths) => {
+                link = None;
+                let Some(active) = &session else { continue };
+                let (opened, update) = open_link(&active.node, paths).await;
+                link = opened;
+                let _ = updates.unbounded_send(update);
+            }
+            Command::StopLink => {
+                link = None;
+                let _ = updates.unbounded_send(Update::LinkStopped);
+            }
             Command::Apply(config) => {
+                if link.take().is_some() {
+                    let _ = updates.unbounded_send(Update::LinkStopped);
+                }
                 if let Some(active) = session.take() {
                     stop(active).await;
                 }
@@ -313,92 +362,25 @@ async fn run(
     }
 }
 
+async fn open_link(node: &Node, paths: Vec<PathBuf>) -> (Option<Link>, Update) {
+    let receiving = paths.is_empty();
+    let started = if receiving {
+        node.receive_link().await
+    } else {
+        node.share_link(paths.into_iter().map(LinkFile::Path).collect()).await
+    };
+    match started {
+        Ok(link) => {
+            let urls = link.urls().to_vec();
+            (Some(link), Update::LinkReady { urls, receiving })
+        }
+        Err(error) => (None, Update::LinkFailed(error)),
+    }
+}
+
 async fn stop(session: Session) {
     for task in session.tasks {
         task.abort();
     }
     let _ = session.node.shutdown().await;
-}
-
-fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
-    let mut updates = updates.clone();
-    let node = node.clone();
-    tokio::spawn(async move {
-        match command {
-            Command::Send { targets, paths } => {
-                for Target { addr, name } in targets {
-                    let (node, paths, mut updates) = (node.clone(), paths.clone(), updates.clone());
-                    tokio::spawn(async move {
-                        if let Err(error) = node.send(addr.clone(), paths.clone()).await {
-                            let failed = Update::SendFailed { name, addr, paths, error };
-                            let _ = updates.send(failed).await;
-                        }
-                    });
-                }
-            }
-            Command::SendText { target: Target { addr, name }, text } => {
-                let result = node.send_text(addr, text).await;
-                let _ = updates.send(Update::TextShared { name, result }).await;
-            }
-            Command::Cancel(id) => node.cancel(id),
-            Command::PairNearby { addr } => pair(&node, addr, &mut updates).await,
-            Command::PairAddress { address } => match node.find_address(&address).await {
-                Ok(device) => pair(&node, device.addr, &mut updates).await,
-                Err(error) => {
-                    let _ = updates.send(Update::AddressFailed(error)).await;
-                }
-            },
-            Command::Invite => {
-                node.online_within(ONLINE_WAIT).await;
-                let code = node.invite().code().to_owned();
-                let _ = updates.send(Update::Invite(code)).await;
-            }
-            Command::Join { code } => {
-                let result = match node.join(&code).await {
-                    Ok(device) => Update::Paired(device),
-                    Err(error) => Update::PairingFailed(error),
-                };
-                let _ = updates.send(result).await;
-                let _ = updates.send(Update::Devices(node.devices())).await;
-            }
-            Command::ClearHistory => {
-                node.clear_history();
-                let _ = updates.send(Update::History(Vec::new())).await;
-            }
-            Command::Forget(id) => {
-                let _ = node.forget(&id.to_z32());
-                let _ = updates.send(Update::Devices(node.devices())).await;
-            }
-            Command::SetAutoAccept { id, enabled } => {
-                let _ = node.set_auto_accept(id, enabled);
-                let _ = updates.send(Update::Devices(node.devices())).await;
-            }
-            Command::Unblock(id) => {
-                let _ = node.unblock(id);
-                let _ = updates.send(Update::Blocked(node.blocked())).await;
-            }
-            Command::Answer { .. }
-            | Command::AcceptAlways(_)
-            | Command::AnswerPairing { .. }
-            | Command::BlockOffer(_)
-            | Command::Apply(_)
-            | Command::CheckForUpdates
-            | Command::InstallUpdate
-            | Command::SetCheckUpdates(_)
-            | Command::Quit => {}
-        }
-    });
-}
-
-async fn pair(node: &Node, addr: EndpointAddr, updates: &mut UnboundedSender<Update>) {
-    let shown = updates.clone();
-    let show = move |code: &str| {
-        let _ = shown.unbounded_send(Update::PairingCode(code.to_owned()));
-    };
-    let result = match node.pair_nearby(addr, show).await {
-        Ok(device) => Update::Paired(device),
-        Err(error) => Update::PairingFailed(error),
-    };
-    let _ = updates.send(result).await;
-    let _ = updates.send(Update::Devices(node.devices())).await;
 }

@@ -62,6 +62,8 @@ pub enum Error {
     Update(String),
     #[error("pairing code belongs to this device")]
     OwnTicket,
+    #[error("no local network to share on")]
+    NoLocalNetwork,
     #[error("pairing was refused")]
     PairingRefused,
     #[error("unknown device {0}")]

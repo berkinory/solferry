@@ -14,6 +14,8 @@ use crate::platform::split_label;
 use crate::transfer::paths::clean_label;
 
 const SCAN_EVERY: Duration = Duration::from_secs(20);
+/// mDNS usually answers within a second, so the first sweep waits that long before asking every host.
+const FIRST_SCAN_AFTER: Duration = Duration::from_millis(1500);
 /// A typed address may sit behind a router or a phone saving power, so it gets longer to answer.
 const ADDRESS_WAIT: Duration = Duration::from_secs(2);
 const ANY: IpAddr = IpAddr::V4(Ipv4Addr::UNSPECIFIED);
@@ -86,7 +88,8 @@ impl Node {
             return;
         };
         let mut events = mdns.subscribe().await;
-        let mut scan = tokio::time::interval(SCAN_EVERY);
+        let mut scan =
+            tokio::time::interval_at(tokio::time::Instant::now() + FIRST_SCAN_AFTER, SCAN_EVERY);
         let mut typed = self.shared.addresses.subscribe();
         let mut probing = FuturesUnordered::new();
         let mut announced: HashMap<EndpointId, NearbyDevice> = HashMap::new();

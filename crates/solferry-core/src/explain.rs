@@ -90,6 +90,9 @@ pub fn explain(error: &Error) -> Explanation {
         Error::OwnTicket => {
             say("That's this device's own code", "Enter it on the other device instead.")
         }
+        Error::NoLocalNetwork => {
+            say("Not on a local network", "Join Wi-Fi or a hotspot, then share again.")
+        }
         Error::PairingRefused => {
             say("Pairing was refused", "Ask them to accept, or create a new code.")
         }

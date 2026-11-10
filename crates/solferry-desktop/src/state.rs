@@ -33,6 +33,14 @@ pub struct Transfer {
     pub phase: Phase,
 }
 
+/// A link a browser can open. `received` lists what browsers sent through it so far.
+#[derive(Clone)]
+pub struct LinkView {
+    pub urls: Vec<String>,
+    pub receiving: bool,
+    pub received: Vec<String>,
+}
+
 #[derive(Clone)]
 pub struct FailedSend {
     pub name: String,
@@ -88,6 +96,7 @@ pub struct SharedText {
 #[derive(Clone, Default)]
 pub struct AppState {
     pub id: Option<EndpointId>,
+    pub link: Option<LinkView>,
     pub config: Option<Config>,
     pub devices: Vec<Device>,
     pub blocked: Vec<BlockedDevice>,
@@ -165,6 +174,14 @@ impl AppState {
                 self.pairing_prompts.retain(|prompt| prompt.key != key);
             }
             Update::Invite(code) => self.invite = Some(code),
+            Update::LinkReady { urls, receiving } => {
+                self.link = Some(LinkView { urls, receiving, received: Vec::new() });
+            }
+            Update::LinkStopped => self.link = None,
+            Update::LinkFailed(error) => {
+                self.link = None;
+                self.toast(Tone::Error, explain(&error).title, None);
+            }
             Update::PairingRequest { key, peer, platform, name, code } => {
                 self.pairing_prompts.push(PairingPrompt { key, peer, platform, name, code });
             }
@@ -259,6 +276,12 @@ impl AppState {
                 self.begin(Transfer::new(id, label, peer_name, direction, bytes));
             }
             Event::RouteChanged { .. } => {}
+            Event::LinkReceived { name, .. } => {
+                if let Some(link) = &mut self.link {
+                    link.received.push(name.clone());
+                }
+                self.toast(Tone::Success, format!("Received {name} from a browser"), None);
+            }
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {
                     transfer.record(transferred, total);
