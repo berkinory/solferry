@@ -57,7 +57,11 @@ impl Target {
         } else if cfg!(windows) {
             Self::Executable(std::env::current_exe().ok()?)
         } else {
-            Self::AppImage(std::env::var_os("APPIMAGE")?.into())
+            // Child processes inherit APPIMAGE, so it only counts when this binary runs from it.
+            let image = std::env::var_os("APPIMAGE")?;
+            let mounted = std::env::var_os("APPDIR")?;
+            let exe = std::env::current_exe().ok()?;
+            exe.starts_with(mounted).then(|| Self::AppImage(image.into()))?
         };
         writable(target.path().parent()?).then_some(target)
     }
