@@ -260,12 +260,6 @@ impl Node {
         route::overlay_address()
     }
 
-    /// This device's private LAN addresses, for typing into another device that can't find it.
-    #[must_use]
-    pub fn lan_addresses(&self) -> Vec<std::net::Ipv4Addr> {
-        route::lan_networks().iter().map(netdev::ipnet::Ipv4Net::addr).collect()
-    }
-
     /// Decides whether this paired device may send files without asking.
     pub fn set_auto_accept(&self, id: EndpointId, enabled: bool) -> Result<()> {
         self.shared.trust().set_auto_accept(&id, enabled)

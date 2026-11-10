@@ -98,6 +98,12 @@ pub(crate) fn lan_networks() -> Vec<Ipv4Net> {
         .collect()
 }
 
+/// This device's private LAN addresses, for typing into another device that can't find it.
+#[must_use]
+pub fn lan_addresses() -> Vec<Ipv4Addr> {
+    lan_networks().iter().map(Ipv4Net::addr).collect()
+}
+
 /// Whether an unpaired device at `ip` may ask to send files: never across a relay or the internet.
 pub(crate) fn shares_network(ip: IpAddr) -> bool {
     is_local(ip) || (is_overlay(ip) && overlay_address().is_some())
