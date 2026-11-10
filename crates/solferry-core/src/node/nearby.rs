@@ -1,16 +1,22 @@
 use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
 
-use futures::StreamExt;
+use futures::stream::FuturesUnordered;
+use futures::{FutureExt, StreamExt};
 use iroh::{EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::DiscoveryEvent;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, watch};
 
-use super::{Node, overlay};
+use super::{Node, overlay, probe, subnet};
+use crate::error::{Error, Result};
 use crate::platform::split_label;
 use crate::transfer::paths::clean_label;
 
-const OVERLAY_SCAN_EVERY: Duration = Duration::from_secs(20);
+const SCAN_EVERY: Duration = Duration::from_secs(20);
+/// A typed address may sit behind a router or a phone saving power, so it gets longer to answer.
+const ADDRESS_WAIT: Duration = Duration::from_secs(2);
+const ANY: IpAddr = IpAddr::V4(Ipv4Addr::UNSPECIFIED);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NearbyDevice {
@@ -54,6 +60,25 @@ impl Node {
         tokio::time::timeout(window, search).await.ok().flatten()
     }
 
+    /// Asks one IPv4 address whether a solferry device answers there, for a device on another
+    /// subnet or on a network that hides it. One that answers joins the nearby list while it keeps
+    /// answering.
+    pub async fn find_address(&self, address: &str) -> Result<NearbyDevice> {
+        let ip: Ipv4Addr =
+            address.trim().parse().map_err(|_| Error::InvalidAddress(address.to_owned()))?;
+        let found = probe::ask(&self.shared, ANY, &[ip.into()], ADDRESS_WAIT).await;
+        let mut device = found.into_iter().next().ok_or(Error::NoAnswer(ip.to_string()))?;
+        device.known = self.shared.trust().get(&device.addr.id).is_some();
+        self.shared.addresses.send_if_modified(|addresses| {
+            let added = !addresses.contains(&ip);
+            if added {
+                addresses.push(ip);
+            }
+            added
+        });
+        Ok(device)
+    }
+
     /// Calls `changed` with the full list whenever a nearby device appears or disappears.
     /// Never returns while the node is running.
     pub async fn follow_nearby(&self, mut changed: impl FnMut(Vec<NearbyDevice>)) {
@@ -61,8 +86,12 @@ impl Node {
             return;
         };
         let mut events = mdns.subscribe().await;
-        let mut overlay_scan = tokio::time::interval(OVERLAY_SCAN_EVERY);
-        let mut found: HashMap<EndpointId, NearbyDevice> = HashMap::new();
+        let mut scan = tokio::time::interval(SCAN_EVERY);
+        let mut typed = self.shared.addresses.subscribe();
+        let mut probing = FuturesUnordered::new();
+        let mut announced: HashMap<EndpointId, NearbyDevice> = HashMap::new();
+        let mut scanned = Vec::new();
+        let mut answered = Vec::new();
         loop {
             tokio::select! {
                 event = events.next() => match event {
@@ -78,32 +107,73 @@ impl Node {
                         let addr = endpoint_info.into_endpoint_addr();
                         let device =
                             NearbyDevice { addr, name, known: false, overlay: false, platform };
-                        found.insert(id, device);
+                        announced.insert(id, device);
                     }
                     Some(DiscoveryEvent::Expired { endpoint_id }) => {
-                        found.remove(&endpoint_id);
+                        announced.remove(&endpoint_id);
                     }
                     Some(_) => continue,
                     None => return,
                 },
-                _ = overlay_scan.tick() => {
-                    let devices = overlay::scan(&self.shared).await;
-                    found.retain(|_, device| !device.overlay);
-                    for device in devices {
-                        found.entry(device.addr.id).or_insert(device);
-                    }
+                _ = scan.tick() => {
+                    // Asking every host is only worth it while mDNS finds nothing.
+                    let sweep = announced.is_empty();
+                    probing.push(self.probe_round(sweep, typed_addresses(&mut typed)).boxed());
+                    continue;
                 }
+                Ok(()) = typed.changed() => {
+                    let addresses = typed_addresses(&mut typed);
+                    probing.push(async move { Probed::Typed(self.ask_typed(&addresses).await) }.boxed());
+                    continue;
+                }
+                Some(probed) = probing.next() => match probed {
+                    Probed::Round { scanned: round, typed } => (scanned, answered) = (round, typed),
+                    Probed::Typed(typed) => answered = typed,
+                },
+            }
+            let mut found = announced.clone();
+            for device in scanned.iter().chain(&answered) {
+                found.entry(device.addr.id).or_insert_with(|| device.clone());
             }
             let trust = self.shared.trust();
-            let visible = found.values().filter(|device| !trust.is_blocked(&device.addr.id));
+            let visible = found.into_values().filter(|device| !trust.is_blocked(&device.addr.id));
             let visible: Vec<NearbyDevice> = visible
                 .map(|device| NearbyDevice {
                     known: trust.get(&device.addr.id).is_some(),
-                    ..device.clone()
+                    ..device
                 })
                 .collect();
             drop(trust);
             changed(visible);
         }
     }
+
+    async fn probe_round(&self, sweep: bool, addresses: Vec<IpAddr>) -> Probed {
+        let lan = async { if sweep { subnet::scan(&self.shared).await } else { Vec::new() } };
+        let (mut found, lan, typed) =
+            tokio::join!(overlay::scan(&self.shared), lan, self.ask_typed(&addresses));
+        found.extend(lan);
+        Probed::Round { scanned: found, typed }
+    }
+
+    async fn ask_typed(&self, addresses: &[IpAddr]) -> Vec<NearbyDevice> {
+        if addresses.is_empty() {
+            return Vec::new();
+        }
+        probe::ask(&self.shared, ANY, addresses, probe::ANSWER_WAIT).await
+    }
+}
+
+/// Devices that answered a unicast question rather than announcing themselves over mDNS.
+enum Probed {
+    /// The overlay and subnet scans plus the typed addresses, replacing the last round.
+    Round {
+        scanned: Vec<NearbyDevice>,
+        typed: Vec<NearbyDevice>,
+    },
+    Typed(Vec<NearbyDevice>),
+}
+
+fn typed_addresses(typed: &mut watch::Receiver<Vec<Ipv4Addr>>) -> Vec<IpAddr> {
+    typed.borrow_and_update().iter().copied().map(IpAddr::V4).collect()
 }

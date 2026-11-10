@@ -97,6 +97,13 @@ pub fn explain(error: &Error) -> Explanation {
         Error::AmbiguousDevice(_) => {
             say("More than one device matches", "Choose the device from the list.")
         }
+        Error::InvalidAddress(_) => {
+            say("That address isn't valid", "Enter an IP address like 192.168.1.20.")
+        }
+        Error::NoAnswer(_) => say(
+            "Nothing answered at that address",
+            "Open Solferry there and check that it's visible to everyone.",
+        ),
         Error::Protocol(_) => say(
             "Something went wrong in Solferry",
             "This is a bug. Please report it with the details.",

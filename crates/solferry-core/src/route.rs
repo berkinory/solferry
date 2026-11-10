@@ -3,6 +3,7 @@ use std::net::{IpAddr, Ipv4Addr};
 use futures::StreamExt;
 use iroh::endpoint::{Connection, Path};
 use iroh::{EndpointAddr, TransportAddr};
+use netdev::ipnet::Ipv4Net;
 use tokio::sync::broadcast;
 
 use crate::event::{Event, TransferId};
@@ -66,11 +67,15 @@ pub(crate) fn is_public(ip: IpAddr) -> bool {
     !is_local(ip) && !is_overlay(ip)
 }
 
+fn named(interface: &netdev::Interface, prefixes: &[&str]) -> bool {
+    let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
+    prefixes.iter().any(|prefix| name.starts_with(prefix))
+}
+
 /// This device's address on an overlay it joined, if any.
 pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
     netdev::get_interfaces().iter().find_map(|interface| {
-        let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-        if !TUNNEL_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
+        if !named(interface, &TUNNEL_PREFIXES) {
             return None;
         }
         interface.ipv4.iter().find_map(|net| {
@@ -78,6 +83,19 @@ pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
             is_overlay(ip.into()).then_some(ip)
         })
     })
+}
+
+/// This device's private IPv4 networks, leaving out overlays, containers and virtual machines.
+pub(crate) fn lan_networks() -> Vec<Ipv4Net> {
+    netdev::get_interfaces()
+        .into_iter()
+        .filter(|interface| interface.is_up() && !interface.is_loopback())
+        .filter(|interface| {
+            !named(interface, &TUNNEL_PREFIXES) && !named(interface, &VIRTUAL_PREFIXES)
+        })
+        .flat_map(|interface| interface.ipv4)
+        .filter(|net| net.addr().is_private())
+        .collect()
 }
 
 /// Whether an unpaired device at `ip` may ask to send files: never across a relay or the internet.
@@ -130,8 +148,7 @@ pub(crate) fn shareable_addrs(addrs: impl Iterator<Item = std::net::SocketAddr>)
     let interfaces = netdev::get_interfaces();
     let is_virtual = |ip: IpAddr| {
         interfaces.iter().any(|interface| {
-            let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-            VIRTUAL_PREFIXES.iter().any(|prefix| name.starts_with(prefix))
+            named(interface, &VIRTUAL_PREFIXES)
                 && (interface.ipv4.iter().any(|net| IpAddr::V4(net.addr()) == ip)
                     || interface.ipv6.iter().any(|net| IpAddr::V6(net.addr()) == ip))
         })
