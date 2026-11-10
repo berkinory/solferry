@@ -27,15 +27,18 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Receive { dir, yes, once } => {
             receive::run(data_dir, dir, yes, once, cli.json).await
         }
-        Command::Pair { with: Some(name) } => device::pair_nearby(data_dir, &name).await,
-        Command::Pair { with: None } => device::pair(data_dir).await,
+        Command::Pair { with: Some(name), .. } => device::pair_nearby(data_dir, &name).await,
+        Command::Pair { address: Some(address), .. } => {
+            device::pair_address(data_dir, &address).await
+        }
+        Command::Pair { .. } => device::pair(data_dir).await,
         Command::Join { code } => device::join(data_dir, &code).await,
         Command::Devices => device::list(data_dir).await,
         Command::Forget { device } => device::forget(data_dir, &device).await,
         Command::Approval { device, mode } => device::approval(data_dir, &device, mode).await,
         Command::Block { device } => device::block(data_dir, &device).await,
         Command::Unblock { id } => device::unblock(data_dir, &id).await,
-        Command::Nearby => device::nearby(data_dir).await,
+        Command::Nearby { address } => device::nearby(data_dir, address.as_deref()).await,
     }
 }
 

@@ -50,6 +50,19 @@ pub async fn pair_nearby(data_dir: PathBuf, name: &str) -> Result<()> {
     node.shutdown().await
 }
 
+pub async fn pair_address(data_dir: PathBuf, address: &str) -> Result<()> {
+    let (node, _offers) = super::start(data_dir).await?;
+    let device = node.find_address(address).await?;
+    let name = device.name.unwrap_or_else(|| address.to_owned());
+    let paired = node
+        .pair_nearby(device.addr, |code| {
+            println!("Code: {code}\nCheck that {name} shows the same code, then accept there.");
+        })
+        .await?;
+    println!("Paired with {}", paired.name);
+    node.shutdown().await
+}
+
 pub async fn join(data_dir: PathBuf, code: &str) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
     let device = node.join(code).await?;
@@ -119,9 +132,12 @@ pub async fn unblock(data_dir: PathBuf, query: &str) -> Result<()> {
     node.shutdown().await
 }
 
-pub async fn nearby(data_dir: PathBuf) -> Result<()> {
+pub async fn nearby(data_dir: PathBuf, address: Option<&str>) -> Result<()> {
     let (node, _offers) = super::start(data_dir).await?;
-    let devices = node.nearby(NEARBY_WINDOW).await;
+    let devices = match address {
+        Some(address) => vec![node.find_address(address).await?],
+        None => node.nearby(NEARBY_WINDOW).await,
+    };
     if devices.is_empty() {
         println!("Nothing found. Is solferry running on the other device, on this network?");
     }

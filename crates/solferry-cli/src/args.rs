@@ -49,6 +49,9 @@ pub enum Command {
         /// Pair with this nearby device by comparing a code, instead of showing a pairing code.
         #[arg(long)]
         with: Option<String>,
+        /// Pair by comparing a code with the device at this IP address, when it isn't found nearby.
+        #[arg(long, conflicts_with = "with")]
+        address: Option<String>,
     },
     /// Redeem a pairing code from another device.
     Join { code: String },
@@ -63,7 +66,11 @@ pub enum Command {
     /// Allow a blocked device again.
     Unblock { id: String },
     /// List devices on the local network.
-    Nearby,
+    Nearby {
+        /// Ask only this IP address, for a device on another subnet or a network that hides it.
+        #[arg(long)]
+        address: Option<String>,
+    },
     /// Manage the relays you run, used to reach devices on other networks.
     Relay {
         #[command(subcommand)]

@@ -53,6 +53,10 @@ fn advice(error: &Error) -> Advice {
             "See `solferry devices` and `solferry nearby` for available names."
         }
         Error::AmbiguousDevice(_) => "Use a longer id prefix from `solferry devices`.",
+        Error::InvalidAddress(_) => "Give an IPv4 address such as 192.168.1.20.",
+        Error::NoAnswer(_) => {
+            "Make sure solferry is running there and visible to everyone. `solferry status` shows its address."
+        }
         Error::Protocol(_) => "This is a bug. Please report it with the message above.",
     };
     Advice { what, next }
