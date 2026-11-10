@@ -15,6 +15,7 @@ pub(crate) use meter::Meter;
 pub(crate) use session::{
     exchange_hello, remote_failure, transfer_label, validate_offer, within_handshake,
 };
+pub(crate) use staging::free_path;
 pub(crate) use staging::{Staging, prune_abandoned};
 
 const CHUNK_SIZE: usize = 1024 * 1024;

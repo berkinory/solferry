@@ -125,6 +125,25 @@ pub(crate) async fn report_changes(
     std::future::pending::<()>().await;
 }
 
+/// Interface name prefixes of cellular links. Carriers hand out private addresses too, but
+/// nobody on the local network can reach them.
+const CELLULAR_PREFIXES: [&str; 4] = ["rmnet", "ccmni", "pdp_ip", "wwan"];
+
+/// This device's private IPv4 addresses on networks others can join, leaving out cellular links,
+/// containers and virtual machines.
+pub(crate) fn local_ipv4s() -> Vec<Ipv4Addr> {
+    netdev::get_interfaces()
+        .iter()
+        .filter(|interface| {
+            let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
+            let skipped = VIRTUAL_PREFIXES.iter().chain(&TUNNEL_PREFIXES).chain(&CELLULAR_PREFIXES);
+            !skipped.into_iter().any(|prefix| name.starts_with(prefix))
+        })
+        .flat_map(|interface| interface.ipv4.iter().map(netdev::prelude::Ipv4Net::addr))
+        .filter(Ipv4Addr::is_private)
+        .collect()
+}
+
 /// This device's own addresses that are worth giving to another device.
 pub(crate) fn shareable_addrs(addrs: impl Iterator<Item = std::net::SocketAddr>) -> Vec<String> {
     let interfaces = netdev::get_interfaces();
