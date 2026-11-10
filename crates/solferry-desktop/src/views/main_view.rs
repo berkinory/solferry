@@ -35,7 +35,6 @@ const TITLE_BAR: f32 = 34.0;
 pub enum SendPhase {
     Idle,
     Flying,
-    Sending,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -55,7 +54,6 @@ pub struct MainView {
     pub expanded: Option<EndpointId>,
     pub dialog: Option<Dialog>,
     pub send_phase: SendPhase,
-    launched: (u64, u64, usize),
     pub nav_from: Page,
     pub nav_moves: usize,
     pub copied: bool,
@@ -87,7 +85,6 @@ impl MainView {
             }
             (paired_count, asking) = (latest, waiting);
             toast_timing::track(view, &state, cx);
-            view.settle_send(cx);
             cx.notify();
         })
         .detach();
@@ -123,7 +120,6 @@ impl MainView {
             expanded: None,
             dialog: None,
             send_phase: SendPhase::Idle,
-            launched: (0, 0, 0),
             nav_from: Page::Home,
             nav_moves: 0,
             copied: false,
@@ -211,44 +207,22 @@ impl MainView {
         cx.notify();
     }
 
-    /// Hands the files over at once. The screen waits for the outcome: it leaves when a
-    /// transfer starts, and stays when every device failed, so the toast can say why.
+    /// Hands the files over and leaves once the cursor has flown. The pill takes it from there:
+    /// it waits for the other device, then shows progress, and a toast says if a send failed.
     pub fn send_selected(&mut self, cx: &mut Context<Self>) {
         if self.send_phase != SendPhase::Idle {
             return;
         }
         let targets: Vec<Target> =
             self.selected.iter().filter_map(|id| self.targets.get(id).cloned()).collect();
-        let state = self.state.read(cx);
-        self.launched = (state.sends_started, state.sends_failed, targets.len());
         Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
         self.send_phase = SendPhase::Flying;
         cx.notify();
         cx.spawn(async move |view, cx| {
             cx.background_executor().timer(FLY_FOR).await;
-            let _ = view.update(cx, |view, cx| {
-                view.send_phase = SendPhase::Sending;
-                view.settle_send(cx);
-                cx.notify();
-            });
+            let _ = view.update(cx, MainView::clear_pending);
         })
         .detach();
-    }
-
-    fn settle_send(&mut self, cx: &mut Context<Self>) {
-        if self.send_phase != SendPhase::Sending {
-            return;
-        }
-        let state = self.state.read(cx);
-        let (started, failed, count) = self.launched;
-        let (began, lost) = (state.sends_started > started, state.sends_failed - failed);
-        if began {
-            self.send_phase = SendPhase::Idle;
-            self.clear_pending(cx);
-        } else if lost >= count as u64 {
-            self.send_phase = SendPhase::Idle;
-            cx.notify();
-        }
     }
 
     pub fn clear_pending(&mut self, cx: &mut Context<Self>) {

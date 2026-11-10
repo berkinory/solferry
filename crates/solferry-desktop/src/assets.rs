@@ -54,7 +54,6 @@ glyphs! {
     Home => "home",
     Key => "key",
     Link => "link",
-    Loading => "loading",
     Linux => "linux",
     ChevronDown => "chevron-down",
     ChevronUp => "chevron-up",
