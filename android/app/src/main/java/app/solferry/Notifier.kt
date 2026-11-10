@@ -21,6 +21,9 @@ object Notifier {
     private const val PAIRING = "pairing"
     private var next = 100
 
+    /** While someone is looking at the app, it shows these itself. */
+    var appVisible = false
+
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(ASKS, "Requests and arrivals", NotificationManager.IMPORTANCE_HIGH))
@@ -80,7 +83,7 @@ object Notifier {
     }
 
     private fun show(context: Context, title: String, body: String, tag: String? = null, id: Int = next++) {
-        if (!allowed(context)) return
+        if (appVisible || !allowed(context)) return
         val notification = NotificationCompat.Builder(context, ASKS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
             .setContentTitle(title)
