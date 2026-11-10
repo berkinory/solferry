@@ -58,6 +58,7 @@ fun SendSheet(
     files: List<PickedFile>,
     onRemove: (PickedFile) -> Unit,
     onSend: (Set<String>) -> Unit,
+    onShareLink: () -> Unit,
     onClose: () -> Unit,
 ) = Sheet("Send", onClose) { close ->
     var chosen by remember { mutableStateOf(emptySet<String>()) }
@@ -90,6 +91,7 @@ fun SendSheet(
     Box(Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), contentAlignment = Alignment.Center) {
         LaunchButton(chosen.size, { onSend(chosen) }, close)
     }
+    Button(onShareLink, Modifier.fillMaxWidth(), label = "Share via link", icon = R.drawable.ic_link, kind = ButtonKind.Ghost)
 }
 
 /** Where the files come from, as on iOS: the photo picker or the file browser. */
