@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -46,6 +47,7 @@ import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
 import app.solferry.ui.SolferryTheme
+import app.solferry.ui.SourceSheet
 import app.solferry.ui.Tab
 import app.solferry.ui.TabBar
 import app.solferry.ui.Toaster
@@ -91,11 +93,15 @@ class MainActivity : ComponentActivity() {
                 var screen by rememberSaveable { mutableStateOf(Screen.Home) }
                 var pairing by rememberSaveable { mutableStateOf(false) }
                 var target by remember { mutableStateOf<PairedDevice?>(null) }
-                val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-                    if (uris.isEmpty()) return@rememberLauncherForActivityResult
+                var choosing by rememberSaveable { mutableStateOf(false) }
+                val picked: (List<Uri>) -> Unit = { uris ->
                     val device = target
-                    if (device != null) engine.sendUris(device.identity.id, uris) else shared = (shared + uris).distinct()
+                    if (uris.isNotEmpty()) {
+                        if (device != null) engine.sendUris(device.identity.id, uris) else shared = (shared + uris).distinct()
+                    }
                 }
+                val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), picked)
+                val media = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(), picked)
                 val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -122,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         when (shown) {
                             Screen.Home -> HomeScreen(
                                 state, engine,
-                                onPickFiles = { device -> target = device; picker.launch(arrayOf("*/*")) },
+                                onPickFiles = { device -> target = device; choosing = true },
                                 onUseCode = { pairing = true },
                             )
                             Screen.History -> HistoryScreen(state, engine)
@@ -137,6 +143,12 @@ class MainActivity : ComponentActivity() {
                             onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
                             onClose = { shared = emptyList() },
                         )
+                    }
+                    if (choosing) {
+                        SourceSheet(
+                            onMedia = { media.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)) },
+                            onFiles = { files.launch(arrayOf("*/*")) },
+                        ) { choosing = false }
                     }
                     if (pairing) AddDeviceSheet(state, engine) { pairing = false }
                     val asked = state.pairings.firstOrNull()
@@ -154,7 +166,7 @@ class MainActivity : ComponentActivity() {
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
-                    val sheetOpen = shared.isNotEmpty() || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
+                    val sheetOpen = shared.isNotEmpty() || choosing || pairing || state.pairings.isNotEmpty() || state.pairingCode != null
                     if (!sheetOpen) Toaster(state, engine, Modifier.align(Alignment.TopCenter))
                 } }
             }

@@ -92,6 +92,13 @@ fun SendSheet(
     }
 }
 
+/** Where the files come from, as on iOS: the photo picker or the file browser. */
+@Composable
+fun SourceSheet(onMedia: () -> Unit, onFiles: () -> Unit, onClose: () -> Unit) = Sheet("Send", onClose) { close ->
+    Button({ close(); onMedia() }, Modifier.fillMaxWidth(), label = "Photos and videos", icon = R.drawable.ic_type_image)
+    Button({ close(); onFiles() }, Modifier.fillMaxWidth(), label = "Files", icon = R.drawable.ic_folder)
+}
+
 @Composable
 private fun FileRow(file: PickedFile, index: Int, appeared: Boolean, onRemove: () -> Unit) {
     val palette = LocalPalette.current
