@@ -24,7 +24,7 @@ private struct Digits: View {
 
 private struct Asker: View {
     let peer: Identity
-    let title: String
+    let title: LocalizedStringKey
     let detail: String
 
     var body: some View {
@@ -88,7 +88,7 @@ struct OfferCard: View {
     let incoming: Incoming
 
     var body: some View {
-        let files = incoming.files == 1 ? "1 file" : "\(incoming.files) files"
+        let files = String(localized: "\(Int(incoming.files)) files")
         Card(glyph: .download, title: "Incoming files", tone: palette.primary) {
             PaddedWell {
                 Asker(

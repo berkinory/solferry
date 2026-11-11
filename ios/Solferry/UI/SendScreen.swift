@@ -3,9 +3,16 @@ import SwiftUI
 private struct Target: Identifiable {
     let identity: Identity
     let name: String
-    let detail: String
+    let paired: Bool
+    let online: Bool?
 
     var id: String { identity.id }
+
+    var detail: LocalizedStringKey {
+        if !paired { return "Not paired" }
+        if online == true { return "Online" }
+        return online == false ? "Offline" : "Paired"
+    }
 }
 
 /// Everything about one send on its own screen: what goes, and who gets it.
@@ -62,14 +69,12 @@ struct SendScreen: View {
             let near = state.nearby.first { $0.identity.id == device.identity.id }
             var identity = device.identity
             identity.platform = identity.platform ?? near?.identity.platform
-            return Target(identity: identity, name: device.name, detail: detail(near: near, online: state.reachable?.contains(device.identity.id)))
+            let online: Bool? = near != nil ? true : state.reachable?.contains(device.identity.id)
+            return Target(identity: identity, name: device.name, paired: true, online: online)
         }
-        return mine + state.strangers.map { Target(identity: $0.identity, name: $0.name ?? "Unnamed device", detail: "Not paired") }
-    }
-
-    private func detail(near: Nearby?, online: Bool?) -> String {
-        if near != nil || online == true { return "Online" }
-        return online == false ? "Offline" : "Paired"
+        return mine + state.strangers.map {
+            Target(identity: $0.identity, name: $0.name ?? String(localized: "Unnamed device"), paired: false, online: true)
+        }
     }
 }
 
@@ -83,7 +88,7 @@ private struct FileRow: View {
             Icon(fileGlyph(file.lastPathComponent), tint: palette.inkMuted, size: 22)
             Text(file.lastPathComponent).lineLimit(1).truncationMode(.middle)
             Spacer(minLength: 0)
-            if let size { Muted(bytes(size)) }
+            if let size { Muted(verbatim: bytes(size)) }
             Button(action: onRemove) { Icon(.delete, tint: palette.danger, size: 18).frame(width: 36, height: 36).contentShape(Rectangle()) }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Remove \(file.lastPathComponent)")
@@ -147,11 +152,11 @@ private struct TargetRow: View {
             if chosen {
                 Tile(glyph: .check, fill: palette.primaryFill, tone: palette.onPrimary)
             } else {
-                DeviceTile(identity: target.identity, online: target.detail != "Offline" && target.detail != "Paired")
+                DeviceTile(identity: target.identity, online: target.online == true)
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text(target.name).lineLimit(1)
-                StatusLine(target.detail, dot: target.detail == "Online" ? palette.successFill : nil)
+                StatusLine(target.detail, dot: target.paired && target.online == true ? palette.successFill : nil)
             }
             Spacer(minLength: 0)
         }
