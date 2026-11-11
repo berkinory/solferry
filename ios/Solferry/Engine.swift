@@ -34,7 +34,7 @@ final class Engine {
         let folder = destination()
         Task.detached { [weak self] in
             let saved = Exporter.recover(to: folder)
-            await self?.exported(saved, by: "Received files", to: folder)
+            await self?.exported(saved, by: String(localized: "Received files"), to: folder)
         }
     }
 
@@ -82,15 +82,16 @@ final class Engine {
     }
 
     private func exported(_ saved: Bool, by name: String, to folder: SaveFolder?, label: String? = nil) {
+        let place = folder?.name ?? String(localized: "Files")
         if !saved {
-            state.toast(.failure, "\(name): Couldn't save to \(folder?.name ?? "Files")")
+            state.toast(.failure, String(localized: "\(name): Couldn't save to \(place)"))
         } else if let label {
-            Notifier.received(label: label, name: name, folder: folder?.name ?? "Files")
+            Notifier.received(label: label, name: name, folder: place)
         }
     }
 
     func chooseFolder(_ picked: URL) {
-        if let folder = SaveFolder.keep(picked) { state.saveFolder = folder } else { state.toast(.failure, "Couldn't use that folder") }
+        if let folder = SaveFolder.keep(picked) { state.saveFolder = folder } else { state.toast(.failure, String(localized: "Couldn't use that folder")) }
     }
 
     func resetFolder() {
@@ -104,7 +105,7 @@ final class Engine {
         state.saveFolder = SaveFolder.resolve()
         if state.saveFolder == nil {
             SaveFolder.forget()
-            state.toast(.failure, "Lost access to \(name), saving to the Solferry folder")
+            state.toast(.failure, String(localized: "Lost access to \(name), saving to the Solferry folder"))
         }
         return state.saveFolder
     }

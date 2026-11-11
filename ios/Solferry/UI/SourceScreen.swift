@@ -26,7 +26,7 @@ struct SourceScreen: View {
 
 private struct SourceTile: View {
     @Environment(\.palette) private var palette
-    let label: String
+    let label: LocalizedStringKey
     let glyph: Glyph
     let action: () -> Void
 

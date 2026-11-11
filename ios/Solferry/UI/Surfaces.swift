@@ -97,7 +97,7 @@ struct PaddedWell<Content: View>: View {
 struct Card<Aside: View, Content: View>: View {
     @Environment(\.palette) private var palette
     let glyph: Glyph
-    let title: String
+    let title: LocalizedStringKey
     var tone: Color?
     var line: Color?
     @ViewBuilder var aside: Aside
@@ -122,7 +122,7 @@ struct Card<Aside: View, Content: View>: View {
 }
 
 extension Card where Aside == EmptyView {
-    init(glyph: Glyph, title: String, tone: Color? = nil, line: Color? = nil, @ViewBuilder content: () -> Content) {
+    init(glyph: Glyph, title: LocalizedStringKey, tone: Color? = nil, line: Color? = nil, @ViewBuilder content: () -> Content) {
         self.init(glyph: glyph, title: title, tone: tone, line: line, aside: { EmptyView() }, content: content)
     }
 }

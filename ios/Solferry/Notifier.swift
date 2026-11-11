@@ -9,19 +9,19 @@ enum Notifier {
     }
 
     static func offer(key: UInt64, name: String) {
-        show("Incoming files", "\(name) wants to send you files", id: offerId(key))
+        show(String(localized: "Incoming files"), String(localized: "\(name) wants to send you files"), id: offerId(key))
     }
 
     static func pairing(key: UInt64, name: String) {
-        show("Pairing request", "\(name) wants to pair with this device", id: pairingId(key))
+        show(String(localized: "Pairing request"), String(localized: "\(name) wants to pair with this device"), id: pairingId(key))
     }
 
     static func text(from name: String, copied: Bool) {
-        show("Text from \(name)", copied ? "Copied to your clipboard" : "Open Solferry to copy it")
+        show(String(localized: "Text from \(name)"), copied ? String(localized: "Copied to your clipboard") : String(localized: "Open Solferry to copy it"))
     }
 
     static func received(label: String, name: String, folder: String) {
-        show("Files received", "\(label) from \(name), in \(folder)")
+        show(String(localized: "Files received"), String(localized: "\(label) from \(name), in \(folder)"))
     }
 
     static func settleOffer(_ key: UInt64) {

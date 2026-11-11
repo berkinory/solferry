@@ -24,14 +24,14 @@ private struct RowBody<Content: View>: View {
 
 private struct Detail<Trailing: View>: View {
     @Environment(\.palette) private var palette
-    let label: String
+    let label: LocalizedStringKey
     var moment: String?
     @ViewBuilder let trailing: Trailing
 
     var body: some View {
         HStack(spacing: SpaceTokens.xs) {
             Muted(label)
-            if let moment { Muted(moment, color: palette.inkMuted.opacity(0.6)) }
+            if let moment { Muted(verbatim: moment, color: palette.inkMuted.opacity(0.6)) }
             Spacer()
             trailing
         }
@@ -158,7 +158,7 @@ struct NearbyCard: View {
                     RowBody {
                         DeviceTile(identity: device.identity)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(device.name ?? "Unnamed device").lineLimit(1)
+                            Text(device.name ?? String(localized: "Unnamed device")).lineLimit(1)
                             StatusLine("Not paired")
                         }
                         Spacer(minLength: 0)

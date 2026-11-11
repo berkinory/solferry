@@ -48,7 +48,7 @@ private struct SaveFolderCard: View {
         Card(glyph: .folder, title: "Save files to") {
             PaddedWell {
                 HStack(spacing: SpaceTokens.sm) {
-                    Muted(folder?.name ?? "The Solferry folder in the Files app")
+                    Muted(verbatim: folder?.name ?? String(localized: "The Solferry folder in the Files app"))
                     Spacer(minLength: 0)
                     if folder != nil {
                         ActionButton(label: "Reset", kind: .ghost, scale: .small) { engine.resetFolder() }
