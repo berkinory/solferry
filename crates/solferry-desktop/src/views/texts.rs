@@ -65,7 +65,20 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .gap(px(SPACE_SM))
-        .child(ui::muted(format!("To {name}"), cx))
+        .child(
+            div()
+                .flex()
+                .items_center()
+                .justify_between()
+                .child(ui::muted(format!("To {name}"), cx))
+                .child(
+                    Button::new("paste-text")
+                        .xs()
+                        .icon(Glyph::Clipboard)
+                        .label("Paste")
+                        .on_click(cx.listener(|view, _, window, cx| view.paste_text(window, cx))),
+                ),
+        )
         .child(Textarea::new(&view.text_input).h(px(TEXT_HEIGHT)))
         .child(
             Button::new("send-text")
@@ -78,6 +91,12 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 impl MainView {
+    fn paste_text(&mut self, window: &mut Window, cx: &mut Context<MainView>) {
+        let Some(pasted) = cx.read_from_clipboard().and_then(|item| item.text()) else { return };
+        let text = self.text_input.read(cx).value().to_string() + &pasted;
+        self.text_input.update(cx, |input, cx| input.set_value(text, window, cx));
+    }
+
     pub fn compose_text(
         &mut self,
         target: Target,

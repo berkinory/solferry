@@ -19,8 +19,6 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
 const BUTTON_WIDTH: f32 = 226.0;
-const DOTS: usize = 5;
-const FLOW: Duration = Duration::from_millis(1100);
 
 #[expect(clippy::cast_possible_truncation, reason = "a list position fits in f32")]
 fn fraction(value: usize) -> f32 {
@@ -108,37 +106,6 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
     body.into_any_element()
 }
 
-/// Dots running from the files down to the devices, lit once there is somewhere to go.
-fn connector(live: bool, cx: &Context<MainView>) -> AnyElement {
-    let tone = if live { color(palette(cx).primary) } else { cx.theme().muted_foreground };
-    let dots: Vec<_> = (0..DOTS)
-        .map(|index| {
-            let offset = fraction(index) / fraction(DOTS);
-            div()
-                .size(px(6.))
-                .rounded_full()
-                .bg(tone)
-                .with_animation(
-                    SharedString::from(format!("flow-{index}")),
-                    Animation::new(FLOW).repeat(),
-                    move |dot, delta| {
-                        let wave = (delta - offset).rem_euclid(1.);
-                        dot.opacity(0.15 + 0.85 * (1. - wave).powi(2))
-                    },
-                )
-                .into_any_element()
-        })
-        .collect();
-    div()
-        .flex()
-        .flex_col()
-        .items_center()
-        .gap(px(6.))
-        .py(px(SPACE_SM))
-        .children(dots)
-        .into_any_element()
-}
-
 fn cursor_at(delta: f32) -> Transformation {
     Transformation::rotate(percentage(0.25))
         .with_translation(point(px(delta * 34.), px(delta * -34.)))
@@ -209,7 +176,6 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .flex_col()
         .child(div().flex().flex_col().children(files))
-        .child(connector(!view.selected.is_empty(), cx))
         .child(ui::frame(cx).child(well))
         .child(send_button(view, cx))
         .child(

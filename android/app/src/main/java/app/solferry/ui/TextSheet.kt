@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ import uniffi.solferry_ffi.PairedDevice
 fun TextSheet(device: PairedDevice, engine: Engine, onClose: () -> Unit) = Sheet("Send text", onClose) { close ->
     var text by remember { mutableStateOf(engine.pasted().orEmpty()) }
     Muted("To ${device.name}")
-    TextBox(text, { text = it }, "Type or paste text")
+    TextBox(text, { text = it }, "Type or paste text") { engine.pasted()?.let { text += it } }
     Button(
         { engine.bridge.sendText(device.identity.id, text); close() }, Modifier.fillMaxWidth(),
         label = "Send", icon = R.drawable.ic_send, kind = ButtonKind.Primary, enabled = text.isNotBlank(),
@@ -37,7 +38,7 @@ fun TextSheet(device: PairedDevice, engine: Engine, onClose: () -> Unit) = Sheet
 }
 
 @Composable
-private fun TextBox(value: String, onChange: (String) -> Unit, placeholder: String) {
+private fun TextBox(value: String, onChange: (String) -> Unit, placeholder: String, onPaste: () -> Unit) {
     val palette = LocalPalette.current
     val typed = MaterialTheme.typography.bodyLarge
     val interaction = remember { MutableInteractionSource() }
@@ -51,10 +52,16 @@ private fun TextBox(value: String, onChange: (String) -> Unit, placeholder: Stri
             Box(
                 Modifier.fillMaxWidth().heightIn(min = 120.dp, max = 280.dp).background(palette.page, ControlShape)
                     .border(1.dp, if (focused) palette.primary else palette.line, ControlShape)
-                    .padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.sm.dp),
+                    .padding(start = SpaceTokens.md.dp, top = SpaceTokens.sm.dp, bottom = SpaceTokens.sm.dp, end = SpaceTokens.xs.dp),
             ) {
-                if (value.isEmpty()) Text(placeholder, style = typed, color = palette.inkMuted)
-                input()
+                Box(Modifier.fillMaxWidth().padding(end = 40.dp)) {
+                    if (value.isEmpty()) Text(placeholder, style = typed, color = palette.inkMuted)
+                    input()
+                }
+                Button(
+                    onPaste, Modifier.align(Alignment.TopEnd), icon = R.drawable.ic_clipboard,
+                    kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Paste",
+                )
             }
         },
     )

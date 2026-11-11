@@ -216,7 +216,7 @@ val LocalToaster = staticCompositionLocalOf<@Composable () -> Unit> { {} }
 /** Material's bottom sheet with a centered title. `content` gets a way to close it with the animation. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Sheet(title: String, onClose: () -> Unit, content: @Composable ColumnScope.(close: () -> Unit) -> Unit) {
+fun Sheet(title: String?, onClose: () -> Unit, content: @Composable ColumnScope.(close: () -> Unit) -> Unit) {
     val palette = LocalPalette.current
     val state = rememberBottomSheetState(SheetValue.Hidden, setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
@@ -233,7 +233,7 @@ fun Sheet(title: String, onClose: () -> Unit, content: @Composable ColumnScope.(
                 .padding(horizontal = SpaceTokens.lg.dp).padding(bottom = SpaceTokens.lg.dp),
             verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp),
         ) {
-            Text(title, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            title?.let { Text(it, Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center) }
             content(close)
         }
         LocalToaster.current()

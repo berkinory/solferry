@@ -1,7 +1,7 @@
 package app.solferry.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -14,18 +14,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -49,8 +51,6 @@ import uniffi.solferry_ffi.Identity
 private data class Target(val identity: Identity, val name: String, val detail: String)
 
 private const val FLY_MS = 380L
-private const val FLOW_MS = 1100
-private const val DOTS = 5
 
 @Composable
 fun SendSheet(
@@ -77,7 +77,6 @@ fun SendSheet(
     Column {
         files.forEachIndexed { index, file -> FileRow(file, index, appeared) { onRemove(file) } }
     }
-    Connector(chosen.isNotEmpty())
     Frame {
         Well {
             if (mine.isEmpty() && others.isEmpty()) Scanning()
@@ -96,9 +95,25 @@ fun SendSheet(
 
 /** Where the files come from, as on iOS: the photo picker or the file browser. */
 @Composable
-fun SourceSheet(onMedia: () -> Unit, onFiles: () -> Unit, onClose: () -> Unit) = Sheet("Send", onClose) { close ->
-    Button({ close(); onMedia() }, Modifier.fillMaxWidth(), label = "Photos and videos", icon = R.drawable.ic_type_image)
-    Button({ close(); onFiles() }, Modifier.fillMaxWidth(), label = "Files", icon = R.drawable.ic_folder)
+fun SourceSheet(onMedia: () -> Unit, onFiles: () -> Unit, onClose: () -> Unit) = Sheet(null, onClose) { close ->
+    Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+        SourceTile("Photos and videos", R.drawable.ic_type_image, Modifier.weight(1f)) { close(); onMedia() }
+        SourceTile("Files", R.drawable.ic_folder, Modifier.weight(1f)) { close(); onFiles() }
+    }
+}
+
+@Composable
+private fun SourceTile(label: String, @DrawableRes icon: Int, modifier: Modifier, onClick: () -> Unit) = Frame(modifier) {
+    Well(Modifier.aspectRatio(1f), onClick = onClick) {
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Glyph(icon, LocalPalette.current.ink, 32)
+            Text(label, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center)
+        }
+    }
 }
 
 @Composable
@@ -119,24 +134,6 @@ private fun FileRow(file: PickedFile, index: Int, appeared: Boolean, onRemove: (
         file.size?.let { Muted(bytes(it)) }
         Box(Modifier.size(36.dp).clip(ControlShape).clickable(onClick = onRemove), contentAlignment = Alignment.Center) {
             Glyph(R.drawable.ic_delete, palette.danger, 18, "Remove ${file.name}")
-        }
-    }
-}
-
-/** Dots running from the files down to the devices, lit once there is somewhere to go. */
-@Composable
-fun Connector(live: Boolean) {
-    val palette = LocalPalette.current
-    val cycle by rememberCycle(FLOW_MS)
-    val tone by animateColorAsState(if (live) palette.primary else palette.inkMuted, tween(MotionTokens.standard))
-    Column(Modifier.fillMaxWidth().padding(vertical = SpaceTokens.xs.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        repeat(DOTS) { index ->
-            Box(
-                Modifier.size(5.dp).graphicsLayer {
-                    val wave = ((cycle - index.toFloat() / DOTS) % 1f + 1f) % 1f
-                    alpha = 0.15f + 0.85f * (1 - wave) * (1 - wave)
-                }.background(tone, CircleShape),
-            )
         }
     }
 }

@@ -30,7 +30,6 @@ struct SendScreen: View {
                     .animation(.easeOut(duration: 0.3).delay(Double(index) * 0.045), value: appeared)
                 }
             }
-            Connector(live: !chosen.isEmpty)
             CardFrame {
                 Well {
                     if targets.isEmpty { Scanning() }
@@ -97,30 +96,6 @@ private struct FileRow: View {
         let scoped = file.startAccessingSecurityScopedResource()
         defer { if scoped { file.stopAccessingSecurityScopedResource() } }
         return (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap { $0 }.map(UInt64.init)
-    }
-}
-
-/// Dots running from the files down to the devices, lit once there is somewhere to go.
-struct Connector: View {
-    @Environment(\.palette) private var palette
-    let live: Bool
-    private let dots = 5
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20)) { timeline in
-            let cycle = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.1) / 1.1
-            VStack(spacing: 5) {
-                ForEach(0 ..< dots, id: \.self) { index in
-                    let wave = (cycle - Double(index) / Double(dots) + 1).truncatingRemainder(dividingBy: 1)
-                    Circle()
-                        .fill(live ? palette.primary : palette.inkMuted)
-                        .frame(width: 5, height: 5)
-                        .opacity(0.15 + 0.85 * (1 - wave) * (1 - wave))
-                }
-            }
-        }
-        .padding(.vertical, SpaceTokens.xs)
-        .accessibilityHidden(true)
     }
 }
 

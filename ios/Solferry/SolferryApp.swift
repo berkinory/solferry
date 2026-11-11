@@ -4,7 +4,7 @@ import SwiftUI
 private let presenceEverySeconds = 20.0
 
 private enum Presented: Identifiable {
-    case pairing, code, send, text, link
+    case pairing, code, send, text, link, source
 
     var id: Self { self }
 }
@@ -36,6 +36,7 @@ private struct RootView: View {
     @State private var target: PairedDevice?
     @State private var texting: PairedDevice?
     @State private var choosing = false
+    @State private var source: Source?
     @State private var browsing = false
     @State private var browsingPhotos = false
     @State private var photos: [PhotosPickerItem] = []
@@ -55,18 +56,15 @@ private struct RootView: View {
         .environment(\.addDevice) { pairing = true }
         .sensoryFeedback(.selection, trigger: place)
         .onAppear { ToastWindow.show(engine) }
-        .sheet(item: presented) { sheet in
+        .sheet(item: presented, onDismiss: openSource) { sheet in
             switch sheet {
             case .pairing: PairingScreen()
             case .code: AddDeviceScreen()
             case .send: SendScreen(files: $staged)
             case .text: if let texting { TextScreen(device: texting) }
             case .link: if let link = engine.state.link { LinkScreen(link: link) }
+            case .source: SourceScreen { source = $0 }
             }
-        }
-        .confirmationDialog("Send", isPresented: $choosing) {
-            Button("Photos and videos") { browsingPhotos = true }
-            Button("Files") { browsing = true }
         }
         .fileImporter(isPresented: $browsing, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
             if case let .success(urls) = result { deliver(urls) }
@@ -94,6 +92,7 @@ private struct RootView: View {
             if pairing { return .code }
             if texting != nil { return .text }
             if state.link != nil { return .link }
+            if choosing { return .source }
             return sending ? .send : nil
         } set: { value in
             guard value == nil else { return }
@@ -105,12 +104,24 @@ private struct RootView: View {
                 texting = nil
             } else if engine.state.link != nil {
                 engine.bridge.stopLink()
+            } else if choosing {
+                choosing = false
             } else {
                 sending = false
                 Outbox.discard(staged)
                 staged = []
             }
         }
+    }
+
+    /// Pickers wait for the source sheet to leave, since one sheet can't open over another.
+    private func openSource() {
+        switch source {
+        case .photos: browsingPhotos = true
+        case .files: browsing = true
+        case nil: break
+        }
+        source = nil
     }
 
     private func goHome() {
