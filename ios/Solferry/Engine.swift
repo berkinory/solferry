@@ -26,11 +26,16 @@ final class Engine {
         events.engine = self
         bridge = Solferry(
             dataDir: Engine.dataDirectory().path,
-            downloadDir: URL.documentsDirectory.path,
+            downloadDir: Exporter.staging.path,
             deviceName: UIDevice.current.name,
             listener: events
         )
         Notifier.requestPermission()
+        let folder = destination()
+        Task.detached { [weak self] in
+            let saved = Exporter.recover(to: folder)
+            await self?.exported(saved, by: "Received files", to: folder)
+        }
     }
 
     /// The device key lives here, so a restored backup can't make a second phone with this identity.
@@ -58,12 +63,50 @@ final class Engine {
         case let .offerGone(key): Notifier.settleOffer(key)
         case let .pairingRequest(key, _, name, _): Notifier.pairing(key: key, name: name)
         case let .pairingGone(key): Notifier.settlePairing(key)
+        case let .linkReceived(name, _):
+            let folder = destination()
+            Task.detached { [weak self] in
+                let saved = Exporter.export(to: folder)
+                await self?.exported(saved, by: name, to: folder)
+            }
         case let .completed(id):
             if let done = state.transfers.first(where: { $0.id == id }), !done.sending {
-                Notifier.received(label: done.label, name: done.peerName)
+                let (folder, name, label) = (destination(), done.peerName, done.label)
+                Task.detached { [weak self] in
+                    let saved = Exporter.export(to: folder)
+                    await self?.exported(saved, by: name, to: folder, label: label)
+                }
             }
         default: break
         }
+    }
+
+    private func exported(_ saved: Bool, by name: String, to folder: SaveFolder?, label: String? = nil) {
+        if !saved {
+            state.toast(.failure, "\(name): Couldn't save to \(folder?.name ?? "Files")")
+        } else if let label {
+            Notifier.received(label: label, name: name, folder: folder?.name ?? "Files")
+        }
+    }
+
+    func chooseFolder(_ picked: URL) {
+        if let folder = SaveFolder.keep(picked) { state.saveFolder = folder } else { state.toast(.failure, "Couldn't use that folder") }
+    }
+
+    func resetFolder() {
+        SaveFolder.forget()
+        state.saveFolder = nil
+    }
+
+    /// The picked folder if it still works. Once it doesn't, files go to the Solferry folder and the user hears about it once.
+    private func destination() -> SaveFolder? {
+        guard let name = SaveFolder.pickedName else { return nil }
+        state.saveFolder = SaveFolder.resolve()
+        if state.saveFolder == nil {
+            SaveFolder.forget()
+            state.toast(.failure, "Lost access to \(name), saving to the Solferry folder")
+        }
+        return state.saveFolder
     }
 
     func sceneChanged(active: Bool) {

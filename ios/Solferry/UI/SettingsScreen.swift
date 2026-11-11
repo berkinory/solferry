@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 private let guide = URL(string: "https://github.com/berkinory/solferry/blob/main/docs/relay.md")!
 
@@ -19,9 +20,7 @@ struct SettingsScreen: View {
                 }
             }
             RelayCard()
-            Card(glyph: .folder, title: "Save files to") {
-                PaddedWell { Muted("The Solferry folder in the Files app") }
-            }
+            SaveFolderCard()
             VisibilityCard(found: me?.visibility != "Hidden")
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
@@ -37,6 +36,30 @@ struct SettingsScreen: View {
 
     private func save(_ changed: Bool) {
         if changed { engine.bridge.rename(name: name.trimmingCharacters(in: .whitespaces)) }
+    }
+}
+
+private struct SaveFolderCard: View {
+    @Environment(Engine.self) private var engine
+    @State private var picking = false
+
+    var body: some View {
+        let folder = engine.state.saveFolder
+        Card(glyph: .folder, title: "Save files to") {
+            PaddedWell {
+                HStack(spacing: SpaceTokens.sm) {
+                    Muted(folder?.name ?? "The Solferry folder in the Files app")
+                    Spacer(minLength: 0)
+                    if folder != nil {
+                        ActionButton(label: "Reset", kind: .ghost, scale: .small) { engine.resetFolder() }
+                    }
+                    ActionButton(label: "Change", glyph: .folder, scale: .small) { picking = true }
+                }
+            }
+        }
+        .fileImporter(isPresented: $picking, allowedContentTypes: [.folder]) { result in
+            if case let .success(url) = result { engine.chooseFolder(url) }
+        }
     }
 }
 
