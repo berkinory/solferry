@@ -28,6 +28,8 @@ pub struct Config {
     pub download_dir: PathBuf,
     /// Whether the desktop and Android apps look for new releases.
     pub check_updates: bool,
+    /// Whether the desktop app keeps an icon in the tray or menu bar.
+    pub show_in_tray: bool,
 }
 
 impl Default for Config {
@@ -41,6 +43,7 @@ impl Default for Config {
                 .or_else(dirs::home_dir)
                 .unwrap_or_else(|| PathBuf::from(".")),
             check_updates: true,
+            show_in_tray: true,
         }
     }
 }

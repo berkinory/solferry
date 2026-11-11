@@ -69,6 +69,7 @@ pub enum Command {
     CheckForUpdates,
     InstallUpdate,
     SetCheckUpdates(bool),
+    SetShowInTray(bool),
     /// Shares these paths with browsers, or takes files from them when there are none.
     Link(Vec<PathBuf>),
     StopLink,
@@ -293,6 +294,11 @@ async fn run(
             Command::SetCheckUpdates(enabled) => {
                 if let Ok(config) = Config::load(&data_dir) {
                     let _ = Config { check_updates: enabled, ..config }.save(&data_dir);
+                }
+            }
+            Command::SetShowInTray(shown) => {
+                if let Ok(config) = Config::load(&data_dir) {
+                    let _ = Config { show_in_tray: shown, ..config }.save(&data_dir);
                 }
             }
             Command::Link(paths) => {

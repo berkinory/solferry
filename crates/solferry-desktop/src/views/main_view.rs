@@ -179,6 +179,17 @@ impl MainView {
         Self::command(Command::SetCheckUpdates(enabled), cx);
     }
 
+    pub fn set_show_in_tray(&mut self, shown: bool, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            if let Some(config) = &mut state.config {
+                config.show_in_tray = shown;
+            }
+            cx.notify();
+        });
+        cx.global::<Shell>().tray.set_visible(shown);
+        Self::command(Command::SetShowInTray(shown), cx);
+    }
+
     pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.state.update(cx, |state, _| {
             state.join_error = None;

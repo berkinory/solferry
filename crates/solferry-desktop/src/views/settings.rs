@@ -51,6 +51,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(device_section(view, &config, cx))
         .child(relays::section(view, &config, cx))
         .child(visibility_section(&config, cx))
+        .child(tray_section(&config, cx))
         .children(update::enabled().then(|| updates::section(config.check_updates, &status, cx)))
         .children(blocked_section(&blocked, cx))
         .child(about(id, cx))
@@ -129,6 +130,37 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
                                 let chosen =
                                     if *on { Visibility::Everyone } else { Visibility::Hidden };
                                 change(view, cx, |config| config.visibility = chosen);
+                            })),
+                    ),
+            ),
+        )
+        .into_any_element()
+}
+
+fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
+    let detail = match (config.show_in_tray, cfg!(target_os = "macos")) {
+        (true, true) => "Keeps Solferry in the menu bar, ready to receive with the window closed.",
+        (true, false) => "Keeps Solferry in the tray, ready to receive with the window closed.",
+        (false, true) => "Solferry stays in the Dock when you close the window.",
+        (false, false) => "Closing the window quits Solferry.",
+    };
+    let label = if cfg!(target_os = "macos") { "Show in menu bar" } else { "Show in tray" };
+    ui::card(Glyph::Computer, label, None, cx)
+        .child(
+            ui::padded_well(cx).child(
+                div()
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .gap(px(SPACE_MD))
+                    .child(ui::muted(detail, cx).flex_1())
+                    .child(
+                        Switch::new("tray")
+                            .large()
+                            .checked(config.show_in_tray)
+                            .accessibility_label(label)
+                            .on_click(cx.listener(|view, on: &bool, _, cx| {
+                                view.set_show_in_tray(*on, cx);
                             })),
                     ),
             ),

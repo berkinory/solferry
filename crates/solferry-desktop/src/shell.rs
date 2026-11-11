@@ -11,7 +11,7 @@ use solferry_core::{Direction, Event};
 
 use crate::service::{Command, Handle, Update};
 use crate::state::AppState;
-use crate::tray::{TrayAction, TrayEvents};
+use crate::tray::{Tray, TrayAction, TrayEvents};
 use crate::views::MainView;
 
 const WINDOW_WIDTH: f32 = 520.0;
@@ -23,14 +23,20 @@ const TRAY_POLL: Duration = Duration::from_millis(150);
 pub struct Shell {
     pub state: Entity<AppState>,
     pub service: Handle,
+    pub tray: Tray,
     window: Option<gpui_kit::AnyWindowHandle>,
 }
 
 impl Global for Shell {}
 
-pub fn start(service: Handle, updates: UnboundedReceiver<Update>, tray: TrayEvents, cx: &mut App) {
+pub fn start(
+    service: Handle,
+    updates: UnboundedReceiver<Update>,
+    (tray, actions): (Tray, TrayEvents),
+    cx: &mut App,
+) {
     let state = cx.new(|_| AppState::default());
-    cx.set_global(Shell { state, service, window: None });
+    cx.set_global(Shell { state, service, tray, window: None });
     show_window(cx);
     let mut updates = updates;
     cx.spawn(async move |cx: &mut AsyncApp| {
@@ -42,7 +48,7 @@ pub fn start(service: Handle, updates: UnboundedReceiver<Update>, tray: TrayEven
     cx.spawn(async move |cx: &mut AsyncApp| {
         loop {
             cx.background_executor().timer(TRAY_POLL).await;
-            for action in tray.drain() {
+            for action in actions.drain() {
                 cx.update(|cx| match action {
                     TrayAction::Open => show_window(cx),
                     TrayAction::Quit => quit(cx),
@@ -129,6 +135,17 @@ pub fn show_window(cx: &mut App) {
     let opened = gpui_kit::open_window(options, cx, |window, cx| {
         window.on_window_should_close(cx, |_, cx| {
             cx.global_mut::<Shell>().window = None;
+            // Without a tray icon nothing could bring the window back, except the dock on macOS.
+            let in_tray = cx
+                .global::<Shell>()
+                .state
+                .read(cx)
+                .config
+                .as_ref()
+                .is_none_or(|config| config.show_in_tray);
+            if !in_tray && !cfg!(target_os = "macos") {
+                quit(cx);
+            }
             true
         });
         Theme::sync_system_appearance(Some(window), cx);

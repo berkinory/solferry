@@ -71,6 +71,7 @@ pub(super) fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<
             | Command::CheckForUpdates
             | Command::InstallUpdate
             | Command::SetCheckUpdates(_)
+            | Command::SetShowInTray(_)
             | Command::Link(_)
             | Command::StopLink
             | Command::Quit => {}

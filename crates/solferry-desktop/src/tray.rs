@@ -16,10 +16,12 @@ impl TrayEvents {
     }
 }
 
-pub fn start() -> TrayEvents {
+pub use platform::Tray;
+
+/// The icon is created hidden when `visible` is false, so the setting can bring it back later.
+pub fn start(visible: bool) -> (Tray, TrayEvents) {
     let (sender, actions) = channel();
-    platform::start(sender);
-    TrayEvents { actions }
+    (platform::Tray::start(sender, visible), TrayEvents { actions })
 }
 
 const ICON_SIZE: u32 = 32;
@@ -48,7 +50,9 @@ fn mark_pixels() -> impl Iterator<Item = bool> {
 
 #[cfg(target_os = "linux")]
 mod platform {
-    use ksni::blocking::TrayMethods;
+    use std::sync::{Arc, Mutex, PoisonError};
+
+    use ksni::blocking::{Handle, TrayMethods};
     use ksni::menu::{MenuItem, StandardItem};
 
     use super::{ICON_SIZE, SUN, Sender, TrayAction, mark_pixels};
@@ -96,42 +100,87 @@ mod platform {
         }
     }
 
-    pub fn start(actions: Sender<TrayAction>) {
-        std::thread::spawn(move || match (SolferryTray { actions }).spawn() {
-            Ok(handle) => std::mem::forget(handle),
-            Err(error) => tracing::warn!(%error, "tray is unavailable"),
-        });
+    struct Slot {
+        wanted: bool,
+        handle: Option<Handle<SolferryTray>>,
+    }
+
+    pub struct Tray {
+        actions: Sender<TrayAction>,
+        slot: Arc<Mutex<Slot>>,
+    }
+
+    impl Tray {
+        pub fn start(actions: Sender<TrayAction>, visible: bool) -> Self {
+            let tray =
+                Self { actions, slot: Arc::new(Mutex::new(Slot { wanted: false, handle: None })) };
+            tray.set_visible(visible);
+            tray
+        }
+
+        /// Talking to the tray host can block, so the work runs off the UI thread. The lock keeps
+        /// quick toggles in order.
+        pub fn set_visible(&self, visible: bool) {
+            self.slot.lock().unwrap_or_else(PoisonError::into_inner).wanted = visible;
+            let (slot, actions) = (self.slot.clone(), self.actions.clone());
+            std::thread::spawn(move || {
+                let mut slot = slot.lock().unwrap_or_else(PoisonError::into_inner);
+                match (slot.wanted, slot.handle.take()) {
+                    (true, None) => match (SolferryTray { actions }).spawn() {
+                        Ok(handle) => slot.handle = Some(handle),
+                        Err(error) => tracing::warn!(%error, "tray is unavailable"),
+                    },
+                    (true, Some(handle)) => slot.handle = Some(handle),
+                    (false, Some(handle)) => handle.shutdown().wait(),
+                    (false, None) => {}
+                }
+            });
+        }
     }
 }
 
 #[cfg(not(target_os = "linux"))]
 mod platform {
     use tray_icon::menu::{Menu, MenuEvent, MenuItem};
-    use tray_icon::{Icon, TrayIconBuilder};
+    use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 
     use super::{ICON_SIZE, SUN, Sender, TrayAction, mark_pixels};
 
-    pub fn start(actions: Sender<TrayAction>) {
+    pub struct Tray(Option<TrayIcon>);
+
+    impl Tray {
+        pub fn start(actions: Sender<TrayAction>, visible: bool) -> Self {
+            let tray = Self(build(actions));
+            tray.set_visible(visible);
+            tray
+        }
+
+        pub fn set_visible(&self, visible: bool) {
+            if let Some(icon) = &self.0
+                && let Err(error) = icon.set_visible(visible)
+            {
+                tracing::warn!(%error, "couldn't change the tray icon");
+            }
+        }
+    }
+
+    fn build(actions: Sender<TrayAction>) -> Option<TrayIcon> {
         let menu = Menu::new();
         let open = MenuItem::new("Open Solferry", true, None);
         let quit = MenuItem::new("Quit", true, None);
         let (open_id, quit_id) = (open.id().clone(), quit.id().clone());
-        if menu.append_items(&[&open, &quit]).is_err() {
-            return;
-        }
+        menu.append_items(&[&open, &quit]).ok()?;
         let pixels = mark_pixels()
             .flat_map(|on| [SUN[0], SUN[1], SUN[2], if on { 0xff } else { 0 }])
             .collect();
-        let Ok(icon) = Icon::from_rgba(pixels, ICON_SIZE, ICON_SIZE) else { return };
+        let icon = Icon::from_rgba(pixels, ICON_SIZE, ICON_SIZE).ok()?;
         let tray = TrayIconBuilder::new()
             .with_tooltip("Solferry")
             .with_icon(icon)
             .with_menu(Box::new(menu))
-            .build();
-        match tray {
-            Ok(tray) => std::mem::forget(tray),
-            Err(error) => tracing::warn!(%error, "tray is unavailable"),
-        }
+            .build()
+            .inspect_err(|error| tracing::warn!(%error, "tray is unavailable"))
+            .ok()?;
         std::thread::spawn(move || {
             while let Ok(event) = MenuEvent::receiver().recv() {
                 let action = if event.id == open_id {
@@ -144,5 +193,6 @@ mod platform {
                 let _ = actions.send(action);
             }
         });
+        Some(tray)
     }
 }
