@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -28,10 +29,10 @@ fun HistoryScreen(state: AppState, engine: Engine) {
     if (state.history.isEmpty()) {
         NoHistory()
     } else {
-        Page("History") {
+        Page(stringResource(R.string.history_title)) {
             Card(
-                R.drawable.ic_history, "History",
-                aside = { Button({ engine.bridge.clearHistory() }, label = "Clear", kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+                R.drawable.ic_history, stringResource(R.string.history_title),
+                aside = { Button({ engine.bridge.clearHistory() }, label = stringResource(R.string.history_clear), kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
             ) {
                 Well { state.history.forEach { Past(it) } }
             }
@@ -42,7 +43,7 @@ fun HistoryScreen(state: AppState, engine: Engine) {
 @Composable
 private fun NoHistory() = Column(Modifier.fillMaxSize()) {
     val palette = LocalPalette.current
-    Toolbar { Text("History", Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium) }
+    Toolbar { Text(stringResource(R.string.history_title), Modifier.padding(start = SpaceTokens.sm.dp), style = MaterialTheme.typography.titleMedium) }
     Column(
         Modifier.fillMaxWidth().weight(1f).padding(bottom = tabClearance()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -53,8 +54,8 @@ private fun NoHistory() = Column(Modifier.fillMaxSize()) {
                 Glyph(R.drawable.ic_history, palette.inkMuted, 24)
             }
         }
-        Text("No transfers yet", style = MaterialTheme.typography.titleMedium)
-        Muted("Files you send or receive show up here.")
+        Text(stringResource(R.string.history_empty_title), style = MaterialTheme.typography.titleMedium)
+        Muted(stringResource(R.string.history_empty_body))
     }
 }
 
@@ -66,7 +67,7 @@ private fun Past(entry: HistoryEntry) {
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Text(entry.label, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Muted(if (entry.completed) bytes(entry.bytes.toLong()) else "Failed", color = if (entry.completed) palette.inkMuted else palette.danger)
+                Muted(if (entry.completed) bytes(entry.bytes.toLong()) else stringResource(R.string.history_failed), color = if (entry.completed) palette.inkMuted else palette.danger)
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
                 Glyph(platformIcon(entry.platform), palette.inkMuted, 14)

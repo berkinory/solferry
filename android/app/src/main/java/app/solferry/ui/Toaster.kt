@@ -56,6 +56,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -156,21 +159,21 @@ private fun Close(description: String, onClick: () -> Unit) {
 
 @Composable
 private fun Percent(fraction: Float) =
-    Text("${(fraction * 100).toInt()}%", color = LocalPalette.current.page.copy(alpha = 0.76f), fontSize = 13.sp)
+    Text(stringResource(R.string.common_percent, (fraction * 100).toInt()), color = LocalPalette.current.page.copy(alpha = 0.76f), fontSize = 13.sp)
 
 @Composable
 private fun RunningRow(transfer: Transfer, engine: Engine, wide: Boolean = false) {
     val waiting = transfer.phase == Phase.Reconnecting
     val line = when {
-        transfer.phase == Phase.Waiting -> "Waiting for ${transfer.peerName}"
-        waiting -> "Reconnecting to ${transfer.peerName}"
-        else -> "${if (transfer.sending) "Sending" else "Receiving"} ${transfer.label}"
+        transfer.phase == Phase.Waiting -> stringResource(R.string.transfer_waiting, transfer.peerName)
+        waiting -> stringResource(R.string.transfer_reconnecting, transfer.peerName)
+        else -> stringResource(if (transfer.sending) R.string.transfer_sending else R.string.transfer_receiving, transfer.label)
     }
     PillRow(closes = true, wide = wide) {
         Ring(transfer.fraction, if (waiting) RECONNECTING else LocalPalette.current.page)
         Label(line, wide)
         if (transfer.phase != Phase.Waiting) Percent(transfer.fraction)
-        Close("Cancel") { engine.bridge.cancel(transfer.id) }
+        Close(stringResource(R.string.common_cancel)) { engine.bridge.cancel(transfer.id) }
     }
 }
 
@@ -205,12 +208,12 @@ private fun Pill(transfers: List<Transfer>, engine: Engine) {
                 is PillFace.Many -> PillRow({ open = !open }, closes = false, wide = spread) {
                     val fraction = running.sumOf { it.transferred }.toFloat() / running.sumOf { it.total }.coerceAtLeast(1)
                     Ring(fraction, ground)
-                    Label("${running.size} transfers", spread)
+                    Label(pluralStringResource(R.plurals.transfer_count, running.size, running.size), spread)
                     Percent(fraction)
                     Glyph(if (open) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down, ground.copy(alpha = 0.76f), 15)
                 }
                 is PillFace.Ended -> transfers.firstOrNull()?.let {
-                    val (tone, title) = it.outcome
+                    val (tone, title) = it.outcome(LocalResources.current)
                     PillRow(closes = false) {
                         Badge(tone)
                         Label(title)
@@ -251,7 +254,7 @@ private fun ToastRow(toast: Toast, engine: Engine) {
             PillRow(closes = failed) {
                 Badge(toast.tone)
                 Label(toast.title)
-                if (failed) Close("Dismiss") { visible.targetState = false }
+                if (failed) Close(stringResource(R.string.common_dismiss)) { visible.targetState = false }
             }
         }
     }

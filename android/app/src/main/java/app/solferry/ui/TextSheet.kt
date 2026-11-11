@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.solferry.Engine
 import app.solferry.R
@@ -27,13 +28,13 @@ import uniffi.solferry_ffi.PairedDevice
 
 /** Text to send to one device, starting from what is on the clipboard. */
 @Composable
-fun TextSheet(device: PairedDevice, engine: Engine, onClose: () -> Unit) = Sheet("Send text", onClose) { close ->
+fun TextSheet(device: PairedDevice, engine: Engine, onClose: () -> Unit) = Sheet(stringResource(R.string.send_text_title), onClose) { close ->
     var text by remember { mutableStateOf(engine.pasted().orEmpty()) }
-    Muted("To ${device.name}")
-    TextBox(text, { text = it }, "Type or paste text") { engine.pasted()?.let { text += it } }
+    Muted(stringResource(R.string.send_text_to, device.name))
+    TextBox(text, { text = it }, stringResource(R.string.send_text_placeholder)) { engine.pasted()?.let { text += it } }
     Button(
         { engine.bridge.sendText(device.identity.id, text); close() }, Modifier.fillMaxWidth(),
-        label = "Send", icon = R.drawable.ic_send, kind = ButtonKind.Primary, enabled = text.isNotBlank(),
+        label = stringResource(R.string.common_send), icon = R.drawable.ic_send, kind = ButtonKind.Primary, enabled = text.isNotBlank(),
     )
 }
 
@@ -60,7 +61,7 @@ private fun TextBox(value: String, onChange: (String) -> Unit, placeholder: Stri
                 }
                 Button(
                     onPaste, Modifier.align(Alignment.TopEnd), icon = R.drawable.ic_clipboard,
-                    kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Paste",
+                    kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.common_paste),
                 )
             }
         },

@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -27,7 +28,7 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.Reach
 
 @Composable
-fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
+fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.string.settings_title)) {
     val me = state.me
     var name by remember(me?.name) { mutableStateOf(me?.name.orEmpty()) }
     val focus = LocalFocusManager.current
@@ -36,44 +37,44 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page("Settings") {
         if (changed) engine.bridge.rename(name.trim())
         focus.clearFocus()
     }
-    Card(R.drawable.ic_computer, "Device name") {
+    Card(R.drawable.ic_computer, stringResource(R.string.settings_name_title)) {
         PaddedWell {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Field(
-                    name, { name = it }, "Name", Modifier.weight(1f),
+                    name, { name = it }, stringResource(R.string.settings_name_placeholder), Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { save() }),
                 )
-                Button(save, label = "Save", enabled = changed)
+                Button(save, label = stringResource(R.string.settings_save), enabled = changed)
             }
         }
     }
     RelayCard(state, engine)
     SaveFolderCard(state, engine)
-    Card(R.drawable.ic_view, "Let others find me") {
+    Card(R.drawable.ic_view, stringResource(R.string.settings_find_title)) {
         PaddedWell {
             val found = me?.visibility != "Hidden"
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Muted(
-                    if (found) "Devices on your network can see this one and ask to send." else "Nobody new can find this device. Paired devices can still reach it.",
+                    stringResource(if (found) R.string.settings_find_on else R.string.settings_find_off),
                     Modifier.weight(1f),
                 )
-                Toggle(found, { engine.setReach(if (it) Reach.EVERYONE else Reach.HIDDEN) }, "Let others find me")
+                Toggle(found, { engine.setReach(if (it) Reach.EVERYONE else Reach.HIDDEN) }, stringResource(R.string.settings_find_title))
             }
         }
     }
-    Card(R.drawable.ic_download, "Receive in the background") {
+    Card(R.drawable.ic_download, stringResource(R.string.settings_background_title)) {
         PaddedWell {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                Muted("Stay reachable while Solferry is closed. Shows a notification and uses more battery.", Modifier.weight(1f))
-                Toggle(state.standby, { engine.setStandby(it) }, "Receive in the background")
+                Muted(stringResource(R.string.settings_background_body), Modifier.weight(1f))
+                Toggle(state.standby, { engine.setStandby(it) }, stringResource(R.string.settings_background_title))
             }
         }
     }
     me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
     if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        Caption("Solferry ${BuildConfig.VERSION_NAME}", Modifier.weight(1f))
+        Caption(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), Modifier.weight(1f))
         Caption(me?.fingerprint.orEmpty())
     }
 }
