@@ -4,6 +4,7 @@ use gpui_kit::{
     AnyElement, ClipboardItem, Context, IntoElement, ParentElement, SharedString, Styled, Window,
     div, px,
 };
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::{MainView, Page};
@@ -27,14 +28,17 @@ fn card(shared: &SharedText, cx: &mut Context<MainView>) -> AnyElement {
         .ghost()
         .xs()
         .icon(Glyph::Cancel)
-        .tooltip("Dismiss")
+        .tooltip(t!("texts.dismiss"))
         .on_click(cx.listener(move |view, _, _, cx| view.dismiss_text(key, cx)))
         .into_any_element();
-    let (glyph, label) =
-        if shared.copied { (Glyph::Check, "Copied") } else { (Glyph::Copy, "Copy") };
+    let (glyph, label) = if shared.copied {
+        (Glyph::Check, t!("texts.copied"))
+    } else {
+        (Glyph::Copy, t!("texts.copy"))
+    };
     let heading = ui::header(
         Glyph::Clipboard,
-        format!("Text from {}", shared.name),
+        t!("texts.from", name = shared.name),
         cx.theme().muted_foreground,
         cx,
     );
@@ -70,12 +74,12 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .flex()
                 .items_center()
                 .justify_between()
-                .child(ui::muted(format!("To {name}"), cx))
+                .child(ui::muted(t!("texts.to", name = name), cx))
                 .child(
                     Button::new("paste-text")
                         .xs()
                         .icon(Glyph::Clipboard)
-                        .label("Paste")
+                        .label(t!("texts.paste"))
                         .on_click(cx.listener(|view, _, window, cx| view.paste_text(window, cx))),
                 ),
         )
@@ -84,10 +88,10 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
             Button::new("send-text")
                 .primary()
                 .icon(Glyph::Send)
-                .label("Send")
+                .label(t!("texts.send"))
                 .on_click(cx.listener(|view, _, window, cx| view.send_text(window, cx))),
         );
-    super::sheet::present("Send text", content, MainView::leave_page, cx)
+    super::sheet::present(t!("texts.title"), content, MainView::leave_page, cx)
 }
 
 impl MainView {

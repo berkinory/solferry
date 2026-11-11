@@ -6,6 +6,7 @@ use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, Div, FontWeight, Hsla, IntoElement,
     ParentElement, Styled, div, px,
 };
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::{MainView, Page};
@@ -89,7 +90,7 @@ pub fn use_code(cx: &mut Context<MainView>) -> AnyElement {
         .ghost()
         .xs()
         .icon(Glyph::Qr)
-        .label("Use a code")
+        .label(t!("radar.use_code"))
         .on_click(cx.listener(|view, _, window, cx| view.open_page(Page::Pair, window, cx)))
         .into_any_element()
 }
@@ -101,12 +102,8 @@ pub fn searching(cx: &mut Context<MainView>) -> Div {
         .gap(px(SPACE_XS))
         .py(px(13.))
         .child(radar(cx))
-        .child(ui::text("Looking for devices").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
-        .child(
-            ui::muted("Open Solferry on another device on this network and it shows up here.", cx)
-                .text_center()
-                .max_w(px(329.)),
-        )
+        .child(ui::text(t!("radar.looking")).pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
+        .child(ui::muted(t!("radar.hint"), cx).text_center().max_w(px(329.)))
 }
 
 /// One quiet line for when nothing new is around but the search is still on.
@@ -125,6 +122,6 @@ pub fn scanning(cx: &Context<MainView>) -> AnyElement {
                 .child(pulse("scan-pulse", 0.0, TILE, 8.0, primary))
                 .child(centered(TILE, 8.0).bg(primary)),
         )
-        .child(ui::muted("Looking for new devices on this network", cx))
+        .child(ui::muted(t!("radar.scanning"), cx))
         .into_any_element()
 }

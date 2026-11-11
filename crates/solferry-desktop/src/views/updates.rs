@@ -1,6 +1,9 @@
+use std::borrow::Cow;
+
 use gpui_kit::component::Sizable;
 use gpui_kit::component::switch::Switch;
 use gpui_kit::{AnyElement, Context, IntoElement, ParentElement, Styled, div, px};
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::MainView;
@@ -13,15 +16,17 @@ use crate::updater::Status;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-fn line(status: &Status) -> String {
+fn line(status: &Status) -> Cow<'static, str> {
     match status {
-        Status::Idle => format!("Solferry {VERSION}"),
-        Status::Checking => "Checking for updates...".to_owned(),
-        Status::UpToDate => format!("Solferry {VERSION} is up to date"),
-        Status::Downloading { version, percent } => format!("Downloading {version}, {percent}%"),
-        Status::Ready { version } => format!("Solferry {version} is ready"),
-        Status::Available { version, .. } => format!("Solferry {version} is available"),
-        Status::Failed => "Couldn't check for updates".to_owned(),
+        Status::Idle => t!("updates.idle", version = VERSION),
+        Status::Checking => t!("updates.checking"),
+        Status::UpToDate => t!("updates.up_to_date", version = VERSION),
+        Status::Downloading { version, percent } => {
+            t!("updates.downloading", version = version, percent = percent)
+        }
+        Status::Ready { version } => t!("updates.ready", version = version),
+        Status::Available { version, .. } => t!("updates.available", version = version),
+        Status::Failed => t!("updates.failed"),
     }
 }
 
@@ -31,7 +36,7 @@ fn action(status: &Status, cx: &mut Context<MainView>) -> Option<AnyElement> {
             Button::new("update-restart")
                 .primary()
                 .xs()
-                .label("Restart")
+                .label(t!("updates.restart"))
                 .on_click(cx.listener(|_, _, _, cx| MainView::command(Command::InstallUpdate, cx)))
                 .into_any_element(),
         ),
@@ -41,7 +46,7 @@ fn action(status: &Status, cx: &mut Context<MainView>) -> Option<AnyElement> {
                 Button::new("update-page")
                     .xs()
                     .icon(Glyph::External)
-                    .label("Download")
+                    .label(t!("updates.download"))
                     .on_click(cx.listener(move |_, _, _, cx| cx.open_url(&page)))
                     .into_any_element(),
             )
@@ -54,7 +59,7 @@ pub fn section(enabled: bool, status: &Status, cx: &mut Context<MainView>) -> An
     let check = Button::new("update-check")
         .ghost()
         .xs()
-        .label("Check now")
+        .label(t!("updates.check"))
         .on_click(cx.listener(|_, _, _, cx| MainView::command(Command::CheckForUpdates, cx)))
         .into_any_element();
     let shown = if *status == Status::Failed {
@@ -63,15 +68,15 @@ pub fn section(enabled: bool, status: &Status, cx: &mut Context<MainView>) -> An
         ui::muted(line(status), cx)
     };
     let row = || div().flex().items_center().justify_between().gap(px(SPACE_MD));
-    ui::card(Glyph::Download, "Updates", Some(check), cx)
+    ui::card(Glyph::Download, &t!("updates.title"), Some(check), cx)
         .child(
             ui::padded_well(cx)
                 .child(
-                    row().child(ui::muted("Check for updates automatically", cx).flex_1()).child(
+                    row().child(ui::muted(t!("updates.automatic"), cx).flex_1()).child(
                         Switch::new("check-updates")
                             .large()
                             .checked(enabled)
-                            .accessibility_label("Check for updates automatically")
+                            .accessibility_label(t!("updates.automatic"))
                             .on_click(cx.listener(|view, on: &bool, _, cx| {
                                 view.set_check_updates(*on, cx);
                             })),

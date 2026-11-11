@@ -6,6 +6,7 @@ use gpui_kit::{
     ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
     ease_out_quint, px, radians, transparent_black,
 };
+use rust_i18n::t;
 
 use super::main_view::MainView;
 use super::{devices, link, offers, texts, ui};
@@ -98,11 +99,11 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
                 .flex_col()
                 .items_center()
                 .child(
-                    ui::text(if dragging { "Release to send" } else { "Drop files to send" })
+                    ui::text(if dragging { t!("home.release") } else { t!("home.drop") })
                         .font_weight(FontWeight::MEDIUM),
                 )
                 .child(ui::muted(
-                    if dragging { "They go to the next step" } else { "or click to choose" },
+                    if dragging { t!("home.next_step") } else { t!("home.click") },
                     cx,
                 )),
         );

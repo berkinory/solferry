@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 
 use iroh::{EndpointAddr, EndpointId};
+use rust_i18n::t;
 use solferry_core::{
     BlockedDevice, Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary,
     PastTransfer, Platform, RelayHealth, TransferId, about, explain,
@@ -155,13 +156,13 @@ impl AppState {
                 if let Status::Ready { version } = &status
                     && self.updater != status
                 {
-                    let title = format!("Solferry {version} is ready");
+                    let title = t!("toast.update_ready", version = version);
                     self.toast(Tone::Success, title, Some(Action::Restart));
                 }
                 self.updater = status;
             }
             Update::InstallFailed => {
-                self.toast(Tone::Error, "Couldn't install the update", None);
+                self.toast(Tone::Error, t!("toast.install_failed"), None);
             }
             Update::Restarting => {}
             Update::RelayHealth(health) => self.relay_health = health,
@@ -237,14 +238,14 @@ impl AppState {
 
     pub fn text_failed(&mut self, name: &str, error: &Error) {
         if matches!(error, Error::NothingToSend) {
-            self.toast(Tone::Error, "Your clipboard has no text", None);
+            self.toast(Tone::Error, t!("toast.clipboard_empty"), None);
         } else {
             self.toast(Tone::Error, about(error, name), None);
         }
     }
 
     fn add_device(&mut self, device: Device) {
-        self.toast(Tone::Success, format!("Paired with {}", device.name), None);
+        self.toast(Tone::Success, t!("toast.paired", name = device.name), None);
         self.invite = None;
         self.joining = false;
         self.join_error = None;
@@ -281,7 +282,7 @@ impl AppState {
                 if let Some(link) = &mut self.link {
                     link.received.push(name.clone());
                 }
-                self.toast(Tone::Success, format!("Received {name} from a browser"), None);
+                self.toast(Tone::Success, t!("toast.link_received", name = name), None);
             }
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {
@@ -354,11 +355,11 @@ impl Transfer {
         if let Phase::Failed(error) = &self.phase {
             return (Tone::Error, explain(error).title.into_owned());
         }
-        let verb = match self.direction {
-            Direction::Sending => "Sent",
-            Direction::Receiving => "Received",
+        let title = match self.direction {
+            Direction::Sending => t!("toast.sent", title = self.title),
+            Direction::Receiving => t!("toast.received", title = self.title),
         };
-        (Tone::Success, format!("{verb} {}", self.title))
+        (Tone::Success, title.into_owned())
     }
 
     fn record(&mut self, transferred: u64, total: u64) {

@@ -1,8 +1,11 @@
+use std::borrow::Cow;
+
 use gpui_kit::component::Sizable;
 use gpui_kit::component::input::Input;
 use gpui_kit::{
     AnyElement, Context, Hsla, IntoElement, ParentElement, SharedString, Styled, Window, div, px,
 };
+use rust_i18n::t;
 use solferry_core::{Config, RelayHealth, RelayLink};
 
 use super::button::Button;
@@ -24,28 +27,23 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
         .ghost()
         .xs()
         .icon(Glyph::External)
-        .label("Setup Guide")
+        .label(t!("relays.guide"))
         .on_click(cx.listener(|_, _, _, cx| cx.open_url(GUIDE)))
         .into_any_element();
-    ui::card(Glyph::Relay, "Relay", Some(guide), cx)
+    ui::card(Glyph::Relay, &t!("relays.title"), Some(guide), cx)
         .child(
-            ui::padded_well(cx)
-                .child(ui::muted("Reach devices on other networks through a relay you run.", cx))
-                .children(rows)
-                .child(
-                    div()
-                        .flex()
-                        .gap(px(SPACE_XS))
-                        .child(
-                            div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()),
-                        )
-                        .child(
-                            Button::new("add-relay")
-                                .icon(Glyph::Add)
-                                .label("Add")
-                                .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
-                        ),
-                ),
+            ui::padded_well(cx).child(ui::muted(t!("relays.hint"), cx)).children(rows).child(
+                div()
+                    .flex()
+                    .gap(px(SPACE_XS))
+                    .child(div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()))
+                    .child(
+                        Button::new("add-relay")
+                            .icon(Glyph::Add)
+                            .label(t!("relays.add"))
+                            .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
+                    ),
+            ),
         )
         .into_any_element()
 }
@@ -63,7 +61,7 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
             let (tone, label) = status(found, cx);
             ui::status(tone, label, cx).into_any_element()
         }
-        None => ui::muted("Checking", cx).into_any_element(),
+        None => ui::muted(t!("relays.checking"), cx).into_any_element(),
     };
     div()
         .flex()
@@ -84,7 +82,7 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
                 .ghost()
                 .xs()
                 .icon(Glyph::Delete)
-                .tooltip("Remove")
+                .tooltip(t!("relays.remove"))
                 .on_click(cx.listener(move |view, _, _, cx| {
                     let removed = removed.clone();
                     change(view, cx, |config| config.relays.retain(|url| *url != removed));
@@ -93,13 +91,13 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
         .into_any_element()
 }
 
-fn status(health: &RelayHealth, cx: &mut Context<MainView>) -> (Hsla, &'static str) {
+fn status(health: &RelayHealth, cx: &mut Context<MainView>) -> (Hsla, Cow<'static, str>) {
     let palette = palette(cx);
     match (health.reachable, health.accepted, health.direct_paths) {
-        (false, ..) => (color(palette.danger), "Can't reach the server"),
-        (true, false, _) => (color(palette.danger), "Refused, check the link"),
-        (true, true, false) => (color(palette.warning), "Connected, UDP 7842 is blocked"),
-        (true, true, true) => (color(palette.success), "Connected"),
+        (false, ..) => (color(palette.danger), t!("relays.unreachable")),
+        (true, false, _) => (color(palette.danger), t!("relays.refused")),
+        (true, true, false) => (color(palette.warning), t!("relays.udp_blocked")),
+        (true, true, true) => (color(palette.success), t!("relays.connected")),
     }
 }
 

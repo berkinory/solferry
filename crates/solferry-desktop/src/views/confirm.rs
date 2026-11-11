@@ -1,5 +1,6 @@
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{AnyElement, Context, Div, FontWeight, IntoElement, ParentElement, Styled, div, px};
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::MainView;
@@ -55,48 +56,47 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
         .gap(px(SPACE_XS))
         .py(px(SPACE_XS))
         .child(ui::device_tile(prompt.platform, true, cx))
-        .child(ui::text(format!("{} wants to pair", prompt.name)).truncate().max_w_full())
+        .child(ui::text(t!("confirm.wants_to_pair", name = prompt.name)).truncate().max_w_full())
         .child(ui::caption(ui::fingerprint(&prompt.peer), cx));
-    let answers =
-        div()
-            .flex()
-            .justify_center()
-            .gap(px(SPACE_SM))
-            .pt(px(SPACE_MD))
-            .child(
-                Button::new("pair-accept").primary().icon(Glyph::Check).label("Confirm").on_click(
-                    cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx)),
-                ),
-            )
-            .child(
-                Button::new("pair-decline").warning().label("Decline").on_click(
-                    cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx)),
-                ),
-            );
+    let answers = div()
+        .flex()
+        .justify_center()
+        .gap(px(SPACE_SM))
+        .pt(px(SPACE_MD))
+        .child(
+            Button::new("pair-accept")
+                .primary()
+                .icon(Glyph::Check)
+                .label(t!("confirm.accept"))
+                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx))),
+        )
+        .child(
+            Button::new("pair-decline")
+                .warning()
+                .label(t!("confirm.decline"))
+                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx))),
+        );
     let content = div()
         .flex()
         .flex_col()
         .child(peer)
         .child(digits(&prompt.code, cx))
         .child(
-            div()
-                .flex()
-                .justify_center()
-                .pt(px(SPACE_SM))
-                .child(ui::muted("Confirm only if the other screen shows the same code.", cx)),
+            div().flex().justify_center().pt(px(SPACE_SM)).child(ui::muted(t!("confirm.hint"), cx)),
         )
         .child(answers);
-    super::sheet::present("Pairing request", content, MainView::decline_first_pairing, cx)
+    super::sheet::present(t!("confirm.title"), content, MainView::decline_first_pairing, cx)
 }
 
 fn compare(code: &str, cx: &mut Context<MainView>) -> AnyElement {
     let content = div().flex().flex_col().pt(px(SPACE_XS)).child(digits(code, cx)).child(
-        div().flex().justify_center().pt(px(SPACE_SM)).child(ui::muted(
-            "Check that the other device shows this code, then accept there.",
-            cx,
-        )),
+        div()
+            .flex()
+            .justify_center()
+            .pt(px(SPACE_SM))
+            .child(ui::muted(t!("confirm.compare_hint"), cx)),
     );
-    super::sheet::present("Compare codes", content, MainView::stop_comparing, cx)
+    super::sheet::present(t!("confirm.compare_title"), content, MainView::stop_comparing, cx)
 }
 
 /// Pairing takes over the screen the way sending does, ahead of anything else open.
