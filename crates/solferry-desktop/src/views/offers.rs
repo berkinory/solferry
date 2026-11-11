@@ -8,6 +8,7 @@ use super::main_view::MainView;
 use super::ui;
 use crate::assets::Glyph;
 use crate::format;
+use crate::service::Command;
 use crate::state::Offer;
 use crate::theme::{color, palette};
 use crate::tokens::SPACE_XS;
@@ -104,4 +105,30 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                 ),
         )
         .into_any_element()
+}
+
+impl MainView {
+    pub fn answer(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.offers.retain(|offer| offer.key != key);
+            cx.notify();
+        });
+        Self::command(Command::Answer { offer: key, accept }, cx);
+    }
+
+    pub fn accept_always(&mut self, key: u64, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.offers.retain(|offer| offer.key != key);
+            cx.notify();
+        });
+        Self::command(Command::AcceptAlways(key), cx);
+    }
+
+    pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {
+        self.state.update(cx, |state, cx| {
+            state.offers.retain(|offer| offer.key != key);
+            cx.notify();
+        });
+        Self::command(Command::BlockOffer(key), cx);
+    }
 }
