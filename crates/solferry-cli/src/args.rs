@@ -32,9 +32,9 @@ pub enum Command {
         #[arg(long = "to", required = true)]
         targets: Vec<String>,
     },
-    /// Stay online and receive files.
     /// Share files with a browser on this network, or take files from one when no paths are given.
     Link { paths: Vec<PathBuf> },
+    /// Stay online and receive files.
     Receive {
         /// Save here instead of the default download folder.
         #[arg(long)]
