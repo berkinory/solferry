@@ -3,32 +3,59 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Solferry</title>
 <style>
-:root { color-scheme: dark; --page: #0c0c10; --card: #16161c; --line: #26262e; --ink: #ececf1; --muted: #9a9aa6; --primary: #3b34e0; --danger: #f0616d; }
+@font-face { font-family: "Inter Tight"; font-weight: 400; src: url("font/regular.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Inter Tight"; font-weight: 500; src: url("font/medium.ttf") format("truetype"); font-display: swap; }
+:root {
+  --page: #ffffff; --well: #f5f5f6; --raised: #ebebed; --line: #e3e3e4; --ink: #18181b; --muted: #66666e;
+  --primary: #3a33e8; --primary-fill: #3730de; --brand: #8580ff; --success: #047857; --danger: #b91c1c;
+  --depth: rgba(0, 0, 0, .05); --rim: rgba(0, 0, 0, .035); --lift: rgba(0, 0, 0, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #18181b; --well: #101012; --raised: #222225; --line: #2f2f32; --ink: #ececef; --muted: #a1a1aa;
+    --primary: #8580ff; --primary-fill: #3630db; --success: #34d399; --danger: #f87171;
+    --depth: rgba(0, 0, 0, .45); --rim: rgba(255, 255, 255, .03); --lift: rgba(0, 0, 0, .06);
+  }
+}
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 560px; margin: 0 auto; padding: 32px 16px; }
-h1 { font-size: 20px; margin: 0 0 4px; }
-p { color: var(--muted); margin: 0 0 20px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px; }
-.row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 10px; }
-.row + .row { border-top: 1px solid var(--line); border-radius: 0; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.45 "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+main { max-width: 520px; margin: 0 auto; padding: 20px 16px 32px; }
+svg.i { width: 20px; height: 20px; flex: none; }
+header { display: flex; align-items: center; gap: 8px; margin-bottom: 26px; font-size: 19px; font-weight: 500; }
+header svg { width: 26px; height: 26px; color: var(--brand); }
+h1 { font-size: 19px; font-weight: 500; margin: 0 0 4px; }
+p { color: var(--muted); margin: 0 0 17px; }
+.frame { background: var(--page); border: 1px solid var(--line); border-radius: 26px; padding: 4px; box-shadow: 0 1px 2px var(--lift); }
+.well { background: var(--well); border-radius: 22px; padding: 9px; box-shadow: inset 0 1px 2px var(--depth), inset 0 0 0 1px var(--rim); }
+.row { display: flex; align-items: center; gap: 13px; min-height: 52px; padding: 4px 4px 4px 8px; }
+.row > svg.i { color: var(--muted); }
 .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.size, .state { color: var(--muted); font-size: 14px; white-space: nowrap; }
+.size, .state { color: var(--muted); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.state.sent { color: var(--success); }
 .state.failed { color: var(--danger); }
-a.get, button { background: var(--primary); color: #fff; border: 0; border-radius: 10px; padding: 8px 14px; font: inherit; font-size: 14px; text-decoration: none; cursor: pointer; }
-button.wide { width: 100%; margin-top: 12px; padding: 12px; font-size: 16px; }
-#drop { display: block; border: 1.5px dashed var(--line); border-radius: 16px; padding: 40px 16px; text-align: center; color: var(--muted); cursor: pointer; }
-#drop.over { border-color: var(--primary); color: var(--ink); }
+.get { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; color: var(--ink); }
+.get:hover { background: var(--raised); }
+.primary { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; margin-top: 13px; border: 0; border-radius: 18px; background: var(--primary-fill); color: #fff; font: inherit; font-weight: 500; cursor: pointer; }
+.primary:hover { filter: brightness(1.08); }
+#drop { display: flex; flex-direction: column; align-items: center; gap: 13px; padding: 35px 17px; border-radius: 22px; text-align: center; color: var(--muted); cursor: pointer; transition: background .15s; }
+#drop:hover, #drop.over { background: var(--raised); color: var(--ink); }
+#drop .badge { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 18px; background: var(--primary-fill); color: #fff; }
 #drop input { display: none; }
 #sent:empty { display: none; }
-#sent { margin-top: 16px; }
-footer { margin-top: 24px; color: var(--muted); font-size: 13px; text-align: center; }
+#sent { margin-top: 9px; border-top: 1px solid var(--line); padding-top: 4px; }
+.bar { height: 3px; border-radius: 2px; background: var(--raised); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--primary); transition: width .2s; }
+.file { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+footer { margin-top: 26px; color: var(--muted); font-size: 13px; text-align: center; }
 </style>
 </head>
 <body>
+<svg style="display:none"><symbol id="mark" viewBox="0 0 64 64" fill="currentColor"><path d="M12 34a20 20 0 0 1 40 0z"/><rect x="8" y="40" width="48" height="4" rx="2"/><rect x="16" y="48" width="32" height="4" rx="2"/><rect x="24" y="56" width="16" height="4" rx="2"/></symbol><symbol id="file" viewBox="0 0 24 24" fill="none"><path d="M8 7L16 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M8 11L12 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M13 21.5V21C13 18.1716 13 16.7574 13.8787 15.8787C14.7574 15 16.1716 15 19 15H19.5M20 13.3431V10C20 6.22876 20 4.34315 18.8284 3.17157C17.6569 2 15.7712 2 12 2C8.22877 2 6.34315 2 5.17157 3.17157C4 4.34314 4 6.22876 4 10L4 14.5442C4 17.7892 4 19.4117 4.88607 20.5107C5.06508 20.7327 5.26731 20.9349 5.48933 21.1139C6.58831 22 8.21082 22 11.4558 22C12.1614 22 12.5141 22 12.8372 21.886C12.9044 21.8623 12.9702 21.835 13.0345 21.8043C13.3436 21.6564 13.593 21.407 14.0919 20.9081L18.8284 16.1716C19.4065 15.5935 19.6955 15.3045 19.8478 14.9369C20 14.5694 20 14.1606 20 13.3431Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></symbol><symbol id="download" viewBox="0 0 24 24" fill="none"><path d="M2.99969 17.0002C2.99969 17.9302 2.99969 18.3952 3.10192 18.7767C3.37932 19.8119 4.18796 20.6206 5.22324 20.898C5.60474 21.0002 6.06972 21.0002 6.99969 21.0002L16.9997 21.0002C17.9297 21.0002 18.3947 21.0002 18.7762 20.898C19.8114 20.6206 20.6201 19.8119 20.8975 18.7767C20.9997 18.3952 20.9997 17.9302 20.9997 17.0002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M16.4998 11.5002C16.4998 11.5002 13.1856 16.0002 11.9997 16.0002C10.8139 16.0002 7.49976 11.5002 7.49976 11.5002M11.9997 15.0002V3.00016" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></symbol><symbol id="upload" viewBox="0 0 24 24" fill="none"><path d="M2.99994 17C2.99994 17.93 2.99994 18.395 3.10216 18.7765C3.37956 19.8117 4.18821 20.6204 5.22348 20.8978C5.60498 21 6.06997 21 6.99994 21L16.9999 21C17.9299 21 18.3949 21 18.7764 20.8978C19.8117 20.6204 20.6203 19.8117 20.8977 18.7765C20.9999 18.395 20.9999 17.93 20.9999 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/><path d="M16.5 7.49993C16.5 7.49993 13.1858 2.99997 12 2.99996C10.8141 2.99995 7.50002 7.49996 7.50002 7.49996M12 3.99996V16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></symbol></svg>
 <main>
+<header><svg><use href="#mark"/></svg>Solferry</header>
 @CONTENT@
 <footer>Sent with Solferry, straight over your network.</footer>
 </main>

@@ -3,49 +3,61 @@ use std::fmt::Write;
 use super::files::Served;
 
 const PAGE: &str = include_str!("page.html");
+pub(super) const FONT_REGULAR: &[u8] =
+    include_bytes!("../../../solferry-desktop/assets/fonts/InterTight-Regular.ttf");
+pub(super) const FONT_MEDIUM: &[u8] =
+    include_bytes!("../../../solferry-desktop/assets/fonts/InterTight-Medium.ttf");
 
 pub(super) fn share(files: &[Served]) -> String {
     let mut rows = String::new();
     for (index, file) in files.iter().enumerate() {
         let _ = write!(
             rows,
-            r#"<div class="row"><span class="name">{}</span><span class="size">{}</span><a class="get" href="f/{index}" download>Download</a></div>"#,
+            r##"<div class="row"><svg class="i"><use href="#file"/></svg><span class="name">{}</span><span class="size">{}</span><a class="get" href="f/{index}" download aria-label="Download"><svg class="i"><use href="#download"/></svg></a></div>"##,
             escape(&file.name),
             size(file.size)
         );
     }
     let all = if files.len() > 1 {
-        r#"<button class="wide" onclick="document.querySelectorAll('a.get').forEach((link, i) => setTimeout(() => link.click(), i * 600))">Download all</button>"#
+        r##"<button class="primary" onclick="document.querySelectorAll('a.get').forEach((link, i) => setTimeout(() => link.click(), i * 600))"><svg class="i"><use href="#download"/></svg>Download all</button>"##
     } else {
         ""
     };
     let count =
         if files.len() == 1 { "1 file".to_owned() } else { format!("{} files", files.len()) };
     fill(&format!(
-        r#"<h1>Files for you</h1><p>{count} shared from a device on this network.</p><div class="card">{rows}</div>{all}"#
+        r#"<h1>Files for you</h1><p>{count} shared from a device on this network.</p><div class="frame"><div class="well">{rows}</div></div>{all}"#
     ))
 }
 
 pub(super) fn receive() -> String {
     fill(
-        r#"<h1>Send files</h1><p>They go straight to the device that showed you this page.</p>
-<label id="drop"><input id="pick" type="file" multiple>Drop files here or tap to choose</label>
-<div id="sent" class="card"></div>
+        r##"<h1>Send files</h1><p>They go straight to the device that showed you this page.</p>
+<div class="frame"><div class="well">
+<label id="drop"><input id="pick" type="file" multiple><span class="badge"><svg class="i"><use href="#upload"/></svg></span>Drop files here or tap to choose</label>
+<div id="sent"></div>
+</div></div>
 <script>
 const drop = document.getElementById('drop'), list = document.getElementById('sent');
 let queue = Promise.resolve();
 function send(files) {
   for (const file of files) {
     const row = document.createElement('div'); row.className = 'row';
-    const name = document.createElement('span'); name.className = 'name'; name.textContent = file.name;
-    const state = document.createElement('span'); state.className = 'state'; state.textContent = 'Waiting';
-    row.append(name, state); list.append(row);
+    row.innerHTML = '<svg class="i"><use href="#file"/></svg><div class="file"><span class="name"></span><div class="bar"><i></i></div></div><span class="state">Waiting</span>';
+    row.querySelector('.name').textContent = file.name;
+    const state = row.querySelector('.state'), bar = row.querySelector('.bar i');
+    const finish = ok => { state.textContent = ok ? 'Sent' : 'Failed'; state.className = 'state ' + (ok ? 'sent' : 'failed'); bar.parentNode.remove(); };
+    list.append(row);
     queue = queue.then(() => new Promise(done => {
       const request = new XMLHttpRequest();
       request.open('PUT', 'u/' + encodeURIComponent(file.name));
-      request.upload.onprogress = e => { if (e.lengthComputable) state.textContent = Math.floor(e.loaded / e.total * 100) + '%'; };
-      request.onload = () => { const ok = request.status === 201; state.textContent = ok ? 'Sent' : 'Failed'; state.classList.toggle('failed', !ok); done(); };
-      request.onerror = () => { state.textContent = 'Failed'; state.classList.add('failed'); done(); };
+      request.upload.onprogress = e => {
+        if (!e.lengthComputable) return;
+        const share = Math.floor(e.loaded / e.total * 100);
+        state.textContent = share + '%'; bar.style.width = share + '%';
+      };
+      request.onload = () => { finish(request.status === 201); done(); };
+      request.onerror = () => { finish(false); done(); };
       request.send(file);
     }));
   }
@@ -54,7 +66,7 @@ document.getElementById('pick').onchange = e => { send(e.target.files); e.target
 drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
 drop.ondragleave = () => drop.classList.remove('over');
 drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); send(e.dataTransfer.files); };
-</script>"#,
+</script>"##,
     )
 }
 

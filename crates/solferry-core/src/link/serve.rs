@@ -9,7 +9,7 @@ use data_encoding::BASE32_NOPAD;
 use http_body_util::combinators::BoxBody;
 use http_body_util::{BodyExt, Full, StreamBody};
 use hyper::body::{Frame, Incoming};
-use hyper::header::{CONTENT_DISPOSITION, CONTENT_LENGTH, CONTENT_TYPE};
+use hyper::header::{CACHE_CONTROL, CONTENT_DISPOSITION, CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper::{Method, Request, Response, StatusCode};
@@ -97,6 +97,8 @@ async fn respond(
     let response = match (request.method(), &state.mode, rest) {
         (&Method::GET, Mode::Share(files), "/") => html(page::share(files)),
         (&Method::GET, Mode::Receive(_), "/") => html(page::receive()),
+        (&Method::GET, _, "/font/regular.ttf") => font(page::FONT_REGULAR),
+        (&Method::GET, _, "/font/medium.ttf") => font(page::FONT_MEDIUM),
         (&Method::GET, Mode::Share(files), rest) => match download_index(rest, files.len()) {
             Some(index) => download(&files[index]),
             None => plain(StatusCode::NOT_FOUND, "Not found"),
@@ -203,6 +205,14 @@ fn html(page: String) -> Response<Body> {
     Response::builder()
         .header(CONTENT_TYPE, "text/html; charset=utf-8")
         .body(full(page))
+        .unwrap_or_else(|_| plain(StatusCode::INTERNAL_SERVER_ERROR, "Error"))
+}
+
+fn font(bytes: &'static [u8]) -> Response<Body> {
+    Response::builder()
+        .header(CONTENT_TYPE, "font/ttf")
+        .header(CACHE_CONTROL, "max-age=86400")
+        .body(Full::new(Bytes::from_static(bytes)).map_err(|never| match never {}).boxed())
         .unwrap_or_else(|_| plain(StatusCode::INTERNAL_SERVER_ERROR, "Error"))
 }
 
