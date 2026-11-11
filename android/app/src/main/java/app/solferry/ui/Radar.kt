@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.solferry.R
@@ -104,8 +105,8 @@ fun Searching() = Column(
     verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp),
 ) {
     Radar()
-    Text("Looking for devices", Modifier.padding(top = SpaceTokens.xs.dp), style = MaterialTheme.typography.titleMedium)
-    Muted("Open Solferry on another device on this network and it shows up here.", textAlign = TextAlign.Center)
+    Text(stringResource(R.string.nearby_searching), Modifier.padding(top = SpaceTokens.xs.dp), style = MaterialTheme.typography.titleMedium)
+    Muted(stringResource(R.string.nearby_searching_hint), textAlign = TextAlign.Center)
 }
 
 /** One quiet line for when nothing new is around but the search is still on. */
@@ -122,6 +123,6 @@ fun Scanning() {
             Canvas(Modifier.fillMaxSize()) { pulse(cycle, 4.dp.toPx(), palette.primary) }
             Box(Modifier.size(8.dp).background(palette.primary, CircleShape))
         }
-        Muted("Looking for new devices on this network")
+        Muted(stringResource(R.string.nearby_scanning))
     }
 }

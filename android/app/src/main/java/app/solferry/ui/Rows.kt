@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.Engine
@@ -37,14 +38,6 @@ import app.solferry.design.MotionTokens
 import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
-import uniffi.solferry_ffi.TransferRoute
-
-private fun routeName(route: TransferRoute) = when (route) {
-    TransferRoute.LOCAL -> "local network"
-    TransferRoute.OVERLAY -> "overlay network"
-    TransferRoute.DIRECT -> "direct"
-    TransferRoute.RELAY -> "relay"
-}
 
 @Composable
 private fun RowBody(onClick: (() -> Unit)?, highlighted: Boolean = false, content: @Composable RowScope.() -> Unit) {
@@ -91,19 +84,19 @@ private fun DeviceRow(
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 when {
-                    near != null || online == true -> StatusLine("Online", palette.successFill)
-                    online == null -> StatusLine("Paired")
-                    else -> StatusLine("Offline", palette.inkMuted.copy(alpha = 0.5f))
+                    near != null || online == true -> StatusLine(stringResource(R.string.device_online), palette.successFill)
+                    online == null -> StatusLine(stringResource(R.string.device_paired))
+                    else -> StatusLine(stringResource(R.string.device_offline), palette.inkMuted.copy(alpha = 0.5f))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     Button(
                         { onText(device) }, icon = R.drawable.ic_type_text,
-                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Send text to ${device.name}",
+                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_send_text, device.name),
                     )
                     Button(
                         { open = !open }, icon = R.drawable.ic_more,
-                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Options for ${device.name}",
+                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_options, device.name),
                     )
             }
         }
@@ -113,18 +106,18 @@ private fun DeviceRow(
             exit = shrinkVertically(tween(MotionTokens.quick)) + fadeOut(tween(MotionTokens.quick)),
         ) {
             Column {
-                Detail("Receive without asking") {
-                    Toggle(device.autoAccept, { engine.bridge.setAutoAccept(device.identity.id, it) }, "Receive without asking")
+                Detail(stringResource(R.string.devices_auto_accept)) {
+                    Toggle(device.autoAccept, { engine.bridge.setAutoAccept(device.identity.id, it) }, stringResource(R.string.devices_auto_accept))
                 }
-                Detail(if (lastTransfer != null) "Last transfer" else "Paired", ago(lastTransfer ?: device.pairedAtMs.toLong())) {
-                    Button({ forgetting = true }, label = "Forget", icon = R.drawable.ic_delete, kind = ButtonKind.Danger, size = ButtonSize.Sm)
+                Detail(stringResource(if (lastTransfer != null) R.string.devices_last_transfer else R.string.device_paired), ago(lastTransfer ?: device.pairedAtMs.toLong())) {
+                    Button({ forgetting = true }, label = stringResource(R.string.devices_forget), icon = R.drawable.ic_delete, kind = ButtonKind.Danger, size = ButtonSize.Sm)
                 }
             }
         }
     }
     if (forgetting) {
         ConfirmDialog(
-            "Forget ${device.name}?", "It goes back to being an unpaired device until you pair again.", "Forget",
+            stringResource(R.string.devices_forget_title, device.name), stringResource(R.string.devices_forget_body), stringResource(R.string.devices_forget),
             onConfirm = { forgetting = false; engine.bridge.forget(device.identity.id) },
             onDismiss = { forgetting = false },
         )
@@ -141,7 +134,7 @@ fun DeviceCard(
     onPick: (PairedDevice) -> Unit,
     onText: (PairedDevice) -> Unit,
 ) =
-    Card(R.drawable.ic_devices, "Devices", aside = { Count(devices.size) }) {
+    Card(R.drawable.ic_devices, stringResource(R.string.devices_title), aside = { Count(devices.size) }) {
         Well {
             devices.forEach { device ->
                 key(device.identity.id) {
@@ -156,8 +149,8 @@ fun DeviceCard(
 @Composable
 fun NearbyCard(nearby: List<Nearby>, alone: Boolean, engine: Engine, onUseCode: () -> Unit) =
     Card(
-        R.drawable.ic_nearby, "Nearby",
-        aside = { Button(onUseCode, label = "Use a code", icon = R.drawable.ic_qr, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+        R.drawable.ic_nearby, stringResource(R.string.nearby_title),
+        aside = { Button(onUseCode, label = stringResource(R.string.nearby_use_code), icon = R.drawable.ic_qr, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
     ) {
         Well {
             if (nearby.isEmpty()) { if (alone) Searching() else Scanning() }
@@ -165,10 +158,10 @@ fun NearbyCard(nearby: List<Nearby>, alone: Boolean, engine: Engine, onUseCode: 
                 RowBody(null) {
                     DeviceTile(device.identity)
                     Column(Modifier.weight(1f)) {
-                        Text(device.name ?: "Unnamed device", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        StatusLine("Not paired")
+                        Text(device.name ?: stringResource(R.string.device_unnamed), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        StatusLine(stringResource(R.string.device_not_paired))
                     }
-                    Button({ engine.bridge.pairNearby(device.identity.id) }, label = "Pair", icon = R.drawable.ic_link, size = ButtonSize.Sm)
+                    Button({ engine.bridge.pairNearby(device.identity.id) }, label = stringResource(R.string.common_pair), icon = R.drawable.ic_link, size = ButtonSize.Sm)
                 }
             }
         }

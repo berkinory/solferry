@@ -1,9 +1,12 @@
+use std::borrow::Cow;
+
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
     AnyElement, BoxShadow, Context, FontWeight, InteractiveElement, IntoElement, ParentElement,
     StatefulInteractiveElement, Styled, black, div, point, px,
 };
 use iroh::EndpointId;
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::MainView;
@@ -19,22 +22,22 @@ pub enum Dialog {
 }
 
 struct Copy {
-    title: String,
-    body: &'static str,
-    action: &'static str,
+    title: Cow<'static, str>,
+    body: Cow<'static, str>,
+    action: Cow<'static, str>,
 }
 
 fn copy(dialog: &Dialog) -> Copy {
     match dialog {
         Dialog::Forget { name, .. } => Copy {
-            title: format!("Forget {name}?"),
-            body: "It goes back to being an unpaired device until you pair again.",
-            action: "Forget",
+            title: t!("dialog.forget.title", name = name),
+            body: t!("dialog.forget.body"),
+            action: t!("dialog.forget.action"),
         },
         Dialog::Block { name, .. } => Copy {
-            title: format!("Block {name}?"),
-            body: "It can't send files or ask to pair. You can unblock it in Settings.",
-            action: "Block",
+            title: t!("dialog.block.title", name = name),
+            body: t!("dialog.block.body"),
+            action: t!("dialog.block.action"),
         },
     }
 }
@@ -91,12 +94,12 @@ pub fn render(dialog: &Dialog, cx: &mut Context<MainView>) -> AnyElement {
                 .justify_end()
                 .gap(px(SPACE_SM))
                 .pt(px(SPACE_LG))
-                .child(Button::new("dialog-cancel").sm().label("Cancel").on_click(cx.listener(
-                    |view, _, _, cx| {
+                .child(Button::new("dialog-cancel").sm().label(t!("dialog.cancel")).on_click(
+                    cx.listener(|view, _, _, cx| {
                         view.dialog = None;
                         cx.notify();
-                    },
-                )))
+                    }),
+                ))
                 .child(
                     Button::new("dialog-confirm")
                         .danger()

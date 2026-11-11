@@ -112,26 +112,32 @@ struct Caption: View {
 
 struct Muted: View {
     @Environment(\.palette) private var palette
-    let text: String
+    let text: Text
     var color: Color?
 
-    init(_ text: String, color: Color? = nil) {
-        self.text = text
+    init(_ key: LocalizedStringKey, color: Color? = nil) {
+        self.text = Text(key)
+        self.color = color
+    }
+
+    /// For text that is already in the reader's language or isn't language at all, like names and errors from the core.
+    init(verbatim: String, color: Color? = nil) {
+        self.text = Text(verbatim: verbatim)
         self.color = color
     }
 
     var body: some View {
-        Text(text).font(.mutedText).foregroundStyle(color ?? palette.inkMuted)
+        text.font(.mutedText).foregroundStyle(color ?? palette.inkMuted)
     }
 }
 
 /// Muted text after a colored dot, for anything that has a state.
 struct StatusLine: View {
     @Environment(\.palette) private var palette
-    let text: String
+    let text: LocalizedStringKey
     var dot: Color?
 
-    init(_ text: String, dot: Color? = nil) {
+    init(_ text: LocalizedStringKey, dot: Color? = nil) {
         self.text = text
         self.dot = dot
     }
@@ -150,7 +156,7 @@ private let sheetChrome = 88.0
 /// A pushed screen: a title in the bar and cards that scroll clear of the keyboard.
 struct Page<Content: View>: View {
     @Environment(\.palette) private var palette
-    let title: String
+    let title: LocalizedStringKey
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -168,7 +174,7 @@ struct Page<Content: View>: View {
 
 /// A sheet as tall as what it holds, scrolling only once that outgrows the screen.
 struct SheetPage<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let close: () -> Void
     @ViewBuilder let content: Content
     @Environment(\.palette) private var palette
@@ -200,10 +206,10 @@ struct SheetPage<Content: View>: View {
 
 extension View {
     func confirm(
-        _ title: String,
+        _ title: LocalizedStringKey,
         isPresented: Binding<Bool>,
-        message: String,
-        action: String,
+        message: LocalizedStringKey,
+        action: LocalizedStringKey,
         onConfirm: @escaping () -> Void
     ) -> some View {
         alert(title, isPresented: isPresented) {
@@ -219,12 +225,12 @@ extension View {
 func ago(_ ms: UInt64) -> String {
     let minutes = max(0, Int(Date().timeIntervalSince1970 / 60) - Int(ms / 60000))
     switch minutes {
-    case 0: return "just now"
-    case 1 ..< 60: return "\(minutes)m ago"
-    case 60 ..< 1440: return "\(minutes / 60)h ago"
-    case 1440 ..< 2880: return "yesterday"
-    case 2880 ..< 43200: return "\(minutes / 1440)d ago"
-    default: return "\(minutes / 43200)mo ago"
+    case 0: return String(localized: "just now")
+    case 1 ..< 60: return String(localized: "\(minutes)m ago")
+    case 60 ..< 1440: return String(localized: "\(minutes / 60)h ago")
+    case 1440 ..< 2880: return String(localized: "yesterday")
+    case 2880 ..< 43200: return String(localized: "\(minutes / 1440)d ago")
+    default: return String(localized: "\(minutes / 43200)mo ago")
     }
 }
 

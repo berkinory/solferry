@@ -1,13 +1,17 @@
+use std::borrow::Cow;
+
+use rust_i18n::t;
+
 use crate::Error;
 
 /// What went wrong and what to do next, in words for people rather than logs.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Explanation {
-    pub title: &'static str,
-    pub next: &'static str,
+    pub title: Cow<'static, str>,
+    pub next: Cow<'static, str>,
 }
 
-const fn say(title: &'static str, next: &'static str) -> Explanation {
+fn say(title: Cow<'static, str>, next: Cow<'static, str>) -> Explanation {
     Explanation { title, next }
 }
 
@@ -15,101 +19,86 @@ const fn say(title: &'static str, next: &'static str) -> Explanation {
 #[must_use]
 pub fn about(error: &Error, name: &str) -> String {
     match error {
-        Error::Unreachable(_) => format!("Can't reach {name}"),
-        Error::Declined => format!("{name} declined"),
-        Error::Busy => format!("{name} is busy"),
-        Error::NotPaired => format!("Pair with {name} first"),
-        other => explain(other).title.to_owned(),
+        Error::Unreachable(_) => t!("about.unreachable", name = name).into_owned(),
+        Error::Declined => t!("about.declined", name = name).into_owned(),
+        Error::Busy => t!("about.busy", name = name).into_owned(),
+        Error::NotPaired => t!("about.not_paired", name = name).into_owned(),
+        other => explain(other).title.into_owned(),
     }
 }
 
 #[must_use]
 pub fn explain(error: &Error) -> Explanation {
     match error {
-        Error::Storage { .. } => {
-            say("Couldn't read or write a file", "Check the folder, permissions and free space.")
+        Error::Storage { .. } => say(t!("explain.storage.title"), t!("explain.storage.next")),
+        Error::CorruptData { .. } => {
+            say(t!("explain.corrupt_data.title"), t!("explain.corrupt_data.next"))
         }
-        Error::CorruptData { .. } => say(
-            "Solferry's settings are damaged",
-            "Delete the damaged file in Solferry's data folder. You may need to pair devices again.",
-        ),
-        Error::NetworkStart(_) => say("Networking didn't start", "Restart Solferry to try again."),
-        Error::InvalidRelayUrl(_) => say(
-            "That relay address isn't valid",
-            "Paste the full link your relay printed, like https://relay.example.com#token.",
-        ),
-        Error::Unreachable(_) => say(
-            "Device can't be reached",
-            "Open Solferry there. On another network, use Tailscale or add your own relay.",
-        ),
-        Error::RelayCheckFailed => say("A relay is not working", "See its status in Settings."),
-        Error::NotPaired => {
-            say("Pair with this device first", "Only paired devices can reach it from here.")
+        Error::NetworkStart(_) => {
+            say(t!("explain.network_start.title"), t!("explain.network_start.next"))
         }
+        Error::InvalidRelayUrl(_) => {
+            say(t!("explain.invalid_relay_url.title"), t!("explain.invalid_relay_url.next"))
+        }
+        Error::Unreachable(_) => {
+            say(t!("explain.unreachable.title"), t!("explain.unreachable.next"))
+        }
+        Error::RelayCheckFailed => {
+            say(t!("explain.relay_check_failed.title"), t!("explain.relay_check_failed.next"))
+        }
+        Error::NotPaired => say(t!("explain.not_paired.title"), t!("explain.not_paired.next")),
         Error::VersionMismatch { .. } => {
-            say("Solferry versions don't match", "Update Solferry on both devices.")
+            say(t!("explain.version_mismatch.title"), t!("explain.version_mismatch.next"))
         }
-        Error::Busy => {
-            say("The other device is busy", "Wait for its transfers to finish, then try again.")
-        }
-        Error::Cancelled => say("Transfer cancelled", "Send again to continue where it stopped."),
-        Error::Declined => say("Transfer declined", "The other person said no."),
-        Error::NoSpace => {
-            say("Not enough disk space", "Free up space on the receiving device and try again.")
-        }
+        Error::Busy => say(t!("explain.busy.title"), t!("explain.busy.next")),
+        Error::Cancelled => say(t!("explain.cancelled.title"), t!("explain.cancelled.next")),
+        Error::Declined => say(t!("explain.declined.title"), t!("explain.declined.next")),
+        Error::NoSpace => say(t!("explain.no_space.title"), t!("explain.no_space.next")),
         Error::DeliveryFailed => {
-            say("The files couldn't be saved", "Check the download folder on the receiving device.")
+            say(t!("explain.delivery_failed.title"), t!("explain.delivery_failed.next"))
         }
         Error::InvalidOffer(_) => {
-            say("Unsafe transfer refused", "The other device offered files Solferry can't accept.")
+            say(t!("explain.invalid_offer.title"), t!("explain.invalid_offer.next"))
         }
         Error::SourceChanged(_) => {
-            say("A file changed during sending", "Wait until it stops changing and try again.")
+            say(t!("explain.source_changed.title"), t!("explain.source_changed.next"))
         }
         Error::UnsupportedName(_) => {
-            say("A file name can't be sent", "Rename the file and try again.")
+            say(t!("explain.unsupported_name.title"), t!("explain.unsupported_name.next"))
         }
         Error::NothingToSend => {
-            say("Nothing to send", "Choose at least one file. Shortcuts and links are skipped.")
+            say(t!("explain.nothing_to_send.title"), t!("explain.nothing_to_send.next"))
         }
         Error::HashMismatch(_) => {
-            say("Damaged data was caught", "The bad copy was discarded. Send it again.")
+            say(t!("explain.hash_mismatch.title"), t!("explain.hash_mismatch.next"))
         }
         Error::ConnectionLost => {
-            say("Connection lost", "Try again. Transfers continue where they stopped.")
+            say(t!("explain.connection_lost.title"), t!("explain.connection_lost.next"))
         }
         Error::InvalidTicket => {
-            say("That code isn't valid", "Paste the whole code, starting with sf1.")
+            say(t!("explain.invalid_ticket.title"), t!("explain.invalid_ticket.next"))
         }
         Error::TicketExpired => {
-            say("That code expired", "Codes last 10 minutes. Create a new one.")
+            say(t!("explain.ticket_expired.title"), t!("explain.ticket_expired.next"))
         }
-        Error::Update(_) => {
-            say("Couldn't update Solferry", "Try again later, or download it from GitHub.")
-        }
-        Error::OwnTicket => {
-            say("That's this device's own code", "Enter it on the other device instead.")
-        }
+        Error::Update(_) => say(t!("explain.update.title"), t!("explain.update.next")),
+        Error::OwnTicket => say(t!("explain.own_ticket.title"), t!("explain.own_ticket.next")),
         Error::NoLocalNetwork => {
-            say("Not on a local network", "Join Wi-Fi or a hotspot, then share again.")
+            say(t!("explain.no_local_network.title"), t!("explain.no_local_network.next"))
         }
         Error::PairingRefused => {
-            say("Pairing was refused", "Ask them to accept, or create a new code.")
+            say(t!("explain.pairing_refused.title"), t!("explain.pairing_refused.next"))
         }
-        Error::UnknownDevice(_) => say("Device not found", "It may have been removed."),
+        Error::UnknownDevice(_) => {
+            say(t!("explain.unknown_device.title"), t!("explain.unknown_device.next"))
+        }
         Error::AmbiguousDevice(_) => {
-            say("More than one device matches", "Choose the device from the list.")
+            say(t!("explain.ambiguous_device.title"), t!("explain.ambiguous_device.next"))
         }
         Error::InvalidAddress(_) => {
-            say("That address isn't valid", "Enter an IP address like 192.168.1.20.")
+            say(t!("explain.invalid_address.title"), t!("explain.invalid_address.next"))
         }
-        Error::NoAnswer(_) => say(
-            "Nothing answered at that address",
-            "Open Solferry there and check that it's visible to everyone.",
-        ),
-        Error::Protocol(_) => say(
-            "Something went wrong in Solferry",
-            "This is a bug. Please report it with the details.",
-        ),
+        Error::NoAnswer(_) => say(t!("explain.no_answer.title"), t!("explain.no_answer.next")),
+        Error::Protocol(_) => say(t!("explain.protocol.title"), t!("explain.protocol.next")),
     }
 }

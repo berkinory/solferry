@@ -16,7 +16,6 @@ import java.io.File
  * and everything else finds them.
  */
 object Exporter {
-    const val DOWNLOADS = "Downloads/Solferry"
     private const val PARTIAL_DIR = ".solferry-partial"
     /** A picked folder has no pending flag, so the copy being written is written down here first. */
     private const val UNFINISHED = "unfinished_copy"

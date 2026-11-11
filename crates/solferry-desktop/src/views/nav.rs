@@ -6,6 +6,7 @@ use gpui_kit::{
     ParentElement, SharedString, StatefulInteractiveElement, Styled, black, div, ease_out_quint,
     point, px,
 };
+use rust_i18n::t;
 
 use super::main_view::{MainView, Page};
 use crate::assets::{Glyph, icon};
@@ -21,9 +22,9 @@ const ITEM_HEIGHT: f32 = 40.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [
-    (Page::Home, Glyph::Home, "Transfer"),
-    (Page::History, Glyph::History, "History"),
-    (Page::Settings, Glyph::Settings, "Settings"),
+    (Page::Home, Glyph::Home, "nav.transfer"),
+    (Page::History, Glyph::History, "nav.history"),
+    (Page::Settings, Glyph::Settings, "nav.settings"),
 ];
 
 #[expect(clippy::cast_possible_truncation, reason = "a tab position fits in f32")]
@@ -50,10 +51,10 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         );
     let items: Vec<_> = TABS
         .into_iter()
-        .map(|(page, glyph, label)| {
+        .map(|(page, glyph, key)| {
             let tone = if view.page == page { primary } else { cx.theme().muted_foreground };
             div()
-                .id(SharedString::from(label))
+                .id(SharedString::from(key))
                 .relative()
                 .flex()
                 .items_center()
@@ -66,7 +67,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .text_color(tone)
                 .on_click(cx.listener(move |view, _, window, cx| view.open_page(page, window, cx)))
                 .child(icon(glyph, 16.).text_color(tone))
-                .child(label)
+                .child(t!(key))
                 .into_any_element()
         })
         .collect();

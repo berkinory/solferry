@@ -7,6 +7,7 @@ use gpui_kit::{
     App, AppContext, AsyncApp, Bounds, ClipboardItem, Entity, Global, SharedString,
     SystemNotification, WindowBounds, px, size,
 };
+use rust_i18n::t;
 use solferry_core::{Direction, Event};
 
 use crate::service::{Command, Handle, Update};
@@ -86,19 +87,20 @@ fn notify(update: &Update, cx: &mut App) {
     }
     let state = cx.global::<Shell>().state.read(cx);
     let (title, body) = match update {
-        Update::Offer { summary, .. } => {
-            ("Incoming files".to_owned(), format!("{} wants to send you files", summary.peer_name))
-        }
+        Update::Offer { summary, .. } => (
+            t!("notification.offer.title"),
+            t!("notification.offer.body", name = summary.peer_name),
+        ),
         Update::Transfer(Event::TextReceived { peer_name, auto_copy, .. }) => {
             let body = if *auto_copy {
-                "Copied to your clipboard".to_owned()
+                t!("notification.text.copied")
             } else {
-                "Open Solferry to copy it".to_owned()
+                t!("notification.text.copy_in_app")
             };
-            (format!("Text from {peer_name}"), body)
+            (t!("notification.text.title", name = peer_name), body)
         }
         Update::PairingRequest { name, .. } => {
-            ("Pairing request".to_owned(), format!("{name} wants to pair with this device"))
+            (t!("notification.pairing.title"), t!("notification.pairing.body", name = name))
         }
         Update::Transfer(Event::Completed { id }) => {
             let received = state
@@ -106,7 +108,9 @@ fn notify(update: &Update, cx: &mut App) {
                 .iter()
                 .find(|transfer| transfer.id == *id && transfer.direction == Direction::Receiving);
             let Some(transfer) = received else { return };
-            ("Files received".to_owned(), format!("{} from {}", transfer.title, transfer.peer))
+            let body =
+                t!("notification.received.body", title = transfer.title, peer = transfer.peer);
+            (t!("notification.received.title"), body)
         }
         _ => return,
     };

@@ -7,6 +7,7 @@ use gpui_kit::{
     ParentElement, SharedString, StatefulInteractiveElement, Styled, Transformation, div,
     ease_out_quint, percentage, point, px,
 };
+use rust_i18n::t;
 
 use super::button::Button;
 use super::devices::{self, Row};
@@ -116,8 +117,8 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let chosen = view.selected.len();
     let phase = view.send_phase;
     let label = match (phase, chosen) {
-        (_, 0 | 1) => "Send".to_owned(),
-        (_, many) => format!("Send to {many} devices"),
+        (_, 0 | 1) => t!("send.to_one"),
+        (_, many) => t!("send.to_many", count = many),
     };
     let on_primary = color(palette.on_primary);
     let symbol: AnyElement = match phase {
@@ -184,12 +185,12 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                     .ghost()
                     .sm()
                     .icon(Glyph::Link)
-                    .label("Share via link")
+                    .label(t!("send.share_link"))
                     .on_click(cx.listener(|view, _, _, cx| {
                         MainView::command(Command::Link(view.pending.clone()), cx);
                         view.clear_pending(cx);
                     })),
             ),
         );
-    super::sheet::present("Send", content, |view, _, cx| view.clear_pending(cx), cx)
+    super::sheet::present(t!("send.title"), content, |view, _, cx| view.clear_pending(cx), cx)
 }

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::switch::Switch;
@@ -7,6 +9,7 @@ use gpui_kit::{
     transparent_black,
 };
 use iroh::{EndpointAddr, EndpointId};
+use rust_i18n::t;
 use solferry_core::{NearbyDevice, Platform};
 
 use super::button::Button;
@@ -30,7 +33,7 @@ pub struct Row {
     pub addr: EndpointAddr,
     pub name: String,
     pub platform: Option<Platform>,
-    detail: &'static str,
+    detail: Cow<'static, str>,
     dot: Option<Dot>,
     approval: Option<bool>,
     paired_at_ms: u64,
@@ -42,14 +45,14 @@ fn presence(
     found: Option<&NearbyDevice>,
     id: &EndpointId,
     state: &AppState,
-) -> (&'static str, Option<Dot>) {
+) -> (Cow<'static, str>, Option<Dot>) {
     if found.is_some() {
-        return ("Online", Some(Dot::Online));
+        return (t!("devices.online"), Some(Dot::Online));
     }
     match &state.reachable {
-        None => ("Paired", None),
-        Some(reachable) if reachable.contains(id) => ("Online", Some(Dot::Online)),
-        Some(_) => ("Offline", Some(Dot::Offline)),
+        None => (t!("devices.paired"), None),
+        Some(reachable) if reachable.contains(id) => (t!("devices.online"), Some(Dot::Online)),
+        Some(_) => (t!("devices.offline"), Some(Dot::Offline)),
     }
 }
 
@@ -82,9 +85,9 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
         .map(|device| Row {
             id: device.addr.id,
             addr: device.addr.clone(),
-            name: device.name.clone().unwrap_or_else(|| "Unnamed device".to_owned()),
+            name: device.name.clone().unwrap_or_else(|| t!("devices.unnamed").into_owned()),
             platform: device.platform,
-            detail: "Not paired",
+            detail: t!("devices.not_paired"),
             dot: None,
             approval: None,
             paired_at_ms: 0,
@@ -100,7 +103,8 @@ pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> 
     let paired = (!mine.is_empty()).then(|| {
         let count = ui::count(mine.len(), cx);
         let elements: Vec<_> = mine.into_iter().map(|row| device_row(row, view, cx)).collect();
-        ui::card(Glyph::Devices, "Devices", Some(count), cx).child(ui::well(cx).children(elements))
+        ui::card(Glyph::Devices, &t!("devices.title"), Some(count), cx)
+            .child(ui::well(cx).children(elements))
     });
     let found: Vec<_> = others.into_iter().map(|row| device_row(row, view, cx)).collect();
     let well = if !found.is_empty() {
@@ -111,7 +115,7 @@ pub fn render(state: &AppState, view: &MainView, cx: &mut Context<MainView>) -> 
         ui::well(cx).child(radar::scanning(cx))
     };
     let code = radar::use_code(cx);
-    let nearby = ui::card(Glyph::Nearby, "Nearby", Some(code), cx).child(well);
+    let nearby = ui::card(Glyph::Nearby, &t!("devices.nearby"), Some(code), cx).child(well);
     div().flex().flex_col().gap(px(SPACE_SM)).children(paired).child(nearby).into_any_element()
 }
 
@@ -131,8 +135,8 @@ pub fn detail(row: &Row, cx: &App) -> AnyElement {
         Dot::Offline => cx.theme().muted_foreground.opacity(0.5),
     });
     tone.map_or_else(
-        || ui::muted(row.detail, cx).into_any_element(),
-        |tone| ui::status(tone, row.detail, cx).into_any_element(),
+        || ui::muted(row.detail.clone(), cx).into_any_element(),
+        |tone| ui::status(tone, row.detail.clone(), cx).into_any_element(),
     )
 }
 
@@ -201,7 +205,7 @@ fn share_button(row: &Row, cx: &mut Context<MainView>) -> AnyElement {
         .ghost()
         .xs()
         .icon(Glyph::TypeText)
-        .tooltip("Send text")
+        .tooltip(t!("devices.send_text"))
         .on_click(cx.listener(move |view, _, window: &mut Window, cx| {
             cx.stop_propagation();
             let target = Target { addr: target.addr.clone(), name: target.name.clone() };
@@ -215,7 +219,7 @@ fn more_button(id: EndpointId, open: bool, cx: &mut Context<MainView>) -> AnyEle
         .ghost()
         .xs()
         .icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown })
-        .tooltip("Options")
+        .tooltip(t!("devices.options"))
         .on_click(cx.listener(move |view, _, _: &mut Window, cx| {
             cx.stop_propagation();
             view.expanded = if view.expanded == Some(id) { None } else { Some(id) };
@@ -239,8 +243,8 @@ fn device_details(
         .find(|past| past.peer == id && past.completed)
         .map(|past| past.finished_ms);
     let (what, moment) = last.map_or_else(
-        || ("Paired", format::ago(row.paired_at_ms)),
-        |ms| ("Last transfer", format::ago(ms)),
+        || (t!("devices.paired"), format::ago(row.paired_at_ms)),
+        |ms| (t!("devices.last_transfer"), format::ago(ms)),
     );
     let when = div()
         .flex()
@@ -252,11 +256,11 @@ fn device_details(
         .flex()
         .flex_col()
         .child(
-            line().child(ui::muted("Receive without asking", cx)).child(
+            line().child(ui::muted(t!("devices.auto_accept"), cx)).child(
                 Switch::new(SharedString::from(format!("approval-{id}")))
                     .large()
                     .checked(auto_accept)
-                    .accessibility_label("Receive without asking")
+                    .accessibility_label(t!("devices.auto_accept"))
                     .on_click(cx.listener(move |_, enabled: &bool, _, cx| {
                         MainView::command(Command::SetAutoAccept { id, enabled: *enabled }, cx);
                     })),
@@ -268,7 +272,7 @@ fn device_details(
                     .danger()
                     .xs()
                     .icon(Glyph::Delete)
-                    .label("Forget")
+                    .label(t!("devices.forget"))
                     .on_click(cx.listener(move |view, _, _, cx| {
                         view.dialog = Some(Dialog::Forget { id, name: name.clone() });
                         cx.notify();
@@ -282,7 +286,7 @@ fn pair_button(id: EndpointId, addr: EndpointAddr, cx: &mut Context<MainView>) -
     Button::new(SharedString::from(format!("pair-{id}")))
         .xs()
         .icon(Glyph::Link)
-        .label("Pair")
+        .label(t!("devices.pair"))
         .on_click(cx.listener(move |_, _, _: &mut Window, cx| {
             cx.stop_propagation();
             MainView::command(Command::PairNearby { addr: addr.clone() }, cx);

@@ -18,6 +18,8 @@ use gpui_kit::QuitMode;
 use solferry_core::{Config, default_data_dir};
 use tracing_subscriber::EnvFilter;
 
+rust_i18n::i18n!("locales", fallback = "en");
+
 fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -25,6 +27,7 @@ fn main() {
         )
         .with_writer(std::io::stderr)
         .init();
+    solferry_core::set_locale(&sys_locale::get_locale().unwrap_or_default());
     let data_dir = std::env::var_os("SOLFERRY_DATA_DIR").map_or_else(default_data_dir, Into::into);
     let show_in_tray = Config::load(&data_dir).map_or(true, |config| config.show_in_tray);
     let (handle, updates) = service::spawn(data_dir);

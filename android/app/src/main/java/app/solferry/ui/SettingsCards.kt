@@ -17,12 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.AvailableUpdate
 import app.solferry.Engine
-import app.solferry.Exporter
 import app.solferry.R
 import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.BlockedDevice
@@ -39,14 +39,14 @@ private fun RelayRow(relay: Relay, engine: Engine) {
         Column(Modifier.weight(1f)) {
             Text(relay.url, maxLines = 1, overflow = TextOverflow.Ellipsis)
             when (relay.status) {
-                RelayStatus.CHECKING -> StatusLine("Checking")
-                RelayStatus.CONNECTED -> StatusLine("Connected", palette.success)
-                RelayStatus.UDP_BLOCKED -> StatusLine("Connected, UDP 7842 is blocked", palette.warning)
-                RelayStatus.REFUSED -> StatusLine("Refused, check the link", palette.danger)
-                RelayStatus.UNREACHABLE -> StatusLine("Can't reach the server", palette.danger)
+                RelayStatus.CHECKING -> StatusLine(stringResource(R.string.relay_checking))
+                RelayStatus.CONNECTED -> StatusLine(stringResource(R.string.relay_connected), palette.success)
+                RelayStatus.UDP_BLOCKED -> StatusLine(stringResource(R.string.relay_udp_blocked), palette.warning)
+                RelayStatus.REFUSED -> StatusLine(stringResource(R.string.relay_refused), palette.danger)
+                RelayStatus.UNREACHABLE -> StatusLine(stringResource(R.string.relay_unreachable), palette.danger)
             }
         }
-        Button({ engine.bridge.removeRelay(relay.link) }, icon = R.drawable.ic_delete, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Remove ${relay.url}")
+        Button({ engine.bridge.removeRelay(relay.link) }, icon = R.drawable.ic_delete, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.common_remove, relay.url))
     }
 }
 
@@ -58,23 +58,23 @@ fun RelayCard(state: AppState, engine: Engine) {
     LaunchedEffect(state.relays.size) { link = "" }
     val add = { if (link.isNotBlank()) engine.bridge.addRelay(link.trim()) }
     Card(
-        R.drawable.ic_relay, "Relay",
-        aside = { Button({ links.openUri(GUIDE) }, label = "Setup Guide", icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
+        R.drawable.ic_relay, stringResource(R.string.relay_title),
+        aside = { Button({ links.openUri(GUIDE) }, label = stringResource(R.string.relay_guide), icon = R.drawable.ic_external, kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
     ) {
         PaddedWell {
-            Muted("Reach devices on other networks through a relay you run.")
+            Muted(stringResource(R.string.relay_body))
             state.relays.forEach { RelayRow(it, engine) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Field(
-                    link, { link = it }, "https://relay.example.com#token", Modifier.weight(1f),
+                    link, { link = it }, stringResource(R.string.relay_placeholder), Modifier.weight(1f),
                     trailing = {
                         Button(
                             { engine.pasted()?.let { link = it.trim() } }, icon = R.drawable.ic_clipboard,
-                            kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = "Paste",
+                            kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.common_paste),
                         )
                     },
                 )
-                Button(add, label = "Add")
+                Button(add, label = stringResource(R.string.relay_add))
             }
         }
     }
@@ -83,12 +83,12 @@ fun RelayCard(state: AppState, engine: Engine) {
 @Composable
 fun SaveFolderCard(state: AppState, engine: Engine) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree -> tree?.let(engine::chooseFolder) }
-    Card(R.drawable.ic_folder, "Save files to") {
+    Card(R.drawable.ic_folder, stringResource(R.string.folder_title)) {
         PaddedWell {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                Muted(state.saveFolder?.name ?: Exporter.DOWNLOADS, Modifier.weight(1f))
-                if (state.saveFolder != null) Button(engine::resetFolder, label = "Reset", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
-                Button({ picker.launch(state.saveFolder?.tree) }, label = "Change", icon = R.drawable.ic_folder, size = ButtonSize.Sm)
+                Muted(state.saveFolder?.name ?: stringResource(R.string.folder_downloads), Modifier.weight(1f))
+                if (state.saveFolder != null) Button(engine::resetFolder, label = stringResource(R.string.folder_reset), kind = ButtonKind.Ghost, size = ButtonSize.Sm)
+                Button({ picker.launch(state.saveFolder?.tree) }, label = stringResource(R.string.folder_change), icon = R.drawable.ic_folder, size = ButtonSize.Sm)
             }
         }
     }
@@ -97,16 +97,16 @@ fun SaveFolderCard(state: AppState, engine: Engine) {
 @Composable
 fun UpdatesCard(enabled: Boolean, update: AvailableUpdate?, engine: Engine) {
     val links = LocalUriHandler.current
-    Card(R.drawable.ic_download, "Updates") {
+    Card(R.drawable.ic_download, stringResource(R.string.updates_title)) {
         PaddedWell {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                Muted("Check for updates automatically", Modifier.weight(1f))
-                Toggle(enabled, { engine.setCheckUpdates(it) }, "Check for updates automatically")
+                Muted(stringResource(R.string.updates_auto), Modifier.weight(1f))
+                Toggle(enabled, { engine.setCheckUpdates(it) }, stringResource(R.string.updates_auto))
             }
             if (update != null) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                    Muted("Solferry ${update.version} is available", Modifier.weight(1f))
-                    Button({ links.openUri(update.page) }, label = "Download", icon = R.drawable.ic_external, size = ButtonSize.Sm)
+                    Muted(stringResource(R.string.updates_available, update.version), Modifier.weight(1f))
+                    Button({ links.openUri(update.page) }, label = stringResource(R.string.updates_download), icon = R.drawable.ic_external, size = ButtonSize.Sm)
                 }
             }
         }
@@ -116,7 +116,7 @@ fun UpdatesCard(enabled: Boolean, update: AvailableUpdate?, engine: Engine) {
 @Composable
 fun BlockedCard(blocked: List<BlockedDevice>, engine: Engine) {
     val palette = LocalPalette.current
-    Card(R.drawable.ic_blocked, "Blocked", aside = { Count(blocked.size) }) {
+    Card(R.drawable.ic_blocked, stringResource(R.string.blocked_title), aside = { Count(blocked.size) }) {
         Well {
             blocked.forEach { device ->
                 Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
@@ -125,7 +125,7 @@ fun BlockedCard(blocked: List<BlockedDevice>, engine: Engine) {
                         Text(device.name ?: device.identity.fingerprint, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (device.name != null) Caption(device.identity.fingerprint)
                     }
-                    Button({ engine.bridge.unblock(device.identity.id) }, label = "Unblock", size = ButtonSize.Sm)
+                    Button({ engine.bridge.unblock(device.identity.id) }, label = stringResource(R.string.blocked_unblock), size = ButtonSize.Sm)
                 }
             }
         }

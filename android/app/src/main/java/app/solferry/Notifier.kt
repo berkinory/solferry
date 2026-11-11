@@ -28,9 +28,9 @@ object Notifier {
 
     fun createChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel(ASKS, "Requests and arrivals", NotificationManager.IMPORTANCE_HIGH))
-        manager.createNotificationChannel(NotificationChannel(TRANSFERS, "Transfers in progress", NotificationManager.IMPORTANCE_LOW))
-        manager.createNotificationChannel(NotificationChannel(STANDBY, "Receiving in the background", NotificationManager.IMPORTANCE_MIN))
+        manager.createNotificationChannel(NotificationChannel(ASKS, context.getString(R.string.channel_asks), NotificationManager.IMPORTANCE_HIGH))
+        manager.createNotificationChannel(NotificationChannel(TRANSFERS, context.getString(R.string.channel_transfers), NotificationManager.IMPORTANCE_LOW))
+        manager.createNotificationChannel(NotificationChannel(STANDBY, context.getString(R.string.channel_standby), NotificationManager.IMPORTANCE_MIN))
     }
 
     fun opener(context: Context): PendingIntent = PendingIntent.getActivity(
@@ -42,7 +42,7 @@ object Notifier {
     fun progress(context: Context, count: Int, percent: Int): Notification =
         NotificationCompat.Builder(context, TRANSFERS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
-            .setContentTitle(if (count == 1) "Moving 1 transfer" else "Moving $count transfers")
+            .setContentTitle(context.resources.getQuantityString(R.plurals.notify_progress, count, count))
             .setProgress(100, percent, false)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -52,7 +52,7 @@ object Notifier {
     fun standby(context: Context): Notification =
         NotificationCompat.Builder(context, STANDBY)
             .setSmallIcon(R.drawable.ic_launcher_mark)
-            .setContentTitle("Ready to receive")
+            .setContentTitle(context.getString(R.string.notify_standby))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
@@ -60,10 +60,10 @@ object Notifier {
             .build()
 
     fun offer(context: Context, key: ULong, name: String) =
-        show(context, "Incoming files", "$name wants to send you files", OFFER, key.toInt())
+        show(context, context.getString(R.string.offer_title), context.getString(R.string.notify_offer_body, name), OFFER, key.toInt())
 
     fun pairing(context: Context, key: ULong, name: String) =
-        show(context, "Pairing request", "$name wants to pair with this device", PAIRING, key.toInt())
+        show(context, context.getString(R.string.pair_request_title), context.getString(R.string.notify_pairing_body, name), PAIRING, key.toInt())
 
     /** Takes back a question once it has been answered or the other device has left. */
     fun settleOffer(context: Context, key: ULong) = NotificationManagerCompat.from(context).cancel(OFFER, key.toInt())
@@ -71,10 +71,10 @@ object Notifier {
     fun settlePairing(context: Context, key: ULong) = NotificationManagerCompat.from(context).cancel(PAIRING, key.toInt())
 
     fun text(context: Context, name: String, copied: Boolean) =
-        show(context, "Text from $name", if (copied) "Copied to your clipboard" else "Open Solferry to copy it")
+        show(context, context.getString(R.string.text_from, name), context.getString(if (copied) R.string.notify_text_copied else R.string.notify_text_open))
 
     fun received(context: Context, label: String, name: String, folder: String) =
-        show(context, "Files received", "$label from $name, in $folder")
+        show(context, context.getString(R.string.notify_received_title), context.getString(R.string.notify_received_body, label, name, folder))
 
     /** Before Android 13 there is no permission to ask for, only the switch in system settings. */
     private fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

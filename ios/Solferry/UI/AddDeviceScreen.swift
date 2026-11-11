@@ -26,7 +26,7 @@ struct AddDeviceScreen: View {
                         ActionButton(label: state.joining ? "Pairing" : "Pair", kind: .primary, action: join)
                             .disabled(state.joining)
                     }
-                    if let error = state.joinError { Muted(error, color: palette.danger) }
+                    if let error = state.joinError { Muted(verbatim: error, color: palette.danger) }
                 }
             }
             AddressCard()
@@ -57,7 +57,7 @@ private struct AddressCard: View {
                     ActionButton(label: state.pairingAddress ? "Pairing" : "Pair", kind: .primary, action: pair)
                         .disabled(state.pairingAddress)
                 }
-                if let error = state.addressError { Muted(error, color: palette.danger) }
+                if let error = state.addressError { Muted(verbatim: error, color: palette.danger) }
                 if !own.isEmpty { Muted("This device is at \(own.joined(separator: ", ")).") }
             }
         }

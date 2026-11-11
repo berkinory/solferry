@@ -20,7 +20,7 @@ struct Transfer: Identifiable {
     var fraction: Double { total == 0 ? 1 : Double(transferred) / Double(total) }
     var outcome: (tone: Tone, title: String) {
         if let problem { return (.failure, problem.title) }
-        return (.success, "\(sending ? "Sent" : "Received") \(label)")
+        return (.success, sending ? String(localized: "Sent \(label)") : String(localized: "Received \(label)"))
     }}
 
 struct PairingPrompt: Identifiable {
@@ -149,7 +149,7 @@ struct AppState {
         case let .pairingCode(code): pairingCode = code
         case let .invite(code): invite = code
         case let .paired(device):
-            toast(.success, "Paired with \(device.name)")
+            toast(.success, String(localized: "Paired with \(device.name)"))
             pairingCode = nil
             invite = nil
             joining = false
@@ -186,7 +186,7 @@ struct AppState {
             toast(.failure, problem.title)
         case let .linkReceived(name, _):
             link?.received.append(name)
-            toast(.success, "Received \(name)")
+            toast(.success, String(localized: "Received \(name)"))
         }
     }
 

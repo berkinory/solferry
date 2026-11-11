@@ -54,6 +54,7 @@ mod platform {
 
     use ksni::blocking::{Handle, TrayMethods};
     use ksni::menu::{MenuItem, StandardItem};
+    use rust_i18n::t;
 
     use super::{ICON_SIZE, SUN, Sender, TrayAction, mark_pixels};
 
@@ -96,7 +97,7 @@ mod platform {
                 }
                 .into()
             };
-            vec![item("Open Solferry", TrayAction::Open), item("Quit", TrayAction::Quit)]
+            vec![item(&t!("tray.open"), TrayAction::Open), item(&t!("tray.quit"), TrayAction::Quit)]
         }
     }
 
@@ -141,6 +142,7 @@ mod platform {
 
 #[cfg(not(target_os = "linux"))]
 mod platform {
+    use rust_i18n::t;
     use tray_icon::menu::{Menu, MenuEvent, MenuItem};
     use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 
@@ -166,8 +168,8 @@ mod platform {
 
     fn build(actions: Sender<TrayAction>) -> Option<TrayIcon> {
         let menu = Menu::new();
-        let open = MenuItem::new("Open Solferry", true, None);
-        let quit = MenuItem::new("Quit", true, None);
+        let open = MenuItem::new(t!("tray.open"), true, None);
+        let quit = MenuItem::new(t!("tray.quit"), true, None);
         let (open_id, quit_id) = (open.id().clone(), quit.id().clone());
         menu.append_items(&[&open, &quit]).ok()?;
         let pixels = mark_pixels()

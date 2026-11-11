@@ -109,7 +109,7 @@ private struct Ring: View {
 
 private struct Dismiss: View {
     @Environment(\.palette) private var palette
-    let label: String
+    let label: LocalizedStringKey
     let action: () -> Void
 
     var body: some View {
@@ -130,9 +130,9 @@ private struct RunningRow: View {
     var body: some View {
         let waiting = transfer.phase == .reconnecting
         let line = switch transfer.phase {
-        case .waiting: "Waiting for \(transfer.peerName)"
-        case .reconnecting: "Reconnecting to \(transfer.peerName)"
-        default: "\(transfer.sending ? "Sending" : "Receiving") \(transfer.label)"
+        case .waiting: String(localized: "Waiting for \(transfer.peerName)")
+        case .reconnecting: String(localized: "Reconnecting to \(transfer.peerName)")
+        default: transfer.sending ? String(localized: "Sending \(transfer.label)") : String(localized: "Receiving \(transfer.label)")
         }
         PillRow(closes: true) {
             Ring(fraction: transfer.fraction, tone: waiting ? reconnecting : palette.page)
@@ -207,7 +207,7 @@ private struct TransferPill: View {
         let fraction = Double(moved) / Double(total)
         return PillRow {
             Ring(fraction: fraction, tone: palette.page)
-            Label(text: "\(running.count) transfers")
+            Label(text: String(localized: "\(running.count) transfers"))
             if open { Spacer(minLength: 0) }
             Percent(fraction: fraction)
             Icon(open ? .chevronUp : .chevronDown, tint: palette.page.opacity(0.76), size: 15)

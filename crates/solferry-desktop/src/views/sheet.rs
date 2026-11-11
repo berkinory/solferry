@@ -4,8 +4,10 @@ use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement,
-    ParentElement, StatefulInteractiveElement, Styled, Window, black, div, ease_out_quint, px,
+    ParentElement, SharedString, StatefulInteractiveElement, Styled, Window, black, div,
+    ease_out_quint, px,
 };
+use rust_i18n::t;
 
 use super::button::Button;
 use super::main_view::MainView;
@@ -18,7 +20,7 @@ const TRAVEL: f32 = 180.0;
 
 /// Comes up from the bottom over the home screen, only as tall as what it holds.
 pub fn present(
-    title: &'static str,
+    title: impl Into<SharedString>,
     content: impl IntoElement,
     close: fn(&mut MainView, &mut Window, &mut Context<MainView>),
     cx: &mut Context<MainView>,
@@ -37,7 +39,7 @@ pub fn present(
                     .ghost()
                     .xs()
                     .icon(Glyph::Cancel)
-                    .tooltip("Close")
+                    .tooltip(t!("sheet.close"))
                     .on_click(cx.listener(move |view, _, window, cx| close(view, window, cx))),
             ),
         );

@@ -50,11 +50,11 @@ private struct Past: View {
                 HStack(spacing: SpaceTokens.sm) {
                     Text(entry.label).lineLimit(1)
                     Spacer(minLength: 0)
-                    Muted(entry.completed ? bytes(entry.bytes) : "Failed", color: entry.completed ? palette.inkMuted : palette.danger).fixedSize()
+                    Muted(verbatim: entry.completed ? bytes(entry.bytes) : String(localized: "Failed"), color: entry.completed ? palette.inkMuted : palette.danger).fixedSize()
                 }
                 HStack(spacing: SpaceTokens.xs) {
                     Icon(platformGlyph(entry.platform), tint: palette.inkMuted, size: 14)
-                    Muted(entry.name).lineLimit(1)
+                    Muted(verbatim: entry.name).lineLimit(1)
                     Spacer(minLength: 0)
                     Caption(ago(entry.finishedMs)).fixedSize()
                 }

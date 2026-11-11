@@ -13,11 +13,11 @@ enum ButtonScale {
 /// The system's button styles, glass where it exists, wearing the design system's colors and corners.
 struct ActionButton: View {
     @Environment(\.palette) private var palette
-    var label: String?
+    var label: LocalizedStringKey?
     var glyph: Glyph?
     var kind = ButtonKind.secondary
     var scale = ButtonScale.medium
-    var description: String?
+    var description: LocalizedStringKey?
     var wide = false
     let action: () -> Void
 
@@ -63,7 +63,7 @@ struct Field<Trailing: View>: View {
     @Environment(\.palette) private var palette
     @FocusState private var focused: Bool
     @Binding var text: String
-    let placeholder: String
+    let placeholder: LocalizedStringKey
     var onSubmit: () -> Void = {}
     @ViewBuilder var trailing: Trailing
 
@@ -86,7 +86,7 @@ struct Field<Trailing: View>: View {
 }
 
 extension Field where Trailing == EmptyView {
-    init(text: Binding<String>, placeholder: String, onSubmit: @escaping () -> Void = {}) {
+    init(text: Binding<String>, placeholder: LocalizedStringKey, onSubmit: @escaping () -> Void = {}) {
         self.init(text: text, placeholder: placeholder, onSubmit: onSubmit, trailing: { EmptyView() })
     }
 }

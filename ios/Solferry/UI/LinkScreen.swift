@@ -24,7 +24,7 @@ struct LinkScreen: View {
             .frame(maxWidth: .infinity)
             if !link.received.isEmpty {
                 Card(glyph: .download, title: "Received") {
-                    Well { ForEach(Array(link.received.enumerated()), id: \.offset) { Muted($0.element).padding(SpaceTokens.xs) } }
+                    Well { ForEach(Array(link.received.enumerated()), id: \.offset) { Muted(verbatim: $0.element).padding(SpaceTokens.xs) } }
                 }
             }
             ActionButton(label: "Stop", kind: .danger, wide: true) { engine.bridge.stopLink() }

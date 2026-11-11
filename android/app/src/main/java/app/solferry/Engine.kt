@@ -23,7 +23,9 @@ import uniffi.solferry_ffi.Reach
 import uniffi.solferry_ffi.SharedFile
 import uniffi.solferry_ffi.Solferry
 import uniffi.solferry_ffi.Update
+import uniffi.solferry_ffi.setLocale
 import java.io.File
+import java.util.Locale
 import kotlin.concurrent.thread
 
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
@@ -35,18 +37,21 @@ class Engine(private val context: Context) : Listener {
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
     private val multicast = context.getSystemService(WifiManager::class.java)
         .createMulticastLock("solferry").apply { setReferenceCounted(false); acquire() }
+    init {
+        setLocale(Locale.getDefault().toLanguageTag())
+    }
     val bridge = Solferry(File(context.filesDir, "solferry").path, received.path, deviceName(), this)
 
     init {
         thread(name = "solferry-recover") {
             val folder = destination()
-            if (!Exporter.recover(context, received, folder)) main.post { saveFailed("Received files", folder) }
+            if (!Exporter.recover(context, received, folder)) main.post { saveFailed(context.getString(R.string.error_save_recovered), folder) }
         }
     }
 
     override fun update(update: Update) {
         val now = System.nanoTime()
-        mutable.update { it.apply(update, now) }
+        mutable.update { it.apply(update, now, context.resources) }
         main.post { react(update) }
     }
 
@@ -71,7 +76,7 @@ class Engine(private val context: Context) : Listener {
                         val folder = destination()
                         val saved = Exporter.export(context, received, folder)
                         main.post {
-                            if (saved) Notifier.received(context, done.label, done.peerName, folder?.name ?: Exporter.DOWNLOADS)
+                            if (saved) Notifier.received(context, done.label, done.peerName, folder?.name ?: context.getString(R.string.folder_downloads))
                             else saveFailed(done.peerName, folder)
                         }
                     }
@@ -92,12 +97,12 @@ class Engine(private val context: Context) : Listener {
     }
 
     private fun saveFailed(name: String, folder: SaveFolder?) = mutable.update {
-        it.toast(Tone.Error, "$name: Couldn't save to ${folder?.name ?: "Downloads"}")
+        it.toast(Tone.Error, context.getString(R.string.error_save_failed, name, folder?.name ?: context.getString(R.string.error_save_downloads)))
     }
 
     @Synchronized
     fun chooseFolder(tree: Uri) {
-        val picked = SaveFolder.take(context, tree) ?: return mutable.update { it.toast(Tone.Error, "Couldn't use that folder") }
+        val picked = SaveFolder.take(context, tree) ?: return mutable.update { it.toast(Tone.Error, context.getString(R.string.error_folder_unusable)) }
         state.value.saveFolder?.takeIf { it.tree != tree }?.let { SaveFolder.release(context, it.tree) }
         keepFolder(picked)
     }
@@ -115,7 +120,7 @@ class Engine(private val context: Context) : Listener {
         val current = SaveFolder.check(context, picked.tree)
         if (current == null) {
             SaveFolder.release(context, picked.tree)
-            mutable.update { it.toast(Tone.Error, "Lost access to ${picked.name}, saving to ${Exporter.DOWNLOADS}") }
+            mutable.update { it.toast(Tone.Error, context.getString(R.string.error_folder_lost, picked.name, context.getString(R.string.folder_downloads))) }
         }
         if (current != picked) keepFolder(current)
         return current
@@ -136,7 +141,7 @@ class Engine(private val context: Context) : Listener {
 
     fun copy(text: String) {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
-        clipboard.setPrimaryClip(ClipData.newPlainText("Solferry", text))
+        clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.app_name), text))
     }
 
     fun sendUris(peer: String, uris: List<Uri>) {
@@ -159,7 +164,7 @@ class Engine(private val context: Context) : Listener {
         } catch (_: Exception) {
             // These come from other apps, whose providers can refuse or fail in any way.
             opened.forEach { it.close() }
-            mutable.update { it.toast(Tone.Error, "Couldn't open that file, try sharing it again") }
+            mutable.update { it.toast(Tone.Error, context.getString(R.string.error_open_file)) }
             return null
         }
         return files.map { (name, file) -> SharedFile(name, file.detachFd()) }.takeIf { it.isNotEmpty() }
