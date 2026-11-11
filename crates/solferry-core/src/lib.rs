@@ -7,6 +7,7 @@ mod explain;
 mod history;
 mod identity;
 mod link;
+mod locale;
 mod net;
 mod node;
 mod platform;
@@ -25,6 +26,7 @@ pub use event::{Direction, Event, TransferId};
 pub use explain::{Explanation, about, explain};
 pub use history::PastTransfer;
 pub use link::{Link, LinkFile};
+pub use locale::set_locale;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
     RelayHealth, SendReport,
