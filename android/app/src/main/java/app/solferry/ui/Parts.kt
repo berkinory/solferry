@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -246,7 +247,7 @@ fun ConfirmDialog(title: String, body: String, action: String, onConfirm: () -> 
     AlertDialog(
         onDismiss,
         confirmButton = { TextButton(onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = palette.danger)) { Text(action) } },
-        dismissButton = { TextButton(onDismiss, colors = ButtonDefaults.textButtonColors(contentColor = palette.ink)) { Text("Cancel") } },
+        dismissButton = { TextButton(onDismiss, colors = ButtonDefaults.textButtonColors(contentColor = palette.ink)) { Text(stringResource(R.string.common_cancel)) } },
         title = { Text(title, style = MaterialTheme.typography.titleLarge) },
         text = { Text(body, color = palette.inkMuted) },
         shape = CardShape,
@@ -255,15 +256,16 @@ fun ConfirmDialog(title: String, body: String, action: String, onConfirm: () -> 
 }
 
 /** How long ago a moment was, in the largest unit that still reads naturally. */
+@Composable
 fun ago(ms: Long): String {
     val minutes = (System.currentTimeMillis() - ms).coerceAtLeast(0) / 60_000
     return when {
-        minutes < 1 -> "just now"
-        minutes < 60 -> "${minutes}m ago"
-        minutes < 1440 -> "${minutes / 60}h ago"
-        minutes < 2880 -> "yesterday"
-        minutes < 43_200 -> "${minutes / 1440}d ago"
-        else -> "${minutes / 43_200}mo ago"
+        minutes < 1 -> stringResource(R.string.ago_now)
+        minutes < 60 -> stringResource(R.string.ago_minutes, minutes)
+        minutes < 1440 -> stringResource(R.string.ago_hours, minutes / 60)
+        minutes < 2880 -> stringResource(R.string.ago_yesterday)
+        minutes < 43_200 -> stringResource(R.string.ago_days, minutes / 1440)
+        else -> stringResource(R.string.ago_months, minutes / 43_200)
     }
 }
 

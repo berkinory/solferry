@@ -1,6 +1,7 @@
 package app.solferry.ui
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,6 +38,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,7 +51,7 @@ import app.solferry.design.SpaceTokens
 import kotlinx.coroutines.delay
 import uniffi.solferry_ffi.Identity
 
-private data class Target(val identity: Identity, val name: String, val detail: String)
+private data class Target(val identity: Identity, val name: String, @StringRes val detail: Int)
 
 private const val FLY_MS = 380L
 
@@ -60,20 +63,21 @@ fun SendSheet(
     onSend: (Set<String>) -> Unit,
     onShareLink: () -> Unit,
     onClose: () -> Unit,
-) = Sheet("Send", onClose) { close ->
+) = Sheet(stringResource(R.string.common_send), onClose) { close ->
     var chosen by remember { mutableStateOf(emptySet<String>()) }
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { appeared = true }
     val mine = state.devices.map { device ->
         val near = state.nearby.find { it.identity.id == device.identity.id }
         val detail = when {
-            near != null || state.reachable?.contains(device.identity.id) == true -> "Online"
-            state.reachable != null -> "Offline"
-            else -> "Paired"
+            near != null || state.reachable?.contains(device.identity.id) == true -> R.string.device_online
+            state.reachable != null -> R.string.device_offline
+            else -> R.string.device_paired
         }
         Target(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), device.name, detail)
     }
-    val others = state.strangers.map { Target(it.identity, it.name ?: "Unnamed device", "Not paired") }
+    val unnamed = stringResource(R.string.device_unnamed)
+    val others = state.strangers.map { Target(it.identity, it.name ?: unnamed, R.string.device_not_paired) }
     Column {
         files.forEachIndexed { index, file -> FileRow(file, index, appeared) { onRemove(file) } }
     }
@@ -90,15 +94,15 @@ fun SendSheet(
     Box(Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), contentAlignment = Alignment.Center) {
         LaunchButton(chosen.size, { onSend(chosen) }, close)
     }
-    Button(onShareLink, Modifier.fillMaxWidth(), label = "Share via link", icon = R.drawable.ic_link, kind = ButtonKind.Ghost)
+    Button(onShareLink, Modifier.fillMaxWidth(), label = stringResource(R.string.link_share), icon = R.drawable.ic_link, kind = ButtonKind.Ghost)
 }
 
 /** Where the files come from, as on iOS: the photo picker or the file browser. */
 @Composable
 fun SourceSheet(onMedia: () -> Unit, onFiles: () -> Unit, onClose: () -> Unit) = Sheet(null, onClose) { close ->
     Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-        SourceTile("Photos and videos", R.drawable.ic_type_image, Modifier.weight(1f)) { close(); onMedia() }
-        SourceTile("Files", R.drawable.ic_folder, Modifier.weight(1f)) { close(); onFiles() }
+        SourceTile(stringResource(R.string.send_source_media), R.drawable.ic_type_image, Modifier.weight(1f)) { close(); onMedia() }
+        SourceTile(stringResource(R.string.send_source_files), R.drawable.ic_folder, Modifier.weight(1f)) { close(); onFiles() }
     }
 }
 
@@ -133,7 +137,7 @@ private fun FileRow(file: PickedFile, index: Int, appeared: Boolean, onRemove: (
         Text(file.name, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         file.size?.let { Muted(bytes(it)) }
         Box(Modifier.size(36.dp).clip(ControlShape).clickable(onClick = onRemove), contentAlignment = Alignment.Center) {
-            Glyph(R.drawable.ic_delete, palette.danger, 18, "Remove ${file.name}")
+            Glyph(R.drawable.ic_delete, palette.danger, 18, stringResource(R.string.common_remove, file.name))
         }
     }
 }
@@ -146,7 +150,7 @@ private fun LaunchButton(chosen: Int, onLaunch: () -> Unit, onDone: () -> Unit) 
     val haptics = LocalHapticFeedback.current
     LaunchedEffect(flying) { if (flying) { delay(FLY_MS); onDone() } }
     val fly by animateFloatAsState(if (flying) 1f else 0f, tween(380, easing = FastOutLinearInEasing))
-    val label = if (chosen > 1) "Send to $chosen devices" else "Send"
+    val label = if (chosen > 1) pluralStringResource(R.plurals.send_to_devices, chosen, chosen) else stringResource(R.string.common_send)
     val density = LocalDensity.current
     Box(
         Modifier.width(210.dp).height(56.dp).graphicsLayer { alpha = if (chosen > 0) 1f else 0.5f }.clip(FieldShape)
@@ -185,10 +189,10 @@ private fun TargetRow(target: Target, chosen: Boolean, onToggle: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        if (chosen) Tile(R.drawable.ic_check, palette.primaryFill, palette.onPrimary) else DeviceTile(target.identity, target.detail != "Offline" && target.detail != "Paired")
+        if (chosen) Tile(R.drawable.ic_check, palette.primaryFill, palette.onPrimary) else DeviceTile(target.identity, target.detail != R.string.device_offline && target.detail != R.string.device_paired)
         Column(Modifier.weight(1f)) {
             Text(target.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            StatusLine(target.detail, if (target.detail == "Online") palette.successFill else null)
+            StatusLine(stringResource(target.detail), if (target.detail == R.string.device_online) palette.successFill else null)
         }
     }
 }

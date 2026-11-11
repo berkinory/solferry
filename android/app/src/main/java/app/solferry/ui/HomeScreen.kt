@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -80,7 +81,7 @@ fun HomeScreen(
 private fun HomeBar() = Toolbar {
     Row(Modifier.padding(start = SpaceTokens.sm.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Glyph(R.drawable.ic_mark, LocalPalette.current.brand, 20)
-        Text("Solferry", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -99,8 +100,8 @@ private fun SendZone(onClick: () -> Unit) {
                     ) { Glyph(R.drawable.ic_send, palette.onPrimary, 24) }
                 }
                 Spacer(Modifier.height(SpaceTokens.sm.dp))
-                Text("Send files", style = MaterialTheme.typography.titleMedium)
-                Muted("Tap to choose what to send")
+                Text(stringResource(R.string.home_send_files), style = MaterialTheme.typography.titleMedium)
+                Muted(stringResource(R.string.home_send_hint))
             }
         }
     }

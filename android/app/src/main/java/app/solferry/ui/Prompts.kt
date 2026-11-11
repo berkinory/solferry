@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,46 +63,47 @@ private fun Asker(peer: Identity, title: String, detail: String) = Row(
 }
 
 @Composable
-fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet("Pairing request", { engine.answerPairing(prompt.key, false) }) { close ->
+fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet(stringResource(R.string.pair_request_title), { engine.answerPairing(prompt.key, false) }) { close ->
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
         DeviceTile(prompt.peer)
-        Text("${prompt.name} wants to pair", maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(stringResource(R.string.pair_request_wants, prompt.name), maxLines = 1, overflow = TextOverflow.Ellipsis)
         Caption(prompt.peer.fingerprint)
     }
     Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
-    Muted("Confirm only if the other screen shows the same code.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+    Muted(stringResource(R.string.pair_request_hint), Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
     Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.CenterHorizontally)) {
-        Button({ engine.answerPairing(prompt.key, true); close() }, label = "Confirm", icon = R.drawable.ic_check, kind = ButtonKind.Primary)
-        Button({ engine.answerPairing(prompt.key, false); close() }, label = "Decline", kind = ButtonKind.Warning)
+        Button({ engine.answerPairing(prompt.key, true); close() }, label = stringResource(R.string.pair_confirm), icon = R.drawable.ic_check, kind = ButtonKind.Primary)
+        Button({ engine.answerPairing(prompt.key, false); close() }, label = stringResource(R.string.common_decline), kind = ButtonKind.Warning)
     }
 }
 
 @Composable
-fun CompareSheet(code: String, engine: Engine) = Sheet("Compare codes", { engine.stopComparing() }) {
+fun CompareSheet(code: String, engine: Engine) = Sheet(stringResource(R.string.pair_compare_title), { engine.stopComparing() }) {
     Frame { Well(padding = 12.dp) { Digits(code) } }
-    Muted("Check that the other device shows this code, then accept there.", Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+    Muted(stringResource(R.string.pair_compare_hint), Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
 }
 
 @Composable
 fun OfferCard(incoming: Incoming, engine: Engine) {
     val palette = LocalPalette.current
     var blocking by remember { mutableStateOf(false) }
-    val files = if (incoming.files == 1UL) "1 file" else "${incoming.files} files"
-    Card(R.drawable.ic_download, "Incoming files", palette.primary) {
+    val count = incoming.files.toInt()
+    val files = pluralStringResource(R.plurals.offer_files, count, count)
+    Card(R.drawable.ic_download, stringResource(R.string.offer_title), palette.primary) {
         PaddedWell {
-            Asker(incoming.sender, "${incoming.name} wants to send", "$files, ${bytes(incoming.bytes.toLong())}" + if (incoming.paired) "" else "  ·  ${incoming.sender.fingerprint}")
+            Asker(incoming.sender, stringResource(R.string.offer_wants_to_send, incoming.name), stringResource(R.string.offer_size, files, bytes(incoming.bytes.toLong())) + if (incoming.paired) "" else "  ·  ${incoming.sender.fingerprint}")
             if (incoming.files == 1UL) Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
             Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                Button({ engine.answerOffer(incoming.key, true) }, Modifier.weight(1f), label = "Accept", kind = ButtonKind.Primary)
-                if (incoming.paired) Button({ engine.acceptAlways(incoming.key) }, label = "Always accept")
-                Button({ engine.answerOffer(incoming.key, false) }, label = "Decline", kind = ButtonKind.Warning)
-                if (!incoming.paired) Button({ blocking = true }, label = "Block", kind = ButtonKind.Danger)
+                Button({ engine.answerOffer(incoming.key, true) }, Modifier.weight(1f), label = stringResource(R.string.offer_accept), kind = ButtonKind.Primary)
+                if (incoming.paired) Button({ engine.acceptAlways(incoming.key) }, label = stringResource(R.string.offer_always_accept))
+                Button({ engine.answerOffer(incoming.key, false) }, label = stringResource(R.string.common_decline), kind = ButtonKind.Warning)
+                if (!incoming.paired) Button({ blocking = true }, label = stringResource(R.string.offer_block), kind = ButtonKind.Danger)
             }
         }
     }
     if (blocking) {
         ConfirmDialog(
-            "Block ${incoming.name}?", "It can't send files or ask to pair. You can unblock it later.", "Block",
+            stringResource(R.string.offer_block_title, incoming.name), stringResource(R.string.offer_block_body), stringResource(R.string.offer_block),
             onConfirm = { blocking = false; engine.blockOffer(incoming.key) },
             onDismiss = { blocking = false },
         )
@@ -108,15 +111,15 @@ fun OfferCard(incoming: Incoming, engine: Engine) {
 }
 
 @Composable
-fun TextCard(shared: ReceivedText, engine: Engine) = Card(R.drawable.ic_clipboard, "Text from ${shared.name}") {
+fun TextCard(shared: ReceivedText, engine: Engine) = Card(R.drawable.ic_clipboard, stringResource(R.string.text_from, shared.name)) {
     PaddedWell {
         Text(shared.text, maxLines = 4, overflow = TextOverflow.Ellipsis)
         Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
             Button(
-                { engine.copy(shared.text); engine.markCopied(shared.key) }, label = if (shared.copied) "Copied" else "Copy",
+                { engine.copy(shared.text); engine.markCopied(shared.key) }, label = stringResource(if (shared.copied) R.string.common_copied else R.string.text_copy),
                 icon = if (shared.copied) R.drawable.ic_check else R.drawable.ic_copy, size = ButtonSize.Sm,
             )
-            Button({ engine.dismissText(shared.key) }, label = "Dismiss", kind = ButtonKind.Ghost, size = ButtonSize.Sm)
+            Button({ engine.dismissText(shared.key) }, label = stringResource(R.string.common_dismiss), kind = ButtonKind.Ghost, size = ButtonSize.Sm)
         }
     }
 }

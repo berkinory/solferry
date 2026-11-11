@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -167,9 +168,9 @@ class MainActivity : ComponentActivity() {
                     }
                     TabBar(
                         listOf(
-                            Tab("Transfer", R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
-                            Tab("History", R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
-                            Tab("Settings", R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
+                            Tab(stringResource(R.string.tab_transfer), R.drawable.ic_home, screen == Screen.Home) { screen = Screen.Home },
+                            Tab(stringResource(R.string.tab_history), R.drawable.ic_history, screen == Screen.History) { screen = Screen.History },
+                            Tab(stringResource(R.string.tab_settings), R.drawable.ic_settings, screen == Screen.Settings) { screen = Screen.Settings },
                         ),
                         Modifier.align(Alignment.BottomCenter),
                     )
