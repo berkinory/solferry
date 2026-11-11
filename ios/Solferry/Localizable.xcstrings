@@ -1,0 +1,201 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ from %@, in %@" : {},
+    "%@ wants to pair" : {},
+    "%@ wants to pair with this device" : {},
+    "%@ wants to send" : {},
+    "%@ wants to send you files" : {},
+    "%@: Couldn't save to %@" : {},
+    "%lld files" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld transfers" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transfer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transfers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld%%" : {},
+    "%lldd ago" : {},
+    "%lldh ago" : {},
+    "%lldm ago" : {},
+    "%lldmo ago" : {},
+    "192.168.1.20" : {
+      "shouldTranslate" : false
+    },
+    "A browser on the same network can send you files. To send files to one, pick them and choose Share via link." : {},
+    "Accept" : {},
+    "Add" : {},
+    "Always accept" : {},
+    "Block" : {},
+    "Block %@?" : {},
+    "Blocked" : {},
+    "Can't reach the server" : {},
+    "Cancel" : {},
+    "Change" : {},
+    "Check that the other device shows this code, then accept there." : {},
+    "Checking" : {},
+    "Clear" : {},
+    "Close" : {},
+    "Compare codes" : {},
+    "Confirm" : {},
+    "Confirm only if the other screen shows the same code." : {},
+    "Connected" : {},
+    "Connected, UDP 7842 is blocked" : {},
+    "Copied" : {},
+    "Copied to your clipboard" : {},
+    "Copy" : {},
+    "Copy code" : {},
+    "Copy link" : {},
+    "Couldn't use that folder" : {},
+    "Decline" : {},
+    "Device name" : {},
+    "Devices" : {},
+    "Devices on your network can see this one and ask to send." : {},
+    "Dismiss" : {},
+    "Enter a code" : {},
+    "Enter an IP address" : {},
+    "Failed" : {},
+    "Files" : {},
+    "Files received" : {},
+    "Files you send or receive show up here." : {},
+    "For a device on another network, or when this one can't be found nearby. Show a code here and enter it there." : {},
+    "Forget" : {},
+    "Forget %@?" : {},
+    "History" : {},
+    "Incoming files" : {},
+    "It can't send files or ask to pair. You can unblock it later." : {},
+    "It goes back to being an unpaired device until you pair again." : {},
+    "Last transfer" : {},
+    "Let others find me" : {},
+    "Looking for devices" : {},
+    "Looking for new devices on this network" : {},
+    "Lost access to %@, saving to the Solferry folder" : {},
+    "Name" : {},
+    "Nearby" : {},
+    "No app on the other device" : {},
+    "No transfers yet" : {},
+    "Nobody new can find this device. Paired devices can still reach it." : {},
+    "Not paired" : {},
+    "Offline" : {},
+    "Online" : {},
+    "Open Solferry on another device on this network and it shows up here." : {},
+    "Open Solferry to copy it" : {},
+    "Open it in a browser on the same network to download the files." : {},
+    "Open it in a browser on the same network to send files here." : {},
+    "Options for %@" : {},
+    "Pair" : {},
+    "Pair with a code" : {},
+    "Paired" : {},
+    "Paired with %@" : {},
+    "Pairing" : {},
+    "Pairing request" : {},
+    "Paste a sf1 code" : {},
+    "Photos and videos" : {},
+    "QR code" : {},
+    "Reach devices on other networks through a relay you run." : {},
+    "Receive via link" : {},
+    "Receive without asking" : {},
+    "Received" : {},
+    "Received %@" : {},
+    "Received files" : {},
+    "Receiving %@" : {},
+    "Reconnecting to %@" : {},
+    "Refused, check the link" : {},
+    "Relay" : {},
+    "Remove %@" : {},
+    "Reset" : {},
+    "Save" : {},
+    "Save files to" : {},
+    "Send" : {},
+    "Send files" : {},
+    "Send text" : {},
+    "Send text to %@" : {},
+    "Send to %lld devices" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Send to %lld device"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Send to %lld devices"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Sending %@" : {},
+    "Sent %@" : {},
+    "Settings" : {},
+    "Setup Guide" : {},
+    "Share via link" : {},
+    "Show a code" : {},
+    "Show code" : {},
+    "Solferry" : {
+      "shouldTranslate" : false
+    },
+    "Stop" : {},
+    "Tap to choose what to send" : {},
+    "Text from %@" : {},
+    "The Solferry folder in the Files app" : {},
+    "This device is at %@." : {},
+    "To %@" : {},
+    "Transfer" : {},
+    "Unblock" : {},
+    "Unnamed device" : {},
+    "Use a code" : {},
+    "Waiting for %@" : {},
+    "Works once, for 10 minutes." : {},
+    "https://relay.example.com#token" : {
+      "shouldTranslate" : false
+    },
+    "just now" : {},
+    "yesterday" : {}
+  },
+  "version" : "1.0"
+}
