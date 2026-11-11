@@ -8193,6 +8193,7 @@ dependencies = [
  "prost",
  "rand 0.10.3",
  "reqwest",
+ "rust-i18n",
  "rustls",
  "rustls-pki-types",
  "semver",

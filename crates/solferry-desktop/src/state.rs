@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -120,9 +121,9 @@ pub struct AppState {
     pub relay_health: Vec<RelayHealth>,
     pub joining: bool,
     /// Why the last code didn't work, shown under the field it was typed into.
-    pub join_error: Option<&'static str>,
+    pub join_error: Option<Cow<'static, str>>,
     pub pairing_address: bool,
-    pub address_error: Option<&'static str>,
+    pub address_error: Option<Cow<'static, str>>,
     pub paired_count: u32,
     pub fatal: Option<Error>,
 }
@@ -351,7 +352,7 @@ impl Transfer {
 
     pub fn outcome(&self) -> (Tone, String) {
         if let Phase::Failed(error) = &self.phase {
-            return (Tone::Error, explain(error).title.to_owned());
+            return (Tone::Error, explain(error).title.into_owned());
         }
         let verb = match self.direction {
             Direction::Sending => "Sent",

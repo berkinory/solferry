@@ -288,7 +288,7 @@ fn fatal_row(error: &Error, open: bool, cx: &mut Context<MainView>) -> AnyElemen
             cx.notify();
         }))
         .child(badge("fatal-badge".into(), Tone::Error, cx))
-        .child(label("fatal-text".into(), explanation.title.to_owned(), open))
+        .child(label("fatal-text".into(), explanation.title.into_owned(), open))
         .child(
             icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 14.)
                 .text_color(faded(cx)),

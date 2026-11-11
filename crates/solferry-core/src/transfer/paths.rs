@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use rust_i18n::t;
+
 const RESERVED: [&str; 22] = [
     "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8",
     "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
@@ -34,7 +36,7 @@ fn is_deceptive(c: char) -> bool {
 /// Makes a peer-chosen display name safe to show: no terminal escapes, no direction tricks.
 pub(crate) fn clean_label(label: &str) -> String {
     let clean: String = label.chars().filter(|c| !is_deceptive(*c)).take(MAX_LABEL_CHARS).collect();
-    if clean.trim().is_empty() { "Unnamed device".to_owned() } else { clean }
+    if clean.trim().is_empty() { t!("device.unnamed").into_owned() } else { clean }
 }
 
 /// True when a path inside `destination` already passes through a symbolic link.

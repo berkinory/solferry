@@ -71,7 +71,7 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                             ),
                     )
                     .children(
-                        state.join_error.map(|error| {
+                        state.join_error.clone().map(|error| {
                             ui::muted(error, cx).text_color(color(palette(cx).danger))
                         }),
                     ),
@@ -89,8 +89,10 @@ fn address_card(view: &MainView, state: &AppState, cx: &mut Context<MainView>) -
         let list: Vec<String> = own.iter().map(ToString::to_string).collect();
         ui::muted(format!("This device is at {}.", list.join(", ")), cx)
     });
-    let error =
-        state.address_error.map(|error| ui::muted(error, cx).text_color(color(palette(cx).danger)));
+    let error = state
+        .address_error
+        .clone()
+        .map(|error| ui::muted(error, cx).text_color(color(palette(cx).danger)));
     ui::card(Glyph::Link, "Enter an IP address", None, cx)
         .child(
             ui::padded_well(cx)
