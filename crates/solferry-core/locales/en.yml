@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Unnamed device"
+transfer:
+  and_more: "%{first} and more"
+about:
+  unreachable: "Can't reach %{name}"
+  declined: "%{name} declined"
+  busy: "%{name} is busy"
+  not_paired: "Pair with %{name} first"
+explain:
+  storage:
+    title: "Couldn't read or write a file"
+    next: "Check the folder, permissions and free space."
+  corrupt_data:
+    title: "Solferry's settings are damaged"
+    next: "Delete the damaged file in Solferry's data folder. You may need to pair devices again."
+  network_start:
+    title: "Networking didn't start"
+    next: "Restart Solferry to try again."
+  invalid_relay_url:
+    title: "That relay address isn't valid"
+    next: "Paste the full link your relay printed, like https://relay.example.com#token."
+  unreachable:
+    title: "Device can't be reached"
+    next: "Open Solferry there. On another network, use Tailscale or add your own relay."
+  relay_check_failed:
+    title: "A relay is not working"
+    next: "See its status in Settings."
+  not_paired:
+    title: "Pair with this device first"
+    next: "Only paired devices can reach it from here."
+  version_mismatch:
+    title: "Solferry versions don't match"
+    next: "Update Solferry on both devices."
+  busy:
+    title: "The other device is busy"
+    next: "Wait for its transfers to finish, then try again."
+  cancelled:
+    title: "Transfer cancelled"
+    next: "Send again to continue where it stopped."
+  declined:
+    title: "Transfer declined"
+    next: "The other person said no."
+  no_space:
+    title: "Not enough disk space"
+    next: "Free up space on the receiving device and try again."
+  delivery_failed:
+    title: "The files couldn't be saved"
+    next: "Check the download folder on the receiving device."
+  invalid_offer:
+    title: "Unsafe transfer refused"
+    next: "The other device offered files Solferry can't accept."
+  source_changed:
+    title: "A file changed during sending"
+    next: "Wait until it stops changing and try again."
+  unsupported_name:
+    title: "A file name can't be sent"
+    next: "Rename the file and try again."
+  nothing_to_send:
+    title: "Nothing to send"
+    next: "Choose at least one file. Shortcuts and links are skipped."
+  hash_mismatch:
+    title: "Damaged data was caught"
+    next: "The bad copy was discarded. Send it again."
+  connection_lost:
+    title: "Connection lost"
+    next: "Try again. Transfers continue where they stopped."
+  invalid_ticket:
+    title: "That code isn't valid"
+    next: "Paste the whole code, starting with sf1."
+  ticket_expired:
+    title: "That code expired"
+    next: "Codes last 10 minutes. Create a new one."
+  update:
+    title: "Couldn't update Solferry"
+    next: "Try again later, or download it from GitHub."
+  own_ticket:
+    title: "That's this device's own code"
+    next: "Enter it on the other device instead."
+  no_local_network:
+    title: "Not on a local network"
+    next: "Join Wi-Fi or a hotspot, then share again."
+  pairing_refused:
+    title: "Pairing was refused"
+    next: "Ask them to accept, or create a new code."
+  unknown_device:
+    title: "Device not found"
+    next: "It may have been removed."
+  ambiguous_device:
+    title: "More than one device matches"
+    next: "Choose the device from the list."
+  invalid_address:
+    title: "That address isn't valid"
+    next: "Enter an IP address like 192.168.1.20."
+  no_answer:
+    title: "Nothing answered at that address"
+    next: "Open Solferry there and check that it's visible to everyone."
+  protocol:
+    title: "Something went wrong in Solferry"
+    next: "This is a bug. Please report it with the details."

@@ -11,6 +11,7 @@ use gpui_kit::{
     px, svg,
 };
 use iroh::EndpointId;
+use rust_i18n::t;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
@@ -93,11 +94,14 @@ impl MainView {
             cx.notify();
         })
         .detach();
-        let code_input = cx.new(|cx| InputState::new(window, cx).placeholder("Paste a sf1 code"));
+        let code_input =
+            cx.new(|cx| InputState::new(window, cx).placeholder(t!("pairing.code_placeholder")));
         let address_input = cx.new(|cx| InputState::new(window, cx).placeholder("192.168.1.20"));
         let text_input =
-            cx.new(|cx| TextareaState::new(window, cx).placeholder("Type or paste text"));
-        let name_input = cx.new(|cx| InputState::new(window, cx).placeholder("This device's name"));
+            cx.new(|cx| TextareaState::new(window, cx).placeholder(t!("texts.placeholder")));
+        let name_input = cx.new(|cx| {
+            InputState::new(window, cx).placeholder(t!("settings.device.name_placeholder"))
+        });
         let relay_input =
             cx.new(|cx| InputState::new(window, cx).placeholder("https://relay.example.com#token"));
         cx.subscribe_in(&code_input, window, |view, _, event, _, cx| {
@@ -318,36 +322,12 @@ impl MainView {
         }
     }
 
-    pub fn answer(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::Answer { offer: key, accept }, cx);
-    }
-
-    pub fn accept_always(&mut self, key: u64, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::AcceptAlways(key), cx);
-    }
-
     pub fn answer_pairing(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
         self.state.update(cx, |state, cx| {
             state.pairing_prompts.retain(|prompt| prompt.key != key);
             cx.notify();
         });
         Self::command(Command::AnswerPairing { key, accept }, cx);
-    }
-
-    pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::BlockOffer(key), cx);
     }
 }
 
@@ -356,7 +336,7 @@ fn file_picker() -> PathPromptOptions {
         files: true,
         directories: true,
         multiple: true,
-        prompt: Some("Send".into()),
+        prompt: Some(t!("send.prompt").into()),
     }
 }
 

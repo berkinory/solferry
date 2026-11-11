@@ -1,5 +1,6 @@
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{AnyElement, Context, FontWeight, IntoElement, ParentElement, Styled, div, px};
+use rust_i18n::t;
 use solferry_core::{Direction, PastTransfer};
 
 use super::button::Button;
@@ -30,8 +31,8 @@ fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
         .gap(px(SPACE_SM))
         .h(px(room))
         .child(core)
-        .child(ui::text("No transfers yet").pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
-        .child(ui::muted("Files you send or receive show up here.", cx).text_center())
+        .child(ui::text(t!("history.empty.title")).pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
+        .child(ui::muted(t!("history.empty.body"), cx).text_center())
         .into_any_element()
 }
 
@@ -43,18 +44,19 @@ pub fn render(view: &MainView, room: f32, cx: &mut Context<MainView>) -> AnyElem
     let clear = Button::new("clear-history")
         .ghost()
         .xs()
-        .label("Clear")
+        .label(t!("history.clear"))
         .on_click(cx.listener(|_, _, _, cx| MainView::command(Command::ClearHistory, cx)))
         .into_any_element();
     let rows: Vec<_> = state.history.iter().map(|past| row(past, cx)).collect();
-    ui::card(Glyph::History, "History", Some(clear), cx)
+    ui::card(Glyph::History, &t!("history.title"), Some(clear), cx)
         .child(ui::well(cx).children(rows))
         .into_any_element()
 }
 
 fn row(past: &PastTransfer, cx: &Context<MainView>) -> AnyElement {
     let glyph = if past.direction == Direction::Sending { Glyph::Upload } else { Glyph::Download };
-    let outcome = if past.completed { format::bytes(past.bytes) } else { "Failed".to_owned() };
+    let outcome =
+        if past.completed { format::bytes(past.bytes) } else { t!("history.failed").into_owned() };
     let tone = if past.completed { cx.theme().muted_foreground } else { color(palette(cx).danger) };
     let title = div()
         .flex()

@@ -1,4 +1,5 @@
 use gpui_kit::{App, KeyBinding, Menu, MenuItem};
+use rust_i18n::t;
 
 gpui_kit::actions!(solferry, [Back, ChooseFiles, AddDevice, OpenSettings, Quit]);
 
@@ -22,11 +23,11 @@ pub fn install(cx: &mut App) {
     cx.set_menus([Menu {
         name: "Solferry".into(),
         items: vec![
-            MenuItem::action("Choose Files...", ChooseFiles),
-            MenuItem::action("Pair with a Code...", AddDevice),
-            MenuItem::action("Settings...", OpenSettings),
+            MenuItem::action(t!("menu.choose_files"), ChooseFiles),
+            MenuItem::action(t!("menu.pair_with_code"), AddDevice),
+            MenuItem::action(t!("menu.settings"), OpenSettings),
             MenuItem::separator(),
-            MenuItem::action("Quit Solferry", Quit),
+            MenuItem::action(t!("menu.quit"), Quit),
         ],
         disabled: false,
     }]);

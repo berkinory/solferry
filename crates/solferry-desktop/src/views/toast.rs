@@ -8,6 +8,7 @@ use gpui_kit::{
     IntoElement, ParentElement, SharedString, Stateful, StatefulInteractiveElement, Styled, div,
     ease_out_quint, px, rgb, white,
 };
+use rust_i18n::t;
 use solferry_core::{Direction, Error, explain};
 
 use super::main_view::MainView;
@@ -51,9 +52,11 @@ fn fitted(text: &str, budget: usize) -> String {
     format!("{}\u{2026}{}", start.trim_end(), end.trim_start())
 }
 
-/// A verb that always shows, then as much of the name as still fits.
-fn phrase(verb: &str, name: &str, budget: usize) -> String {
-    format!("{verb} {}", fitted(name, budget.saturating_sub(verb.len() + 1)))
+/// The template's own words always show, then as much of the name as still fits.
+fn phrase(template: &str, name: &str, budget: usize) -> String {
+    const SLOT: &str = "%{name}";
+    let room = budget.saturating_sub(template.len().saturating_sub(SLOT.len()));
+    template.replace(SLOT, &fitted(name, room))
 }
 
 /// Foreground fill and background text, sized by what it says, so it flips with the theme.
@@ -153,10 +156,10 @@ fn running_row(transfer: &Transfer, wide: bool, budget: usize, cx: &mut Context<
     let waiting = matches!(transfer.phase, Phase::Reconnecting);
     let pending = matches!(transfer.phase, Phase::Waiting);
     let line = match (&transfer.phase, transfer.direction) {
-        (Phase::Waiting, _) => phrase("Waiting for", &transfer.peer, budget),
-        (Phase::Reconnecting, _) => phrase("Reconnecting to", &transfer.peer, budget),
-        (_, Direction::Sending) => phrase("Sending", &transfer.title, budget),
-        (_, Direction::Receiving) => phrase("Receiving", &transfer.title, budget),
+        (Phase::Waiting, _) => phrase(&t!("pill.waiting"), &transfer.peer, budget),
+        (Phase::Reconnecting, _) => phrase(&t!("pill.reconnecting"), &transfer.peer, budget),
+        (_, Direction::Sending) => phrase(&t!("pill.sending"), &transfer.title, budget),
+        (_, Direction::Receiving) => phrase(&t!("pill.receiving"), &transfer.title, budget),
     };
     let tone = if waiting { rgb(RECONNECTING).into() } else { cx.theme().background };
     let key = SharedString::from(format!("pill-text-{id}-{waiting}-{pending}"));
@@ -213,7 +216,7 @@ fn many_row(running: &[&Transfer], open: bool, cx: &mut Context<MainView>) -> An
             cx.notify();
         }))
         .child(ring(fraction, cx.theme().background, RING))
-        .child(label(key, format!("{} transfers", running.len()), true))
+        .child(label(key, t!("pill.transfers", count = running.len()).into_owned(), true))
         .child(percent(fraction, cx))
         .child(
             icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 14.)
@@ -288,7 +291,7 @@ fn fatal_row(error: &Error, open: bool, cx: &mut Context<MainView>) -> AnyElemen
             cx.notify();
         }))
         .child(badge("fatal-badge".into(), Tone::Error, cx))
-        .child(label("fatal-text".into(), explanation.title.to_owned(), open))
+        .child(label("fatal-text".into(), explanation.title.into_owned(), open))
         .child(
             icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 14.)
                 .text_color(faded(cx)),
@@ -327,7 +330,7 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
             .text_size(px(14.))
             .font_weight(FontWeight::MEDIUM)
             .cursor_pointer()
-            .child(if restart { "Restart" } else { "Try again" })
+            .child(if restart { t!("toast.restart") } else { t!("toast.retry") })
             .on_click(cx.listener(move |view, _, _, cx| view.run_toast_action(&toast, cx)))
     });
     let closes = failed || restart;

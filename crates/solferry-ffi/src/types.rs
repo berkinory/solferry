@@ -171,7 +171,7 @@ impl Problem {
 impl From<&Error> for Problem {
     fn from(error: &Error) -> Self {
         let explanation = explain(error);
-        Self { title: explanation.title.to_owned(), next: explanation.next.to_owned() }
+        Self { title: explanation.title.into_owned(), next: explanation.next.into_owned() }
     }
 }
 

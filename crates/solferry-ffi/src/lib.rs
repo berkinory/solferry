@@ -45,6 +45,13 @@ pub fn lan_addresses() -> Vec<String> {
     solferry_core::lan_addresses().iter().map(ToString::to_string).collect()
 }
 
+/// Picks the language for every text the bridge returns, from a tag like `tr-TR` or `en_US`.
+/// Languages Solferry doesn't have fall back to English.
+#[uniffi::export]
+pub fn set_locale(locale: String) {
+    solferry_core::set_locale(&locale);
+}
+
 #[uniffi::export(with_foreign)]
 pub trait Listener: Send + Sync {
     fn update(&self, update: Update);

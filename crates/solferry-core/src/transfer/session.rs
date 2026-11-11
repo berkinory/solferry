@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use iroh::endpoint::{Connection, ConnectionError, RecvStream, SendStream};
+use rust_i18n::t;
 use solferry_proto::{
     Entry, HASH_LEN, Hello, Offer, PROTOCOL_VERSION, close, read_small_frame, write_frame,
 };
@@ -63,7 +64,7 @@ pub(crate) fn transfer_label(entries: &[Entry]) -> String {
     let top = |entry: &Entry| entry.path.split('/').next().unwrap_or_default().to_owned();
     let first = entries.first().map(top).unwrap_or_default();
     let others = entries.iter().map(top).filter(|name| *name != first).count();
-    if others == 0 { first } else { format!("{first} and more") }
+    if others == 0 { first } else { t!("transfer.and_more", first = first).into_owned() }
 }
 
 pub(crate) fn validate_offer(offer: &Offer) -> Result<Vec<PathBuf>> {
