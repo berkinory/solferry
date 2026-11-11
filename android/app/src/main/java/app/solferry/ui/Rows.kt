@@ -38,14 +38,6 @@ import app.solferry.design.MotionTokens
 import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
-import uniffi.solferry_ffi.TransferRoute
-
-private fun routeName(route: TransferRoute) = when (route) {
-    TransferRoute.LOCAL -> "local network"
-    TransferRoute.OVERLAY -> "overlay network"
-    TransferRoute.DIRECT -> "direct"
-    TransferRoute.RELAY -> "relay"
-}
 
 @Composable
 private fun RowBody(onClick: (() -> Unit)?, highlighted: Boolean = false, content: @Composable RowScope.() -> Unit) {

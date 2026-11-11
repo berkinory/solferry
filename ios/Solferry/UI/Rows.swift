@@ -1,14 +1,5 @@
 import SwiftUI
 
-private func routeName(_ route: TransferRoute) -> String {
-    switch route {
-    case .local: "local network"
-    case .overlay: "overlay network"
-    case .direct: "direct"
-    case .relay: "relay"
-    }
-}
-
 private struct RowBody<Content: View>: View {
     @Environment(\.palette) private var palette
     var highlighted = false

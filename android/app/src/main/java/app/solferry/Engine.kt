@@ -23,7 +23,9 @@ import uniffi.solferry_ffi.Reach
 import uniffi.solferry_ffi.SharedFile
 import uniffi.solferry_ffi.Solferry
 import uniffi.solferry_ffi.Update
+import uniffi.solferry_ffi.setLocale
 import java.io.File
+import java.util.Locale
 import kotlin.concurrent.thread
 
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
@@ -35,6 +37,9 @@ class Engine(private val context: Context) : Listener {
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
     private val multicast = context.getSystemService(WifiManager::class.java)
         .createMulticastLock("solferry").apply { setReferenceCounted(false); acquire() }
+    init {
+        setLocale(Locale.getDefault().toLanguageTag())
+    }
     val bridge = Solferry(File(context.filesDir, "solferry").path, received.path, deviceName(), this)
 
     init {

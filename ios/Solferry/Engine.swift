@@ -24,6 +24,7 @@ final class Engine {
     init() {
         let events = BridgeEvents()
         events.engine = self
+        setLocale(locale: Locale.preferredLanguages.first ?? "en")
         bridge = Solferry(
             dataDir: Engine.dataDirectory().path,
             downloadDir: Exporter.staging.path,
