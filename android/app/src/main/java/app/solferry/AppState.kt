@@ -67,6 +67,8 @@ data class AppState(
     val invite: String? = null,
     val joining: Boolean = false,
     val joinError: String? = null,
+    val pairingAddress: Boolean = false,
+    val addressError: String? = null,
     val update: AvailableUpdate? = null,
     val text: ReceivedText? = null,
     val toasts: List<Toast> = emptyList(),
@@ -107,12 +109,17 @@ data class AppState(
         is Update.PairingCode -> copy(pairingCode = update.code)
         is Update.Invite -> copy(invite = update.code)
         is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}").copy(
-            pairingCode = null, invite = null, joining = false, joinError = null,
+            pairingCode = null, invite = null, joining = false, joinError = null, pairingAddress = false, addressError = null,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
             reachable = reachable?.plus(update.device.identity.id),
         )
-        is Update.PairingFailed -> (if (joining) copy(joinError = update.problem.title) else toast(Tone.Error, update.problem.title)).copy(pairingCode = null, joining = false)
+        is Update.AddressFailed -> copy(pairingAddress = false, addressError = update.problem.title)
+        is Update.PairingFailed -> when {
+            joining -> copy(joinError = update.problem.title)
+            pairingAddress -> copy(addressError = update.problem.title)
+            else -> toast(Tone.Error, update.problem.title)
+        }.copy(pairingCode = null, joining = false, pairingAddress = false)
         is Update.SendFailed -> toast(Tone.Error, update.problem.title)
         is Update.TextReceived -> copy(
             text = ReceivedText(now, update.name, update.text, update.autoCopy),

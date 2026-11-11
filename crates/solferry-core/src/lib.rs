@@ -29,6 +29,6 @@ pub use node::{
 };
 pub use platform::Platform;
 pub use relay::RelayLink;
-pub use route::Route;
+pub use route::{Route, lan_addresses};
 pub use transfer::NamedFile;
 pub use trust::{BlockedDevice, Device};

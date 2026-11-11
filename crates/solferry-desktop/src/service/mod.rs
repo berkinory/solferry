@@ -47,6 +47,9 @@ pub enum Command {
     PairNearby {
         addr: EndpointAddr,
     },
+    PairAddress {
+        address: String,
+    },
     AnswerPairing {
         key: u64,
         accept: bool,
@@ -113,6 +116,7 @@ pub enum Update {
     Invite(String),
     Paired(Device),
     PairingFailed(Error),
+    AddressFailed(Error),
     SendFailed {
         name: String,
         addr: EndpointAddr,

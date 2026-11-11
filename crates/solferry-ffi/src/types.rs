@@ -322,6 +322,9 @@ pub enum Update {
     Paired {
         device: PairedDevice,
     },
+    AddressFailed {
+        problem: Problem,
+    },
     PairingFailed {
         problem: Problem,
     },

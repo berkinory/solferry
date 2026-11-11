@@ -179,11 +179,16 @@ class Engine(private val context: Context) : Listener {
         return clip?.getItemAt(0)?.coerceToText(context)?.toString()
     }
 
-    fun clearJoinError() = mutable.update { it.copy(joinError = null) }
+    fun clearPairingErrors() = mutable.update { it.copy(joinError = null, addressError = null) }
 
     fun join(code: String) {
         mutable.update { it.copy(joining = true, joinError = null) }
         bridge.join(code)
+    }
+
+    fun pairAddress(address: String) {
+        mutable.update { it.copy(pairingAddress = true, addressError = null) }
+        bridge.pairAddress(address)
     }
 
     fun setReach(reach: Reach) = bridge.setReach(reach)

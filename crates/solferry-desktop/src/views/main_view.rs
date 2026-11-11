@@ -67,6 +67,7 @@ pub struct MainView {
     pub fatal_open: bool,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
+    pub address_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
     pub relay_input: Entity<InputState>,
     pub text_input: Entity<TextareaState>,
@@ -93,6 +94,7 @@ impl MainView {
         })
         .detach();
         let code_input = cx.new(|cx| InputState::new(window, cx).placeholder("Paste a sf1 code"));
+        let address_input = cx.new(|cx| InputState::new(window, cx).placeholder("192.168.1.20"));
         let text_input =
             cx.new(|cx| TextareaState::new(window, cx).placeholder("Type or paste text"));
         let name_input = cx.new(|cx| InputState::new(window, cx).placeholder("This device's name"));
@@ -101,6 +103,12 @@ impl MainView {
         cx.subscribe_in(&code_input, window, |view, _, event, _, cx| {
             if matches!(event, InputEvent::PressEnter { .. }) {
                 pairing::join(view, cx);
+            }
+        })
+        .detach();
+        cx.subscribe_in(&address_input, window, |view, _, event, _, cx| {
+            if matches!(event, InputEvent::PressEnter { .. }) {
+                pairing::pair_address(view, cx);
             }
         })
         .detach();
@@ -136,6 +144,7 @@ impl MainView {
             fatal_open: false,
             targets: HashMap::new(),
             code_input,
+            address_input,
             name_input,
             relay_input,
             text_input,
@@ -171,7 +180,10 @@ impl MainView {
     }
 
     pub fn leave_page(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, _| state.join_error = None);
+        self.state.update(cx, |state, _| {
+            state.join_error = None;
+            state.address_error = None;
+        });
         if self.page == Page::Send {
             self.clear_pending(cx);
         } else {

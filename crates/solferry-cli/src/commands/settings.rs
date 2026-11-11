@@ -18,6 +18,9 @@ pub async fn status(data_dir: &Path) -> Result<()> {
     println!("relays    {relays}");
     let overlay = node.overlay_address().map_or("none".to_owned(), |ip| ip.to_string());
     println!("overlay   {overlay}");
+    let lan: Vec<String> = solferry_core::lan_addresses().iter().map(ToString::to_string).collect();
+    let lan = if lan.is_empty() { "none".to_owned() } else { lan.join(", ") };
+    println!("lan       {lan}");
     node.shutdown().await
 }
 

@@ -7,6 +7,8 @@ mod outbound;
 mod overlay;
 mod pairing;
 mod presence;
+mod probe;
+mod subnet;
 mod text;
 
 use std::collections::HashMap;
@@ -20,7 +22,7 @@ use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
 use solferry_proto::{ALPN_PAIR, ALPN_PRESENCE, ALPN_TEXT, ALPN_TRANSFER, close};
-use tokio::sync::{Semaphore, broadcast, mpsc};
+use tokio::sync::{Semaphore, broadcast, mpsc, watch};
 
 pub use confirm::PairingRequest;
 pub use health::RelayHealth;
@@ -66,6 +68,8 @@ pub(crate) struct Shared {
     pub(crate) invites: Mutex<HashMap<[u8; 32], u64>>,
     pair_listener: Mutex<Option<mpsc::Sender<PairingRequest>>>,
     pub(crate) mdns: Option<MdnsAddressLookup>,
+    /// Addresses typed in by hand that answered, kept in the nearby list while they answer.
+    addresses: watch::Sender<Vec<std::net::Ipv4Addr>>,
     pub(crate) inbound_slots: Arc<Semaphore>,
     pub(crate) stranger_slots: Arc<Semaphore>,
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
@@ -195,6 +199,7 @@ impl Node {
             invites: Mutex::new(HashMap::new()),
             pair_listener: Mutex::new(None),
             mdns: network.mdns,
+            addresses: watch::Sender::new(Vec::new()),
             inbound_slots: Arc::new(Semaphore::new(MAX_INBOUND)),
             stranger_slots: Arc::new(Semaphore::new(MAX_STRANGERS)),
             active: Mutex::new(HashMap::new()),
@@ -203,7 +208,7 @@ impl Node {
             uses_relays,
         });
         if !isolated {
-            overlay::answer_probes(shared.clone());
+            probe::answer_probes(shared.clone());
         }
         let router = Router::builder(network.endpoint)
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))

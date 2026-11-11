@@ -23,11 +23,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
 import app.solferry.Engine
 import app.solferry.R
 import app.solferry.design.SpaceTokens
+import uniffi.solferry_ffi.lanAddresses
 import uniffi.solferry_ffi.qrCode
 
 @Composable
@@ -35,7 +37,7 @@ fun AddDeviceSheet(
     state: AppState,
     engine: Engine,
     onClose: () -> Unit,
-) = Sheet("Pair with a code", { engine.clearJoinError(); onClose() }) {
+) = Sheet("Pair with a code", { engine.clearPairingErrors(); onClose() }) {
     var code by remember { mutableStateOf("") }
     val join = { if (code.isNotBlank()) engine.join(code.trim()) }
     Card(R.drawable.ic_qr, "Show a code") {
@@ -67,6 +69,27 @@ fun AddDeviceSheet(
             }
             state.joinError?.let { Muted(it, color = LocalPalette.current.danger) }
         }
+    }
+    AddressCard(state, engine)
+}
+
+/** For a device on another subnet, or on a network that keeps devices from finding each other. */
+@Composable
+private fun AddressCard(state: AppState, engine: Engine) = Card(R.drawable.ic_link, "Enter an IP address") {
+    var address by remember { mutableStateOf("") }
+    val own = remember { lanAddresses() }
+    val pair = { if (address.isNotBlank()) engine.pairAddress(address.trim()) }
+    PaddedWell {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+            Field(
+                address, { address = it }, "192.168.1.20", Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+                keyboardActions = KeyboardActions(onGo = { pair() }),
+            )
+            Button(pair, label = if (state.pairingAddress) "Pairing" else "Pair", kind = ButtonKind.Primary, enabled = !state.pairingAddress)
+        }
+        state.addressError?.let { Muted(it, color = LocalPalette.current.danger) }
+        if (own.isNotEmpty()) Muted("This device is at ${own.joinToString(", ")}.")
     }
 }
 

@@ -121,6 +121,8 @@ pub struct AppState {
     pub joining: bool,
     /// Why the last code didn't work, shown under the field it was typed into.
     pub join_error: Option<&'static str>,
+    pub pairing_address: bool,
+    pub address_error: Option<&'static str>,
     pub paired_count: u32,
     pub fatal: Option<Error>,
 }
@@ -193,10 +195,17 @@ impl AppState {
                 let title = explain(&error).title;
                 if self.joining {
                     self.join_error = Some(title);
+                } else if self.pairing_address {
+                    self.address_error = Some(title);
                 } else {
                     self.toast(Tone::Error, title, None);
                 }
                 self.joining = false;
+                self.pairing_address = false;
+            }
+            Update::AddressFailed(error) => {
+                self.address_error = Some(explain(&error).title);
+                self.pairing_address = false;
             }
             Update::TextShared { name, result } => {
                 if let Err(error) = result {
@@ -238,6 +247,8 @@ impl AppState {
         self.invite = None;
         self.joining = false;
         self.join_error = None;
+        self.pairing_address = false;
+        self.address_error = None;
         self.paired_count += 1;
         self.devices.retain(|known| known.id != device.id);
         if let Some(reachable) = &mut self.reachable {

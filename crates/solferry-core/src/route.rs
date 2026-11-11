@@ -3,6 +3,7 @@ use std::net::{IpAddr, Ipv4Addr};
 use futures::StreamExt;
 use iroh::endpoint::{Connection, Path};
 use iroh::{EndpointAddr, TransportAddr};
+use netdev::ipnet::Ipv4Net;
 use tokio::sync::broadcast;
 
 use crate::event::{Event, TransferId};
@@ -26,6 +27,10 @@ const VIRTUAL_PREFIXES: [&str; 11] = [
     "lxc",
     "vethernet",
 ];
+
+/// Interface name prefixes of cellular links. Carriers hand out private addresses too, but
+/// nobody on the local network can reach them.
+const CELLULAR_PREFIXES: [&str; 4] = ["rmnet", "ccmni", "pdp_ip", "wwan"];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
@@ -66,11 +71,15 @@ pub(crate) fn is_public(ip: IpAddr) -> bool {
     !is_local(ip) && !is_overlay(ip)
 }
 
+fn named(interface: &netdev::Interface, prefixes: &[&str]) -> bool {
+    let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
+    prefixes.iter().any(|prefix| name.starts_with(prefix))
+}
+
 /// This device's address on an overlay it joined, if any.
 pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
     netdev::get_interfaces().iter().find_map(|interface| {
-        let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-        if !TUNNEL_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
+        if !named(interface, &TUNNEL_PREFIXES) {
             return None;
         }
         interface.ipv4.iter().find_map(|net| {
@@ -78,6 +87,28 @@ pub(crate) fn overlay_address() -> Option<Ipv4Addr> {
             is_overlay(ip.into()).then_some(ip)
         })
     })
+}
+
+/// This device's private IPv4 networks that others can join, leaving out cellular links, overlays,
+/// containers and virtual machines.
+pub(crate) fn lan_networks() -> Vec<Ipv4Net> {
+    netdev::get_interfaces()
+        .into_iter()
+        .filter(|interface| interface.is_up() && !interface.is_loopback())
+        .filter(|interface| {
+            !named(interface, &TUNNEL_PREFIXES)
+                && !named(interface, &VIRTUAL_PREFIXES)
+                && !named(interface, &CELLULAR_PREFIXES)
+        })
+        .flat_map(|interface| interface.ipv4)
+        .filter(|net| net.addr().is_private())
+        .collect()
+}
+
+/// This device's private LAN addresses, for typing into another device that can't find it.
+#[must_use]
+pub fn lan_addresses() -> Vec<Ipv4Addr> {
+    lan_networks().iter().map(Ipv4Net::addr).collect()
 }
 
 /// Whether an unpaired device at `ip` may ask to send files: never across a relay or the internet.
@@ -125,32 +156,12 @@ pub(crate) async fn report_changes(
     std::future::pending::<()>().await;
 }
 
-/// Interface name prefixes of cellular links. Carriers hand out private addresses too, but
-/// nobody on the local network can reach them.
-const CELLULAR_PREFIXES: [&str; 4] = ["rmnet", "ccmni", "pdp_ip", "wwan"];
-
-/// This device's private IPv4 addresses on networks others can join, leaving out cellular links,
-/// containers and virtual machines.
-pub(crate) fn local_ipv4s() -> Vec<Ipv4Addr> {
-    netdev::get_interfaces()
-        .iter()
-        .filter(|interface| {
-            let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-            let skipped = VIRTUAL_PREFIXES.iter().chain(&TUNNEL_PREFIXES).chain(&CELLULAR_PREFIXES);
-            !skipped.into_iter().any(|prefix| name.starts_with(prefix))
-        })
-        .flat_map(|interface| interface.ipv4.iter().map(netdev::prelude::Ipv4Net::addr))
-        .filter(Ipv4Addr::is_private)
-        .collect()
-}
-
 /// This device's own addresses that are worth giving to another device.
 pub(crate) fn shareable_addrs(addrs: impl Iterator<Item = std::net::SocketAddr>) -> Vec<String> {
     let interfaces = netdev::get_interfaces();
     let is_virtual = |ip: IpAddr| {
         interfaces.iter().any(|interface| {
-            let name = interface.friendly_name.as_deref().unwrap_or(&interface.name).to_lowercase();
-            VIRTUAL_PREFIXES.iter().any(|prefix| name.starts_with(prefix))
+            named(interface, &VIRTUAL_PREFIXES)
                 && (interface.ipv4.iter().any(|net| IpAddr::V4(net.addr()) == ip)
                     || interface.ipv6.iter().any(|net| IpAddr::V6(net.addr()) == ip))
         })

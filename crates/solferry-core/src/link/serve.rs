@@ -42,7 +42,7 @@ struct State {
 
 /// Serves `mode` to browsers on this device's local networks until the returned link is dropped.
 pub(crate) async fn start(mode: Mode, events: broadcast::Sender<Event>) -> Result<Link> {
-    let addresses = route::local_ipv4s();
+    let addresses = route::lan_addresses();
     if addresses.is_empty() {
         return Err(Error::NoLocalNetwork);
     }

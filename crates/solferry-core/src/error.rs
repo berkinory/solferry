@@ -70,6 +70,10 @@ pub enum Error {
     UnknownDevice(String),
     #[error("{0} matches more than one device")]
     AmbiguousDevice(String),
+    #[error("invalid IP address {0}")]
+    InvalidAddress(String),
+    #[error("nothing answered at {0}")]
+    NoAnswer(String),
     #[error("protocol violation: {0}")]
     Protocol(String),
 }
