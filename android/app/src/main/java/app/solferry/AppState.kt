@@ -1,5 +1,6 @@
 package app.solferry
 
+import android.content.res.Resources
 import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Identity
@@ -31,9 +32,9 @@ data class Transfer(
 ) {
     val running get() = phase == Phase.Waiting || phase == Phase.Active || phase == Phase.Reconnecting
     val fraction get() = if (total == 0L) 1f else transferred.toFloat() / total
-    val outcome: Pair<Tone, String> get() {
+    fun outcome(res: Resources): Pair<Tone, String> {
         problem?.let { return Tone.Error to it.title }
-        return Tone.Success to "${if (sending) "Sent" else "Received"} $label"
+        return Tone.Success to res.getString(if (sending) R.string.transfer_sent else R.string.transfer_received, label)
     }
 }
 
@@ -81,7 +82,7 @@ data class AppState(
 ) {
     val strangers get() = nearby.filter { !it.known }
 
-    fun apply(update: Update, now: Long): AppState = when (update) {
+    fun apply(update: Update, now: Long, res: Resources): AppState = when (update) {
         is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility, update.checkUpdates), startProblem = null)
         is Update.StartFailed -> copy(startProblem = update.problem, startReason = update.reason)
         is Update.Devices -> copy(devices = update.devices)
@@ -91,24 +92,24 @@ data class AppState(
         is Update.Relays -> copy(relays = update.relays)
         is Update.RelayFailed -> toast(Tone.Error, update.problem.title)
         is Update.Blocked -> copy(blocked = update.devices)
-        is Update.UpdateAvailable -> toast(Tone.Success, "Solferry ${update.version} is available").copy(update = AvailableUpdate(update.version, update.page))
+        is Update.UpdateAvailable -> toast(Tone.Success, res.getString(R.string.updates_available, update.version)).copy(update = AvailableUpdate(update.version, update.page))
         is Update.Waiting -> begin(Transfer(update.id, update.peerName, update.label, true, total = update.bytes.toLong(), phase = Phase.Waiting))
         is Update.Started -> begin(Transfer(update.id, update.peerName, update.label, update.sending, total = update.bytes.toLong()))
         is Update.Progress -> transfer(update.id) { it.copy(transferred = update.transferred.toLong(), total = update.total.toLong(), phase = Phase.Active) }
         is Update.RouteChanged -> this
         is Update.Reconnecting -> transfer(update.id) { it.copy(phase = Phase.Reconnecting) }
-        is Update.Completed -> transfer(update.id) { it.copy(phase = Phase.Done, transferred = it.total) }.settle(update.id)
+        is Update.Completed -> transfer(update.id) { it.copy(phase = Phase.Done, transferred = it.total) }.settle(update.id, res)
         is Update.Cancelled -> copy(transfers = transfers.filter { it.id != update.id })
         is Update.Failed ->
             if (transfers.find { it.id == update.id }?.sending == true) copy(transfers = transfers.filter { it.id != update.id })
-            else transfer(update.id) { it.copy(phase = Phase.Failed, problem = update.problem) }.settle(update.id)
+            else transfer(update.id) { it.copy(phase = Phase.Failed, problem = update.problem) }.settle(update.id, res)
         is Update.Offer -> copy(offers = offers + update.incoming)
         is Update.OfferGone -> copy(offers = offers.filter { it.key != update.key })
         is Update.PairingRequest -> copy(pairings = pairings + PairingPrompt(update.key, update.peer, update.name, update.code))
         is Update.PairingGone -> copy(pairings = pairings.filter { it.key != update.key })
         is Update.PairingCode -> copy(pairingCode = update.code)
         is Update.Invite -> copy(invite = update.code)
-        is Update.Paired -> toast(Tone.Success, "Paired with ${update.device.name}").copy(
+        is Update.Paired -> toast(Tone.Success, res.getString(R.string.toast_paired, update.device.name)).copy(
             pairingCode = null, invite = null, joining = false, joinError = null, pairingAddress = false, addressError = null,
             devices = devices.filter { it.identity.id != update.device.identity.id } + update.device,
             pairedCount = pairedCount + 1,
@@ -128,17 +129,17 @@ data class AppState(
         is Update.LinkReady -> copy(link = LinkState(update.urls, update.receiving))
         is Update.LinkStopped -> copy(link = null)
         is Update.LinkFailed -> toast(Tone.Error, update.problem.title).copy(link = null)
-        is Update.LinkReceived -> toast(Tone.Success, "Received ${update.name}").copy(link = link?.let { it.copy(received = it.received + update.name) })
+        is Update.LinkReceived -> toast(Tone.Success, res.getString(R.string.transfer_received, update.name)).copy(link = link?.let { it.copy(received = it.received + update.name) })
     }
 
     fun toast(tone: Tone, title: String) =
         copy(toasts = (toasts + Toast(toastsMade + 1, tone, title)).takeLast(MAX_TOASTS), toastsMade = toastsMade + 1)
 
     /** The last transfer to end keeps the pill for a moment. One ending beside others moves to a toast underneath. */
-    private fun settle(id: String): AppState {
+    private fun settle(id: String, res: Resources): AppState {
         val ended = transfers.find { it.id == id } ?: return this
         if (transfers.none { it.running }) return this
-        val (tone, title) = ended.outcome
+        val (tone, title) = ended.outcome(res)
         return copy(transfers = transfers - ended).toast(tone, title)
     }
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Solferry</string>
+
+    <!-- Shared across screens -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_dismiss">Dismiss</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Incoming files</string>
+    <string name="text_from">Text from %1$s</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Pairing request</string>
+
+    <!-- Settings -->
+    <string name="folder_downloads">Downloads/Solferry</string>
+    <string name="updates_available">Solferry %1$s is available</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Waiting for %1$s</string>
+    <string name="transfer_reconnecting">Reconnecting to %1$s</string>
+    <string name="transfer_sending">Sending %1$s</string>
+    <string name="transfer_receiving">Receiving %1$s</string>
+    <string name="transfer_sent">Sent %1$s</string>
+    <string name="transfer_received">Received %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d transfer</item>
+        <item quantity="other">%d transfers</item>
+    </plurals>
+    <string name="toast_paired">Paired with %1$s</string>
+    <string name="error_save_failed">%1$s: Couldn\'t save to %2$s</string>
+    <string name="error_save_downloads">Downloads</string>
+    <string name="error_save_recovered">Received files</string>
+    <string name="error_folder_unusable">Couldn\'t use that folder</string>
+    <string name="error_folder_lost">Lost access to %1$s, saving to %2$s</string>
+    <string name="error_open_file">Couldn\'t open that file, try sharing it again</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Requests and arrivals</string>
+    <string name="channel_transfers">Transfers in progress</string>
+    <string name="channel_standby">Receiving in the background</string>
+    <plurals name="notify_progress">
+        <item quantity="one">Moving %d transfer</item>
+        <item quantity="other">Moving %d transfers</item>
+    </plurals>
+    <string name="notify_standby">Ready to receive</string>
+    <string name="notify_offer_body">%1$s wants to send you files</string>
+    <string name="notify_pairing_body">%1$s wants to pair with this device</string>
+    <string name="notify_text_copied">Copied to your clipboard</string>
+    <string name="notify_text_open">Open Solferry to copy it</string>
+    <string name="notify_received_title">Files received</string>
+    <string name="notify_received_body">%1$s from %2$s, in %3$s</string>
+</resources>
