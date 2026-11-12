@@ -186,4 +186,11 @@
     <string name="notify_text_open">Open Solferry om het te kopiëren</string>
     <string name="notify_received_title">Bestanden ontvangen</string>
     <string name="notify_received_body">%1$s van %2$s, in %3$s</string>
+    <string name="permissions_title">Toestemmingen</string>
+    <string name="permissions_notifications">Meldingen</string>
+    <string name="permissions_notifications_detail">Laat je weten wanneer er bestanden, tekst of een koppelverzoek binnenkomen, en laat Solferry op de achtergrond ontvangen.</string>
+    <string name="permissions_allowed">Toegestaan</string>
+    <string name="permissions_off">Uit</string>
+    <string name="permissions_allow">Toestaan</string>
+    <string name="permissions_open_settings">Instellingen openen</string>
 </resources>

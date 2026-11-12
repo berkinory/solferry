@@ -186,4 +186,11 @@
     <string name="notify_text_open">Öffne Solferry, um ihn zu kopieren</string>
     <string name="notify_received_title">Dateien empfangen</string>
     <string name="notify_received_body">%1$s von %2$s, gespeichert in %3$s</string>
+    <string name="permissions_title">Berechtigungen</string>
+    <string name="permissions_notifications">Benachrichtigungen</string>
+    <string name="permissions_notifications_detail">Sagt dir Bescheid, wenn Dateien, Text oder eine Kopplungsanfrage ankommen, und lässt Solferry im Hintergrund empfangen.</string>
+    <string name="permissions_allowed">Erlaubt</string>
+    <string name="permissions_off">Aus</string>
+    <string name="permissions_allow">Erlauben</string>
+    <string name="permissions_open_settings">Einstellungen öffnen</string>
 </resources>

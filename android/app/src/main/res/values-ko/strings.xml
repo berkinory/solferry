@@ -182,4 +182,11 @@
     <string name="notify_text_open">Solferry를 열어 복사하세요</string>
     <string name="notify_received_title">파일을 받았어요</string>
     <string name="notify_received_body">%2$s에서 보낸 %1$s, 저장 위치: %3$s</string>
+    <string name="permissions_title">권한</string>
+    <string name="permissions_notifications">알림</string>
+    <string name="permissions_notifications_detail">파일, 텍스트, 페어링 요청이 오면 알려 주고 백그라운드에서도 계속 받을 수 있게 해요.</string>
+    <string name="permissions_allowed">허용됨</string>
+    <string name="permissions_off">꺼짐</string>
+    <string name="permissions_allow">허용</string>
+    <string name="permissions_open_settings">설정 열기</string>
 </resources>

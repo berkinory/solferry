@@ -50,6 +50,7 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.stri
             }
         }
     }
+    PermissionsCard()
     RelayCard(state, engine)
     SaveFolderCard(state, engine)
     Card(R.drawable.ic_view, stringResource(R.string.settings_find_title)) {

@@ -186,4 +186,11 @@
     <string name="notify_text_open">Kopyalamak için Solferry\'yi aç</string>
     <string name="notify_received_title">Dosyalar alındı</string>
     <string name="notify_received_body">%2$s gönderdi: %1$s. %3$s klasörüne kaydedildi.</string>
+    <string name="permissions_title">İzinler</string>
+    <string name="permissions_notifications">Bildirimler</string>
+    <string name="permissions_notifications_detail">Dosya, metin ya da eşleşme isteği geldiğinde haber verir ve Solferry\'nin arka planda dosya almasını sağlar.</string>
+    <string name="permissions_allowed">İzin verildi</string>
+    <string name="permissions_off">Kapalı</string>
+    <string name="permissions_allow">İzin ver</string>
+    <string name="permissions_open_settings">Ayarları aç</string>
 </resources>

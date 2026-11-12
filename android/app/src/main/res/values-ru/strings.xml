@@ -194,4 +194,11 @@
     <string name="notify_text_open">Откройте Solferry, чтобы скопировать</string>
     <string name="notify_received_title">Файлы получены</string>
     <string name="notify_received_body">%1$s от %2$s, в папке %3$s</string>
+    <string name="permissions_title">Разрешения</string>
+    <string name="permissions_notifications">Уведомления</string>
+    <string name="permissions_notifications_detail">Сообщают, когда приходят файлы, текст или запрос на сопряжение, и позволяют Solferry принимать файлы в фоне.</string>
+    <string name="permissions_allowed">Разрешено</string>
+    <string name="permissions_off">Выключено</string>
+    <string name="permissions_allow">Разрешить</string>
+    <string name="permissions_open_settings">Открыть настройки</string>
 </resources>

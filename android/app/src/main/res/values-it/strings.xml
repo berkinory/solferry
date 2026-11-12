@@ -190,4 +190,11 @@
     <string name="notify_text_open">Apri Solferry per copiarlo</string>
     <string name="notify_received_title">File ricevuti</string>
     <string name="notify_received_body">%1$s da %2$s, in %3$s</string>
+    <string name="permissions_title">Autorizzazioni</string>
+    <string name="permissions_notifications">Notifiche</string>
+    <string name="permissions_notifications_detail">Ti avvisa quando arrivano file, testo o una richiesta di abbinamento, e permette a Solferry di ricevere in background.</string>
+    <string name="permissions_allowed">Consentito</string>
+    <string name="permissions_off">Disattivato</string>
+    <string name="permissions_allow">Consenti</string>
+    <string name="permissions_open_settings">Apri impostazioni</string>
 </resources>

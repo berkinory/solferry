@@ -182,4 +182,11 @@
     <string name="notify_text_open">打开 Solferry 即可复制</string>
     <string name="notify_received_title">已收到文件</string>
     <string name="notify_received_body">来自 %2$s 的 %1$s，已保存到 %3$s</string>
+    <string name="permissions_title">权限</string>
+    <string name="permissions_notifications">通知</string>
+    <string name="permissions_notifications_detail">收到文件、文本或配对请求时提醒你，并让 Solferry 在后台继续接收。</string>
+    <string name="permissions_allowed">已允许</string>
+    <string name="permissions_off">已关闭</string>
+    <string name="permissions_allow">允许</string>
+    <string name="permissions_open_settings">打开设置</string>
 </resources>

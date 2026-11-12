@@ -65,6 +65,7 @@ fun OnboardingScreen(state: AppState, engine: Engine, onDone: () -> Unit) {
                 Muted(stringResource(R.string.onboarding_name_hint))
             }
         }
+        PermissionsCard()
         Spacer(Modifier.height(SpaceTokens.xs.dp))
         Button(start, Modifier.fillMaxWidth(), label = stringResource(R.string.onboarding_start), kind = ButtonKind.Primary, enabled = ready)
     } }

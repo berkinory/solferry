@@ -190,4 +190,11 @@
     <string name="notify_text_open">Open Solferry to copy it</string>
     <string name="notify_received_title">Files received</string>
     <string name="notify_received_body">%1$s from %2$s, in %3$s</string>
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_notifications">Notifications</string>
+    <string name="permissions_notifications_detail">Tells you when files, text or a pairing request arrive, and keeps Solferry receiving in the background.</string>
+    <string name="permissions_allowed">Allowed</string>
+    <string name="permissions_off">Off</string>
+    <string name="permissions_allow">Allow</string>
+    <string name="permissions_open_settings">Open settings</string>
 </resources>

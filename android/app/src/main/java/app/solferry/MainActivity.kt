@@ -1,9 +1,7 @@
 package app.solferry
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -104,13 +102,7 @@ class MainActivity : ComponentActivity() {
                 val picked: (List<Uri>) -> Unit = { uris -> if (uris.isNotEmpty()) shared = (shared + uris).distinct() }
                 val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), picked)
                 val media = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(), picked)
-                val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
                 var onboarded by remember { mutableStateOf(engine.onboarded) }
-                LaunchedEffect(onboarded) {
-                    if (onboarded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                }
                 if (!onboarded) {
                     OnboardingScreen(state, engine) { onboarded = true }
                     return@SolferryTheme

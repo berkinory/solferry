@@ -182,4 +182,11 @@
     <string name="notify_text_open">Solferry を開いてコピーしてください</string>
     <string name="notify_received_title">ファイルを受信しました</string>
     <string name="notify_received_body">%2$s から %1$s。保存先: %3$s</string>
+    <string name="permissions_title">アクセス許可</string>
+    <string name="permissions_notifications">通知</string>
+    <string name="permissions_notifications_detail">ファイル、テキスト、ペアリングのリクエストが届いたときにお知らせし、バックグラウンドでの受信を続けます。</string>
+    <string name="permissions_allowed">許可済み</string>
+    <string name="permissions_off">オフ</string>
+    <string name="permissions_allow">許可</string>
+    <string name="permissions_open_settings">設定を開く</string>
 </resources>
