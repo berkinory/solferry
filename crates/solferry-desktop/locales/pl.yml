@@ -4,7 +4,7 @@ tray:
   quit: "Zakończ"
 menu:
   choose_files: "Wybierz pliki..."
-  pair_with_code: "Sparuj za pomocą kodu..."
+  pair_with_code: "Sparuj przy użyciu kodu..."
   settings: "Ustawienia..."
   quit: "Zakończ Solferry"
 notification:
@@ -33,20 +33,20 @@ format:
     minutes: "%{count} min temu"
     hours: "%{count} godz. temu"
     yesterday: "wczoraj"
-    days: "%{count} dn. temu"
+    days: "%{count} dni temu"
     months: "%{count} mies. temu"
 toast:
   update_ready: "Solferry %{version} jest gotowe"
   install_failed: "Nie udało się zainstalować aktualizacji"
   clipboard_empty: "W schowku nie ma tekstu"
-  paired: "Sparowano z: %{name}"
+  paired: "Sparowano: %{name}"
   link_received: "Odebrano %{name} z przeglądarki"
   sent: "Wysłano: %{title}"
   received: "Odebrano: %{title}"
   restart: "Uruchom ponownie"
   retry: "Spróbuj ponownie"
 pill:
-  waiting: "Czekanie na: %{name}"
+  waiting: "Oczekiwanie na: %{name}"
   reconnecting: "Ponowne łączenie z: %{name}"
   sending: "Wysyłanie: %{name}"
   receiving: "Odbieranie: %{name}"
@@ -58,10 +58,10 @@ nav:
 sheet:
   close: "Zamknij"
 home:
-  drop: "Upuść pliki do wysłania"
+  drop: "Upuść tu pliki, aby je wysłać"
   release: "Puść, aby wysłać"
   click: "lub kliknij, aby wybrać"
-  next_step: "Przejdą do następnego kroku"
+  next_step: "Potem wybierz urządzenia"
 devices:
   title: "Urządzenia"
   nearby: "W pobliżu"
@@ -78,9 +78,9 @@ devices:
   pair: "Sparuj"
 radar:
   use_code: "Użyj kodu"
-  looking: "Szukanie urządzeń"
+  looking: "Wyszukiwanie urządzeń"
   hint: "Otwórz Solferry na innym urządzeniu w tej sieci, a pojawi się tutaj."
-  scanning: "Szukanie nowych urządzeń w tej sieci"
+  scanning: "Wyszukiwanie nowych urządzeń w tej sieci"
 send:
   title: "Wyślij"
   prompt: "Wyślij"
@@ -98,18 +98,18 @@ link:
   share_title: "Udostępnij przez link"
   no_app:
     title: "Brak aplikacji na drugim urządzeniu"
-    body: "Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać do niej pliki, wybierz je i użyj opcji Udostępnij przez link."
+    body: "Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać pliki do przeglądarki, wybierz je i kliknij „Udostępnij przez link”."
     receive: "Odbierz przez link"
 history:
   title: "Historia"
   clear: "Wyczyść"
-  failed: "Niepowodzenie"
+  failed: "Nie udało się"
   empty:
     title: "Brak transferów"
     body: "Tutaj pojawią się wysłane i odebrane pliki."
 texts:
   from: "Tekst od: %{name}"
-  dismiss: "Odrzuć"
+  dismiss: "Zamknij"
   copy: "Kopiuj"
   copied: "Skopiowano"
   title: "Wyślij tekst"
@@ -125,11 +125,11 @@ offers:
   wants_to_send: "%{name} chce wysłać"
   accept: "Akceptuj"
   always: "Zawsze akceptuj"
-  always_tooltip: "Nie pytaj o pliki od: %{name}"
+  always_tooltip: "Nie pytaj więcej o pliki od: %{name}"
   decline: "Odrzuć"
   block: "Zablokuj"
 pairing:
-  title: "Sparuj za pomocą kodu"
+  title: "Sparuj przy użyciu kodu"
   show_code: "Pokaż kod"
   enter_code: "Wpisz kod"
   code_placeholder: "Wklej kod sf1"
@@ -137,11 +137,11 @@ pairing:
   pairing: "Parowanie..."
   address_title: "Wpisz adres IP"
   own_addresses: "Adres tego urządzenia: %{addresses}."
-  invite_hint: "Dla urządzenia w innej sieci lub gdy tego nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam."
+  invite_hint: "Gdy drugie urządzenie jest w innej sieci albo tego urządzenia nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam."
   invite: "Pokaż kod"
   copy: "Kopiuj kod"
   copied: "Skopiowano"
-  expires: "Działa raz, przez 10 minut."
+  expires: "Kod jest jednorazowy i ważny 10 minut."
 confirm:
   title: "Prośba o sparowanie"
   wants_to_pair: "%{name} chce się sparować"
@@ -149,12 +149,12 @@ confirm:
   decline: "Odrzuć"
   hint: "Potwierdź tylko, jeśli drugi ekran pokazuje ten sam kod."
   compare_title: "Porównaj kody"
-  compare_hint: "Sprawdź, czy drugie urządzenie pokazuje ten kod, i zaakceptuj tam."
+  compare_hint: "Sprawdź, czy drugie urządzenie pokazuje ten sam kod, i zaakceptuj na nim."
 dialog:
   cancel: "Anuluj"
   forget:
     title: "Zapomnieć %{name}?"
-    body: "Stanie się niesparowanym urządzeniem, dopóki nie sparujesz go ponownie."
+    body: "Urządzenie nie będzie już sparowane, dopóki nie sparujesz go ponownie."
     action: "Zapomnij"
   block:
     title: "Zablokować %{name}?"
@@ -162,7 +162,7 @@ dialog:
     action: "Zablokuj"
 onboarding:
   title: "Witaj w Solferry"
-  body: "Przesyłaj pliki między swoimi urządzeniami. Bez konta, nic w chmurze."
+  body: "Przesyłaj pliki między swoimi urządzeniami. Bez konta i bez chmury."
   name_label: "Nazwa Twojego urządzenia"
   name_hint: "Urządzenia w pobliżu widzą tę nazwę."
   start: "Zaczynamy"
@@ -176,19 +176,19 @@ settings:
     change: "Zmień"
     choose: "Wybierz"
   visibility:
-    title: "Pozwól się znaleźć"
-    visible: "Urządzenia w Twojej sieci widzą to urządzenie i mogą prosić o wysłanie plików."
+    title: "Widoczne dla innych"
+    visible: "Urządzenia w Twojej sieci widzą to urządzenie i mogą proponować mu pliki."
     hidden: "Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć."
   tray:
     title: "Pokaż w zasobniku"
     title_macos: "Pokaż na pasku menu"
-    shown: "Solferry zostaje w zasobniku, gotowe do odbioru po zamknięciu okna."
-    shown_macos: "Solferry zostaje na pasku menu, gotowe do odbioru po zamknięciu okna."
+    shown: "Solferry pozostaje w zasobniku systemowym i odbiera pliki nawet po zamknięciu okna."
+    shown_macos: "Solferry pozostaje na pasku menu i odbiera pliki nawet po zamknięciu okna."
     hidden: "Zamknięcie okna kończy działanie Solferry."
-    hidden_macos: "Solferry zostaje w Docku po zamknięciu okna."
+    hidden_macos: "Po zamknięciu okna Solferry pozostaje w Docku."
   login:
     title: "Otwieraj po zalogowaniu"
-    on: "Solferry uruchamia się po cichu po zalogowaniu, gotowe do odbioru."
+    on: "Solferry uruchamia się w tle po zalogowaniu i jest gotowe do odbioru."
     off: "Solferry działa tylko wtedy, gdy je otworzysz."
   language:
     title: "Język"
@@ -206,7 +206,7 @@ relays:
   remove: "Usuń"
   unreachable: "Nie można połączyć z serwerem"
   refused: "Odrzucono, sprawdź link"
-  udp_blocked: "Połączono, UDP 7842 jest zablokowany"
+  udp_blocked: "Połączono, ale UDP 7842 jest zablokowany"
   connected: "Połączono"
 updates:
   title: "Aktualizacje"
@@ -215,9 +215,9 @@ updates:
   idle: "Solferry %{version}"
   checking: "Sprawdzanie aktualizacji..."
   up_to_date: "Solferry %{version} jest aktualne"
-  downloading: "Pobieranie %{version}, %{percent}%"
+  downloading: "Pobieranie %{version}: %{percent}%"
   ready: "Solferry %{version} jest gotowe"
-  available: "Dostępne jest Solferry %{version}"
+  available: "Dostępna jest wersja Solferry %{version}"
   failed: "Nie udało się sprawdzić aktualizacji"
   restart: "Uruchom ponownie"
   download: "Pobierz"

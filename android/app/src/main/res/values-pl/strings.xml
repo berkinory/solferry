@@ -3,7 +3,7 @@
     <!-- Shared across screens -->
     <string name="common_send">Wyślij</string>
     <string name="common_cancel">Anuluj</string>
-    <string name="common_dismiss">Odrzuć</string>
+    <string name="common_dismiss">Zamknij</string>
     <string name="common_decline">Odrzuć</string>
     <string name="common_paste">Wklej</string>
     <string name="common_copied">Skopiowano</string>
@@ -29,7 +29,7 @@
     <string name="ago_minutes">%1$d min temu</string>
     <string name="ago_hours">%1$d godz. temu</string>
     <string name="ago_yesterday">wczoraj</string>
-    <string name="ago_days">%1$d dn. temu</string>
+    <string name="ago_days">%1$d dni temu</string>
     <string name="ago_months">%1$d mies. temu</string>
 
     <!-- Home -->
@@ -42,14 +42,14 @@
     <string name="devices_last_transfer">Ostatni transfer</string>
     <string name="devices_forget">Zapomnij</string>
     <string name="devices_forget_title">Zapomnieć %1$s?</string>
-    <string name="devices_forget_body">Stanie się niesparowanym urządzeniem, dopóki nie sparujesz go ponownie.</string>
+    <string name="devices_forget_body">Urządzenie nie będzie już sparowane, dopóki nie sparujesz go ponownie.</string>
     <string name="nearby_title">W pobliżu</string>
     <string name="nearby_use_code">Użyj kodu</string>
-    <string name="nearby_searching">Szukanie urządzeń</string>
+    <string name="nearby_searching">Wyszukiwanie urządzeń</string>
     <string name="nearby_searching_hint">Otwórz Solferry na innym urządzeniu w tej sieci, a pojawi się tutaj.</string>
-    <string name="nearby_scanning">Szukanie nowych urządzeń w tej sieci</string>
+    <string name="nearby_scanning">Wyszukiwanie nowych urządzeń w tej sieci</string>
     <string name="browser_title">Brak aplikacji na drugim urządzeniu</string>
-    <string name="browser_body">Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać do niej pliki, wybierz je i użyj opcji Udostępnij przez link.</string>
+    <string name="browser_body">Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać pliki do przeglądarki, wybierz je i kliknij „Udostępnij przez link”.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Przychodzące pliki</string>
@@ -97,12 +97,12 @@
     <string name="pair_request_hint">Potwierdź tylko, jeśli drugi ekran pokazuje ten sam kod.</string>
     <string name="pair_confirm">Potwierdź</string>
     <string name="pair_compare_title">Porównaj kody</string>
-    <string name="pair_compare_hint">Sprawdź, czy drugie urządzenie pokazuje ten kod, i zaakceptuj tam.</string>
-    <string name="pair_code_title">Sparuj za pomocą kodu</string>
+    <string name="pair_compare_hint">Sprawdź, czy drugie urządzenie pokazuje ten sam kod, i zaakceptuj na nim.</string>
+    <string name="pair_code_title">Sparuj przy użyciu kodu</string>
     <string name="pair_show_title">Pokaż kod</string>
-    <string name="pair_show_hint">Dla urządzenia w innej sieci lub gdy tego nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam.</string>
+    <string name="pair_show_hint">Gdy drugie urządzenie jest w innej sieci albo tego urządzenia nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam.</string>
     <string name="pair_show_code">Pokaż kod</string>
-    <string name="pair_invite_expiry">Działa raz, przez 10 minut.</string>
+    <string name="pair_invite_expiry">Kod jest jednorazowy i ważny 10 minut.</string>
     <string name="pair_copy_code">Kopiuj kod</string>
     <string name="pair_enter_title">Wpisz kod</string>
     <string name="pair_enter_placeholder">Wklej kod sf1</string>
@@ -114,11 +114,11 @@
     <string name="history_clear">Wyczyść</string>
     <string name="history_empty_title">Brak transferów</string>
     <string name="history_empty_body">Tutaj pojawią się wysłane i odebrane pliki.</string>
-    <string name="history_failed">Niepowodzenie</string>
+    <string name="history_failed">Nie udało się</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Witaj w Solferry</string>
-    <string name="onboarding_body">Przesyłaj pliki między swoimi urządzeniami. Bez konta, nic w chmurze.</string>
+    <string name="onboarding_body">Przesyłaj pliki między swoimi urządzeniami. Bez konta i bez chmury.</string>
     <string name="onboarding_name_title">Nazwa Twojego urządzenia</string>
     <string name="onboarding_name_hint">Urządzenia w pobliżu widzą tę nazwę.</string>
     <string name="onboarding_start">Zaczynamy</string>
@@ -128,8 +128,8 @@
     <string name="settings_name_title">Nazwa urządzenia</string>
     <string name="settings_name_placeholder">Nazwa</string>
     <string name="settings_save">Zapisz</string>
-    <string name="settings_find_title">Pozwól się znaleźć</string>
-    <string name="settings_find_on">Urządzenia w Twojej sieci widzą to urządzenie i mogą prosić o wysłanie plików.</string>
+    <string name="settings_find_title">Widoczne dla innych</string>
+    <string name="settings_find_on">Urządzenia w Twojej sieci widzą to urządzenie i mogą proponować mu pliki.</string>
     <string name="settings_find_off">Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć.</string>
     <string name="settings_background_title">Odbieraj w tle</string>
     <string name="settings_background_body">Solferry pozostaje dostępne nawet po zamknięciu. Wyświetla powiadomienie i zużywa więcej baterii.</string>
@@ -142,7 +142,7 @@
     <string name="relay_add">Dodaj</string>
     <string name="relay_checking">Sprawdzanie</string>
     <string name="relay_connected">Połączono</string>
-    <string name="relay_udp_blocked">Połączono, UDP 7842 jest zablokowany</string>
+    <string name="relay_udp_blocked">Połączono, ale UDP 7842 jest zablokowany</string>
     <string name="relay_refused">Odrzucono, sprawdź link</string>
     <string name="relay_unreachable">Nie można połączyć z serwerem</string>
     <string name="folder_title">Zapisuj pliki w</string>
@@ -151,13 +151,13 @@
     <string name="folder_change">Zmień</string>
     <string name="updates_title">Aktualizacje</string>
     <string name="updates_auto">Automatycznie sprawdzaj aktualizacje</string>
-    <string name="updates_available">Dostępne jest Solferry %1$s</string>
+    <string name="updates_available">Dostępna jest wersja Solferry %1$s</string>
     <string name="updates_download">Pobierz</string>
     <string name="blocked_title">Zablokowane</string>
     <string name="blocked_unblock">Odblokuj</string>
 
     <!-- Transfer pill and toasts -->
-    <string name="transfer_waiting">Czekanie na: %1$s</string>
+    <string name="transfer_waiting">Oczekiwanie na: %1$s</string>
     <string name="transfer_reconnecting">Ponowne łączenie z: %1$s</string>
     <string name="transfer_sending">Wysyłanie: %1$s</string>
     <string name="transfer_receiving">Odbieranie: %1$s</string>
@@ -169,13 +169,13 @@
         <item quantity="many">%d transferów</item>
         <item quantity="other">%d transferu</item>
     </plurals>
-    <string name="toast_paired">Sparowano z: %1$s</string>
-    <string name="error_save_failed">%1$s: nie udało się zapisać w %2$s</string>
+    <string name="toast_paired">Sparowano: %1$s</string>
+    <string name="error_save_failed">%1$s: nie udało się zapisać w folderze %2$s</string>
     <string name="error_save_downloads">Pobrane</string>
     <string name="error_save_recovered">Odebrane pliki</string>
     <string name="error_folder_unusable">Nie można użyć tego folderu</string>
-    <string name="error_folder_lost">Utracono dostęp do %1$s, zapis w %2$s</string>
-    <string name="error_open_file">Nie udało się otworzyć pliku, spróbuj udostępnić go ponownie</string>
+    <string name="error_folder_lost">Brak dostępu do folderu %1$s. Pliki trafią do: %2$s</string>
+    <string name="error_open_file">Nie udało się otworzyć pliku. Spróbuj udostępnić go ponownie</string>
 
     <!-- Notifications -->
     <string name="channel_asks">Prośby i odebrane pliki</string>
@@ -193,5 +193,5 @@
     <string name="notify_text_copied">Skopiowano do schowka</string>
     <string name="notify_text_open">Otwórz Solferry, aby go skopiować</string>
     <string name="notify_received_title">Odebrano pliki</string>
-    <string name="notify_received_body">%1$s od: %2$s, w %3$s</string>
+    <string name="notify_received_body">%1$s od: %2$s, w folderze %3$s</string>
 </resources>

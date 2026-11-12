@@ -4,10 +4,10 @@ device:
 transfer:
   and_more: "%{first} i inne"
 about:
-  unreachable: "Nie można połączyć z: %{name}"
+  unreachable: "Brak połączenia z: %{name}"
   declined: "%{name}: odrzucono"
   busy: "%{name}: zajęte"
-  not_paired: "Najpierw sparuj z: %{name}"
+  not_paired: "Najpierw sparuj urządzenie: %{name}"
 explain:
   storage:
     title: "Nie udało się odczytać ani zapisać pliku"
@@ -19,11 +19,11 @@ explain:
     title: "Nie udało się uruchomić sieci"
     next: "Uruchom ponownie Solferry, aby spróbować jeszcze raz."
   invalid_relay_url:
-    title: "Ten adres przekaźnika jest nieprawidłowy"
-    next: "Wklej pełny link wyświetlony przez przekaźnik, np. https://relay.example.com#token."
+    title: "Nieprawidłowy adres przekaźnika"
+    next: "Wklej cały link wyświetlony przez przekaźnik, np. https://relay.example.com#token."
   unreachable:
-    title: "Nie można połączyć z urządzeniem"
-    next: "Otwórz tam Solferry. W innej sieci użyj Tailscale lub dodaj własny przekaźnik."
+    title: "Urządzenie jest niedostępne"
+    next: "Otwórz na nim Solferry. Jeśli jest w innej sieci, użyj Tailscale lub dodaj własny przekaźnik."
   relay_check_failed:
     title: "Przekaźnik nie działa"
     next: "Sprawdź jego stan w Ustawieniach."
@@ -31,16 +31,16 @@ explain:
     title: "Najpierw sparuj to urządzenie"
     next: "Tylko sparowane urządzenia mogą się z nim stąd połączyć."
   version_mismatch:
-    title: "Wersje Solferry się nie zgadzają"
+    title: "Wersje Solferry są niezgodne"
     next: "Zaktualizuj Solferry na obu urządzeniach."
   busy:
     title: "Drugie urządzenie jest zajęte"
-    next: "Poczekaj, aż skończy przesyłanie, i spróbuj ponownie."
+    next: "Poczekaj, aż zakończy trwające transfery, i spróbuj ponownie."
   cancelled:
-    title: "Przesyłanie anulowane"
-    next: "Wyślij ponownie, aby wznowić od miejsca przerwania."
+    title: "Transfer anulowany"
+    next: "Wyślij ponownie, a transfer wznowi się od miejsca przerwania."
   declined:
-    title: "Przesyłanie odrzucone"
+    title: "Transfer odrzucony"
     next: "Druga osoba odmówiła."
   no_space:
     title: "Za mało miejsca na dysku"
@@ -49,13 +49,13 @@ explain:
     title: "Nie udało się zapisać plików"
     next: "Sprawdź folder pobierania na urządzeniu odbierającym."
   invalid_offer:
-    title: "Odrzucono niebezpieczne przesyłanie"
+    title: "Odrzucono niebezpieczny transfer"
     next: "Drugie urządzenie zaoferowało pliki, których Solferry nie może przyjąć."
   source_changed:
     title: "Plik zmienił się podczas wysyłania"
     next: "Poczekaj, aż przestanie się zmieniać, i spróbuj ponownie."
   unsupported_name:
-    title: "Nie można wysłać nazwy pliku"
+    title: "Nieobsługiwana nazwa pliku"
     next: "Zmień nazwę pliku i spróbuj ponownie."
   nothing_to_send:
     title: "Nic do wysłania"
@@ -65,25 +65,25 @@ explain:
     next: "Wadliwa kopia została odrzucona. Wyślij ponownie."
   connection_lost:
     title: "Utracono połączenie"
-    next: "Spróbuj ponownie. Przesyłanie wznowi się od miejsca przerwania."
+    next: "Spróbuj ponownie. Transfer wznowi się od miejsca przerwania."
   invalid_ticket:
     title: "Ten kod jest nieprawidłowy"
-    next: "Wklej cały kod, zaczynający się od sf1."
+    next: "Wklej cały kod. Zaczyna się od sf1."
   ticket_expired:
     title: "Ten kod wygasł"
     next: "Kody są ważne 10 minut. Utwórz nowy."
   update:
     title: "Nie udało się zaktualizować Solferry"
-    next: "Spróbuj później lub pobierz z GitHuba."
+    next: "Spróbuj później lub pobierz nową wersję z GitHuba."
   own_ticket:
-    title: "To kod tego urządzenia"
+    title: "To kod z tego urządzenia"
     next: "Wpisz go na drugim urządzeniu."
   no_local_network:
-    title: "Brak sieci lokalnej"
+    title: "Brak połączenia z siecią lokalną"
     next: "Połącz się z Wi-Fi lub hotspotem i udostępnij ponownie."
   pairing_refused:
     title: "Parowanie odrzucone"
-    next: "Poproś o akceptację lub utwórz nowy kod."
+    next: "Poproś drugą osobę o akceptację lub utwórz nowy kod."
   unknown_device:
     title: "Nie znaleziono urządzenia"
     next: "Mogło zostać usunięte."
@@ -95,7 +95,7 @@ explain:
     next: "Wpisz adres IP, np. 192.168.1.20."
   no_answer:
     title: "Brak odpowiedzi pod tym adresem"
-    next: "Otwórz tam Solferry i sprawdź, czy jest widoczne dla wszystkich."
+    next: "Otwórz tam Solferry i sprawdź, czy jest widoczne dla innych."
   protocol:
-    title: "Coś poszło nie tak w Solferry"
-    next: "To błąd. Zgłoś go razem ze szczegółami."
+    title: "W Solferry wystąpił błąd"
+    next: "To błąd w aplikacji. Zgłoś go razem ze szczegółami."
