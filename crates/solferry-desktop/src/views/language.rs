@@ -4,8 +4,8 @@ use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::popover::Popover;
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
-    Anchor, AnyElement, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
-    StatefulInteractiveElement, Styled, div, px,
+    Anchor, AnyElement, App, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
+    StatefulInteractiveElement, Styled, div, img, px,
 };
 use rust_i18n::t;
 use solferry_core::Config;
@@ -17,29 +17,25 @@ use crate::assets::{Glyph, icon};
 use crate::service::Command;
 use crate::tokens::{RADIUS_FLOOR, SPACE_MD, TYPE_LABEL};
 
-/// Each language under its own name, so anyone can find theirs.
-const LANGUAGES: &[(&str, &str)] = &[
-    ("en", "English"),
-    ("tr", "Türkçe"),
-    ("de", "Deutsch"),
-    ("fr", "Français"),
-    ("es", "Español"),
-    ("pt", "Português"),
-    ("it", "Italiano"),
-    ("nl", "Nederlands"),
-    ("pl", "Polski"),
-    ("ru", "Русский"),
-    ("uk", "Українська"),
-    ("ja", "日本語"),
-    ("ko", "한국어"),
-    ("zh-Hans", "简体中文"),
-    ("zh-Hant", "繁體中文"),
-    ("id", "Bahasa Indonesia"),
-    ("vi", "Tiếng Việt"),
-    ("sv", "Svenska"),
-    ("cs", "Čeština"),
-    ("ro", "Română"),
+/// Each language under its own name, so anyone can find theirs, with the flag it is shown by.
+const LANGUAGES: &[(&str, &str, &str)] = &[
+    ("en", "English", "gb"),
+    ("tr", "Türkçe", "tr"),
+    ("de", "Deutsch", "de"),
+    ("fr", "Français", "fr"),
+    ("it", "Italiano", "it"),
+    ("es", "Español", "es"),
+    ("pt", "Português", "br"),
+    ("ru", "Русский", "ru"),
+    ("uk", "Українська", "ua"),
+    ("ja", "日本語", "jp"),
+    ("ko", "한국어", "kr"),
+    ("zh", "简体中文", "cn"),
+    ("nl", "Nederlands", "nl"),
+    ("pl", "Polski", "pl"),
+    ("he", "עברית", "il"),
 ];
+const FLAG: f32 = 18.0;
 const MENU_HEIGHT: f32 = 320.0;
 
 /// Shows the app in `language`, or in the system's when there is none.
@@ -53,8 +49,8 @@ pub fn apply(language: Option<&str>) {
 fn name(language: Option<&str>) -> SharedString {
     LANGUAGES
         .iter()
-        .find(|(tag, _)| Some(*tag) == language)
-        .map_or_else(|| t!("settings.language.system").into(), |(_, name)| (*name).into())
+        .find(|(tag, ..)| Some(*tag) == language)
+        .map_or_else(|| t!("settings.language.system").into(), |(_, name, _)| (*name).into())
 }
 
 fn choose(view: &MainView, language: Option<&str>, cx: &mut Context<MainView>) {
@@ -97,7 +93,14 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                     .text_size(px(TYPE_LABEL))
                     .cursor_pointer()
                     .hover(|style| style.bg(cx.theme().accent))
-                    .child(name(language))
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .gap(px(10.))
+                            .child(badge(language, cx))
+                            .child(name(language)),
+                    )
                     .children(
                         chosen.then(|| icon(Glyph::Check, 16.).text_color(cx.theme().foreground)),
                     )
@@ -130,5 +133,17 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 fn iter_choices() -> impl Iterator<Item = Option<&'static str>> {
-    std::iter::once(None).chain(LANGUAGES.iter().map(|(tag, _)| Some(*tag)))
+    std::iter::once(None).chain(LANGUAGES.iter().map(|(tag, ..)| Some(*tag)))
+}
+
+/// The language's flag, or the globe for the system's choice.
+fn badge(language: Option<&str>, cx: &App) -> AnyElement {
+    match LANGUAGES.iter().find(|(tag, ..)| Some(*tag) == language) {
+        Some((_, _, country)) => {
+            img(format!("flags/{country}.svg")).size(px(FLAG)).flex_none().into_any_element()
+        }
+        None => {
+            icon(Glyph::Language, FLAG).text_color(cx.theme().muted_foreground).into_any_element()
+        }
+    }
 }

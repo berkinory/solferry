@@ -27,28 +27,23 @@ import app.solferry.R
 import app.solferry.design.SpaceTokens
 import java.util.Locale
 
-/** Each language by its own name, so anyone can find theirs whatever the app shows now. */
+/** Each language by its own name, so anyone can find theirs whatever the app shows now, with its flag. */
 private val LANGUAGES = listOf(
-    "en" to "English",
-    "tr" to "Türkçe",
-    "de" to "Deutsch",
-    "fr" to "Français",
-    "es" to "Español",
-    "pt" to "Português",
-    "it" to "Italiano",
-    "nl" to "Nederlands",
-    "pl" to "Polski",
-    "ru" to "Русский",
-    "uk" to "Українська",
-    "ja" to "日本語",
-    "ko" to "한국어",
-    "zh-Hans" to "简体中文",
-    "zh-Hant" to "繁體中文",
-    "id" to "Bahasa Indonesia",
-    "vi" to "Tiếng Việt",
-    "sv" to "Svenska",
-    "cs" to "Čeština",
-    "ro" to "Română",
+    Triple("en", "English", "🇬🇧"),
+    Triple("tr", "Türkçe", "🇹🇷"),
+    Triple("de", "Deutsch", "🇩🇪"),
+    Triple("fr", "Français", "🇫🇷"),
+    Triple("it", "Italiano", "🇮🇹"),
+    Triple("es", "Español", "🇪🇸"),
+    Triple("pt", "Português", "🇧🇷"),
+    Triple("ru", "Русский", "🇷🇺"),
+    Triple("uk", "Українська", "🇺🇦"),
+    Triple("ja", "日本語", "🇯🇵"),
+    Triple("ko", "한국어", "🇰🇷"),
+    Triple("zh", "简体中文", "🇨🇳"),
+    Triple("nl", "Nederlands", "🇳🇱"),
+    Triple("pl", "Polski", "🇵🇱"),
+    Triple("he", "עברית", "🇮🇱"),
 )
 
 /** The app's own language. Android recreates the activity once it changes. */
@@ -59,10 +54,11 @@ fun LanguageCard() {
     var chosen by remember { mutableStateOf(locales.applicationLocales[0]?.toLanguageTag()) }
     var picking by remember { mutableStateOf(false) }
     val system = stringResource(R.string.language_system)
-    val options = listOf(null to system) + LANGUAGES
+    val options = listOf(Triple(null, system, null)) + LANGUAGES
     val label = chosen?.let { tag ->
         // A language set from the system's per-app screen can carry a region this list doesn't name.
-        LANGUAGES.firstOrNull { it.first == tag }?.second ?: Locale.forLanguageTag(tag).let { it.getDisplayName(it) }
+        LANGUAGES.firstOrNull { it.first == tag }?.let { "${it.third}  ${it.second}" }
+            ?: Locale.forLanguageTag(tag).let { it.getDisplayName(it) }
     } ?: system
     Card(R.drawable.ic_language, stringResource(R.string.language_title)) {
         Well(padding = SpaceTokens.lg.dp, onClick = { picking = true }) {
@@ -76,8 +72,8 @@ fun LanguageCard() {
         Sheet(stringResource(R.string.language_title), { picking = false }) { close ->
             Frame {
                 Well {
-                    options.forEach { (tag, name) ->
-                        LanguageRow(name, tag == chosen) {
+                    options.forEach { (tag, name, flag) ->
+                        LanguageRow(name, flag, tag == chosen) {
                             close()
                             chosen = tag
                             locales.applicationLocales = tag?.let { LocaleList.forLanguageTags(it) } ?: LocaleList.getEmptyLocaleList()
@@ -90,7 +86,7 @@ fun LanguageCard() {
 }
 
 @Composable
-private fun LanguageRow(name: String, selected: Boolean, onClick: () -> Unit) {
+private fun LanguageRow(name: String, flag: String?, selected: Boolean, onClick: () -> Unit) {
     val palette = LocalPalette.current
     Row(
         Modifier.fillMaxWidth().clip(ControlShape).background(if (selected) palette.raised else Color.Transparent)
@@ -98,6 +94,7 @@ private fun LanguageRow(name: String, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.md.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (flag != null) Text(flag, Modifier.padding(end = SpaceTokens.md.dp))
         Text(name, Modifier.weight(1f), maxLines = 1)
         if (selected) Glyph(R.drawable.ic_check, palette.primary, 18)
     }

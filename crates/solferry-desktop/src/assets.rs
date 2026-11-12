@@ -106,6 +106,28 @@ pub fn icon(glyph: Glyph, size: f32) -> Svg {
     svg().path(glyph.path()).size(px(size)).flex_none()
 }
 
+/// Flags for the language picker, drawn in their own colors.
+fn flag_bytes(path: &str) -> Option<&'static [u8]> {
+    Some(match path {
+        "flags/gb.svg" => include_bytes!("../assets/flags/gb.svg"),
+        "flags/tr.svg" => include_bytes!("../assets/flags/tr.svg"),
+        "flags/de.svg" => include_bytes!("../assets/flags/de.svg"),
+        "flags/fr.svg" => include_bytes!("../assets/flags/fr.svg"),
+        "flags/it.svg" => include_bytes!("../assets/flags/it.svg"),
+        "flags/es.svg" => include_bytes!("../assets/flags/es.svg"),
+        "flags/br.svg" => include_bytes!("../assets/flags/br.svg"),
+        "flags/ru.svg" => include_bytes!("../assets/flags/ru.svg"),
+        "flags/ua.svg" => include_bytes!("../assets/flags/ua.svg"),
+        "flags/jp.svg" => include_bytes!("../assets/flags/jp.svg"),
+        "flags/kr.svg" => include_bytes!("../assets/flags/kr.svg"),
+        "flags/cn.svg" => include_bytes!("../assets/flags/cn.svg"),
+        "flags/nl.svg" => include_bytes!("../assets/flags/nl.svg"),
+        "flags/pl.svg" => include_bytes!("../assets/flags/pl.svg"),
+        "flags/il.svg" => include_bytes!("../assets/flags/il.svg"),
+        _ => return None,
+    })
+}
+
 pub struct Assets;
 
 impl AssetSource for Assets {
@@ -113,7 +135,7 @@ impl AssetSource for Assets {
         if path == MARK {
             return Ok(Some(Cow::Borrowed(include_bytes!("../assets/mark.svg"))));
         }
-        if let Some(bytes) = glyph_bytes(path) {
+        if let Some(bytes) = glyph_bytes(path).or_else(|| flag_bytes(path)) {
             return Ok(Some(Cow::Borrowed(bytes)));
         }
         gpui_kit::assets::Assets.load(path)
