@@ -7,8 +7,12 @@ ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 NOTES=$(awk -v heading="## $VERSION" '
     $0 == heading || index($0, heading " ") == 1 { found = 1; next }
     found && /^## / { exit }
-    found { print }
-' "$ROOT/CHANGELOG.md" | sed -e '/./,$!d' -e ':a' -e '/^\n*$/{$d;N;ba' -e '}')
+    found && (started || $0 != "") {
+        started = 1
+        pending = pending $0 "\n"
+        if ($0 != "") { printf "%s", pending; pending = "" }
+    }
+' "$ROOT/CHANGELOG.md")
 [ -n "$NOTES" ] || {
     echo "CHANGELOG.md has no notes for $VERSION" >&2
     exit 1
