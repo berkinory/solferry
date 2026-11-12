@@ -281,6 +281,11 @@ impl AppState {
             Event::Present { peer } => {
                 self.reachable.get_or_insert_with(HashSet::new).insert(peer);
             }
+            Event::Absent { peer } => {
+                if let Some(reachable) = &mut self.reachable {
+                    reachable.remove(&peer);
+                }
+            }
             Event::LinkText { text } => {
                 if let Some(link) = &mut self.link {
                     link.texts.push(text);

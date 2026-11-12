@@ -63,7 +63,7 @@ import uniffi.solferry_ffi.setLocale
 
 private enum class Screen { Home, History, Settings }
 
-private const val PRESENCE_EVERY_MS = 5_000L
+private const val PRESENCE_EVERY_MS = 3_000L
 
 class MainActivity : ComponentActivity() {
     private var shared by mutableStateOf<List<Uri>>(emptyList())
@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         Notifier.appVisible = false
+        (application as SolferryApp).engine.leaveUnlessStaying()
         super.onStop()
     }
 

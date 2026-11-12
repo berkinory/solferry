@@ -20,7 +20,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 ### Fixed
 
 - A device you just paired no longer stays in Nearby with a Pair button.
-- Paired devices show as online or offline within seconds instead of within 20.
+- Paired devices show as online or offline within seconds instead of within 20. A device that quits, or a phone that goes to the background, tells its paired devices, so they show it offline at once.
 - Paired devices show as online right away when one is on a router's 2.4 GHz band and the other on 5 GHz, or when a phone drops multicast to save power. Before, they could look offline for minutes.
 - Choosing a tab on desktop no longer also presses the button underneath it.
 - Windows shows notifications for incoming files, texts and pairing requests. Before, it showed none.

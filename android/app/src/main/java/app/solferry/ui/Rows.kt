@@ -80,13 +80,13 @@ private fun DeviceRow(
     var forgetting by remember { mutableStateOf(false) }
     Column {
         RowBody({ open = !open }, highlighted = open) {
-            DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), near != null || online == true)
+            DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), (online ?: (near != null)))
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 // Two paired devices under one name, usually one reinstalled, tell apart by key.
                 val key = if (twin) " · ${device.identity.fingerprint}" else ""
                 when {
-                    near != null || online == true -> StatusLine(stringResource(R.string.device_online) + key, palette.successFill)
+                    (online ?: (near != null)) -> StatusLine(stringResource(R.string.device_online) + key, palette.successFill)
                     online == null -> StatusLine(stringResource(R.string.device_paired) + key)
                     else -> StatusLine(stringResource(R.string.device_offline) + key, palette.inkMuted.copy(alpha = 0.5f))
                 }

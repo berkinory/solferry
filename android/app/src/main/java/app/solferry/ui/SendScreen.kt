@@ -69,8 +69,10 @@ fun SendSheet(
     LaunchedEffect(Unit) { appeared = true }
     val mine = state.devices.map { device ->
         val near = state.nearby.find { it.identity.id == device.identity.id }
+        // Presence decides once it has answered; until then being seen nearby is the best guess.
+        val live = state.reachable?.contains(device.identity.id) ?: (near != null)
         val detail = when {
-            near != null || state.reachable?.contains(device.identity.id) == true -> R.string.device_online
+            live -> R.string.device_online
             state.reachable != null -> R.string.device_offline
             else -> R.string.device_paired
         }
