@@ -14,10 +14,94 @@
     },
     "NSLocalNetworkUsageDescription" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry findet deine anderen Geräte in diesem Netzwerk und sendet Dateien direkt an sie."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Solferry finds your other devices on this network and sends files straight to them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry encuentra tus otros dispositivos en esta red y les envía archivos directamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry trouve vos autres appareils sur ce réseau et leur envoie des fichiers directement."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry מוצאת את המכשירים האחרים שלך ברשת הזו ושולחת אליהם קבצים ישירות."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry trova gli altri tuoi dispositivi su questa rete e invia i file direttamente a loro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry はこのネットワーク上のほかのデバイスを見つけて、ファイルを直接送ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry가 이 네트워크에서 다른 기기를 찾아 파일을 바로 보내요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry vindt je andere apparaten op dit netwerk en stuurt bestanden er rechtstreeks naartoe."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry znajduje Twoje inne urządzenia w tej sieci i wysyła do nich pliki bezpośrednio."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Solferry encontra seus outros dispositivos nesta rede e envia arquivos direto para eles."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry находит другие ваши устройства в этой сети и отправляет файлы прямо на них."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry bu ağdaki diğer cihazlarını bulur ve dosyaları doğrudan onlara gönderir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry знаходить інші ваші пристрої в цій мережі й надсилає файли прямо на них."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solferry 会查找此网络中你的其他设备，并直接向它们发送文件。"
           }
         }
       }
