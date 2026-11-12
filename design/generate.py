@@ -66,8 +66,8 @@ def radii(tokens):
     }
 
 
-# A desktop window is read from further away than a phone.
-DESKTOP_SCALE = 1.08
+# A desktop window sits among denser native apps than a phone screen does.
+DESKTOP_SCALE = 0.95
 
 
 def scales(tokens):
@@ -203,7 +203,7 @@ def desktop_theme(tokens):
 def main():
     tokens = derive(json.loads((HERE / "tokens.json").read_text()))
     check(tokens)
-    desktop = {**tokens, **{group: {name: round(size * DESKTOP_SCALE) for name, size in tokens[group].items()} for group in ("type", "space")}}
+    desktop = {**tokens, **{group: {name: round(size * DESKTOP_SCALE) for name, size in tokens[group].items()} for group in ("type", "space", "corner")}}
     rust_tokens = ROOT / "crates/solferry-desktop/src/tokens.rs"
     rust_tokens.write_text(rust(desktop))
     subprocess.run(["rustfmt", "--edition", "2024", str(rust_tokens)], check=True, cwd=ROOT)

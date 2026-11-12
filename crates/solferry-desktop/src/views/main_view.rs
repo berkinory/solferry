@@ -29,7 +29,7 @@ use crate::tokens::{SPACE_SM, TYPE_LABEL};
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const FLY_FOR: Duration = Duration::from_millis(380);
 const CONTENT_WIDTH: f32 = 720.0;
-const HEADER_HEIGHT: f32 = 60.0;
+const HEADER_HEIGHT: f32 = 53.0;
 const CONTENT_TOP: f32 = 4.0;
 /// The mark's art sits low in its box, and letters read high in theirs.
 const MARK_LIFT: f32 = -2.0;
@@ -455,9 +455,9 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .flex()
         .items_center()
         .justify_center()
-        .gap(px(7.))
+        .gap(px(6.))
         .child(
-            svg().path(MARK).size(px(17.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
+            svg().path(MARK).size(px(15.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
         )
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

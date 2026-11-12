@@ -35,7 +35,7 @@ pub fn sheet(view: &MainView, link: &LinkView, cx: &mut Context<MainView>) -> An
             },
         )));
     let received = (!link.received.is_empty()).then(|| {
-        let rows = link.received.iter().map(|name| ui::text(name.clone()).truncate().p(px(6.)));
+        let rows = link.received.iter().map(|name| ui::text(name.clone()).truncate().p(px(5.)));
         ui::card(Glyph::Download, &t!("link.received"), None, cx).child(ui::well(cx).children(rows))
     });
     let content = div().flex().flex_col().gap(px(SPACE_SM)).child(code).children(received).child(

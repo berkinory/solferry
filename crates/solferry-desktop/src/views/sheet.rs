@@ -15,8 +15,8 @@ use super::ui;
 use crate::assets::Glyph;
 use crate::tokens::{RADIUS_CARD, SPACE_MD, SPACE_SM};
 
-const TOP: f32 = 40.0;
-const TRAVEL: f32 = 180.0;
+const TOP: f32 = 35.0;
+const TRAVEL: f32 = 158.0;
 
 /// Comes up from the bottom over the home screen, only as tall as what it holds.
 pub fn present(
@@ -31,7 +31,7 @@ pub fn present(
         .flex_none()
         .items_center()
         .justify_center()
-        .h(px(49.))
+        .h(px(43.))
         .child(ui::text(title).font_weight(FontWeight::MEDIUM))
         .child(
             div().absolute().left(px(SPACE_SM)).child(

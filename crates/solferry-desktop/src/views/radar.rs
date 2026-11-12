@@ -15,12 +15,12 @@ use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_XS};
 
-const SIZE: f32 = 124.0;
-const CORE: f32 = 40.0;
-const ORBITS: [f32; 2] = [72.0, 114.0];
+const SIZE: f32 = 109.0;
+const CORE: f32 = 35.0;
+const ORBITS: [f32; 2] = [63.0, 100.0];
 const PULSE: Duration = Duration::from_millis(2800);
 const BREATH: Duration = Duration::from_millis(3600);
-const TILE: f32 = 38.0;
+const TILE: f32 = 33.0;
 
 /// The kinds of device that could turn up, resting on the orbit where they would appear.
 const GHOSTS: [(&str, Glyph, f32, f32, f32); 4] = [
@@ -73,7 +73,7 @@ fn radar(cx: &Context<MainView>) -> Div {
         .bg(cx.theme().secondary)
         .border_1()
         .border_color(cx.theme().border)
-        .child(icon(Glyph::Nearby, 20.).text_color(cx.theme().muted_foreground));
+        .child(icon(Glyph::Nearby, 18.).text_color(cx.theme().muted_foreground));
     let line = cx.theme().border;
     div()
         .relative()
@@ -100,10 +100,10 @@ pub fn searching(cx: &mut Context<MainView>) -> Div {
     ui::well(cx)
         .items_center()
         .gap(px(SPACE_XS))
-        .py(px(13.))
+        .py(px(11.))
         .child(radar(cx))
         .child(ui::text(t!("radar.looking")).pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
-        .child(ui::muted(t!("radar.hint"), cx).text_center().max_w(px(329.)))
+        .child(ui::muted(t!("radar.hint"), cx).text_center().max_w(px(290.)))
 }
 
 /// One quiet line for when nothing new is around but the search is still on.
@@ -112,15 +112,15 @@ pub fn scanning(cx: &Context<MainView>) -> AnyElement {
     div()
         .flex()
         .items_center()
-        .gap(px(12.))
-        .p(px(7.))
+        .gap(px(11.))
+        .p(px(6.))
         .child(
             div()
                 .relative()
                 .flex_none()
                 .size(px(TILE))
                 .child(pulse("scan-pulse", 0.0, TILE, 8.0, primary))
-                .child(centered(TILE, 8.0).bg(primary)),
+                .child(centered(TILE, 7.0).bg(primary)),
         )
         .child(ui::muted(t!("radar.scanning"), cx))
         .into_any_element()

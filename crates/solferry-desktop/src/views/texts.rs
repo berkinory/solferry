@@ -15,7 +15,7 @@ use crate::state::{AppState, SharedText};
 use crate::tokens::{SPACE_SM, SPACE_XS};
 
 const PREVIEW_LINES: usize = 4;
-const TEXT_HEIGHT: f32 = 160.0;
+const TEXT_HEIGHT: f32 = 141.0;
 
 pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Option<AnyElement> {
     state.text.as_ref().map(|shared| card(shared, cx))

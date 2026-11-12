@@ -177,9 +177,9 @@ impl Selectable for Button {
 impl RenderOnce for Button {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let (height, padding, text, glyph_size) = match self.size {
-            Size::Xs => (32.0, 10.0, 13.0, 16.0),
-            Size::Sm => (36.0, 14.0, 14.0, 18.0),
-            Size::Md => (40.0, 16.0, 15.0, 18.0),
+            Size::Xs => (28.0, 9.0, 11.0, 14.0),
+            Size::Sm => (32.0, 12.0, 12.0, 16.0),
+            Size::Md => (35.0, 14.0, 13.0, 16.0),
         };
         let look = look(self.variant, cx);
         let (hover, hover_text) = (look.hover, look.hover_text);
@@ -191,7 +191,7 @@ impl RenderOnce for Button {
             .flex_none()
             .items_center()
             .justify_center()
-            .gap(px(7.))
+            .gap(px(6.))
             .h(px(height))
             .rounded(px(if self.size == Size::Md { RADIUS_CONTROL } else { RADIUS_FLOOR }))
             .text_size(px(text))

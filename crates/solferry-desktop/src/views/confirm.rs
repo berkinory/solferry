@@ -9,9 +9,9 @@ use crate::assets::Glyph;
 use crate::state::PairingPrompt;
 use crate::tokens::{RADIUS_FLOOR, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const DIGIT_WIDTH: f32 = 42.0;
-const DIGIT_HEIGHT: f32 = 56.0;
-const DIGIT_SIZE: f32 = 25.0;
+const DIGIT_WIDTH: f32 = 37.0;
+const DIGIT_HEIGHT: f32 = 49.0;
+const DIGIT_SIZE: f32 = 22.0;
 
 fn digit(value: char, cx: &Context<MainView>) -> AnyElement {
     div()
@@ -41,7 +41,7 @@ fn digits(code: &str, cx: &Context<MainView>) -> Div {
             .flex_row()
             .justify_center()
             .gap(px(SPACE_MD))
-            .py(px(19.))
+            .py(px(17.))
             .child(group().children(first))
             .child(group().children(all)),
     )

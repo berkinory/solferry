@@ -20,19 +20,19 @@ use crate::service::Command;
 use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer};
 use crate::theme::{color, palette};
 
-const WIDTH: f32 = 360.0;
-const RADIUS: f32 = 21.0;
-const HEIGHT: f32 = 44.0;
-const RING: f32 = 17.0;
-const ROW_HEIGHT: f32 = 50.0;
+const WIDTH: f32 = 317.0;
+const RADIUS: f32 = 18.0;
+const HEIGHT: f32 = 39.0;
+const RING: f32 = 15.0;
+const ROW_HEIGHT: f32 = 44.0;
 const ENTER: Duration = Duration::from_millis(380);
 const RECONNECTING: u32 = 0x00f5_9e0b;
-const CHROME: f32 = 132.0;
-const CHARACTER: f32 = 7.1;
+const CHROME: f32 = 116.0;
+const CHARACTER: f32 = 6.25;
 #[cfg(target_os = "macos")]
-const CONTROLS: f32 = 84.0;
+const CONTROLS: f32 = 74.0;
 #[cfg(not(target_os = "macos"))]
-const CONTROLS: f32 = 104.0;
+const CONTROLS: f32 = 92.0;
 
 /// How many characters of the pill's text fit in this much room.
 fn limit(room: f32) -> usize {
@@ -92,7 +92,7 @@ fn badge(id: SharedString, tone: Tone, cx: &Context<MainView>) -> AnyElement {
         .rounded_full()
         .size(px(RING))
         .bg(fill)
-        .child(icon(glyph, 10.).text_color(white()))
+        .child(icon(glyph, 9.).text_color(white()))
         .with_animation(
             id,
             Animation::new(Duration::from_millis(480)).with_easing(ease_out_quint()),
@@ -112,11 +112,11 @@ fn dismiss(id: SharedString, cx: &Context<MainView>) -> Stateful<Div> {
         .flex_none()
         .items_center()
         .justify_center()
-        .size(px(27.))
-        .rounded(px(7.))
+        .size(px(24.))
+        .rounded(px(6.))
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
-        .child(icon(Glyph::Cancel, 13.).text_color(faded(cx)))
+        .child(icon(Glyph::Cancel, 11.).text_color(faded(cx)))
 }
 
 /// One line that comes up from below whenever it changes.
@@ -124,7 +124,7 @@ fn label(id: SharedString, text: String, wide: bool) -> impl IntoElement {
     let line = if wide { div().flex_1() } else { div() };
     line.relative()
         .min_w_0()
-        .text_size(px(15.))
+        .text_size(px(13.))
         .font_weight(FontWeight::MEDIUM)
         .truncate()
         .child(text)
@@ -138,13 +138,13 @@ fn label(id: SharedString, text: String, wide: bool) -> impl IntoElement {
 fn percent(fraction: f32, cx: &Context<MainView>) -> impl IntoElement {
     div()
         .flex_none()
-        .text_size(px(14.))
+        .text_size(px(12.))
         .text_color(faded(cx))
         .child(t!("format.percent", value = format::whole(f64::from(fraction) * 100.)))
 }
 
 fn row(close: bool) -> Div {
-    div().flex().items_center().gap(px(10.)).h(px(HEIGHT)).pl(px(17.)).pr(px(if close {
+    div().flex().items_center().gap(px(9.)).h(px(HEIGHT)).pl(px(15.)).pr(px(if close {
         11.
     } else {
         20.
@@ -189,11 +189,11 @@ fn ended_row(transfer: &Transfer, budget: usize, cx: &mut Context<MainView>) -> 
                 .flex_none()
                 .items_center()
                 .justify_center()
-                .size(px(27.))
-                .rounded(px(7.))
+                .size(px(24.))
+                .rounded(px(6.))
                 .cursor_pointer()
                 .hover(move |style| style.bg(hover))
-                .child(icon(Glyph::FolderOpen, 15.).text_color(faded(cx)))
+                .child(icon(Glyph::FolderOpen, 13.).text_color(faded(cx)))
                 .on_click(cx.listener(|view, _, _, cx| view.show_downloads(cx)))
         }))
 }
@@ -219,7 +219,7 @@ fn many_row(running: &[&Transfer], open: bool, cx: &mut Context<MainView>) -> An
         .child(label(key, t!("pill.transfers", count = running.len()).into_owned(), true))
         .child(percent(fraction, cx))
         .child(
-            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 14.)
+            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 12.)
                 .text_color(faded(cx)),
         )
         .into_any_element()
@@ -293,17 +293,17 @@ fn fatal_row(error: &Error, open: bool, cx: &mut Context<MainView>) -> AnyElemen
         .child(badge("fatal-badge".into(), Tone::Error, cx))
         .child(label("fatal-text".into(), explanation.title.into_owned(), open))
         .child(
-            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 14.)
+            icon(if open { Glyph::ChevronUp } else { Glyph::ChevronDown }, 12.)
                 .text_color(faded(cx)),
         );
     let detail = open.then(|| {
         div()
             .flex()
             .flex_col()
-            .gap(px(5.))
-            .px(px(19.))
-            .pb(px(15.))
-            .text_size(px(14.))
+            .gap(px(4.))
+            .px(px(17.))
+            .pb(px(13.))
+            .text_size(px(12.))
             .text_color(faded(cx))
             .child(explanation.next)
             .child(error.to_string())
@@ -327,7 +327,7 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
         div()
             .id(SharedString::from(format!("toast-retry-{key}")))
             .flex_none()
-            .text_size(px(14.))
+            .text_size(px(12.))
             .font_weight(FontWeight::MEDIUM)
             .cursor_pointer()
             .child(if restart { t!("toast.restart") } else { t!("toast.retry") })
@@ -355,8 +355,8 @@ fn toast_row(toast: &Toast, cx: &mut Context<MainView>) -> AnyElement {
         .flex()
         .justify_center()
         .w_full()
-        .px(px(8.))
-        .pt(px(7.))
+        .px(px(7.))
+        .pt(px(6.))
         .h(px(ROW_HEIGHT))
         .child(shell)
         .with_animation(
@@ -382,7 +382,7 @@ pub fn render(view: &MainView, width: f32, cx: &mut Context<MainView>) -> Option
     Some(
         div()
             .absolute()
-            .top(px(8.))
+            .top(px(7.))
             .left_0()
             .right_0()
             .flex()

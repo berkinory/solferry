@@ -15,10 +15,10 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, TYPE_LABEL};
 
 /// Room the scrolling content leaves so nothing ends up under the bar.
-pub const CLEARANCE: f32 = 74.0;
+pub const CLEARANCE: f32 = 65.0;
 
-const ITEM_WIDTH: f32 = 112.0;
-const ITEM_HEIGHT: f32 = 40.0;
+const ITEM_WIDTH: f32 = 99.0;
+const ITEM_HEIGHT: f32 = 35.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [
@@ -59,21 +59,21 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .flex()
                 .items_center()
                 .justify_center()
-                .gap(px(7.))
+                .gap(px(6.))
                 .w(px(ITEM_WIDTH))
                 .h(px(ITEM_HEIGHT))
                 .cursor_pointer()
                 .text_size(px(TYPE_LABEL))
                 .text_color(tone)
                 .on_click(cx.listener(move |view, _, window, cx| view.open_page(page, window, cx)))
-                .child(icon(glyph, 16.).text_color(tone))
+                .child(icon(glyph, 14.).text_color(tone))
                 .child(t!(key))
                 .into_any_element()
         })
         .collect();
     div()
         .absolute()
-        .bottom(px(13.))
+        .bottom(px(11.))
         .left_0()
         .right_0()
         .flex()
@@ -89,8 +89,8 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .border_color(cx.theme().border)
                 .shadow(vec![BoxShadow {
                     color: black().opacity(0.2),
-                    offset: point(px(0.), px(6.)),
-                    blur_radius: px(18.),
+                    offset: point(px(0.), px(5.)),
+                    blur_radius: px(16.),
                     spread_radius: px(0.),
                     inset: false,
                 }])
