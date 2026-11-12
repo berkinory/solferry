@@ -119,8 +119,11 @@ impl Node {
                     None => return,
                 },
                 _ = scan.tick() => {
-                    // Asking every host is only worth it while mDNS finds nothing.
-                    let sweep = announced.is_empty();
+                    // Asking every host is only worth it while mDNS misses someone: it finds
+                    // nobody, or not a paired device, as when multicast stops between a
+                    // router's 2.4 and 5 GHz bands.
+                    let sweep = announced.is_empty()
+                        || self.devices().iter().any(|device| !announced.contains_key(&device.id));
                     probing.push(self.probe_round(sweep, typed_addresses(&mut typed)).boxed());
                     continue;
                 }
