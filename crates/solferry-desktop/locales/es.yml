@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Los dispositivos cercanos verán este nombre."
   start: "Empezar"
 settings:
+  appearance:
+    title: "Apariencia"
+    system: "Sistema"
+    light: "Claro"
+    dark: "Oscuro"
   starting: "Iniciando..."
   version: "Solferry %{version}"
   device:

@@ -16,6 +16,17 @@ pub enum Visibility {
     Hidden,
 }
 
+/// Light or dark, for the apps that draw their own windows.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Appearance {
+    /// Follows the system, and changes with it.
+    #[default]
+    System,
+    Light,
+    Dark,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -32,6 +43,7 @@ pub struct Config {
     pub show_in_tray: bool,
     /// The desktop app's language, such as `tr`. `None` follows the system.
     pub language: Option<String>,
+    pub appearance: Appearance,
     /// Whether the desktop app has shown its first launch screen.
     pub onboarded: bool,
 }
@@ -49,6 +61,7 @@ impl Default for Config {
             check_updates: true,
             show_in_tray: true,
             language: None,
+            appearance: Appearance::System,
             onboarded: false,
         }
     }

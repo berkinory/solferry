@@ -1,4 +1,5 @@
 mod access;
+mod appearance;
 mod button;
 mod confirm;
 mod devices;

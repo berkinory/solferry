@@ -22,6 +22,7 @@ ICONS = {
     "alert": "Alert02Icon",
     "arrow-left": "ArrowLeft01Icon",
     "blocked": "UnavailableIcon",
+    "appearance": "Moon02Icon",
     "cancel": "Cancel01Icon",
     "check": "Tick02Icon",
     "chevron-down": "ArrowDown01Icon",

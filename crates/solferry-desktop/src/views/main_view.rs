@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use gpui_kit::component::input::{InputEvent, InputState, TextareaState};
 use gpui_kit::component::scroll::ScrollableElement;
-use gpui_kit::component::{ActiveTheme, Theme, TitleBar};
+use gpui_kit::component::{ActiveTheme, TitleBar};
 use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
     InteractiveElement, IntoElement, ParentElement, PathPromptOptions, Render, Styled, Window, div,
@@ -81,10 +81,7 @@ pub struct MainView {
 impl MainView {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let state = cx.global::<Shell>().state.clone();
-        cx.observe_window_appearance(window, |_, window, cx| {
-            Theme::sync_system_appearance(Some(window), cx);
-        })
-        .detach();
+        super::appearance::follow(&state, window, cx);
         let mut paired_count = state.read(cx).paired_count;
         let mut asking = state.read(cx).asking();
         cx.observe(&state, move |view, state, cx| {

@@ -7,8 +7,9 @@ use futures::StreamExt;
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, LinkFile, NearbyDevice, Node,
-    NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth, TransferId,
+    Appearance, BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, LinkFile,
+    NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform,
+    RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -71,6 +72,7 @@ pub enum Command {
     SetCheckUpdates(bool),
     SetShowInTray(bool),
     SetLanguage(Option<String>),
+    SetAppearance(Appearance),
     /// Shares these paths with browsers, or takes files from them when there are none.
     Link(Vec<PathBuf>),
     StopLink,
@@ -305,6 +307,11 @@ async fn run(
             Command::SetLanguage(language) => {
                 if let Ok(config) = Config::load(&data_dir) {
                     let _ = Config { language, ..config }.save(&data_dir);
+                }
+            }
+            Command::SetAppearance(appearance) => {
+                if let Ok(config) = Config::load(&data_dir) {
+                    let _ = Config { appearance, ..config }.save(&data_dir);
                 }
             }
             Command::Link(paths) => {

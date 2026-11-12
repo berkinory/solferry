@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Цю назву бачать пристрої поруч."
   start: "Почати"
 settings:
+  appearance:
+    title: "Вигляд"
+    system: "Як у системі"
+    light: "Світлий"
+    dark: "Темний"
   starting: "Запуск..."
   version: "Solferry %{version}"
   device:

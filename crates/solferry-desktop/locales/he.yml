@@ -168,6 +168,11 @@ onboarding:
   name_hint: "מכשירים בקרבת מקום יראו את השם הזה."
   start: "קדימה, מתחילים"
 settings:
+  appearance:
+    title: "מראה"
+    system: "לפי המערכת"
+    light: "בהיר"
+    dark: "כהה"
   starting: "בהפעלה..."
   version: "Solferry %{version}"
   device:

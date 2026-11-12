@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Apparaten in de buurt zien deze naam."
   start: "Aan de slag"
 settings:
+  appearance:
+    title: "Weergave"
+    system: "Systeem"
+    light: "Licht"
+    dark: "Donker"
   starting: "Bezig met starten..."
   version: "Solferry %{version}"
   device:

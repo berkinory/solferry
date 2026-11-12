@@ -168,6 +168,11 @@ onboarding:
   name_hint: "附近的设备会看到这个名称。"
   start: "开始使用"
 settings:
+  appearance:
+    title: "外观"
+    system: "跟随系统"
+    light: "浅色"
+    dark: "深色"
   starting: "正在启动…"
   version: "Solferry %{version}"
   device:

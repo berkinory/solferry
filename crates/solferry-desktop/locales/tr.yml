@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Yakındaki cihazlar bu adı görür."
   start: "Başla"
 settings:
+  appearance:
+    title: "Görünüm"
+    system: "Sistem"
+    light: "Açık"
+    dark: "Koyu"
   starting: "Başlatılıyor..."
   version: "Solferry %{version}"
   device:

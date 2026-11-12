@@ -57,6 +57,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(tray_section(&config, cx))
         .child(login_section(cx))
         .child(language::section(&config, cx))
+        .child(super::appearance::section(&config, cx))
         .children(update::enabled().then(|| updates::section(config.check_updates, &status, cx)))
         .children(blocked_section(&blocked, cx))
         .child(about(id, cx))

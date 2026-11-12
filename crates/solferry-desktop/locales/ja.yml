@@ -168,6 +168,11 @@ onboarding:
   name_hint: "近くのデバイスにはこの名前が表示されます。"
   start: "はじめる"
 settings:
+  appearance:
+    title: "外観"
+    system: "システム"
+    light: "ライト"
+    dark: "ダーク"
   starting: "起動中…"
   version: "Solferry %{version}"
   device:

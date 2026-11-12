@@ -168,6 +168,11 @@ onboarding:
   name_hint: "주변 기기에 이 이름이 표시돼요."
   start: "시작하기"
 settings:
+  appearance:
+    title: "화면 모드"
+    system: "시스템"
+    light: "라이트"
+    dark: "다크"
   starting: "시작하는 중…"
   version: "Solferry %{version}"
   device:
