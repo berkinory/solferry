@@ -1,5 +1,5 @@
 use serde_json::{Value, json};
-use solferry_core::{Direction, Event, Route};
+use solferry_core::{Direction, Error, Event, OfferSummary, PairingRequest, Platform, Route};
 use tokio::sync::broadcast;
 
 pub async fn print_events(mut events: broadcast::Receiver<Event>) {
@@ -63,12 +63,46 @@ pub fn encode(event: &Event) -> Value {
         Event::LinkReceived { name, bytes } => {
             json!({ "event": "link_received", "name": name, "bytes": bytes })
         }
-        Event::Failed { id, error } => json!({
-            "event": "failed",
-            "id": id.to_string(),
-            "error": error.to_string(),
-        }),
+        Event::Failed { id, error } => {
+            with_error(json!({ "event": "failed", "id": id.to_string() }), error)
+        }
     }
+}
+
+/// Adds the `error`, `message` and `next` fields that every JSON error carries.
+pub fn with_error(mut value: Value, error: &Error) -> Value {
+    if let (Some(base), Value::Object(fields)) =
+        (value.as_object_mut(), crate::explain::fields(error))
+    {
+        base.extend(fields);
+    }
+    value
+}
+
+pub fn offer(summary: &OfferSummary) -> Value {
+    json!({
+        "event": "offer",
+        "id": summary.id.to_string(),
+        "peer": summary.peer.to_z32(),
+        "peer_name": summary.peer_name,
+        "paired": summary.paired,
+        "files": summary.files,
+        "bytes": summary.bytes,
+        "first_path": summary.first_path,
+    })
+}
+
+pub fn pairing_request(request: &PairingRequest) -> Value {
+    json!({
+        "event": "pairing_request",
+        "peer": request.peer.to_z32(),
+        "peer_name": request.peer_name,
+        "code": request.code,
+    })
+}
+
+pub fn platform(platform: Option<Platform>) -> Option<&'static str> {
+    platform.map(Platform::code)
 }
 
 fn direction_name(direction: Direction) -> &'static str {
@@ -78,7 +112,7 @@ fn direction_name(direction: Direction) -> &'static str {
     }
 }
 
-fn route_name(route: Route) -> &'static str {
+pub fn route_name(route: Route) -> &'static str {
     match route {
         Route::Local => "local",
         Route::Overlay => "overlay",

@@ -1,6 +1,8 @@
 mod device;
 mod json;
 mod link;
+mod pair;
+mod prompt;
 mod receive;
 mod send;
 mod settings;
@@ -14,33 +16,34 @@ use crate::args::{Cli, Command, RelayCommand};
 
 pub async fn run(cli: Cli) -> Result<()> {
     let data_dir = cli.data_dir.unwrap_or_else(default_data_dir);
+    let json = cli.json;
     match cli.command {
-        Command::Status => settings::status(&data_dir).await,
-        Command::Rename { name } => settings::rename(&data_dir, name),
-        Command::Relay { command: RelayCommand::Check } => settings::check_relays(&data_dir).await,
-        Command::Relay { command } => settings::relay(&data_dir, command),
+        Command::Status => settings::status(&data_dir, json).await,
+        Command::Rename { name } => settings::rename(&data_dir, name, json),
+        Command::Relay { command: RelayCommand::Check } => {
+            settings::check_relays(&data_dir, json).await
+        }
+        Command::Relay { command } => settings::relay(&data_dir, command, json),
         Command::Send { text: Some(text), targets, .. } => {
-            send::text(data_dir, text, targets).await
+            send::text(data_dir, text, targets, json).await
         }
         Command::Send { paths, targets, text: None } => {
-            send::run(data_dir, paths, targets, cli.json).await
+            send::run(data_dir, paths, targets, json).await
         }
-        Command::Link { paths } => link::run(data_dir, paths, cli.json).await,
-        Command::Receive { dir, yes, once } => {
-            receive::run(data_dir, dir, yes, once, cli.json).await
-        }
-        Command::Pair { with: Some(name), .. } => device::pair_nearby(data_dir, &name).await,
+        Command::Link { paths } => link::run(data_dir, paths, json).await,
+        Command::Receive { dir, yes, once } => receive::run(data_dir, dir, yes, once, json).await,
+        Command::Pair { with: Some(name), .. } => pair::pair_nearby(data_dir, &name, json).await,
         Command::Pair { address: Some(address), .. } => {
-            device::pair_address(data_dir, &address).await
+            pair::pair_address(data_dir, &address, json).await
         }
-        Command::Pair { .. } => device::pair(data_dir).await,
-        Command::Join { code } => device::join(data_dir, &code).await,
-        Command::Devices => device::list(data_dir).await,
-        Command::Forget { device } => device::forget(data_dir, &device).await,
-        Command::Approval { device, mode } => device::approval(data_dir, &device, mode).await,
-        Command::Block { device } => device::block(data_dir, &device).await,
-        Command::Unblock { id } => device::unblock(data_dir, &id).await,
-        Command::Nearby { address } => device::nearby(data_dir, address.as_deref()).await,
+        Command::Pair { .. } => pair::pair(data_dir, json).await,
+        Command::Join { code } => pair::join(data_dir, &code, json).await,
+        Command::Devices => device::list(data_dir, json).await,
+        Command::Forget { device } => device::forget(data_dir, &device, json).await,
+        Command::Approval { device, mode } => device::approval(data_dir, &device, mode, json).await,
+        Command::Block { device } => device::block(data_dir, &device, json).await,
+        Command::Unblock { id } => device::unblock(data_dir, &id, json).await,
+        Command::Nearby { address } => device::nearby(data_dir, address.as_deref(), json).await,
     }
 }
 
