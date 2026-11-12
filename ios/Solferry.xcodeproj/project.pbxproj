@@ -172,7 +172,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				OTHER_LDFLAGS = "$(inherited) -lresolv -framework SystemConfiguration -framework Security";
 				PRODUCT_BUNDLE_IDENTIFIER = app.solferry;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -195,7 +195,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.2;
 				OTHER_LDFLAGS = "$(inherited) -lresolv -framework SystemConfiguration -framework Security";
 				PRODUCT_BUNDLE_IDENTIFIER = app.solferry;
 				PRODUCT_NAME = "$(TARGET_NAME)";
