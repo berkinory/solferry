@@ -28,6 +28,8 @@ const REFUSAL_WAIT: Duration = Duration::from_secs(5);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OfferSummary {
+    /// The id the transfer's events will carry once it is accepted.
+    pub id: TransferId,
     pub peer: EndpointId,
     pub peer_name: String,
     pub paired: bool,
@@ -121,7 +123,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         }
     };
 
-    let summary = summarize(peer, &hello, device.as_ref(), &offer);
+    let summary = summarize(id, peer, &hello, device.as_ref(), &offer);
     let Some(destination) = decide(shared, connection, summary).await else {
         refuse(connection, &mut send, Decision::Declined).await?;
         return Ok(());
@@ -185,12 +187,14 @@ fn transfer_id(offer: &Offer) -> Result<TransferId> {
 }
 
 fn summarize(
+    id: TransferId,
     peer: EndpointId,
     hello: &Hello,
     device: Option<&Device>,
     offer: &Offer,
 ) -> OfferSummary {
     OfferSummary {
+        id,
         peer,
         peer_name: device.map_or(hello.name.as_str(), |device| device.name.as_str()).to_owned(),
         platform: crate::Platform::parse(&hello.platform),

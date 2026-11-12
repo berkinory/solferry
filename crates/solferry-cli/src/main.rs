@@ -1,6 +1,7 @@
 mod args;
 mod commands;
 mod explain;
+mod help;
 
 use std::process::ExitCode;
 
@@ -17,8 +18,14 @@ async fn main() -> ExitCode {
         )
         .with_writer(std::io::stderr)
         .init();
-    match commands::run(Cli::parse()).await {
+    let cli = Cli::parse();
+    let json = cli.json;
+    match commands::run(cli).await {
         Ok(()) => ExitCode::SUCCESS,
+        Err(error) if json => {
+            eprintln!("{}", explain::fields(&error));
+            ExitCode::FAILURE
+        }
         Err(error) => {
             eprintln!("{}", explain::render(&error));
             ExitCode::FAILURE

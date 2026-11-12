@@ -2,13 +2,21 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand, ValueEnum};
 
+use crate::help;
+
 #[derive(Debug, Parser)]
-#[command(name = "solferry", version, about = "Accountless file transfer between your devices")]
+#[command(
+    name = "solferry",
+    version,
+    about = "Accountless file transfer between your devices",
+    after_help = help::SHORT,
+    after_long_help = help::AGENTS
+)]
 pub struct Cli {
-    /// Where the device key, settings and paired devices live.
+    /// Where the device key, settings and paired devices live. Each directory is a separate device.
     #[arg(long, global = true, env = "SOLFERRY_DATA_DIR")]
     pub data_dir: Option<PathBuf>,
-    /// Print transfer events as JSON lines, for scripts and headless use.
+    /// Print JSON to stdout, one value per line, and errors as JSON to stderr.
     #[arg(long, global = true)]
     pub json: bool,
     #[command(subcommand)]
@@ -20,9 +28,14 @@ pub enum Command {
     /// Show this device and its settings.
     Status,
     /// Change the name other devices see.
-    Rename { name: String },
+    Rename {
+        /// The new name.
+        name: String,
+    },
     /// Send files or folders to one or more devices.
+    #[command(after_help = help::SEND)]
     Send {
+        /// Files or folders to send.
         #[arg(required_unless_present = "text", conflicts_with = "text")]
         paths: Vec<PathBuf>,
         /// Send this text to a paired device's clipboard instead of files. Use - to read stdin.
@@ -33,20 +46,26 @@ pub enum Command {
         targets: Vec<String>,
     },
     /// Share files with a browser on this network, or take files from one when no paths are given.
-    Link { paths: Vec<PathBuf> },
+    #[command(after_help = help::LINK)]
+    Link {
+        /// Files to share. Leave out to take files from a browser instead.
+        paths: Vec<PathBuf>,
+    },
     /// Stay online and receive files.
+    #[command(after_help = help::RECEIVE)]
     Receive {
         /// Save here instead of the default download folder.
         #[arg(long)]
         dir: Option<PathBuf>,
-        /// Accept every offer without asking.
+        /// Accept every file offer without asking, from paired and unpaired devices alike.
         #[arg(long)]
         yes: bool,
-        /// Exit after the first finished transfer.
+        /// Exit after the first finished incoming transfer.
         #[arg(long)]
         once: bool,
     },
     /// Create a pairing code for another device.
+    #[command(after_help = help::PAIR)]
     Pair {
         /// Pair with this nearby device by comparing a code, instead of showing a pairing code.
         #[arg(long)]
@@ -56,18 +75,36 @@ pub enum Command {
         address: Option<String>,
     },
     /// Redeem a pairing code from another device.
-    Join { code: String },
+    #[command(after_help = help::JOIN)]
+    Join {
+        /// The code `solferry pair` printed on the other device, starting with sf1.
+        code: String,
+    },
     /// List paired devices.
     Devices,
     /// Remove a paired device.
-    Forget { device: String },
+    Forget {
+        /// Paired device name or id prefix, as `solferry devices` shows.
+        device: String,
+    },
     /// Choose whether a paired device needs your approval before sending files.
-    Approval { device: String, mode: ApprovalArg },
+    Approval {
+        /// Paired device name or id prefix, as `solferry devices` shows.
+        device: String,
+        mode: ApprovalArg,
+    },
     /// Refuse every connection from a device.
-    Block { device: String },
+    Block {
+        /// Paired device name or id prefix, or the full id of any device.
+        device: String,
+    },
     /// Allow a blocked device again.
-    Unblock { id: String },
+    Unblock {
+        /// Blocked device id or id prefix, as `solferry devices` shows.
+        id: String,
+    },
     /// List devices on the local network.
+    #[command(after_help = help::NEARBY)]
     Nearby {
         /// Ask only this IP address, for a device on another subnet or a network that hides it.
         #[arg(long)]
@@ -87,9 +124,15 @@ pub enum RelayCommand {
     /// Test every relay and explain what to fix.
     Check,
     /// Use your own relay server.
-    Add { url: String },
+    Add {
+        /// The relay link with its token, such as `https://relay.example.com#token`.
+        url: String,
+    },
     /// Stop using a relay server.
-    Remove { url: String },
+    Remove {
+        /// The relay's URL. The token after # may be left out.
+        url: String,
+    },
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]

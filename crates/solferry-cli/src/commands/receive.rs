@@ -1,10 +1,11 @@
-use std::io::{BufRead, Write};
 use std::path::PathBuf;
 
 use indicatif::HumanBytes;
-use iroh::EndpointId;
-use solferry_core::{Direction, Event, IncomingOffer, Node, PairingRequest, Result};
+use serde_json::json;
+use solferry_core::{Direction, Event, Result};
+use tokio::sync::mpsc;
 
+use super::prompt::{self, Question};
 use super::send::route_name;
 
 pub async fn run(
@@ -18,7 +19,17 @@ pub async fn run(
     let destination = dir.unwrap_or_else(|| node.config().download_dir.clone());
     let mut events = node.events();
     let mut pairings = node.pairing_requests();
-    if !json {
+    let (blocks, mut to_block) = mpsc::unbounded_channel();
+    let questions = prompt::spawn(json, blocks);
+    if json {
+        let ready = json!({
+            "event": "ready",
+            "id": node.id().to_z32(),
+            "name": node.config().name,
+            "dir": destination,
+        });
+        println!("{ready}");
+    } else {
         println!("{} is ready ({})", node.config().name, node.id().to_z32());
         println!("Saving to {}", destination.display());
     }
@@ -26,9 +37,22 @@ pub async fn run(
         tokio::select! {
             offer = offers.recv() => {
                 let Some(offer) = offer else { break };
-                handle_offer(&node, offer, destination.clone(), yes).await;
+                if yes || offer.summary.auto_accept {
+                    offer.accept(destination.clone());
+                } else {
+                    let _ = questions.send(Question::Offer(offer, destination.clone()));
+                }
             }
-            Some(request) = pairings.recv() => handle_pairing(&node, request, json).await,
+            Some(request) = pairings.recv() => {
+                let _ = questions.send(Question::Pairing(request));
+            }
+            Some(peer) = to_block.recv() => {
+                match node.block(peer, None) {
+                    Err(error) if json => eprintln!("{}", crate::explain::fields(&error)),
+                    Err(error) => eprintln!("{}", crate::explain::render(&error)),
+                    Ok(()) => {}
+                }
+            }
             event = events.recv() => {
                 let Ok(event) = event else { continue };
                 if json {
@@ -46,7 +70,7 @@ pub async fn run(
     node.shutdown().await
 }
 
-fn file_count(files: usize) -> String {
+pub fn file_count(files: usize) -> String {
     if files == 1 { "1 file".to_owned() } else { format!("{files} files") }
 }
 
@@ -73,76 +97,5 @@ fn report(event: &Event) {
             eprintln!("Transfer {id}: {}", crate::explain::render(error));
         }
         _ => {}
-    }
-}
-
-async fn handle_pairing(node: &Node, request: PairingRequest, json: bool) {
-    if json {
-        request.decline();
-        return;
-    }
-    let prompt = format!(
-        "{} wants to pair. Code: {}. Is it the same on both screens? [y/N/block] ",
-        request.peer_name, request.code
-    );
-    let peer = request.peer;
-    match tokio::task::spawn_blocking(move || ask(&prompt)).await {
-        Ok(Answer::Accept) => request.accept(),
-        Ok(Answer::Block) => {
-            request.decline();
-            block(node, peer);
-        }
-        _ => request.decline(),
-    }
-}
-
-fn block(node: &Node, peer: EndpointId) {
-    if let Err(error) = node.block(peer, None) {
-        eprintln!("{}", crate::explain::render(&error));
-    }
-}
-
-async fn handle_offer(node: &Node, offer: IncomingOffer, destination: PathBuf, yes: bool) {
-    let summary = &offer.summary;
-    let trust = if summary.paired { "paired" } else { "NOT PAIRED" };
-    let prompt = format!(
-        "{} ({trust}) wants to send {}, {}, starting with {}. Accept? [y/N/block] ",
-        summary.peer_name,
-        file_count(summary.files),
-        HumanBytes(summary.bytes),
-        summary.first_path,
-    );
-    if yes || summary.auto_accept {
-        offer.accept(destination);
-        return;
-    }
-    let peer = summary.peer;
-    match tokio::task::spawn_blocking(move || ask(&prompt)).await {
-        Ok(Answer::Accept) => offer.accept(destination),
-        Ok(Answer::Block) => {
-            offer.decline();
-            block(node, peer);
-        }
-        _ => offer.decline(),
-    }
-}
-
-enum Answer {
-    Accept,
-    Decline,
-    Block,
-}
-
-fn ask(prompt: &str) -> Answer {
-    print!("{prompt}");
-    let _ = std::io::stdout().flush();
-    let mut answer = String::new();
-    if std::io::stdin().lock().read_line(&mut answer).is_err() {
-        return Answer::Decline;
-    }
-    match answer.trim().to_lowercase().as_str() {
-        "y" | "yes" => Answer::Accept,
-        "b" | "block" => Answer::Block,
-        _ => Answer::Decline,
     }
 }
