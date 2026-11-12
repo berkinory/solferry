@@ -60,8 +60,10 @@ fn phrase(template: &str, name: &str, budget: usize) -> String {
 }
 
 /// Foreground fill and background text, sized by what it says, so it flips with the theme.
+/// Floats over the page, so it takes the clicks that land on it.
 fn shell(cx: &Context<MainView>) -> Div {
     div()
+        .occlude()
         .relative()
         .flex()
         .flex_col()

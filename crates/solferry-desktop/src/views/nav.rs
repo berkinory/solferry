@@ -80,6 +80,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .justify_center()
         .child(
             div()
+                .occlude()
                 .relative()
                 .flex()
                 .p(px(INSET))
