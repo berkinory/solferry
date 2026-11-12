@@ -222,3 +222,19 @@ updates:
   failed: "Nie udało się sprawdzić aktualizacji"
   restart: "Uruchom ponownie"
   download: "Pobierz"
+permissions:
+  title: "Uprawnienia"
+  notifications:
+    title: "Powiadomienia"
+    detail: "Dają znać, gdy przychodzą pliki, tekst lub prośba o sparowanie."
+  local_network:
+    title: "Sieć lokalna"
+    detail: "Pozwala Solferry znajdować twoje urządzenia i wysyłać do nich bezpośrednio. Bez niej nie pojawi się żadne urządzenie w pobliżu."
+  firewall:
+    title: "Zapora"
+    detail: "Windows pyta raz. Zezwól na sieci prywatne, inaczej urządzenia w pobliżu nie połączą się z tym."
+  allowed: "Dozwolone"
+  off: "Wyłączone"
+  not_asked: "Jeszcze nie pytano"
+  allow: "Zezwól"
+  open_settings: "Otwórz ustawienia"

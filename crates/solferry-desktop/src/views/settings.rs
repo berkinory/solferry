@@ -51,6 +51,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .flex_col()
         .gap(px(SPACE_SM))
         .child(device_section(view, &config, cx))
+        .children(super::access::card(&view.state, cx))
         .child(relays::section(view, &config, cx))
         .child(visibility_section(&config, cx))
         .child(tray_section(&config, cx))

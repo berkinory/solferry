@@ -222,3 +222,19 @@ updates:
   failed: "Controleren op updates mislukt"
   restart: "Opnieuw starten"
   download: "Downloaden"
+permissions:
+  title: "Toestemmingen"
+  notifications:
+    title: "Meldingen"
+    detail: "Laat je weten wanneer er bestanden, tekst of een koppelverzoek binnenkomen."
+  local_network:
+    title: "Lokaal netwerk"
+    detail: "Hiermee vindt Solferry je apparaten en stuurt het rechtstreeks naar ze. Zonder deze toestemming verschijnt er niets in de buurt."
+  firewall:
+    title: "Firewall"
+    detail: "Windows vraagt het één keer. Sta privénetwerken toe, anders kunnen apparaten in de buurt dit apparaat niet bereiken."
+  allowed: "Toegestaan"
+  off: "Uit"
+  not_asked: "Nog niet gevraagd"
+  allow: "Toestaan"
+  open_settings: "Instellingen openen"

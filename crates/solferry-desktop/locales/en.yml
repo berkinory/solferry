@@ -222,3 +222,19 @@ updates:
   failed: "Couldn't check for updates"
   restart: "Restart"
   download: "Download"
+permissions:
+  title: "Permissions"
+  notifications:
+    title: "Notifications"
+    detail: "Tells you when files, text or a pairing request arrive."
+  local_network:
+    title: "Local network"
+    detail: "Lets Solferry find your devices and send to them directly. Without it, nothing nearby shows up."
+  firewall:
+    title: "Firewall"
+    detail: "Windows asks once. Allow private networks, or devices nearby can't reach this one."
+  allowed: "Allowed"
+  off: "Off"
+  not_asked: "Not asked yet"
+  allow: "Allow"
+  open_settings: "Open Settings"

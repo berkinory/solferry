@@ -99,6 +99,10 @@ impl Render for Onboarding {
                         .child(t!("onboarding.body")),
                 )
                 .child(div().w_full().mt(px(SPACE_XL)).child(name))
+                .children(
+                    super::access::card(&self.state, cx)
+                        .map(|card| div().w_full().mt(px(SPACE_SM)).child(card)),
+                )
                 .child(div().mt(px(SPACE_LG)).child(start)),
         )
     }

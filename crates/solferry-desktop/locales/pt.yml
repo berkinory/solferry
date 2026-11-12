@@ -222,3 +222,19 @@ updates:
   failed: "Não foi possível verificar se há atualizações"
   restart: "Reiniciar"
   download: "Baixar"
+permissions:
+  title: "Permissões"
+  notifications:
+    title: "Notificações"
+    detail: "Avisa quando chegam arquivos, texto ou um pedido de pareamento."
+  local_network:
+    title: "Rede local"
+    detail: "Permite que o Solferry encontre seus dispositivos e envie direto para eles. Sem ela, nenhum dispositivo próximo aparece."
+  firewall:
+    title: "Firewall"
+    detail: "O Windows pergunta uma vez. Permita redes privadas, ou os dispositivos próximos não conseguem alcançar este."
+  allowed: "Permitido"
+  off: "Desativado"
+  not_asked: "Ainda não pedido"
+  allow: "Permitir"
+  open_settings: "Abrir Ajustes"

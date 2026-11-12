@@ -45,6 +45,7 @@ ICONS = {
     "loading": "Loading03Icon",
     "more": "MoreHorizontalIcon",
     "nearby": "HotspotIcon",
+    "notification": "Notification01Icon",
     "qr": "QrCodeIcon",
     "relay": "ServerStack01Icon",
     "send": "ArrowUp02Icon",

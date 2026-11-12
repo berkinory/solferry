@@ -222,3 +222,19 @@ updates:
   failed: "לא ניתן לבדוק אם יש עדכונים"
   restart: "הפעלה מחדש"
   download: "הורדה"
+permissions:
+  title: "הרשאות"
+  notifications:
+    title: "התראות"
+    detail: "מודיעות כשמגיעים קבצים, טקסט או בקשת התאמה."
+  local_network:
+    title: "רשת מקומית"
+    detail: "מאפשרת ל-Solferry למצוא את המכשירים שלך ולשלוח אליהם ישירות. בלעדיה לא יופיע אף מכשיר בקרבת מקום."
+  firewall:
+    title: "חומת אש"
+    detail: "Windows שואלת פעם אחת. צריך לאשר רשתות פרטיות, אחרת מכשירים בקרבת מקום לא יוכלו להגיע למכשיר הזה."
+  allowed: "מאושר"
+  off: "כבוי"
+  not_asked: "עוד לא נשאל"
+  allow: "מתן הרשאה"
+  open_settings: "פתיחת ההגדרות"

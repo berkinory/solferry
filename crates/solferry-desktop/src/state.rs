@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
 use iroh::{EndpointAddr, EndpointId};
@@ -10,6 +10,7 @@ use solferry_core::{
 };
 
 use crate::format;
+use crate::permissions::{self, Permission};
 use crate::service::Update;
 use crate::updater::Status;
 
@@ -128,6 +129,8 @@ pub struct AppState {
     pub address_error: Option<Cow<'static, str>>,
     pub paired_count: u32,
     pub fatal: Option<Error>,
+    /// What the system allows, as last asked. A permission missing here hasn't answered yet.
+    pub permissions: HashMap<Permission, permissions::Status>,
 }
 
 impl AppState {

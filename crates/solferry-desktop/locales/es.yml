@@ -222,3 +222,19 @@ updates:
   failed: "No se han podido buscar actualizaciones"
   restart: "Reiniciar"
   download: "Descargar"
+permissions:
+  title: "Permisos"
+  notifications:
+    title: "Notificaciones"
+    detail: "Te avisa cuando llegan archivos, texto o una solicitud de vinculación."
+  local_network:
+    title: "Red local"
+    detail: "Permite que Solferry encuentre tus dispositivos y les envíe directamente. Sin él, no aparece ningún dispositivo cercano."
+  firewall:
+    title: "Firewall"
+    detail: "Windows lo pregunta una vez. Permite las redes privadas o los dispositivos cercanos no podrán llegar a este."
+  allowed: "Permitido"
+  off: "Desactivado"
+  not_asked: "Aún no se ha pedido"
+  allow: "Permitir"
+  open_settings: "Abrir Ajustes"

@@ -222,3 +222,19 @@ updates:
   failed: "Suche nach Updates fehlgeschlagen"
   restart: "Neu starten"
   download: "Herunterladen"
+permissions:
+  title: "Berechtigungen"
+  notifications:
+    title: "Mitteilungen"
+    detail: "Sagt dir Bescheid, wenn Dateien, Text oder eine Kopplungsanfrage ankommen."
+  local_network:
+    title: "Lokales Netzwerk"
+    detail: "Damit findet Solferry deine Geräte und sendet direkt an sie. Ohne diese Berechtigung erscheint kein Gerät in der Nähe."
+  firewall:
+    title: "Firewall"
+    detail: "Windows fragt einmal. Erlaube private Netzwerke, sonst erreichen Geräte in der Nähe dieses Gerät nicht."
+  allowed: "Erlaubt"
+  off: "Aus"
+  not_asked: "Noch nicht gefragt"
+  allow: "Erlauben"
+  open_settings: "Einstellungen öffnen"

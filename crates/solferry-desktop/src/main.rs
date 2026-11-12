@@ -4,6 +4,11 @@ mod assets;
 mod format;
 mod instance;
 mod login;
+#[cfg_attr(
+    not(any(target_os = "macos", windows)),
+    allow(dead_code, reason = "Linux asks for no permissions")
+)]
+mod permissions;
 mod qr;
 mod service;
 mod shell;
@@ -20,7 +25,7 @@ use gpui_kit::QuitMode;
 use solferry_core::{Config, default_data_dir};
 use tracing_subscriber::EnvFilter;
 
-/// The bundle identifier on macOS, and the AppUserModelID the installer gives the Start menu entry.
+/// The bundle identifier on macOS, and the `AppUserModelID` the installer gives the Start menu entry.
 const APP_ID: &str = "app.solferry.desktop";
 
 rust_i18n::i18n!("locales", fallback = "en");

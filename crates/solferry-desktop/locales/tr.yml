@@ -222,3 +222,19 @@ updates:
   failed: "Güncellemeler kontrol edilemedi"
   restart: "Yeniden başlat"
   download: "İndir"
+permissions:
+  title: "İzinler"
+  notifications:
+    title: "Bildirimler"
+    detail: "Dosya, metin ya da eşleşme isteği geldiğinde haber verir."
+  local_network:
+    title: "Yerel ağ"
+    detail: "Solferry'nin cihazlarını bulup onlara doğrudan göndermesini sağlar. İzin olmadan yakında hiçbir cihaz görünmez."
+  firewall:
+    title: "Güvenlik duvarı"
+    detail: "Windows bunu bir kez sorar. Özel ağlara izin ver, yoksa yakındaki cihazlar bu cihaza ulaşamaz."
+  allowed: "İzin verildi"
+  off: "Kapalı"
+  not_asked: "Henüz sorulmadı"
+  allow: "İzin ver"
+  open_settings: "Ayarları aç"

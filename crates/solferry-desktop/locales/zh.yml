@@ -222,3 +222,19 @@ updates:
   failed: "无法检查更新"
   restart: "重新启动"
   download: "下载"
+permissions:
+  title: "权限"
+  notifications:
+    title: "通知"
+    detail: "收到文件、文本或配对请求时提醒你。"
+  local_network:
+    title: "本地网络"
+    detail: "让 Solferry 找到你的设备并直接发送。不允许的话，附近的设备都不会显示。"
+  firewall:
+    title: "防火墙"
+    detail: "Windows 只会询问一次。请允许专用网络，否则附近的设备无法连接到这台设备。"
+  allowed: "已允许"
+  off: "已关闭"
+  not_asked: "尚未询问"
+  allow: "允许"
+  open_settings: "打开设置"

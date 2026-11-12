@@ -222,3 +222,19 @@ updates:
   failed: "Impossibile controllare gli aggiornamenti"
   restart: "Riavvia"
   download: "Scarica"
+permissions:
+  title: "Autorizzazioni"
+  notifications:
+    title: "Notifiche"
+    detail: "Ti avvisa quando arrivano file, testo o una richiesta di abbinamento."
+  local_network:
+    title: "Rete locale"
+    detail: "Permette a Solferry di trovare i tuoi dispositivi e di inviare direttamente a loro. Senza, nessun dispositivo vicino appare."
+  firewall:
+    title: "Firewall"
+    detail: "Windows lo chiede una volta. Consenti le reti private, altrimenti i dispositivi vicini non raggiungono questo."
+  allowed: "Consentito"
+  off: "Disattivato"
+  not_asked: "Non ancora chiesto"
+  allow: "Consenti"
+  open_settings: "Apri Impostazioni"

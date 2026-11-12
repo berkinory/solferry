@@ -222,3 +222,19 @@ updates:
   failed: "La recherche de mises à jour a échoué"
   restart: "Redémarrer"
   download: "Télécharger"
+permissions:
+  title: "Autorisations"
+  notifications:
+    title: "Notifications"
+    detail: "Vous prévient quand des fichiers, du texte ou une demande d'association arrivent."
+  local_network:
+    title: "Réseau local"
+    detail: "Permet à Solferry de trouver vos appareils et de leur envoyer directement. Sans elle, aucun appareil à proximité n'apparaît."
+  firewall:
+    title: "Pare-feu"
+    detail: "Windows le demande une fois. Autorisez les réseaux privés, sinon les appareils à proximité ne pourront pas joindre celui-ci."
+  allowed: "Autorisé"
+  off: "Désactivé"
+  not_asked: "Pas encore demandé"
+  allow: "Autoriser"
+  open_settings: "Ouvrir les réglages"

@@ -131,6 +131,13 @@ impl MainView {
             }
         })
         .detach();
+        super::access::refresh(&state, cx);
+        cx.observe_window_activation(window, |view, window, cx| {
+            if window.is_window_active() {
+                super::access::refresh(&view.state, cx);
+            }
+        })
+        .detach();
         let focus = cx.focus_handle();
         window.focus(&focus, cx);
         Self {

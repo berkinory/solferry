@@ -222,3 +222,19 @@ updates:
   failed: "アップデートを確認できませんでした"
   restart: "再起動"
   download: "ダウンロード"
+permissions:
+  title: "アクセス許可"
+  notifications:
+    title: "通知"
+    detail: "ファイル、テキスト、ペアリングのリクエストが届いたときにお知らせします。"
+  local_network:
+    title: "ローカルネットワーク"
+    detail: "Solferry がデバイスを見つけて直接送れるようにします。許可しないと、近くのデバイスが表示されません。"
+  firewall:
+    title: "ファイアウォール"
+    detail: "Windows が一度だけ確認します。プライベートネットワークを許可しないと、近くのデバイスからこのデバイスに接続できません。"
+  allowed: "許可済み"
+  off: "オフ"
+  not_asked: "まだ確認していません"
+  allow: "許可"
+  open_settings: "設定を開く"
