@@ -2,6 +2,14 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
+## Unreleased
+
+### Changed
+
+- The relay is called a relay server, and "Relay" is no longer translated into words like "Röle". Other stiff translations were reworded in several languages.
+- The language list has no "system default" entry anymore. The system's language starts out selected, and picking another one sticks.
+- iOS catches up: onboarding, the Permissions card, the appearance setting, and the same 14 translations as the other apps.
+
 ## 0.0.3 - 2026-11-12
 
 ### Added
