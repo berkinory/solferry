@@ -7,7 +7,8 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 FILES = {
-    "DMG": "Solferry-macos.dmg",
+    "DMG_AARCH64": "Solferry-macos-aarch64.dmg",
+    "DMG_X86_64": "Solferry-macos-x86_64.dmg",
     "CLI_LINUX_AARCH64": "solferry-cli-linux-aarch64.tar.gz",
     "CLI_LINUX_X86_64": "solferry-cli-linux-x86_64.tar.gz",
 }
