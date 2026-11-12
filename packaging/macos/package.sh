@@ -24,7 +24,12 @@ notarize() {
     xcrun notarytool wait "$id" "${auth[@]}" --timeout "$NOTARY_WAIT" || true
     status=$(xcrun notarytool info "$id" "${auth[@]}" --output-format plist | plutil -extract status raw -o - -)
     if [ "$status" = Accepted ]; then
-        xcrun stapler staple "$2"
+        # Stapling fetches the ticket from Apple, which now and then drops the connection.
+        for attempt in 1 2 3; do
+            xcrun stapler staple "$2" && break
+            [ "$attempt" = 3 ] && exit 1
+            sleep 15
+        done
     elif [ "$status" = "In Progress" ] && [ "${SOLFERRY_PUBLISH:-}" != true ]; then
         echo "::warning::Apple is still notarizing $(basename "$2"), submission $id"
     else
