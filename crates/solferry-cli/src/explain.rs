@@ -1,3 +1,4 @@
+use serde_json::{Value, json};
 use solferry_core::Error;
 
 struct Advice {
@@ -11,6 +12,48 @@ pub fn render(error: &Error) -> String {
         format!("error: {what}")
     } else {
         format!("error: {what}\n  next: {next}")
+    }
+}
+
+/// The error as JSON fields, for `--json` output. `error` is a stable identifier to branch on.
+pub fn fields(error: &Error) -> Value {
+    let Advice { what, next } = advice(error);
+    let next = if next.is_empty() { Value::Null } else { Value::from(next) };
+    json!({ "error": kind(error), "message": what, "next": next })
+}
+
+fn kind(error: &Error) -> &'static str {
+    match error {
+        Error::Storage { .. } => "storage",
+        Error::CorruptData { .. } => "corrupt_data",
+        Error::NetworkStart(_) => "network_start",
+        Error::InvalidRelayUrl(_) => "invalid_relay_url",
+        Error::RelayCheckFailed => "relay_check_failed",
+        Error::Unreachable(_) => "unreachable",
+        Error::NotPaired => "not_paired",
+        Error::VersionMismatch { .. } => "version_mismatch",
+        Error::Busy => "busy",
+        Error::Cancelled => "cancelled",
+        Error::Declined => "declined",
+        Error::NoSpace => "no_space",
+        Error::DeliveryFailed => "delivery_failed",
+        Error::InvalidOffer(_) => "invalid_offer",
+        Error::SourceChanged(_) => "source_changed",
+        Error::UnsupportedName(_) => "unsupported_name",
+        Error::NothingToSend => "nothing_to_send",
+        Error::HashMismatch(_) => "hash_mismatch",
+        Error::ConnectionLost => "connection_lost",
+        Error::InvalidTicket => "invalid_ticket",
+        Error::TicketExpired => "ticket_expired",
+        Error::Update(_) => "update",
+        Error::OwnTicket => "own_ticket",
+        Error::NoLocalNetwork => "no_local_network",
+        Error::PairingRefused => "pairing_refused",
+        Error::UnknownDevice(_) => "unknown_device",
+        Error::AmbiguousDevice(_) => "ambiguous_device",
+        Error::InvalidAddress(_) => "invalid_address",
+        Error::NoAnswer(_) => "no_answer",
+        Error::Protocol(_) => "protocol",
     }
 }
 
