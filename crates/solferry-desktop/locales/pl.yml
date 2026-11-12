@@ -204,9 +204,9 @@ settings:
     title: "Zablokowane"
     unblock: "Odblokuj"
 relays:
-  title: "Relay"
+  title: "Serwer Relay"
   guide: "Instrukcja konfiguracji"
-  hint: "Łącz się z urządzeniami w innych sieciach przez własny Relay."
+  hint: "Łącz się z urządzeniami w innych sieciach przez własny serwer Relay."
   add: "Dodaj"
   checking: "Sprawdzanie"
   remove: "Usuń"

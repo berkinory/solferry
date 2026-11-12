@@ -135,9 +135,9 @@
     <string name="language_title">Language</string>
     <string name="language_system">System default</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Relay server</string>
     <string name="relay_guide">Setup Guide</string>
-    <string name="relay_body">Reach devices on other networks through a relay you run.</string>
+    <string name="relay_body">Reach devices on other networks through a relay server you run.</string>
     <string name="relay_placeholder" translatable="false">https://relay.example.com#token</string>
     <string name="relay_add">Add</string>
     <string name="relay_checking">Checking</string>

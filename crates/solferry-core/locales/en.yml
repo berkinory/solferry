@@ -19,13 +19,13 @@ explain:
     title: "Networking didn't start"
     next: "Restart Solferry to try again."
   invalid_relay_url:
-    title: "That relay address isn't valid"
-    next: "Paste the full link your relay printed, like https://relay.example.com#token."
+    title: "That relay server address isn't valid"
+    next: "Paste the full link your relay server printed, like https://relay.example.com#token."
   unreachable:
     title: "Device can't be reached"
-    next: "Open Solferry there. On another network, use Tailscale or add your own relay."
+    next: "Open Solferry there. On another network, use Tailscale or add your own relay server."
   relay_check_failed:
-    title: "A relay is not working"
+    title: "A relay server isn't working"
     next: "See its status in Settings."
   not_paired:
     title: "Pair with this device first"

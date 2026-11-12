@@ -19,13 +19,13 @@ explain:
     title: "Nie udało się uruchomić sieci"
     next: "Uruchom ponownie Solferry, aby spróbować jeszcze raz."
   invalid_relay_url:
-    title: "Nieprawidłowy adres Relay"
-    next: "Wklej cały link wyświetlony przez Relay, np. https://relay.example.com#token."
+    title: "Nieprawidłowy adres serwera Relay"
+    next: "Wklej cały link wyświetlony przez serwer Relay, np. https://relay.example.com#token."
   unreachable:
     title: "Urządzenie jest niedostępne"
-    next: "Otwórz na nim Solferry. Jeśli jest w innej sieci, użyj Tailscale lub dodaj własny Relay."
+    next: "Otwórz na nim Solferry. Jeśli jest w innej sieci, użyj Tailscale lub dodaj własny serwer Relay."
   relay_check_failed:
-    title: "Relay nie działa"
+    title: "Serwer Relay nie działa"
     next: "Sprawdź jego stan w Ustawieniach."
   not_paired:
     title: "Najpierw sparuj to urządzenie"

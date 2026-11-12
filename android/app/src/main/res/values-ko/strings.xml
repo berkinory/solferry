@@ -130,9 +130,9 @@
     <string name="language_title">언어</string>
     <string name="language_system">시스템 기본값</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Relay 서버</string>
     <string name="relay_guide">설치 가이드</string>
-    <string name="relay_body">직접 운영하는 Relay를 통해 다른 네트워크의 기기에 연결해요.</string>
+    <string name="relay_body">직접 운영하는 Relay 서버를 통해 다른 네트워크의 기기에 연결해요.</string>
     <string name="relay_add">추가</string>
     <string name="relay_checking">확인 중</string>
     <string name="relay_connected">연결됨</string>

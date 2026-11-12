@@ -19,13 +19,13 @@ explain:
     title: "Não foi possível iniciar a rede"
     next: "Reinicie o Solferry para tentar de novo."
   invalid_relay_url:
-    title: "Endereço de relay inválido"
-    next: "Cole o link completo que o seu relay mostrou, como https://relay.example.com#token."
+    title: "Endereço de servidor relay inválido"
+    next: "Cole o link completo que o seu servidor relay mostrou, como https://relay.example.com#token."
   unreachable:
     title: "Não foi possível se conectar ao dispositivo"
-    next: "Abra o Solferry nele. Se ele estiver em outra rede, use o Tailscale ou adicione seu próprio relay."
+    next: "Abra o Solferry nele. Se ele estiver em outra rede, use o Tailscale ou adicione seu próprio servidor relay."
   relay_check_failed:
-    title: "Um relay não está funcionando"
+    title: "Um servidor relay não está funcionando"
     next: "Veja o status dele em Configurações."
   not_paired:
     title: "Pareie com este dispositivo primeiro"

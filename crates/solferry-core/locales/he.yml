@@ -19,13 +19,13 @@ explain:
     title: "הרשת לא הופעלה"
     next: "אפשר להפעיל מחדש את Solferry ולנסות שוב."
   invalid_relay_url:
-    title: "כתובת ה־Relay לא תקינה"
-    next: "צריך להדביק את הקישור המלא שה־Relay הציג, למשל https://relay.example.com#token."
+    title: "כתובת שרת ה־Relay לא תקינה"
+    next: "צריך להדביק את הקישור המלא ששרת ה־Relay הציג, למשל https://relay.example.com#token."
   unreachable:
     title: "אין חיבור למכשיר"
-    next: "צריך לפתוח בו את Solferry. ברשת אחרת אפשר להשתמש ב־Tailscale או להוסיף Relay משלך."
+    next: "צריך לפתוח בו את Solferry. ברשת אחרת אפשר להשתמש ב־Tailscale או להוסיף שרת Relay משלך."
   relay_check_failed:
-    title: "אחד ה־Relay לא עובד"
+    title: "אחד משרתי ה־Relay לא עובד"
     next: "הסטטוס שלו מופיע בהגדרות."
   not_paired:
     title: "צריך קודם לצמד את המכשיר הזה"

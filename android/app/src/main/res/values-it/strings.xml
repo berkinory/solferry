@@ -134,9 +134,9 @@
     <string name="language_title">Lingua</string>
     <string name="language_system">Lingua del sistema</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Server relay</string>
     <string name="relay_guide">Guida alla configurazione</string>
-    <string name="relay_body">Raggiungi dispositivi su altre reti tramite un relay gestito da te.</string>
+    <string name="relay_body">Raggiungi dispositivi su altre reti tramite un server relay gestito da te.</string>
     <string name="relay_add">Aggiungi</string>
     <string name="relay_checking">Verifica in corso</string>
     <string name="relay_connected">Connesso</string>

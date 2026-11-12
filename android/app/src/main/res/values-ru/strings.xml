@@ -136,9 +136,9 @@
     <string name="language_title">Язык</string>
     <string name="language_system">Как в системе</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Relay-сервер</string>
     <string name="relay_guide">Инструкция по настройке</string>
-    <string name="relay_body">Подключайтесь к устройствам в других сетях через собственный Relay.</string>
+    <string name="relay_body">Подключайтесь к устройствам в других сетях через собственный Relay-сервер.</string>
     <string name="relay_add">Добавить</string>
     <string name="relay_checking">Проверка</string>
     <string name="relay_connected">Подключено</string>

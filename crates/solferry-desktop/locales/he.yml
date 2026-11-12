@@ -204,9 +204,9 @@ settings:
     title: "חסומים"
     unblock: "ביטול חסימה"
 relays:
-  title: "Relay"
+  title: "שרת Relay"
   guide: "מדריך התקנה"
-  hint: "חיבור למכשירים ברשתות אחרות דרך Relay שמופעל אצלך."
+  hint: "חיבור למכשירים ברשתות אחרות דרך שרת Relay משלך."
   add: "הוספה"
   checking: "בבדיקה"
   remove: "הסרה"

@@ -204,9 +204,9 @@ settings:
     title: "Blockiert"
     unblock: "Freigeben"
 relays:
-  title: "Relay"
+  title: "Relay-Server"
   guide: "Anleitung"
-  hint: "Erreiche Geräte in anderen Netzwerken über ein eigenes Relay."
+  hint: "Erreiche Geräte in anderen Netzwerken über deinen eigenen Relay-Server."
   add: "Hinzufügen"
   checking: "Wird geprüft"
   remove: "Entfernen"

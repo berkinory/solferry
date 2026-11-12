@@ -204,9 +204,9 @@ settings:
     title: "已屏蔽"
     unblock: "解除屏蔽"
 relays:
-  title: "Relay"
+  title: "Relay 服务器"
   guide: "部署指南"
-  hint: "通过你自己部署的 Relay，连接其他网络中的设备。"
+  hint: "通过你自己部署的 Relay 服务器，连接其他网络中的设备。"
   add: "添加"
   checking: "正在检查"
   remove: "移除"

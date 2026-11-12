@@ -204,9 +204,9 @@ settings:
     title: "ブロック中"
     unblock: "ブロック解除"
 relays:
-  title: "Relay"
+  title: "Relay サーバー"
   guide: "セットアップガイド"
-  hint: "自分で運用する Relay を経由して、別のネットワークにあるデバイスに接続します。"
+  hint: "自分で運用する Relay サーバー経由で、別のネットワークのデバイスに接続します。"
   add: "追加"
   checking: "確認中"
   remove: "削除"

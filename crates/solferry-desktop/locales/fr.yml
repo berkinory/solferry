@@ -204,9 +204,9 @@ settings:
     title: "Bloqués"
     unblock: "Débloquer"
 relays:
-  title: "Relay"
+  title: "Serveur relay"
   guide: "Guide d'installation"
-  hint: "Joignez des appareils sur d'autres réseaux via un Relay que vous hébergez."
+  hint: "Joignez des appareils sur d'autres réseaux via votre propre serveur relay."
   add: "Ajouter"
   checking: "Vérification..."
   remove: "Supprimer"

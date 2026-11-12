@@ -130,9 +130,9 @@
     <string name="language_title">言語</string>
     <string name="language_system">システムのデフォルト</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Relay サーバー</string>
     <string name="relay_guide">セットアップガイド</string>
-    <string name="relay_body">自分で運用する Relay を経由して、別のネットワークにあるデバイスに接続します。</string>
+    <string name="relay_body">自分で運用する Relay サーバー経由で、別のネットワークのデバイスに接続します。</string>
     <string name="relay_add">追加</string>
     <string name="relay_checking">確認中</string>
     <string name="relay_connected">接続済み</string>

@@ -19,13 +19,13 @@ explain:
     title: "Ağ başlatılamadı"
     next: "Solferry'yi yeniden başlatıp tekrar dene."
   invalid_relay_url:
-    title: "Bu Relay adresi geçerli değil"
-    next: "Relay'in verdiği linkin tamamını yapıştır. Örnek: https://relay.example.com#token"
+    title: "Bu Relay linki geçerli değil"
+    next: "Relay sunucusunun verdiği linkin tamamını yapıştır. Örnek: https://relay.example.com#token"
   unreachable:
     title: "Cihaza ulaşılamıyor"
-    next: "O cihazda Solferry'yi aç. Farklı bir ağdaysa Tailscale kullan ya da kendi Relay'ini ekle."
+    next: "O cihazda Solferry'yi aç. Farklı bir ağdaysa Tailscale kullan ya da kendi Relay sunucunu ekle."
   relay_check_failed:
-    title: "Bir Relay çalışmıyor"
+    title: "Bir Relay sunucusu çalışmıyor"
     next: "Durumunu Ayarlar'da görebilirsin."
   not_paired:
     title: "Önce bu cihazla eşleştir"

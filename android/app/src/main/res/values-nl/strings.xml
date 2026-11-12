@@ -132,9 +132,9 @@
     <string name="language_title">Taal</string>
     <string name="language_system">Systeemstandaard</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Relay</string>
+    <string name="relay_title">Relayserver</string>
     <string name="relay_guide">Handleiding</string>
-    <string name="relay_body">Bereik apparaten op andere netwerken via een relay die je zelf draait.</string>
+    <string name="relay_body">Bereik apparaten op andere netwerken via een relayserver die je zelf draait.</string>
     <string name="relay_add">Toevoegen</string>
     <string name="relay_checking">Controleren</string>
     <string name="relay_connected">Verbonden</string>

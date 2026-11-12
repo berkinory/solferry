@@ -204,9 +204,9 @@ settings:
     title: "Engellenenler"
     unblock: "Engeli kaldır"
 relays:
-  title: "Relay"
+  title: "Relay sunucusu"
   guide: "Kurulum rehberi"
-  hint: "Kendi kurduğun bir Relay üzerinden başka ağlardaki cihazlara ulaş."
+  hint: "Kendi kurduğun Relay sunucusuyla başka ağlardaki cihazlara ulaş."
   add: "Ekle"
   checking: "Kontrol ediliyor"
   remove: "Kaldır"

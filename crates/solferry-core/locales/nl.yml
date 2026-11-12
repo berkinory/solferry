@@ -19,13 +19,13 @@ explain:
     title: "Netwerk kon niet starten"
     next: "Start Solferry opnieuw om het nog eens te proberen."
   invalid_relay_url:
-    title: "Dat relayadres is ongeldig"
-    next: "Plak de volledige link die je relay liet zien, zoals https://relay.example.com#token."
+    title: "Dat adres van de relayserver is ongeldig"
+    next: "Plak de volledige link die je relayserver liet zien, zoals https://relay.example.com#token."
   unreachable:
     title: "Apparaat niet bereikbaar"
-    next: "Open Solferry daar. Op een ander netwerk gebruik je Tailscale of voeg je je eigen relay toe."
+    next: "Open Solferry daar. Op een ander netwerk gebruik je Tailscale of voeg je je eigen relayserver toe."
   relay_check_failed:
-    title: "Een relay werkt niet"
+    title: "Een relayserver werkt niet"
     next: "Bekijk de status in Instellingen."
   not_paired:
     title: "Koppel eerst met dit apparaat"

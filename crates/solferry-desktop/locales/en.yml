@@ -204,9 +204,9 @@ settings:
     title: "Blocked"
     unblock: "Unblock"
 relays:
-  title: "Relay"
+  title: "Relay server"
   guide: "Setup Guide"
-  hint: "Reach devices on other networks through a relay you run."
+  hint: "Reach devices on other networks through a relay server you run."
   add: "Add"
   checking: "Checking"
   remove: "Remove"

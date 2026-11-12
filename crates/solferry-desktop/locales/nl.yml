@@ -204,9 +204,9 @@ settings:
     title: "Geblokkeerd"
     unblock: "Deblokkeren"
 relays:
-  title: "Relay"
+  title: "Relayserver"
   guide: "Handleiding"
-  hint: "Bereik apparaten op andere netwerken via een relay die je zelf draait."
+  hint: "Bereik apparaten op andere netwerken via een relayserver die je zelf draait."
   add: "Toevoegen"
   checking: "Controleren"
   remove: "Verwijderen"
