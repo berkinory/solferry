@@ -1,5 +1,6 @@
 package app.solferry
 
+import android.app.UiModeManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -98,6 +99,16 @@ class Engine(private val context: Context) : Listener {
     fun leaveUnlessStaying() {
         if (!state.value.standby && state.value.transfers.none { it.running }) bridge.leave()
     }
+
+    /** The UiModeManager night mode chosen in settings. Android applies it but only reports the system's. */
+    var appearance: Int
+        get() = settings.getInt(APPEARANCE, UiModeManager.MODE_NIGHT_AUTO)
+        set(mode) {
+            settings.edit { putInt(APPEARANCE, mode) }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context.getSystemService(UiModeManager::class.java).setApplicationNightMode(mode)
+            }
+        }
 
     /** Call from the foreground: Android refuses to start the service from anywhere else. */
     fun resumeStandby() = StandbyService.sync(context, state.value.standby)
@@ -269,6 +280,7 @@ class Engine(private val context: Context) : Listener {
     private companion object {
         const val STANDBY = "standby"
         const val ONBOARDED = "onboarded"
+        const val APPEARANCE = "appearance"
         const val SAVE_FOLDER = "save_folder"
         const val SAVE_FOLDER_NAME = "save_folder_name"
     }

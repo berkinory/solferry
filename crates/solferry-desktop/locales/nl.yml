@@ -99,7 +99,7 @@ link:
   share_title: "Delen via link"
   no_app:
     title: "Geen app op het andere apparaat"
-    body: "Een browser op hetzelfde netwerk kan je bestanden sturen. Zelf bestanden naar een browser sturen? Selecteer ze en kies Delen via link."
+    body: "Een browser op je netwerk kan je bestanden of tekst sturen."
     receive: "Ontvangen via link"
 history:
   title: "Geschiedenis"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Koppelen..."
   address_title: "IP-adres invoeren"
   own_addresses: "Dit apparaat is bereikbaar op %{addresses}."
-  invite_hint: "Voor een apparaat op een ander netwerk, of als het niet in de buurt verschijnt. Toon hier een code en voer die daar in."
+  invite_hint: "Voor apparaten op een ander netwerk. Toon hier een code en voer die daar in."
   invite: "Code tonen"
   copy: "Code kopiëren"
   copied: "Gekopieerd"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Apparaten in de buurt zien deze naam."
   start: "Aan de slag"
 settings:
+  appearance:
+    title: "Weergave"
+    system: "Systeem"
+    light: "Licht"
+    dark: "Donker"
   starting: "Bezig met starten..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "Controleren op updates mislukt"
   restart: "Opnieuw starten"
   download: "Downloaden"
+permissions:
+  title: "Toestemmingen"
+  notifications:
+    title: "Meldingen"
+    detail: "Voor binnenkomende bestanden, teksten en koppelverzoeken."
+  local_network:
+    title: "Lokaal netwerk"
+    detail: "Vindt je apparaten en stuurt rechtstreeks naar ze."
+  firewall:
+    title: "Firewall"
+    detail: "Sta privénetwerken toe zodat apparaten in de buurt dit apparaat bereiken."
+  allowed: "Toegestaan"
+  off: "Uit"
+  not_asked: "Nog niet gevraagd"
+  allow: "Toestaan"
+  open_settings: "Instellingen openen"

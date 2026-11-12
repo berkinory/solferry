@@ -59,7 +59,7 @@
     "192.168.1.20" : {
       "shouldTranslate" : false
     },
-    "A browser on the same network can send you files. To send files to one, pick them and choose Share via link." : {},
+    "A browser on your network can send you files or text." : {},
     "Accept" : {},
     "Add" : {},
     "Always accept" : {},
@@ -95,7 +95,7 @@
     "Files" : {},
     "Files received" : {},
     "Files you send or receive show up here." : {},
-    "For a device on another network, or when this one can't be found nearby. Show a code here and enter it there." : {},
+    "For devices on another network. Show a code here, enter it there." : {},
     "Forget" : {},
     "Forget %@?" : {},
     "History" : {},

@@ -99,7 +99,7 @@ link:
   share_title: "Partager par lien"
   no_app:
     title: "Solferry n'est pas sur l'autre appareil ?"
-    body: "Un navigateur sur le même réseau peut vous envoyer des fichiers. Pour en envoyer vers un navigateur, sélectionnez-les, puis choisissez « Partager par lien »."
+    body: "Un navigateur sur votre réseau peut vous envoyer des fichiers ou du texte."
     receive: "Recevoir par lien"
 history:
   title: "Historique"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Association..."
   address_title: "Saisir une adresse IP"
   own_addresses: "Adresse de cet appareil : %{addresses}."
-  invite_hint: "Pour un appareil sur un autre réseau, ou introuvable à proximité. Affichez un code ici et saisissez-le sur l'autre appareil."
+  invite_hint: "Pour les appareils sur un autre réseau. Affichez un code ici, saisissez-le là-bas."
   invite: "Afficher le code"
   copy: "Copier le code"
   copied: "Copié"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Les appareils à proximité verront ce nom."
   start: "Commencer"
 settings:
+  appearance:
+    title: "Apparence"
+    system: "Système"
+    light: "Clair"
+    dark: "Sombre"
   starting: "Démarrage..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "La recherche de mises à jour a échoué"
   restart: "Redémarrer"
   download: "Télécharger"
+permissions:
+  title: "Autorisations"
+  notifications:
+    title: "Notifications"
+    detail: "Pour les fichiers, textes et demandes d'association reçus."
+  local_network:
+    title: "Réseau local"
+    detail: "Trouve vos appareils et leur envoie directement."
+  firewall:
+    title: "Pare-feu"
+    detail: "Autorisez les réseaux privés pour que les appareils proches puissent joindre celui-ci."
+  allowed: "Autorisé"
+  off: "Désactivé"
+  not_asked: "Pas encore demandé"
+  allow: "Autoriser"
+  open_settings: "Ouvrir les réglages"

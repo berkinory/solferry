@@ -47,7 +47,7 @@ struct BrowserCard: View {
     var body: some View {
         Card(glyph: .link, title: "No app on the other device") {
             PaddedWell {
-                Muted("A browser on the same network can send you files. To send files to one, pick them and choose Share via link.")
+                Muted("A browser on your network can send you files or text.")
                 ActionButton(label: "Receive via link", glyph: .download, wide: true) { engine.bridge.receiveLink() }
             }
         }

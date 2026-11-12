@@ -99,7 +99,7 @@ link:
   share_title: "Udostępnij przez link"
   no_app:
     title: "Brak aplikacji na drugim urządzeniu"
-    body: "Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać pliki do przeglądarki, wybierz je i kliknij „Udostępnij przez link”."
+    body: "Przeglądarka w twojej sieci może wysłać ci pliki lub tekst."
     receive: "Odbierz przez link"
 history:
   title: "Historia"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Parowanie..."
   address_title: "Wpisz adres IP"
   own_addresses: "Adres tego urządzenia: %{addresses}."
-  invite_hint: "Gdy drugie urządzenie jest w innej sieci albo tego urządzenia nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam."
+  invite_hint: "Dla urządzeń w innej sieci. Pokaż kod tutaj i wpisz go tam."
   invite: "Pokaż kod"
   copy: "Kopiuj kod"
   copied: "Skopiowano"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Urządzenia w pobliżu widzą tę nazwę."
   start: "Zaczynamy"
 settings:
+  appearance:
+    title: "Wygląd"
+    system: "Systemowy"
+    light: "Jasny"
+    dark: "Ciemny"
   starting: "Uruchamianie..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "Nie udało się sprawdzić aktualizacji"
   restart: "Uruchom ponownie"
   download: "Pobierz"
+permissions:
+  title: "Uprawnienia"
+  notifications:
+    title: "Powiadomienia"
+    detail: "Dla przychodzących plików, tekstów i próśb o sparowanie."
+  local_network:
+    title: "Sieć lokalna"
+    detail: "Znajduje twoje urządzenia i wysyła do nich bezpośrednio."
+  firewall:
+    title: "Zapora"
+    detail: "Zezwól na sieci prywatne, żeby urządzenia w pobliżu mogły połączyć się z tym."
+  allowed: "Dozwolone"
+  off: "Wyłączone"
+  not_asked: "Jeszcze nie pytano"
+  allow: "Zezwól"
+  open_settings: "Otwórz ustawienia"

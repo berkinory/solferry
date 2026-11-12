@@ -99,7 +99,7 @@ link:
   share_title: "Compartir por enlace"
   no_app:
     title: "El otro dispositivo no tiene la app"
-    body: "Un navegador de la misma red también puede enviarte archivos. Para enviar archivos a un navegador, selecciónalos y elige Compartir por enlace."
+    body: "Un navegador de tu red puede enviarte archivos o texto."
     receive: "Recibir por enlace"
 history:
   title: "Historial"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Vinculando..."
   address_title: "Introducir una dirección IP"
   own_addresses: "IP de este dispositivo: %{addresses}."
-  invite_hint: "Para un dispositivo de otra red o que no aparece cerca. Muestra un código aquí e introdúcelo en el otro dispositivo."
+  invite_hint: "Para dispositivos en otra red. Muestra un código aquí e introdúcelo allí."
   invite: "Mostrar código"
   copy: "Copiar código"
   copied: "Copiado"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Los dispositivos cercanos verán este nombre."
   start: "Empezar"
 settings:
+  appearance:
+    title: "Apariencia"
+    system: "Sistema"
+    light: "Claro"
+    dark: "Oscuro"
   starting: "Iniciando..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "No se han podido buscar actualizaciones"
   restart: "Reiniciar"
   download: "Descargar"
+permissions:
+  title: "Permisos"
+  notifications:
+    title: "Notificaciones"
+    detail: "Para archivos, textos y solicitudes de vinculación entrantes."
+  local_network:
+    title: "Red local"
+    detail: "Encuentra tus dispositivos y les envía directamente."
+  firewall:
+    title: "Firewall"
+    detail: "Permite las redes privadas para que los dispositivos cercanos lleguen a este."
+  allowed: "Permitido"
+  off: "Desactivado"
+  not_asked: "Aún no se ha pedido"
+  allow: "Permitir"
+  open_settings: "Abrir Ajustes"

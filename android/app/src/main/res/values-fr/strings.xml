@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Ouvrez Solferry sur un autre appareil de ce réseau pour le voir apparaître ici.</string>
     <string name="nearby_scanning">Recherche de nouveaux appareils sur ce réseau</string>
     <string name="browser_title">Solferry n\'est pas sur l\'autre appareil ?</string>
-    <string name="browser_body">Un navigateur sur le même réseau peut vous envoyer des fichiers. Pour en envoyer vers un navigateur, sélectionnez-les, puis choisissez « Partager par lien ».</string>
+    <string name="browser_body">Un navigateur sur votre réseau peut vous envoyer des fichiers ou du texte.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Fichiers entrants</string>
@@ -98,7 +98,7 @@
     <string name="pair_compare_hint">Vérifiez que l\'autre appareil affiche ce code, puis confirmez sur celui-ci.</string>
     <string name="pair_code_title">Associer avec un code</string>
     <string name="pair_show_title">Afficher un code</string>
-    <string name="pair_show_hint">Pour un appareil sur un autre réseau, ou introuvable à proximité. Affichez un code ici et saisissez-le sur l\'autre appareil.</string>
+    <string name="pair_show_hint">Pour les appareils sur un autre réseau. Affichez un code ici, saisissez-le là-bas.</string>
     <string name="pair_show_code">Afficher le code</string>
     <string name="pair_invite_expiry">Valable une seule fois, pendant 10 minutes.</string>
     <string name="pair_copy_code">Copier le code</string>
@@ -130,7 +130,7 @@
     <string name="settings_find_on">Les appareils de votre réseau peuvent voir celui-ci et lui proposer des fichiers.</string>
     <string name="settings_find_off">Aucun nouvel appareil ne peut le trouver. Les appareils associés peuvent toujours le joindre.</string>
     <string name="settings_background_title">Recevoir en arrière-plan</string>
-    <string name="settings_background_body">Restez joignable même quand Solferry est fermé. Une notification reste affichée et la batterie se vide plus vite.</string>
+    <string name="settings_background_body">Recevoir quand Solferry est fermé. Affiche une notification, consomme plus de batterie.</string>
     <string name="language_title">Langue</string>
     <string name="language_system">Langue du système</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -190,4 +190,15 @@
     <string name="notify_text_open">Ouvrez Solferry pour le copier</string>
     <string name="notify_received_title">Fichiers reçus</string>
     <string name="notify_received_body">%2$s vous a envoyé %1$s (dossier %3$s)</string>
+    <string name="permissions_title">Autorisations</string>
+    <string name="permissions_notifications">Notifications</string>
+    <string name="permissions_notifications_detail">Pour les fichiers, textes et demandes d\'association reçus.</string>
+    <string name="permissions_allowed">Autorisé</string>
+    <string name="permissions_off">Désactivé</string>
+    <string name="permissions_allow">Autoriser</string>
+    <string name="permissions_open_settings">Ouvrir les paramètres</string>
+    <string name="appearance_title">Apparence</string>
+    <string name="appearance_system">Système</string>
+    <string name="appearance_light">Clair</string>
+    <string name="appearance_dark">Sombre</string>
 </resources>

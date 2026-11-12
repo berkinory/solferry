@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Відкрийте Solferry на іншому пристрої в цій мережі, і він з’явиться тут.</string>
     <string name="nearby_scanning">Пошук нових пристроїв у цій мережі</string>
     <string name="browser_title">На іншому пристрої немає застосунку</string>
-    <string name="browser_body">Браузер у тій самій мережі може надіслати вам файли. Щоб надіслати файли в браузер, виберіть їх і натисніть «Поділитися посиланням».</string>
+    <string name="browser_body">Браузер у вашій мережі може надіслати вам файли або текст.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Вхідні файли</string>
@@ -100,7 +100,7 @@
     <string name="pair_compare_hint">Переконайтеся, що на іншому пристрої цей самий код, і прийміть запит там.</string>
     <string name="pair_code_title">Створити пару за кодом</string>
     <string name="pair_show_title">Показати код</string>
-    <string name="pair_show_hint">Якщо пристрій в іншій мережі або цей пристрій не видно поруч, покажіть код тут і введіть його там.</string>
+    <string name="pair_show_hint">Для пристроїв в іншій мережі. Покажіть код тут і введіть його там.</string>
     <string name="pair_show_code">Показати код</string>
     <string name="pair_invite_expiry">Код одноразовий і діє 10 хвилин.</string>
     <string name="pair_copy_code">Копіювати код</string>
@@ -132,7 +132,7 @@
     <string name="settings_find_on">Пристрої у вашій мережі бачать цей пристрій і можуть пропонувати йому файли.</string>
     <string name="settings_find_off">Нові пристрої його не знайдуть. Пристрої в парі й надалі можуть підключатися.</string>
     <string name="settings_background_title">Приймання у фоні</string>
-    <string name="settings_background_body">Solferry залишається на зв’язку, навіть коли закритий. Показує сповіщення й витрачає більше заряду.</string>
+    <string name="settings_background_body">Приймати, коли Solferry закрито. Показує сповіщення, витрачає більше заряду.</string>
     <string name="language_title">Мова</string>
     <string name="language_system">Як у системі</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -194,4 +194,15 @@
     <string name="notify_text_open">Відкрийте Solferry, щоб скопіювати</string>
     <string name="notify_received_title">Файли отримано</string>
     <string name="notify_received_body">%1$s від %2$s, у папці %3$s</string>
+    <string name="permissions_title">Дозволи</string>
+    <string name="permissions_notifications">Сповіщення</string>
+    <string name="permissions_notifications_detail">Для вхідних файлів, тексту й запитів на з\'єднання.</string>
+    <string name="permissions_allowed">Дозволено</string>
+    <string name="permissions_off">Вимкнено</string>
+    <string name="permissions_allow">Дозволити</string>
+    <string name="permissions_open_settings">Відкрити налаштування</string>
+    <string name="appearance_title">Вигляд</string>
+    <string name="appearance_system">Як у системі</string>
+    <string name="appearance_light">Світлий</string>
+    <string name="appearance_dark">Темний</string>
 </resources>

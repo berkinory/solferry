@@ -99,7 +99,7 @@ link:
   share_title: "Share via link"
   no_app:
     title: "No app on the other device"
-    body: "A browser on the same network can send you files. To send files to one, pick them and choose Share via link."
+    body: "A browser on your network can send you files or text."
     receive: "Receive via link"
 history:
   title: "History"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Pairing..."
   address_title: "Enter an IP address"
   own_addresses: "This device is at %{addresses}."
-  invite_hint: "For a device on another network, or when this one can't be found nearby. Show a code here and enter it there."
+  invite_hint: "For devices on another network. Show a code here, enter it there."
   invite: "Show code"
   copy: "Copy code"
   copied: "Copied"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Nearby devices see this name."
   start: "Get started"
 settings:
+  appearance:
+    title: "Appearance"
+    system: "System"
+    light: "Light"
+    dark: "Dark"
   starting: "Starting..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "Couldn't check for updates"
   restart: "Restart"
   download: "Download"
+permissions:
+  title: "Permissions"
+  notifications:
+    title: "Notifications"
+    detail: "For incoming files, texts and pairing requests."
+  local_network:
+    title: "Local network"
+    detail: "Finds your devices and sends to them directly."
+  firewall:
+    title: "Firewall"
+    detail: "Allow private networks so nearby devices can reach this one."
+  allowed: "Allowed"
+  off: "Off"
+  not_asked: "Not asked yet"
+  allow: "Allow"
+  open_settings: "Open Settings"

@@ -82,7 +82,8 @@ walkdir = "2"
 webpki-roots = "1"
 
 [workspace.lints.rust]
-unsafe_code = "forbid"
+# Denied everywhere; the one exception reads what macOS hands a callback, and says why.
+unsafe_code = "deny"
 missing_debug_implementations = "warn"
 
 [workspace.lints.clippy]

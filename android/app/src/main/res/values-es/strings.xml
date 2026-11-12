@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Abre Solferry en otro dispositivo de esta red y aparecerá aquí.</string>
     <string name="nearby_scanning">Buscando dispositivos nuevos en esta red</string>
     <string name="browser_title">El otro dispositivo no tiene la app</string>
-    <string name="browser_body">Un navegador de la misma red también puede enviarte archivos. Para enviar archivos a un navegador, selecciónalos y elige Compartir por enlace.</string>
+    <string name="browser_body">Un navegador de tu red puede enviarte archivos o texto.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Archivos entrantes</string>
@@ -98,7 +98,7 @@
     <string name="pair_compare_hint">Comprueba que el otro dispositivo muestra este código y acepta allí.</string>
     <string name="pair_code_title">Vincular con un código</string>
     <string name="pair_show_title">Mostrar un código</string>
-    <string name="pair_show_hint">Para un dispositivo de otra red o que no aparece cerca. Muestra un código aquí e introdúcelo en el otro dispositivo.</string>
+    <string name="pair_show_hint">Para dispositivos en otra red. Muestra un código aquí e introdúcelo allí.</string>
     <string name="pair_show_code">Mostrar código</string>
     <string name="pair_invite_expiry">Es de un solo uso y caduca en 10 minutos.</string>
     <string name="pair_copy_code">Copiar código</string>
@@ -130,7 +130,7 @@
     <string name="settings_find_on">Los dispositivos de tu red pueden verlo y pedir permiso para enviarte archivos.</string>
     <string name="settings_find_off">Ningún dispositivo nuevo podrá encontrarlo. Los vinculados seguirán pudiendo conectarse.</string>
     <string name="settings_background_title">Recibir en segundo plano</string>
-    <string name="settings_background_body">Sigue disponible aunque Solferry esté cerrado. Muestra una notificación y consume más batería.</string>
+    <string name="settings_background_body">Recibe con Solferry cerrado. Muestra una notificación y gasta más batería.</string>
     <string name="language_title">Idioma</string>
     <string name="language_system">Idioma del sistema</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -190,4 +190,15 @@
     <string name="notify_text_open">Abre Solferry para copiarlo</string>
     <string name="notify_received_title">Archivos recibidos</string>
     <string name="notify_received_body">%1$s de %2$s, en %3$s</string>
+    <string name="permissions_title">Permisos</string>
+    <string name="permissions_notifications">Notificaciones</string>
+    <string name="permissions_notifications_detail">Para archivos, textos y solicitudes de vinculación entrantes.</string>
+    <string name="permissions_allowed">Permitido</string>
+    <string name="permissions_off">Desactivado</string>
+    <string name="permissions_allow">Permitir</string>
+    <string name="permissions_open_settings">Abrir ajustes</string>
+    <string name="appearance_title">Apariencia</string>
+    <string name="appearance_system">Sistema</string>
+    <string name="appearance_light">Claro</string>
+    <string name="appearance_dark">Oscuro</string>
 </resources>

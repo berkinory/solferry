@@ -77,7 +77,7 @@ object Notifier {
         show(context, context.getString(R.string.notify_received_title), context.getString(R.string.notify_received_body, label, name, folder))
 
     /** Before Android 13 there is no permission to ask for, only the switch in system settings. */
-    private fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
     } else {
         NotificationManagerCompat.from(context).areNotificationsEnabled()

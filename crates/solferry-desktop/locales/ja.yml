@@ -99,7 +99,7 @@ link:
   share_title: "リンクで共有"
   no_app:
     title: "相手のデバイスにアプリがない場合"
-    body: "同じネットワーク上のブラウザからファイルを受け取れます。ブラウザに送るときは、ファイルを選んで「リンクで共有」を選択します。"
+    body: "同じネットワークのブラウザから、ファイルやテキストを受け取れます。"
     receive: "リンクで受信"
 history:
   title: "履歴"
@@ -138,7 +138,7 @@ pairing:
   pairing: "ペアリング中…"
   address_title: "IP アドレスを入力"
   own_addresses: "このデバイスのアドレス: %{addresses}"
-  invite_hint: "別のネットワークにあるデバイスや、近くのデバイスとして見つからない場合に使います。ここでコードを表示し、相手のデバイスで入力してください。"
+  invite_hint: "別のネットワークのデバイス向け。ここでコードを表示し、相手側で入力します。"
   invite: "コードを表示"
   copy: "コードをコピー"
   copied: "コピーしました"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "近くのデバイスにはこの名前が表示されます。"
   start: "はじめる"
 settings:
+  appearance:
+    title: "外観"
+    system: "システム"
+    light: "ライト"
+    dark: "ダーク"
   starting: "起動中…"
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "アップデートを確認できませんでした"
   restart: "再起動"
   download: "ダウンロード"
+permissions:
+  title: "アクセス許可"
+  notifications:
+    title: "通知"
+    detail: "ファイル、テキスト、ペアリングのリクエストを受け取ったときに。"
+  local_network:
+    title: "ローカルネットワーク"
+    detail: "デバイスを見つけて直接送ります。"
+  firewall:
+    title: "ファイアウォール"
+    detail: "近くのデバイスが接続できるよう、プライベートネットワークを許可してください。"
+  allowed: "許可済み"
+  off: "オフ"
+  not_asked: "まだ確認していません"
+  allow: "許可"
+  open_settings: "設定を開く"

@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">같은 네트워크에 있는 다른 기기에서 Solferry를 열면 여기에 표시돼요.</string>
     <string name="nearby_scanning">이 네트워크에서 새 기기를 찾는 중</string>
     <string name="browser_title">상대 기기에 앱이 없나요?</string>
-    <string name="browser_body">같은 네트워크의 브라우저에서도 파일을 보낼 수 있어요. 브라우저로 보내려면 파일을 고른 후 \'링크로 공유\'를 선택하세요.</string>
+    <string name="browser_body">같은 네트워크의 브라우저에서 파일이나 텍스트를 받을 수 있어요.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">파일 수신 요청</string>
@@ -94,7 +94,7 @@
     <string name="pair_compare_hint">상대 기기에 같은 코드가 표시되는지 확인한 후 상대 기기에서 수락하세요.</string>
     <string name="pair_code_title">코드로 페어링</string>
     <string name="pair_show_title">코드 표시</string>
-    <string name="pair_show_hint">다른 네트워크에 있는 기기이거나 주변 기기에서 찾을 수 없을 때 사용하세요. 여기서 코드를 표시하고 상대 기기에서 입력하세요.</string>
+    <string name="pair_show_hint">다른 네트워크의 기기용이에요. 여기서 코드를 보여 주고 거기서 입력하세요.</string>
     <string name="pair_show_code">코드 표시</string>
     <string name="pair_invite_expiry">10분 동안 한 번만 사용할 수 있어요.</string>
     <string name="pair_copy_code">코드 복사</string>
@@ -126,7 +126,7 @@
     <string name="settings_find_on">같은 네트워크의 기기가 이 기기를 보고 파일 전송을 요청할 수 있어요.</string>
     <string name="settings_find_off">새 기기는 이 기기를 찾을 수 없어요. 페어링된 기기는 계속 연결할 수 있어요.</string>
     <string name="settings_background_title">백그라운드에서 받기</string>
-    <string name="settings_background_body">Solferry를 닫아도 파일을 받을 수 있어요. 알림이 계속 표시되고 배터리를 더 사용해요.</string>
+    <string name="settings_background_body">Solferry를 닫아도 받아요. 알림이 표시되고 배터리를 더 써요.</string>
     <string name="language_title">언어</string>
     <string name="language_system">시스템 기본값</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -182,4 +182,15 @@
     <string name="notify_text_open">Solferry를 열어 복사하세요</string>
     <string name="notify_received_title">파일을 받았어요</string>
     <string name="notify_received_body">%2$s에서 보낸 %1$s, 저장 위치: %3$s</string>
+    <string name="permissions_title">권한</string>
+    <string name="permissions_notifications">알림</string>
+    <string name="permissions_notifications_detail">파일, 텍스트, 페어링 요청을 받을 때 사용해요.</string>
+    <string name="permissions_allowed">허용됨</string>
+    <string name="permissions_off">꺼짐</string>
+    <string name="permissions_allow">허용</string>
+    <string name="permissions_open_settings">설정 열기</string>
+    <string name="appearance_title">화면 모드</string>
+    <string name="appearance_system">시스템</string>
+    <string name="appearance_light">라이트</string>
+    <string name="appearance_dark">다크</string>
 </resources>
