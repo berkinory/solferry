@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Dispositivo sin nombre"
+transfer:
+  and_more: "%{first} y más"
+about:
+  unreachable: "No se puede conectar con %{name}"
+  declined: "%{name} rechazó"
+  busy: "%{name} está ocupado"
+  not_paired: "Primero vincula %{name}"
+explain:
+  storage:
+    title: "No se pudo leer ni escribir un archivo"
+    next: "Revisa la carpeta, los permisos y el espacio libre."
+  corrupt_data:
+    title: "Los ajustes de Solferry están dañados"
+    next: "Elimina el archivo dañado en la carpeta de datos de Solferry. Puede que tengas que volver a vincular los dispositivos."
+  network_start:
+    title: "La red no se inició"
+    next: "Reinicia Solferry para volver a intentarlo."
+  invalid_relay_url:
+    title: "Esa dirección de relay no es válida"
+    next: "Pega el enlace completo que mostró tu relay, como https://relay.example.com#token."
+  unreachable:
+    title: "No se puede conectar con el dispositivo"
+    next: "Abre Solferry en él. En otra red, usa Tailscale o añade tu propio relay."
+  relay_check_failed:
+    title: "Un relay no funciona"
+    next: "Consulta su estado en Ajustes."
+  not_paired:
+    title: "Primero vincula este dispositivo"
+    next: "Solo los dispositivos vinculados pueden conectarse desde aquí."
+  version_mismatch:
+    title: "Las versiones de Solferry no coinciden"
+    next: "Actualiza Solferry en ambos dispositivos."
+  busy:
+    title: "El otro dispositivo está ocupado"
+    next: "Espera a que terminen sus transferencias y vuelve a intentarlo."
+  cancelled:
+    title: "Transferencia cancelada"
+    next: "Vuelve a enviar para continuar donde se detuvo."
+  declined:
+    title: "Transferencia rechazada"
+    next: "La otra persona dijo que no."
+  no_space:
+    title: "No hay suficiente espacio"
+    next: "Libera espacio en el dispositivo que recibe y vuelve a intentarlo."
+  delivery_failed:
+    title: "No se pudieron guardar los archivos"
+    next: "Revisa la carpeta de descargas en el dispositivo que recibe."
+  invalid_offer:
+    title: "Transferencia no segura rechazada"
+    next: "El otro dispositivo ofreció archivos que Solferry no puede aceptar."
+  source_changed:
+    title: "Un archivo cambió durante el envío"
+    next: "Espera a que deje de cambiar y vuelve a intentarlo."
+  unsupported_name:
+    title: "No se puede enviar un nombre de archivo"
+    next: "Cambia el nombre del archivo y vuelve a intentarlo."
+  nothing_to_send:
+    title: "Nada que enviar"
+    next: "Elige al menos un archivo. Los accesos directos y enlaces se omiten."
+  hash_mismatch:
+    title: "Se detectaron datos dañados"
+    next: "La copia defectuosa se descartó. Vuelve a enviarla."
+  connection_lost:
+    title: "Se perdió la conexión"
+    next: "Vuelve a intentarlo. Las transferencias continúan donde se detuvieron."
+  invalid_ticket:
+    title: "Ese código no es válido"
+    next: "Pega el código completo, que empieza por sf1."
+  ticket_expired:
+    title: "Ese código caducó"
+    next: "Los códigos duran 10 minutos. Crea uno nuevo."
+  update:
+    title: "No se pudo actualizar Solferry"
+    next: "Vuelve a intentarlo más tarde o descárgalo de GitHub."
+  own_ticket:
+    title: "Es el código de este dispositivo"
+    next: "Introdúcelo en el otro dispositivo."
+  no_local_network:
+    title: "No estás en una red local"
+    next: "Conéctate a una red Wi-Fi o a un punto de acceso y vuelve a compartir."
+  pairing_refused:
+    title: "Se rechazó la vinculación"
+    next: "Pide que acepten o crea un código nuevo."
+  unknown_device:
+    title: "No se encontró el dispositivo"
+    next: "Puede que se haya eliminado."
+  ambiguous_device:
+    title: "Coincide más de un dispositivo"
+    next: "Elige el dispositivo de la lista."
+  invalid_address:
+    title: "Esa dirección no es válida"
+    next: "Introduce una dirección IP como 192.168.1.20."
+  no_answer:
+    title: "Nadie respondió en esa dirección"
+    next: "Abre Solferry en él y comprueba que sea visible para todos."
+  protocol:
+    title: "Algo salió mal en Solferry"
+    next: "Es un error. Infórmalo con los detalles."
