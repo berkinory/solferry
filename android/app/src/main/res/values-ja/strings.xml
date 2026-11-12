@@ -128,7 +128,6 @@
     <string name="settings_background_title">バックグラウンドで受信</string>
     <string name="settings_background_body">Solferry を閉じていても受信します。通知が表示され、電池の消費が増えます。</string>
     <string name="language_title">言語</string>
-    <string name="language_system">システムのデフォルト</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay サーバー</string>
     <string name="relay_guide">セットアップガイド</string>

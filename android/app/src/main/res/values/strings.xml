@@ -133,7 +133,6 @@
     <string name="settings_background_title">Receive in the background</string>
     <string name="settings_background_body">Receive while Solferry is closed. Shows a notification, uses more battery.</string>
     <string name="language_title">Language</string>
-    <string name="language_system">System default</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay server</string>
     <string name="relay_guide">Setup Guide</string>

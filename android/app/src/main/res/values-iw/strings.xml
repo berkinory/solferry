@@ -134,7 +134,6 @@
     <string name="settings_background_title">קבלה ברקע</string>
     <string name="settings_background_body">קבלה גם כש־Solferry סגורה. מוצגת התראה, וצריכת הסוללה גבוהה יותר.</string>
     <string name="language_title">שפה</string>
-    <string name="language_system">ברירת המחדל של המערכת</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">שרת Relay</string>
     <string name="relay_guide">מדריך התקנה</string>

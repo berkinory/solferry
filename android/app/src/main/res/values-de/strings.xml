@@ -130,7 +130,6 @@
     <string name="settings_background_title">Im Hintergrund empfangen</string>
     <string name="settings_background_body">Empfangen, während Solferry geschlossen ist. Zeigt eine Benachrichtigung, braucht mehr Akku.</string>
     <string name="language_title">Sprache</string>
-    <string name="language_system">Systemsprache</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay-Server</string>
     <string name="relay_guide">Anleitung</string>

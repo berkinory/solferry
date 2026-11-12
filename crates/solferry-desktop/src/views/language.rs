@@ -4,7 +4,7 @@ use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::popover::Popover;
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
-    Anchor, AnyElement, App, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
+    Anchor, AnyElement, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
     StatefulInteractiveElement, Styled, div, img, px,
 };
 use rust_i18n::t;
@@ -46,43 +46,34 @@ pub fn apply(language: Option<&str>) {
     }
 }
 
-fn name(language: Option<&str>) -> SharedString {
-    LANGUAGES
-        .iter()
-        .find(|(tag, ..)| Some(*tag) == language)
-        .map_or_else(|| t!("settings.language.system").into(), |(_, name, _)| (*name).into())
-}
-
-fn choose(view: &MainView, language: Option<&str>, cx: &mut Context<MainView>) {
-    apply(language);
+fn choose(view: &MainView, language: &str, cx: &mut Context<MainView>) {
+    apply(Some(language));
     view.state.update(cx, |state, cx| {
         if let Some(config) = &mut state.config {
-            config.language = language.map(str::to_owned);
+            config.language = Some(language.to_owned());
         }
         cx.notify();
     });
-    MainView::command(Command::SetLanguage(language.map(str::to_owned)), cx);
+    MainView::command(Command::SetLanguage(Some(language.to_owned())), cx);
 }
 
 pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
-    let current = config.language.clone();
+    // Until someone picks one, the language shown is the one the system's resolved to.
+    let current = config.language.clone().unwrap_or_else(|| rust_i18n::locale().to_string());
+    let current_name =
+        LANGUAGES.iter().find(|(tag, ..)| *tag == current).map_or("English", |l| l.1);
     let title = t!("settings.language.title");
     let main = cx.entity().downgrade();
     let picker = Popover::new("language")
         .anchor(Anchor::TopRight)
-        .trigger(
-            Button::new("language-trigger")
-                .xs()
-                .label(name(current.as_deref()))
-                .icon(Glyph::ChevronDown),
-        )
+        .trigger(Button::new("language-trigger").xs().label(current_name).icon(Glyph::ChevronDown))
         .content(move |_, _, cx| {
             let popover = cx.entity();
-            let choices = iter_choices().map(|language| {
-                let chosen = language == current.as_deref();
+            let choices = LANGUAGES.iter().map(|&(language, name, country)| {
+                let chosen = language == current;
                 let (main, popover) = (main.clone(), popover.clone());
                 div()
-                    .id(SharedString::from(format!("language-{}", language.unwrap_or("system"))))
+                    .id(SharedString::from(format!("language-{language}")))
                     .flex()
                     .items_center()
                     .justify_between()
@@ -98,8 +89,8 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                             .flex()
                             .items_center()
                             .gap(px(9.))
-                            .child(badge(language, cx))
-                            .child(name(language)),
+                            .child(img(format!("flags/{country}.svg")).size(px(FLAG)).flex_none())
+                            .child(name),
                     )
                     .children(
                         chosen.then(|| icon(Glyph::Check, 13.).text_color(cx.theme().foreground)),
@@ -130,20 +121,4 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
             ),
         )
         .into_any_element()
-}
-
-fn iter_choices() -> impl Iterator<Item = Option<&'static str>> {
-    std::iter::once(None).chain(LANGUAGES.iter().map(|(tag, ..)| Some(*tag)))
-}
-
-/// The language's flag, or the globe for the system's choice.
-fn badge(language: Option<&str>, cx: &App) -> AnyElement {
-    match LANGUAGES.iter().find(|(tag, ..)| Some(*tag) == language) {
-        Some((_, _, country)) => {
-            img(format!("flags/{country}.svg")).size(px(FLAG)).flex_none().into_any_element()
-        }
-        None => {
-            icon(Glyph::Language, FLAG).text_color(cx.theme().muted_foreground).into_any_element()
-        }
-    }
 }

@@ -199,7 +199,6 @@ settings:
   language:
     title: "言語"
     detail: "すべての画面と通知に適用されます。"
-    system: "システムのデフォルト"
   blocked:
     title: "ブロック中"
     unblock: "ブロック解除"

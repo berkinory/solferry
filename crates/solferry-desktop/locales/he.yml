@@ -199,7 +199,6 @@ settings:
   language:
     title: "שפה"
     detail: "לכל המסכים וההתראות."
-    system: "ברירת המחדל של המערכת"
   blocked:
     title: "חסומים"
     unblock: "ביטול חסימה"

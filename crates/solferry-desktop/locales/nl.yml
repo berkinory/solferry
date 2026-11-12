@@ -199,7 +199,6 @@ settings:
   language:
     title: "Taal"
     detail: "Voor alle schermen en meldingen."
-    system: "Systeemstandaard"
   blocked:
     title: "Geblokkeerd"
     unblock: "Deblokkeren"

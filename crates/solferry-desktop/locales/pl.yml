@@ -199,7 +199,6 @@ settings:
   language:
     title: "Język"
     detail: "Używany na wszystkich ekranach i w powiadomieniach."
-    system: "Domyślny systemowy"
   blocked:
     title: "Zablokowane"
     unblock: "Odblokuj"

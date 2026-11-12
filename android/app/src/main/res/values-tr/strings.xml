@@ -130,7 +130,6 @@
     <string name="settings_background_title">Arka planda dosya al</string>
     <string name="settings_background_body">Solferry kapalıyken de dosya al. Bildirim gösterir, daha çok pil harcar.</string>
     <string name="language_title">Dil</string>
-    <string name="language_system">Sistem dili</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay sunucusu</string>
     <string name="relay_guide">Kurulum rehberi</string>

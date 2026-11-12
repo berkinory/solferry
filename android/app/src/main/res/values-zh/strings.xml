@@ -128,7 +128,6 @@
     <string name="settings_background_title">在后台接收</string>
     <string name="settings_background_body">Solferry 关闭时也能接收。会显示通知，耗电更多。</string>
     <string name="language_title">语言</string>
-    <string name="language_system">跟随系统</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay 服务器</string>
     <string name="relay_guide">部署指南</string>

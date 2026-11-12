@@ -199,7 +199,6 @@ settings:
   language:
     title: "Idioma"
     detail: "Se usa en todas las pantallas y notificaciones."
-    system: "Idioma del sistema"
   blocked:
     title: "Bloqueados"
     unblock: "Desbloquear"

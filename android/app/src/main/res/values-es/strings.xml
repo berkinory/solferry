@@ -132,7 +132,6 @@
     <string name="settings_background_title">Recibir en segundo plano</string>
     <string name="settings_background_body">Recibe con Solferry cerrado. Muestra una notificación y gasta más batería.</string>
     <string name="language_title">Idioma</string>
-    <string name="language_system">Idioma del sistema</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Servidor relay</string>
     <string name="relay_guide">Guía de configuración</string>

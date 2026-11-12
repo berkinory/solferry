@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.solferry.R
 import app.solferry.design.SpaceTokens
-import java.util.Locale
 
 /** Each language by its own name, so anyone can find theirs whatever the app shows now, with its flag. */
 private val LANGUAGES = listOf(
@@ -51,15 +50,11 @@ private val LANGUAGES = listOf(
 @Composable
 fun LanguageCard() {
     val locales = LocalContext.current.getSystemService(LocaleManager::class.java)
-    var chosen by remember { mutableStateOf(locales.applicationLocales[0]?.toLanguageTag()) }
+    // Until someone picks one, the app shows the first of the system's languages it has.
+    val shown = locales.applicationLocales.takeUnless { it.isEmpty } ?: locales.systemLocales
+    var chosen by remember { mutableStateOf(supported(shown)) }
     var picking by remember { mutableStateOf(false) }
-    val system = stringResource(R.string.language_system)
-    val options = listOf(Triple(null, system, null)) + LANGUAGES
-    val label = chosen?.let { tag ->
-        // A language set from the system's per-app screen can carry a region this list doesn't name.
-        LANGUAGES.firstOrNull { it.first == tag }?.let { "${it.third}  ${it.second}" }
-            ?: Locale.forLanguageTag(tag).let { it.getDisplayName(it) }
-    } ?: system
+    val label = LANGUAGES.first { it.first == chosen }.let { "${it.third}  ${it.second}" }
     Card(R.drawable.ic_language, stringResource(R.string.language_title)) {
         Well(padding = SpaceTokens.lg.dp, onClick = { picking = true }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -72,11 +67,11 @@ fun LanguageCard() {
         Sheet(stringResource(R.string.language_title), { picking = false }) { close ->
             Frame {
                 Well {
-                    options.forEach { (tag, name, flag) ->
+                    LANGUAGES.forEach { (tag, name, flag) ->
                         LanguageRow(name, flag, tag == chosen) {
                             close()
                             chosen = tag
-                            locales.applicationLocales = tag?.let { LocaleList.forLanguageTags(it) } ?: LocaleList.getEmptyLocaleList()
+                            locales.applicationLocales = LocaleList.forLanguageTags(tag)
                         }
                     }
                 }
@@ -85,8 +80,12 @@ fun LanguageCard() {
     }
 }
 
+private fun supported(list: LocaleList): String =
+    (0 until list.size()).map { list[it].toLanguageTag().substringBefore('-') }
+        .firstOrNull { tag -> LANGUAGES.any { it.first == tag } } ?: "en"
+
 @Composable
-private fun LanguageRow(name: String, flag: String?, selected: Boolean, onClick: () -> Unit) {
+private fun LanguageRow(name: String, flag: String, selected: Boolean, onClick: () -> Unit) {
     val palette = LocalPalette.current
     Row(
         Modifier.fillMaxWidth().clip(ControlShape).background(if (selected) palette.raised else Color.Transparent)
@@ -94,7 +93,7 @@ private fun LanguageRow(name: String, flag: String?, selected: Boolean, onClick:
             .padding(horizontal = SpaceTokens.md.dp, vertical = SpaceTokens.md.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (flag != null) Text(flag, Modifier.padding(end = SpaceTokens.md.dp))
+        Text(flag, Modifier.padding(end = SpaceTokens.md.dp))
         Text(name, Modifier.weight(1f), maxLines = 1)
         if (selected) Glyph(R.drawable.ic_check, palette.primary, 18)
     }

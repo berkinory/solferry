@@ -199,7 +199,6 @@ settings:
   language:
     title: "Language"
     detail: "Used for every screen and notification."
-    system: "System default"
   blocked:
     title: "Blocked"
     unblock: "Unblock"

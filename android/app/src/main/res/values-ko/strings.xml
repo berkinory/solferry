@@ -128,7 +128,6 @@
     <string name="settings_background_title">백그라운드에서 받기</string>
     <string name="settings_background_body">Solferry를 닫아도 받아요. 알림이 표시되고 배터리를 더 써요.</string>
     <string name="language_title">언어</string>
-    <string name="language_system">시스템 기본값</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay 서버</string>
     <string name="relay_guide">설치 가이드</string>

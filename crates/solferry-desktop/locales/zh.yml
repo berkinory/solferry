@@ -199,7 +199,6 @@ settings:
   language:
     title: "语言"
     detail: "应用于所有界面和通知。"
-    system: "跟随系统"
   blocked:
     title: "已屏蔽"
     unblock: "解除屏蔽"

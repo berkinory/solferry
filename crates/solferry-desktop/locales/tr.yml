@@ -199,7 +199,6 @@ settings:
   language:
     title: "Dil"
     detail: "Tüm ekranlarda ve bildirimlerde kullanılır."
-    system: "Sistem dili"
   blocked:
     title: "Engellenenler"
     unblock: "Engeli kaldır"

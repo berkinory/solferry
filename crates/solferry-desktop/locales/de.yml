@@ -199,7 +199,6 @@ settings:
   language:
     title: "Sprache"
     detail: "Gilt für alle Fenster und Benachrichtigungen."
-    system: "Systemsprache"
   blocked:
     title: "Blockiert"
     unblock: "Freigeben"

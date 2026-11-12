@@ -199,7 +199,6 @@ settings:
   language:
     title: "Мова"
     detail: "Використовується на всіх екранах і в сповіщеннях."
-    system: "Як у системі"
   blocked:
     title: "Заблоковані"
     unblock: "Розблокувати"

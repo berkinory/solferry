@@ -134,7 +134,6 @@
     <string name="settings_background_title">Приём в фоне</string>
     <string name="settings_background_body">Принимать, когда Solferry закрыт. Показывает уведомление, тратит больше заряда.</string>
     <string name="language_title">Язык</string>
-    <string name="language_system">Как в системе</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay-сервер</string>
     <string name="relay_guide">Инструкция по настройке</string>
