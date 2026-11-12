@@ -9,11 +9,16 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Browsers can send text through a receive link, not just files. It shows up in the link sheet with a copy button.
 - Clicking a paired device opens its options, on desktop and Android, instead of a file picker.
 - Two paired devices with the same name show their key next to their status, so you can tell which is which.
+- A Permissions card in onboarding and Settings shows what the system allows Solferry: notifications everywhere, local network on macOS, the firewall on Windows. Each says whether it's on and opens the right settings page.
+- Light, dark or system appearance in Settings, on desktop and Android 12 and later.
+- Onboarding on Android offers to keep receiving in the background.
 
 ### Changed
 
 - The desktop window and everything in it are smaller, closer to the apps around it.
 - Sheets slide away when they close instead of vanishing, on desktop and Android.
+- Android asks for notifications from onboarding instead of popping the prompt up on its own, and macOS asks from a button instead of at the first incoming file.
+- The longest hints are a sentence each.
 - The macOS menu bar icon follows the menu bar's color, is sharp on Retina screens and sits centered.
 - The device key is kept in a file only you can read, on every platform, so macOS no longer asks for Keychain access. Devices paired with an earlier version on macOS or Windows need to be paired again.
 

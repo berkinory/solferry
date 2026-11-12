@@ -1,10 +1,11 @@
 //! The first launch screen: what Solferry is, and the name nearby devices will see.
 
 use gpui_kit::component::input::{Input, InputEvent, InputState};
+use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Sizable};
 use gpui_kit::{
-    AppContext, Context, Entity, FontWeight, IntoElement, ParentElement, Render, Styled, Window,
-    div, px, svg,
+    AppContext, Context, Entity, FontWeight, InteractiveElement, IntoElement, ParentElement,
+    Render, Styled, Window, div, px, svg,
 };
 use rust_i18n::t;
 
@@ -75,35 +76,38 @@ impl Render for Onboarding {
         } else {
             start.primary().on_click(cx.listener(|view, _, _, cx| view.finish(cx)))
         };
-        div().size_full().flex().items_center().justify_center().p(px(SPACE_LG)).child(
-            div()
-                .w_full()
-                .max_w(px(WIDTH))
-                .flex()
-                .flex_col()
-                .items_center()
-                .gap(px(SPACE_SM))
-                .child(svg().path(MARK).size(px(46.)).text_color(color(palette(cx).brand)))
-                .child(
-                    div()
-                        .mt(px(SPACE_SM))
-                        .text_size(px(22.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .child(t!("onboarding.title")),
-                )
-                .child(
-                    div()
-                        .text_center()
-                        .text_size(px(TYPE_BODY))
-                        .text_color(cx.theme().muted_foreground)
-                        .child(t!("onboarding.body")),
-                )
-                .child(div().w_full().mt(px(SPACE_XL)).child(name))
-                .children(
-                    super::access::card(&self.state, cx)
-                        .map(|card| div().w_full().mt(px(SPACE_SM)).child(card)),
-                )
-                .child(div().mt(px(SPACE_LG)).child(start)),
-        )
+        // Scrolls when the window is shorter than the permissions it lists.
+        let content =
+            div().min_h_full().flex().items_center().justify_center().p(px(SPACE_LG)).child(
+                div()
+                    .w_full()
+                    .max_w(px(WIDTH))
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .gap(px(SPACE_SM))
+                    .child(svg().path(MARK).size(px(46.)).text_color(color(palette(cx).brand)))
+                    .child(
+                        div()
+                            .mt(px(SPACE_SM))
+                            .text_size(px(22.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(t!("onboarding.title")),
+                    )
+                    .child(
+                        div()
+                            .text_center()
+                            .text_size(px(TYPE_BODY))
+                            .text_color(cx.theme().muted_foreground)
+                            .child(t!("onboarding.body")),
+                    )
+                    .child(div().w_full().mt(px(SPACE_XL)).child(name))
+                    .children(
+                        super::access::card(&self.state, cx)
+                            .map(|card| div().w_full().mt(px(SPACE_SM)).child(card)),
+                    )
+                    .child(div().mt(px(SPACE_LG)).child(start)),
+            );
+        div().id("onboarding").size_full().child(content).overflow_y_scrollbar()
     }
 }
