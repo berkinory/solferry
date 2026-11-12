@@ -11,7 +11,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Two paired devices with the same name show their key next to their status, so you can tell which is which.
 - A Permissions card in onboarding and Settings shows what the system allows Solferry: notifications everywhere, local network on macOS, the firewall on Windows. Each says whether it's on and opens the right settings page.
 - Light, dark or system appearance in Settings, on desktop and Android 12 and later.
-- Onboarding on Android offers to keep receiving in the background.
+- Onboarding offers to keep receiving in the background on Android, and to open at login on desktop.
 
 ### Changed
 

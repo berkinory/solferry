@@ -177,10 +177,12 @@ fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
 }
 
 /// Asks the system each time, since its login entry is the only record and the user can remove it.
-fn login_section(cx: &mut Context<MainView>) -> AnyElement {
+/// Open at login, in settings and in onboarding.
+pub fn login_section<V: 'static>(cx: &mut Context<V>) -> AnyElement {
     let on = login::enabled();
     let detail = if on { t!("settings.login.on") } else { t!("settings.login.off") };
     let title = t!("settings.login.title");
+    let view = cx.entity().downgrade();
     ui::card(Glyph::Computer, &title, None, cx)
         .child(
             ui::padded_well(cx).child(
@@ -195,10 +197,10 @@ fn login_section(cx: &mut Context<MainView>) -> AnyElement {
                             .large()
                             .checked(on)
                             .accessibility_label(title)
-                            .on_click(cx.listener(|_, on: &bool, _, cx| {
+                            .on_click(move |on: &bool, _, cx| {
                                 login::set(*on);
-                                cx.notify();
-                            })),
+                                let _ = view.update(cx, |_, cx| cx.notify());
+                            }),
                     ),
             ),
         )

@@ -106,6 +106,9 @@ impl Render for Onboarding {
                         super::access::card(&self.state, cx)
                             .map(|card| div().w_full().mt(px(SPACE_SM)).child(card)),
                     )
+                    .child(
+                        div().w_full().mt(px(SPACE_SM)).child(super::settings::login_section(cx)),
+                    )
                     .child(div().mt(px(SPACE_LG)).child(start)),
             );
         div().id("onboarding").size_full().child(content).overflow_y_scrollbar()
