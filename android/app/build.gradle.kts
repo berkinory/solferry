@@ -11,8 +11,12 @@ val buildRust = tasks.register<Exec>("buildRust") {
     commandLine("./build-rust.sh", rustOut.get().asFile.absolutePath)
     inputs.dir(rootDir.resolve("../crates"))
     inputs.file(rootDir.resolve("../Cargo.lock"))
+    inputs.property("abis", providers.environmentVariable("SOLFERRY_ABIS").orElse(""))
+    inputs.property("profile", providers.environmentVariable("SOLFERRY_RUST_PROFILE").orElse(""))
     outputs.dir(rustOut)
 }
+
+val abis = providers.environmentVariable("SOLFERRY_ABIS").orElse("arm64-v8a,x86_64").get().split(",")
 
 val releaseVersion = Regex("""(?m)^version = "([^"]+)"""")
     .find(rootDir.resolve("../Cargo.toml").readText())!!.groupValues[1]
@@ -27,6 +31,8 @@ android {
         targetSdk = 36
         versionCode = releaseVersion.split(".").fold(0) { code, part -> code * 100 + part.toInt() }
         versionName = releaseVersion
+        // Keeps only the ABIs the Rust core is built for, dropping JNA's copies for the rest.
+        ndk { abiFilters += abis }
     }
 
     signingConfigs {
@@ -43,6 +49,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs["release"].takeIf { it.storeFile != null }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 

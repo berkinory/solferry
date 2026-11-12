@@ -11,7 +11,8 @@ targets=()
 for abi in ${ABIS//,/ }; do
     targets+=(-t "$abi")
 done
-cargo ndk "${targets[@]}" -P 29 -o "$OUT/jniLibs" build --release -p solferry-ffi
+# Published builds set SOLFERRY_RUST_PROFILE=dist, which links slower and comes out smaller.
+cargo ndk "${targets[@]}" -P 29 -o "$OUT/jniLibs" build --profile "${SOLFERRY_RUST_PROFILE:-release}" -p solferry-ffi
 find "$OUT/jniLibs" -name '*.so' ! -name libsolferry_ffi.so -delete
 
 # Release builds are stripped, so the bindings come from a host build that keeps UniFFI's metadata.
