@@ -181,6 +181,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           SOLFERRY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           SOLFERRY_ABIS: arm64-v8a
+          SOLFERRY_RUST_PROFILE: dist
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             export SOLFERRY_KEYSTORE="$RUNNER_TEMP/release.jks"
