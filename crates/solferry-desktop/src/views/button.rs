@@ -1,3 +1,4 @@
+use gpui_kit::base::Selectable;
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::tooltip::Tooltip;
 use gpui_kit::{
@@ -40,6 +41,8 @@ pub struct Button {
     size: Size,
     tooltip: Option<SharedString>,
     on_click: Option<Handler>,
+    /// Set by a popover while the menu it opened is showing.
+    selected: bool,
 }
 
 impl Button {
@@ -52,6 +55,7 @@ impl Button {
             size: Size::Md,
             tooltip: None,
             on_click: None,
+            selected: false,
         }
     }
 
@@ -159,6 +163,17 @@ fn look(variant: Variant, cx: &App) -> Look {
     }
 }
 
+impl Selectable for Button {
+    fn selected(mut self, selected: bool) -> Self {
+        self.selected = selected;
+        self
+    }
+
+    fn is_selected(&self) -> bool {
+        self.selected
+    }
+}
+
 impl RenderOnce for Button {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let (height, padding, text, glyph_size) = match self.size {
@@ -186,7 +201,9 @@ impl RenderOnce for Button {
             .cursor_pointer()
             .hover(move |style| style.bg(hover).text_color(hover_text));
         button = if square { button.w(px(height)) } else { button.px(px(padding)) };
-        if let Some(fill) = look.fill {
+        if self.selected {
+            button = button.bg(hover).text_color(hover_text);
+        } else if let Some(fill) = look.fill {
             button = button.bg(fill);
         }
         if let Some(border) = look.border {

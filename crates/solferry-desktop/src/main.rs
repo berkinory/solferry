@@ -29,10 +29,11 @@ fn main() {
         )
         .with_writer(std::io::stderr)
         .init();
-    solferry_core::set_locale(&sys_locale::get_locale().unwrap_or_default());
     let data_dir = std::env::var_os("SOLFERRY_DATA_DIR").map_or_else(default_data_dir, Into::into);
+    let config = Config::load(&data_dir).unwrap_or_default();
+    views::language::apply(config.language.as_deref());
     let Some(instance) = instance::Instance::claim(&data_dir) else { return };
-    let show_in_tray = Config::load(&data_dir).map_or(true, |config| config.show_in_tray);
+    let show_in_tray = config.show_in_tray;
     // A launch at login waits in the tray, or in the Dock on macOS, unless nothing would show it.
     let hidden = std::env::args().any(|arg| arg == login::HIDDEN)
         && (show_in_tray || cfg!(target_os = "macos"));
