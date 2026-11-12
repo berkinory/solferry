@@ -116,6 +116,12 @@ final class Engine {
         holdForTransfers()
     }
 
+    /// iOS suspends a backgrounded app within seconds, so paired devices hear it's going instead
+    /// of waiting for their probes to fail. Its next presence check brings it back.
+    func leaveUnlessStaying() {
+        if !state.hasRunningTransfer { bridge.leave() }
+    }
+
     private func holdForTransfers() {
         keepalive.hold(!active && state.hasRunningTransfer)
     }

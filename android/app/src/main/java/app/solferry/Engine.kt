@@ -92,6 +92,14 @@ class Engine(private val context: Context) : Listener {
 
     fun finishOnboarding() = settings.edit { putBoolean(ONBOARDED, true) }
 
+    /**
+     * Android freezes a closed app within seconds unless it receives in the background or is in the
+     * middle of a transfer, so paired devices hear that it's going instead of waiting for probes to fail.
+     */
+    fun leaveUnlessStaying() {
+        if (!state.value.standby && state.value.transfers.none { it.running }) bridge.leave()
+    }
+
     /** The UiModeManager night mode chosen in settings. Android applies it but only reports the system's. */
     var appearance: Int
         get() = settings.getInt(APPEARANCE, UiModeManager.MODE_NIGHT_AUTO)

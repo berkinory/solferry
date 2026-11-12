@@ -65,6 +65,7 @@ pub fn encode(event: &Event) -> Value {
         }
         Event::LinkText { text } => json!({ "event": "link_text", "text": text }),
         Event::Present { peer } => json!({ "event": "present", "peer": peer.to_z32() }),
+        Event::Absent { peer } => json!({ "event": "absent", "peer": peer.to_z32() }),
         Event::Failed { id, error } => {
             with_error(json!({ "event": "failed", "id": id.to_string() }), error)
         }

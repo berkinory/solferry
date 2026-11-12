@@ -40,19 +40,18 @@ pub struct Row {
     pub online: bool,
 }
 
-/// What a paired device's line says: where it was seen nearby, else whether it answered.
+/// What a paired device's line says: whether it answered, or before the first check, whether it
+/// was seen nearby. Nearby lags, since mDNS forgets a device only some time after it's gone.
 fn presence(
     found: Option<&NearbyDevice>,
     id: &EndpointId,
     state: &AppState,
 ) -> (Cow<'static, str>, Option<Dot>) {
-    if found.is_some() {
-        return (t!("devices.online"), Some(Dot::Online));
-    }
     match &state.reachable {
-        None => (t!("devices.paired"), None),
         Some(reachable) if reachable.contains(id) => (t!("devices.online"), Some(Dot::Online)),
         Some(_) => (t!("devices.offline"), Some(Dot::Offline)),
+        None if found.is_some() => (t!("devices.online"), Some(Dot::Online)),
+        None => (t!("devices.paired"), None),
     }
 }
 

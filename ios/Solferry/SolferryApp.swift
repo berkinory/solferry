@@ -1,7 +1,7 @@
 import PhotosUI
 import SwiftUI
 
-private let presenceEverySeconds = 5.0
+private let presenceEverySeconds = 3.0
 
 private enum Presented: Identifiable {
     case pairing, code, send, text, link, source
@@ -75,7 +75,10 @@ private struct RootView: View {
         .onChange(of: staged) { _, files in if !files.isEmpty { sending = true } }
         .onChange(of: engine.state.pairedCount) { goHome() }
         .onChange(of: engine.state.asking) { before, now in if now > before { goHome() } }
-        .onChange(of: phase, initial: true) { _, now in engine.sceneChanged(active: now == .active) }
+        .onChange(of: phase, initial: true) { _, now in
+            engine.sceneChanged(active: now == .active)
+            if now == .background { engine.leaveUnlessStaying() }
+        }
         .task(id: phase) {
             while phase == .active, !Task.isCancelled {
                 engine.bridge.checkPresence()

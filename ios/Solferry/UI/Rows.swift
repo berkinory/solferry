@@ -49,7 +49,7 @@ private struct DeviceRow: View {
             RowBody(highlighted: open) {
                 // Only this part picks the device: a press on iOS's paste control would reach it too.
                 HStack(spacing: SpaceTokens.md) {
-                    DeviceTile(identity: device.identity, platform: near?.identity.platform, online: near != nil || online == true)
+                    DeviceTile(identity: device.identity, platform: near?.identity.platform, online: (online ?? (near != nil)))
                     VStack(alignment: .leading, spacing: 0) {
                         Text(device.name).lineLimit(1)
                         status
@@ -79,7 +79,7 @@ private struct DeviceRow: View {
     }
 
     @ViewBuilder private var status: some View {
-        if near != nil || online == true {
+        if (online ?? (near != nil)) {
             StatusLine("Online", dot: palette.successFill)
         } else if online == false {
             StatusLine("Offline", dot: palette.inkMuted.opacity(0.5))

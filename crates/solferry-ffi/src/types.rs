@@ -238,6 +238,10 @@ pub enum Update {
     Present {
         id: String,
     },
+    /// A paired device said it is going away.
+    Absent {
+        id: String,
+    },
     Ready {
         id: String,
         fingerprint: String,
@@ -400,6 +404,7 @@ impl Update {
             }
             Event::LinkText { text } => Self::LinkText { text: text.clone() },
             Event::Present { peer } => Self::Present { id: device_id(peer) },
+            Event::Absent { peer } => Self::Absent { id: device_id(peer) },
             Event::Failed { id, error: Error::Cancelled } => Self::Cancelled { id: id.to_string() },
             Event::Failed { id, error } => {
                 Self::Failed { id: id.to_string(), problem: error.into() }

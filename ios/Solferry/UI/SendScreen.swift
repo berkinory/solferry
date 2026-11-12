@@ -69,7 +69,8 @@ struct SendScreen: View {
             let near = state.nearby.first { $0.identity.id == device.identity.id }
             var identity = device.identity
             identity.platform = identity.platform ?? near?.identity.platform
-            let online: Bool? = near != nil ? true : state.reachable?.contains(device.identity.id)
+            // Presence decides once it has answered; until then being seen nearby is the best guess.
+            let online: Bool? = state.reachable?.contains(device.identity.id) ?? (near != nil ? true : nil)
             return Target(identity: identity, name: device.name, paired: true, online: online)
         }
         return mine + state.strangers.map {

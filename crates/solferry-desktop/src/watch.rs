@@ -7,7 +7,7 @@ use tokio::task::AbortHandle;
 use crate::service::{Pending, PendingPairings, Update};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
-const PRESENCE_EVERY: Duration = Duration::from_secs(5);
+const PRESENCE_EVERY: Duration = Duration::from_secs(3);
 
 /// Drops prompts whose peer left or whose wait ran out, so nobody answers a request that is gone.
 pub fn sweep_prompts(
