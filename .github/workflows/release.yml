@@ -82,8 +82,16 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop
-          cargo build --profile dist --locked --target ${{ matrix.cli || matrix.target }} -p solferry-cli
+          # Fat LTO ends in one long single-threaded step per binary, so the two binaries build at
+          # the same time. The static Linux CLI is another target and gets its own target dir.
+          if [ -n "${{ matrix.cli }}" ]; then
+            CARGO_TARGET_DIR=target/cli cargo build --profile dist --locked --target ${{ matrix.cli }} -p solferry-cli &
+            cli=$!
+            cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop
+            wait $cli
+          else
+            cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop -p solferry-cli
+          fi
           mkdir dist
 
       - if: runner.os == 'macOS'
@@ -127,7 +135,7 @@ jobs:
         name: Package for Linux
         run: |
           packaging/linux/package.sh "$RELEASE/solferry-desktop" "$SOLFERRY_PLATFORM" dist
-          tar -C "target/${{ matrix.cli }}/dist" -czf "dist/solferry-cli-$SOLFERRY_PLATFORM.tar.gz" solferry
+          tar -C "target/cli/${{ matrix.cli }}/dist" -cf - solferry | xz -9e -T0 > "dist/solferry-cli-$SOLFERRY_PLATFORM.tar.xz"
 
       - if: runner.os == 'Windows'
         name: Package for Windows
