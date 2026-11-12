@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">在同一网络中的另一台设备上打开 Solferry，它就会显示在这里。</string>
     <string name="nearby_scanning">正在此网络中查找新设备</string>
     <string name="browser_title">对方设备没有安装应用？</string>
-    <string name="browser_body">同一网络中的浏览器也能向你发送文件。如要发送给浏览器，请先选择文件，再选择“通过链接共享”。</string>
+    <string name="browser_body">你网络中的浏览器可以向你发送文件或文本。</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">文件传输请求</string>
@@ -94,7 +94,7 @@
     <string name="pair_compare_hint">请确认对方设备显示的是这个配对码，然后在对方设备上接受。</string>
     <string name="pair_code_title">使用配对码配对</string>
     <string name="pair_show_title">显示配对码</string>
-    <string name="pair_show_hint">适用于其他网络中的设备，或在附近找不到本设备时。在这里显示配对码，然后在对方设备上输入。</string>
+    <string name="pair_show_hint">用于其他网络中的设备。在这里显示代码，在那边输入。</string>
     <string name="pair_show_code">显示配对码</string>
     <string name="pair_invite_expiry">仅限使用一次，10 分钟内有效。</string>
     <string name="pair_copy_code">复制配对码</string>
@@ -126,7 +126,7 @@
     <string name="settings_find_on">同一网络中的设备可以看到本设备，并请求向你发送文件。</string>
     <string name="settings_find_off">新设备无法发现本设备，已配对的设备仍可连接。</string>
     <string name="settings_background_title">在后台接收</string>
-    <string name="settings_background_body">关闭 Solferry 后仍可接收文件。通知栏会常驻一条通知，耗电也会增加。</string>
+    <string name="settings_background_body">Solferry 关闭时也能接收。会显示通知，耗电更多。</string>
     <string name="language_title">语言</string>
     <string name="language_system">跟随系统</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -184,7 +184,7 @@
     <string name="notify_received_body">来自 %2$s 的 %1$s，已保存到 %3$s</string>
     <string name="permissions_title">权限</string>
     <string name="permissions_notifications">通知</string>
-    <string name="permissions_notifications_detail">收到文件、文本或配对请求时提醒你，并让 Solferry 在后台继续接收。</string>
+    <string name="permissions_notifications_detail">用于收到的文件、文本和配对请求。</string>
     <string name="permissions_allowed">已允许</string>
     <string name="permissions_off">已关闭</string>
     <string name="permissions_allow">允许</string>

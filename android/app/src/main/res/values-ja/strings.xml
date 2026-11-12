@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">同じネットワーク上の別のデバイスで Solferry を開くと、ここに表示されます。</string>
     <string name="nearby_scanning">このネットワークで新しいデバイスを探しています</string>
     <string name="browser_title">相手のデバイスにアプリがない場合</string>
-    <string name="browser_body">同じネットワーク上のブラウザからファイルを受け取れます。ブラウザに送るときは、ファイルを選んで「リンクで共有」を選択します。</string>
+    <string name="browser_body">同じネットワークのブラウザから、ファイルやテキストを受け取れます。</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">ファイルの受信リクエスト</string>
@@ -94,7 +94,7 @@
     <string name="pair_compare_hint">相手のデバイスに同じコードが表示されていることを確かめてから、相手のデバイスで承認してください。</string>
     <string name="pair_code_title">コードでペアリング</string>
     <string name="pair_show_title">コードを表示</string>
-    <string name="pair_show_hint">別のネットワークにあるデバイスや、近くのデバイスとして見つからない場合に使います。ここでコードを表示し、相手のデバイスで入力してください。</string>
+    <string name="pair_show_hint">別のネットワークのデバイス向け。ここでコードを表示し、相手側で入力します。</string>
     <string name="pair_show_code">コードを表示</string>
     <string name="pair_invite_expiry">1 回限り、10 分間有効です。</string>
     <string name="pair_copy_code">コードをコピー</string>
@@ -126,7 +126,7 @@
     <string name="settings_find_on">同じネットワーク上のデバイスからこのデバイスが見え、ファイルの送信をリクエストできます。</string>
     <string name="settings_find_off">新しいデバイスからは見つかりません。ペアリング済みのデバイスからは引き続き接続できます。</string>
     <string name="settings_background_title">バックグラウンドで受信</string>
-    <string name="settings_background_body">Solferry を閉じていても受信できます。通知が常に表示され、バッテリーの消費が増えます。</string>
+    <string name="settings_background_body">Solferry を閉じていても受信します。通知が表示され、電池の消費が増えます。</string>
     <string name="language_title">言語</string>
     <string name="language_system">システムのデフォルト</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -184,7 +184,7 @@
     <string name="notify_received_body">%2$s から %1$s。保存先: %3$s</string>
     <string name="permissions_title">アクセス許可</string>
     <string name="permissions_notifications">通知</string>
-    <string name="permissions_notifications_detail">ファイル、テキスト、ペアリングのリクエストが届いたときにお知らせし、バックグラウンドでの受信を続けます。</string>
+    <string name="permissions_notifications_detail">ファイル、テキスト、ペアリングのリクエストを受け取ったときに。</string>
     <string name="permissions_allowed">許可済み</string>
     <string name="permissions_off">オフ</string>
     <string name="permissions_allow">許可</string>

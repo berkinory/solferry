@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Apri Solferry su un altro dispositivo connesso a questa rete e comparirà qui.</string>
     <string name="nearby_scanning">Ricerca di nuovi dispositivi su questa rete</string>
     <string name="browser_title">L\'altro dispositivo non ha l\'app</string>
-    <string name="browser_body">Anche un browser sulla stessa rete può inviarti file. Per inviarli a un browser, scegli i file e poi Condividi tramite link.</string>
+    <string name="browser_body">Un browser sulla tua rete può inviarti file o testo.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">File in arrivo</string>
@@ -98,7 +98,7 @@
     <string name="pair_compare_hint">Verifica che l\'altro dispositivo mostri questo codice, poi accetta da lì.</string>
     <string name="pair_code_title">Abbina con un codice</string>
     <string name="pair_show_title">Mostra un codice</string>
-    <string name="pair_show_hint">Per un dispositivo su un\'altra rete o che non compare nelle vicinanze. Mostra un codice qui e inseriscilo sull\'altro dispositivo.</string>
+    <string name="pair_show_hint">Per dispositivi su un\'altra rete. Mostra un codice qui, inseriscilo lì.</string>
     <string name="pair_show_code">Mostra codice</string>
     <string name="pair_invite_expiry">Valido una sola volta, scade tra 10 minuti.</string>
     <string name="pair_copy_code">Copia codice</string>
@@ -130,7 +130,7 @@
     <string name="settings_find_on">I dispositivi sulla tua rete possono vederlo e chiedere di inviarti file.</string>
     <string name="settings_find_off">Nessun nuovo dispositivo può trovarlo. Quelli abbinati possono comunque raggiungerlo.</string>
     <string name="settings_background_title">Ricevi in background</string>
-    <string name="settings_background_body">Resta raggiungibile anche quando Solferry è chiuso. Mostra una notifica e consuma più batteria.</string>
+    <string name="settings_background_body">Ricevi anche con Solferry chiuso. Mostra una notifica, consuma più batteria.</string>
     <string name="language_title">Lingua</string>
     <string name="language_system">Lingua del sistema</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -192,7 +192,7 @@
     <string name="notify_received_body">%1$s da %2$s, in %3$s</string>
     <string name="permissions_title">Autorizzazioni</string>
     <string name="permissions_notifications">Notifiche</string>
-    <string name="permissions_notifications_detail">Ti avvisa quando arrivano file, testo o una richiesta di abbinamento, e permette a Solferry di ricevere in background.</string>
+    <string name="permissions_notifications_detail">Per file, testi e richieste di abbinamento in arrivo.</string>
     <string name="permissions_allowed">Consentito</string>
     <string name="permissions_off">Disattivato</string>
     <string name="permissions_allow">Consenti</string>

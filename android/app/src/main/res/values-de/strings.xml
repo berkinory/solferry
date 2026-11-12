@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Öffne Solferry auf einem anderen Gerät in diesem Netzwerk, dann erscheint es hier.</string>
     <string name="nearby_scanning">Suche nach neuen Geräten in diesem Netzwerk</string>
     <string name="browser_title">Keine App auf dem anderen Gerät?</string>
-    <string name="browser_body">Ein Browser im selben Netzwerk kann dir Dateien senden. Um Dateien an einen Browser zu senden, wähle sie aus und tippe dann auf „Per Link teilen“.</string>
+    <string name="browser_body">Ein Browser in deinem Netzwerk kann dir Dateien oder Text senden.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Eingehende Dateien</string>
@@ -96,7 +96,7 @@
     <string name="pair_compare_hint">Prüfe, ob das andere Gerät diesen Code anzeigt, und bestätige dort.</string>
     <string name="pair_code_title">Mit Code koppeln</string>
     <string name="pair_show_title">Code anzeigen</string>
-    <string name="pair_show_hint">Für Geräte in einem anderen Netzwerk oder wenn sie in der Nähe nicht auftauchen. Zeige hier einen Code an und gib ihn auf dem anderen Gerät ein.</string>
+    <string name="pair_show_hint">Für Geräte in einem anderen Netzwerk. Zeig hier einen Code und gib ihn dort ein.</string>
     <string name="pair_show_code">Code anzeigen</string>
     <string name="pair_invite_expiry">Einmal verwendbar, 10 Minuten gültig.</string>
     <string name="pair_copy_code">Code kopieren</string>
@@ -128,7 +128,7 @@
     <string name="settings_find_on">Geräte in deinem Netzwerk sehen dieses Gerät und können dir Dateien anbieten.</string>
     <string name="settings_find_off">Neue Geräte können dieses Gerät nicht finden. Gekoppelte Geräte erreichen es weiterhin.</string>
     <string name="settings_background_title">Im Hintergrund empfangen</string>
-    <string name="settings_background_body">Bleib erreichbar, auch wenn Solferry geschlossen ist. Zeigt eine dauerhafte Benachrichtigung und verbraucht mehr Akku.</string>
+    <string name="settings_background_body">Empfangen, während Solferry geschlossen ist. Zeigt eine Mitteilung, braucht mehr Akku.</string>
     <string name="language_title">Sprache</string>
     <string name="language_system">Systemsprache</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -188,7 +188,7 @@
     <string name="notify_received_body">%1$s von %2$s, gespeichert in %3$s</string>
     <string name="permissions_title">Berechtigungen</string>
     <string name="permissions_notifications">Benachrichtigungen</string>
-    <string name="permissions_notifications_detail">Sagt dir Bescheid, wenn Dateien, Text oder eine Kopplungsanfrage ankommen, und lässt Solferry im Hintergrund empfangen.</string>
+    <string name="permissions_notifications_detail">Für eingehende Dateien, Texte und Kopplungsanfragen.</string>
     <string name="permissions_allowed">Erlaubt</string>
     <string name="permissions_off">Aus</string>
     <string name="permissions_allow">Erlauben</string>

@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Otwórz Solferry na innym urządzeniu w tej sieci, a pojawi się tutaj.</string>
     <string name="nearby_scanning">Wyszukiwanie nowych urządzeń w tej sieci</string>
     <string name="browser_title">Brak aplikacji na drugim urządzeniu</string>
-    <string name="browser_body">Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać pliki do przeglądarki, wybierz je i kliknij „Udostępnij przez link”.</string>
+    <string name="browser_body">Przeglądarka w twojej sieci może wysłać ci pliki lub tekst.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Przychodzące pliki</string>
@@ -100,7 +100,7 @@
     <string name="pair_compare_hint">Sprawdź, czy drugie urządzenie pokazuje ten sam kod, i zaakceptuj na nim.</string>
     <string name="pair_code_title">Sparuj przy użyciu kodu</string>
     <string name="pair_show_title">Pokaż kod</string>
-    <string name="pair_show_hint">Gdy drugie urządzenie jest w innej sieci albo tego urządzenia nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam.</string>
+    <string name="pair_show_hint">Dla urządzeń w innej sieci. Pokaż kod tutaj i wpisz go tam.</string>
     <string name="pair_show_code">Pokaż kod</string>
     <string name="pair_invite_expiry">Kod jest jednorazowy i ważny 10 minut.</string>
     <string name="pair_copy_code">Kopiuj kod</string>
@@ -132,7 +132,7 @@
     <string name="settings_find_on">Urządzenia w Twojej sieci widzą to urządzenie i mogą proponować mu pliki.</string>
     <string name="settings_find_off">Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć.</string>
     <string name="settings_background_title">Odbieraj w tle</string>
-    <string name="settings_background_body">Solferry pozostaje dostępne nawet po zamknięciu. Wyświetla powiadomienie i zużywa więcej baterii.</string>
+    <string name="settings_background_body">Odbieraj, gdy Solferry jest zamknięty. Pokazuje powiadomienie, zużywa więcej baterii.</string>
     <string name="language_title">Język</string>
     <string name="language_system">Domyślny systemowy</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -196,7 +196,7 @@
     <string name="notify_received_body">%1$s od: %2$s, w folderze %3$s</string>
     <string name="permissions_title">Uprawnienia</string>
     <string name="permissions_notifications">Powiadomienia</string>
-    <string name="permissions_notifications_detail">Dają znać, gdy przychodzą pliki, tekst lub prośba o sparowanie, i pozwalają Solferry odbierać w tle.</string>
+    <string name="permissions_notifications_detail">Dla przychodzących plików, tekstów i próśb o sparowanie.</string>
     <string name="permissions_allowed">Dozwolone</string>
     <string name="permissions_off">Wyłączone</string>
     <string name="permissions_allow">Zezwól</string>

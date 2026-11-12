@@ -99,7 +99,7 @@ link:
   share_title: "Udostępnij przez link"
   no_app:
     title: "Brak aplikacji na drugim urządzeniu"
-    body: "Przeglądarka w tej samej sieci może wysłać Ci pliki. Aby wysłać pliki do przeglądarki, wybierz je i kliknij „Udostępnij przez link”."
+    body: "Przeglądarka w twojej sieci może wysłać ci pliki lub tekst."
     receive: "Odbierz przez link"
 history:
   title: "Historia"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Parowanie..."
   address_title: "Wpisz adres IP"
   own_addresses: "Adres tego urządzenia: %{addresses}."
-  invite_hint: "Gdy drugie urządzenie jest w innej sieci albo tego urządzenia nie widać w pobliżu. Pokaż kod tutaj i wpisz go tam."
+  invite_hint: "Dla urządzeń w innej sieci. Pokaż kod tutaj i wpisz go tam."
   invite: "Pokaż kod"
   copy: "Kopiuj kod"
   copied: "Skopiowano"
@@ -226,13 +226,13 @@ permissions:
   title: "Uprawnienia"
   notifications:
     title: "Powiadomienia"
-    detail: "Dają znać, gdy przychodzą pliki, tekst lub prośba o sparowanie."
+    detail: "Dla przychodzących plików, tekstów i próśb o sparowanie."
   local_network:
     title: "Sieć lokalna"
-    detail: "Pozwala Solferry znajdować twoje urządzenia i wysyłać do nich bezpośrednio. Bez niej nie pojawi się żadne urządzenie w pobliżu."
+    detail: "Znajduje twoje urządzenia i wysyła do nich bezpośrednio."
   firewall:
     title: "Zapora"
-    detail: "Windows pyta raz. Zezwól na sieci prywatne, inaczej urządzenia w pobliżu nie połączą się z tym."
+    detail: "Zezwól na sieci prywatne, żeby urządzenia w pobliżu mogły połączyć się z tym."
   allowed: "Dozwolone"
   off: "Wyłączone"
   not_asked: "Jeszcze nie pytano"

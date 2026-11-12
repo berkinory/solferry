@@ -99,7 +99,7 @@ link:
   share_title: "Condividi tramite link"
   no_app:
     title: "L'altro dispositivo non ha l'app"
-    body: "Anche un browser sulla stessa rete può inviarti file. Per inviarli a un browser, scegli i file e poi Condividi tramite link."
+    body: "Un browser sulla tua rete può inviarti file o testo."
     receive: "Ricevi tramite link"
 history:
   title: "Cronologia"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Abbinamento..."
   address_title: "Inserisci un indirizzo IP"
   own_addresses: "IP di questo dispositivo: %{addresses}."
-  invite_hint: "Per un dispositivo su un'altra rete o che non compare nelle vicinanze. Mostra un codice qui e inseriscilo sull'altro dispositivo."
+  invite_hint: "Per dispositivi su un'altra rete. Mostra un codice qui, inseriscilo lì."
   invite: "Mostra codice"
   copy: "Copia codice"
   copied: "Copiato"
@@ -226,13 +226,13 @@ permissions:
   title: "Autorizzazioni"
   notifications:
     title: "Notifiche"
-    detail: "Ti avvisa quando arrivano file, testo o una richiesta di abbinamento."
+    detail: "Per file, testi e richieste di abbinamento in arrivo."
   local_network:
     title: "Rete locale"
-    detail: "Permette a Solferry di trovare i tuoi dispositivi e di inviare direttamente a loro. Senza, nessun dispositivo vicino appare."
+    detail: "Trova i tuoi dispositivi e invia direttamente a loro."
   firewall:
     title: "Firewall"
-    detail: "Windows lo chiede una volta. Consenti le reti private, altrimenti i dispositivi vicini non raggiungono questo."
+    detail: "Consenti le reti private così i dispositivi vicini raggiungono questo."
   allowed: "Consentito"
   off: "Disattivato"
   not_asked: "Non ancora chiesto"

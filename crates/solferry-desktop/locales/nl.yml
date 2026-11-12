@@ -99,7 +99,7 @@ link:
   share_title: "Delen via link"
   no_app:
     title: "Geen app op het andere apparaat"
-    body: "Een browser op hetzelfde netwerk kan je bestanden sturen. Zelf bestanden naar een browser sturen? Selecteer ze en kies Delen via link."
+    body: "Een browser op je netwerk kan je bestanden of tekst sturen."
     receive: "Ontvangen via link"
 history:
   title: "Geschiedenis"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Koppelen..."
   address_title: "IP-adres invoeren"
   own_addresses: "Dit apparaat is bereikbaar op %{addresses}."
-  invite_hint: "Voor een apparaat op een ander netwerk, of als het niet in de buurt verschijnt. Toon hier een code en voer die daar in."
+  invite_hint: "Voor apparaten op een ander netwerk. Toon hier een code en voer die daar in."
   invite: "Code tonen"
   copy: "Code kopiëren"
   copied: "Gekopieerd"
@@ -226,13 +226,13 @@ permissions:
   title: "Toestemmingen"
   notifications:
     title: "Meldingen"
-    detail: "Laat je weten wanneer er bestanden, tekst of een koppelverzoek binnenkomen."
+    detail: "Voor binnenkomende bestanden, teksten en koppelverzoeken."
   local_network:
     title: "Lokaal netwerk"
-    detail: "Hiermee vindt Solferry je apparaten en stuurt het rechtstreeks naar ze. Zonder deze toestemming verschijnt er niets in de buurt."
+    detail: "Vindt je apparaten en stuurt rechtstreeks naar ze."
   firewall:
     title: "Firewall"
-    detail: "Windows vraagt het één keer. Sta privénetwerken toe, anders kunnen apparaten in de buurt dit apparaat niet bereiken."
+    detail: "Sta privénetwerken toe zodat apparaten in de buurt dit apparaat bereiken."
   allowed: "Toegestaan"
   off: "Uit"
   not_asked: "Nog niet gevraagd"

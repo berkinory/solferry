@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Aynı ağdaki başka bir cihazda Solferry\'yi açınca burada görünür.</string>
     <string name="nearby_scanning">Bu ağda yeni cihazlar aranıyor</string>
     <string name="browser_title">Diğer cihazda uygulama yok mu?</string>
-    <string name="browser_body">Aynı ağdaki bir tarayıcı da sana dosya gönderebilir. Tarayıcıya dosya göndermek içinse dosyaları seçip “Bağlantıyla paylaş” seçeneğini kullan.</string>
+    <string name="browser_body">Ağındaki bir tarayıcı sana dosya ya da metin gönderebilir.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Gelen dosyalar</string>
@@ -96,7 +96,7 @@
     <string name="pair_compare_hint">Diğer cihazda da bu kodun göründüğünü kontrol et, sonra orada onayla.</string>
     <string name="pair_code_title">Kodla eşleştir</string>
     <string name="pair_show_title">Kod göster</string>
-    <string name="pair_show_hint">Cihaz başka bir ağdaysa ya da yakında görünmüyorsa bunu kullan. Kodu burada göster, diğer cihazda gir.</string>
+    <string name="pair_show_hint">Başka ağdaki cihazlar için. Kodu burada göster, orada gir.</string>
     <string name="pair_show_code">Kodu göster</string>
     <string name="pair_invite_expiry">Tek kullanımlık, 10 dakika geçerli.</string>
     <string name="pair_copy_code">Kodu kopyala</string>
@@ -128,7 +128,7 @@
     <string name="settings_find_on">Ağındaki cihazlar bu cihazı görebilir ve dosya göndermek için izin isteyebilir.</string>
     <string name="settings_find_off">Yeni cihazlar bu cihazı bulamaz. Eşleştirilmiş cihazlar yine de ulaşabilir.</string>
     <string name="settings_background_title">Arka planda dosya al</string>
-    <string name="settings_background_body">Solferry kapalıyken de dosya alabilirsin. Sürekli bir bildirim gösterir ve daha fazla pil harcar.</string>
+    <string name="settings_background_body">Solferry kapalıyken de dosya al. Bildirim gösterir, daha çok pil harcar.</string>
     <string name="language_title">Dil</string>
     <string name="language_system">Sistem dili</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -188,7 +188,7 @@
     <string name="notify_received_body">%2$s gönderdi: %1$s. %3$s klasörüne kaydedildi.</string>
     <string name="permissions_title">İzinler</string>
     <string name="permissions_notifications">Bildirimler</string>
-    <string name="permissions_notifications_detail">Dosya, metin ya da eşleşme isteği geldiğinde haber verir ve Solferry\'nin arka planda dosya almasını sağlar.</string>
+    <string name="permissions_notifications_detail">Gelen dosyalar, metinler ve eşleşme istekleri için.</string>
     <string name="permissions_allowed">İzin verildi</string>
     <string name="permissions_off">Kapalı</string>
     <string name="permissions_allow">İzin ver</string>

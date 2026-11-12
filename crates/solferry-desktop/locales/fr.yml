@@ -99,7 +99,7 @@ link:
   share_title: "Partager par lien"
   no_app:
     title: "Solferry n'est pas sur l'autre appareil ?"
-    body: "Un navigateur sur le même réseau peut vous envoyer des fichiers. Pour en envoyer vers un navigateur, sélectionnez-les, puis choisissez « Partager par lien »."
+    body: "Un navigateur sur votre réseau peut vous envoyer des fichiers ou du texte."
     receive: "Recevoir par lien"
 history:
   title: "Historique"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Association..."
   address_title: "Saisir une adresse IP"
   own_addresses: "Adresse de cet appareil : %{addresses}."
-  invite_hint: "Pour un appareil sur un autre réseau, ou introuvable à proximité. Affichez un code ici et saisissez-le sur l'autre appareil."
+  invite_hint: "Pour les appareils sur un autre réseau. Affichez un code ici, saisissez-le là-bas."
   invite: "Afficher le code"
   copy: "Copier le code"
   copied: "Copié"
@@ -226,13 +226,13 @@ permissions:
   title: "Autorisations"
   notifications:
     title: "Notifications"
-    detail: "Vous prévient quand des fichiers, du texte ou une demande d'association arrivent."
+    detail: "Pour les fichiers, textes et demandes d'association reçus."
   local_network:
     title: "Réseau local"
-    detail: "Permet à Solferry de trouver vos appareils et de leur envoyer directement. Sans elle, aucun appareil à proximité n'apparaît."
+    detail: "Trouve vos appareils et leur envoie directement."
   firewall:
     title: "Pare-feu"
-    detail: "Windows le demande une fois. Autorisez les réseaux privés, sinon les appareils à proximité ne pourront pas joindre celui-ci."
+    detail: "Autorisez les réseaux privés pour que les appareils proches puissent joindre celui-ci."
   allowed: "Autorisé"
   off: "Désactivé"
   not_asked: "Pas encore demandé"

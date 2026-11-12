@@ -51,7 +51,7 @@
     <string name="nearby_searching_hint">Open Solferry on another device on this network and it shows up here.</string>
     <string name="nearby_scanning">Looking for new devices on this network</string>
     <string name="browser_title">No app on the other device</string>
-    <string name="browser_body">A browser on the same network can send you files. To send files to one, pick them and choose Share via link.</string>
+    <string name="browser_body">A browser on your network can send you files or text.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Incoming files</string>
@@ -98,7 +98,7 @@
     <string name="pair_compare_hint">Check that the other device shows this code, then accept there.</string>
     <string name="pair_code_title">Pair with a code</string>
     <string name="pair_show_title">Show a code</string>
-    <string name="pair_show_hint">For a device on another network, or when this one can\'t be found nearby. Show a code here and enter it there.</string>
+    <string name="pair_show_hint">For devices on another network. Show a code here, enter it there.</string>
     <string name="pair_show_code">Show code</string>
     <string name="pair_invite_expiry">Works once, for 10 minutes.</string>
     <string name="pair_copy_code">Copy code</string>
@@ -131,7 +131,7 @@
     <string name="settings_find_on">Devices on your network can see this one and ask to send.</string>
     <string name="settings_find_off">Nobody new can find this device. Paired devices can still reach it.</string>
     <string name="settings_background_title">Receive in the background</string>
-    <string name="settings_background_body">Stay reachable while Solferry is closed. Shows a notification and uses more battery.</string>
+    <string name="settings_background_body">Receive while Solferry is closed. Shows a notification, uses more battery.</string>
     <string name="language_title">Language</string>
     <string name="language_system">System default</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -192,7 +192,7 @@
     <string name="notify_received_body">%1$s from %2$s, in %3$s</string>
     <string name="permissions_title">Permissions</string>
     <string name="permissions_notifications">Notifications</string>
-    <string name="permissions_notifications_detail">Tells you when files, text or a pairing request arrive, and keeps Solferry receiving in the background.</string>
+    <string name="permissions_notifications_detail">For incoming files, texts and pairing requests.</string>
     <string name="permissions_allowed">Allowed</string>
     <string name="permissions_off">Off</string>
     <string name="permissions_allow">Allow</string>

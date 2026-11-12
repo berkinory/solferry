@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">כשפותחים את Solferry במכשיר אחר ברשת הזו, הוא יופיע כאן.</string>
     <string name="nearby_scanning">חיפוש מכשירים חדשים ברשת הזו</string>
     <string name="browser_title">אין אפליקציה במכשיר השני</string>
-    <string name="browser_body">דפדפן באותה רשת יכול לשלוח לך קבצים. כדי לשלוח קבצים לדפדפן, בוחרים אותם ואז שיתוף בקישור.</string>
+    <string name="browser_body">דפדפן ברשת שלך יכול לשלוח לך קבצים או טקסט.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">קבצים נכנסים</string>
@@ -100,7 +100,7 @@
     <string name="pair_compare_hint">צריך לוודא שהמכשיר השני מציג את הקוד הזה, ואז לאשר שם.</string>
     <string name="pair_code_title">צימוד עם קוד</string>
     <string name="pair_show_title">הצגת קוד</string>
-    <string name="pair_show_hint">למכשיר ברשת אחרת, או כשהוא לא מופיע בקרבת מקום. מציגים קוד כאן ומזינים אותו שם.</string>
+    <string name="pair_show_hint">למכשירים ברשת אחרת. מציגים קוד כאן ומזינים אותו שם.</string>
     <string name="pair_show_code">הצגת קוד</string>
     <string name="pair_invite_expiry">לשימוש חד־פעמי, בתוקף ל־10 דקות.</string>
     <string name="pair_copy_code">העתקת הקוד</string>
@@ -132,7 +132,7 @@
     <string name="settings_find_on">מכשירים ברשת שלך יכולים לראות את המכשיר הזה ולבקש לשלוח אליו.</string>
     <string name="settings_find_off">מכשירים חדשים לא יכולים למצוא את המכשיר הזה. מכשירים מצומדים עדיין יכולים להתחבר אליו.</string>
     <string name="settings_background_title">קבלה ברקע</string>
-    <string name="settings_background_body">המכשיר נשאר זמין גם כש־Solferry סגורה. מוצגת התראה קבועה, והסוללה מתרוקנת מהר יותר.</string>
+    <string name="settings_background_body">קבלה גם כש-Solferry סגורה. מוצגת התראה, וצריכת הסוללה גבוהה יותר.</string>
     <string name="language_title">שפה</string>
     <string name="language_system">ברירת המחדל של המערכת</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -196,7 +196,7 @@
     <string name="notify_received_body">%1$s מ־%2$s, ב־%3$s</string>
     <string name="permissions_title">הרשאות</string>
     <string name="permissions_notifications">התראות</string>
-    <string name="permissions_notifications_detail">מודיעות כשמגיעים קבצים, טקסט או בקשת התאמה, ומאפשרות ל-Solferry לקבל ברקע.</string>
+    <string name="permissions_notifications_detail">לקבצים, טקסטים ובקשות התאמה נכנסים.</string>
     <string name="permissions_allowed">מאושר</string>
     <string name="permissions_off">כבוי</string>
     <string name="permissions_allow">מתן הרשאה</string>
