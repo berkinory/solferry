@@ -10,32 +10,32 @@ about:
   not_paired: "请先与 %{name} 配对"
 explain:
   storage:
-    title: "无法读取或写入文件"
+    title: "无法读写文件"
     next: "请检查文件夹、权限和可用空间。"
   corrupt_data:
-    title: "Solferry 的设置已损坏"
-    next: "请删除 Solferry 数据文件夹中损坏的文件。你可能需要重新配对设备。"
+    title: "Solferry 的设置文件已损坏"
+    next: "请删除 Solferry 数据文件夹中损坏的文件。之后可能需要重新配对设备。"
   network_start:
-    title: "网络未能启动"
+    title: "无法启动网络"
     next: "请重新启动 Solferry 后再试。"
   invalid_relay_url:
     title: "中继地址无效"
-    next: "请粘贴中继输出的完整链接，例如 https://relay.example.com#token。"
+    next: "请粘贴中继给出的完整链接，例如 https://relay.example.com#token。"
   unreachable:
     title: "无法连接设备"
     next: "请在对方设备上打开 Solferry。如果不在同一网络，请使用 Tailscale 或添加你自己的中继。"
   relay_check_failed:
-    title: "某个中继无法工作"
-    next: "请在设置中查看其状态。"
+    title: "有中继无法正常工作"
+    next: "可在设置中查看其状态。"
   not_paired:
     title: "请先与此设备配对"
-    next: "从这里只能连接已配对的设备。"
+    next: "只有已配对的设备才能从这里连接。"
   version_mismatch:
     title: "Solferry 版本不一致"
     next: "请在两台设备上都更新 Solferry。"
   busy:
     title: "对方设备正忙"
-    next: "请等待其传输完成后再试。"
+    next: "请等对方的传输完成后再试。"
   cancelled:
     title: "传输已取消"
     next: "重新发送即可从中断处继续。"
@@ -43,50 +43,50 @@ explain:
     title: "传输被拒绝"
     next: "对方拒绝了接收。"
   no_space:
-    title: "磁盘空间不足"
+    title: "存储空间不足"
     next: "请在接收设备上释放空间后再试。"
   delivery_failed:
     title: "无法保存文件"
-    next: "请检查接收设备上的下载文件夹。"
+    next: "请检查接收设备上的保存文件夹。"
   invalid_offer:
     title: "已拒绝不安全的传输"
     next: "对方设备发送了 Solferry 无法接收的文件。"
   source_changed:
-    title: "发送期间文件发生了变化"
+    title: "发送过程中文件有改动"
     next: "请等文件不再变化后再试。"
   unsupported_name:
-    title: "某个文件名无法发送"
+    title: "有文件名无法发送"
     next: "请重命名该文件后再试。"
   nothing_to_send:
     title: "没有可发送的内容"
-    next: "请至少选择一个文件。快捷方式和链接会被跳过。"
+    next: "请至少选择一个文件。快捷方式和链接不会发送。"
   hash_mismatch:
-    title: "检测到损坏的数据"
-    next: "损坏的副本已丢弃，请重新发送。"
+    title: "检测到数据损坏"
+    next: "已丢弃损坏的数据，请重新发送。"
   connection_lost:
     title: "连接已断开"
-    next: "请重试。传输会从中断处继续。"
+    next: "请重试，传输会从中断处继续。"
   invalid_ticket:
-    title: "代码无效"
-    next: "请粘贴以 sf1 开头的完整代码。"
+    title: "配对码无效"
+    next: "请粘贴以 sf1 开头的完整配对码。"
   ticket_expired:
-    title: "代码已过期"
-    next: "代码有效期为 10 分钟，请创建新代码。"
+    title: "配对码已过期"
+    next: "配对码 10 分钟内有效，请重新生成。"
   update:
     title: "无法更新 Solferry"
     next: "请稍后再试，或从 GitHub 下载。"
   own_ticket:
-    title: "这是本设备自己的代码"
+    title: "这是本设备生成的配对码"
     next: "请在另一台设备上输入。"
   no_local_network:
     title: "未连接到局域网"
     next: "请连接 Wi-Fi 或热点后再共享。"
   pairing_refused:
     title: "配对被拒绝"
-    next: "请让对方接受，或创建新代码。"
+    next: "请让对方接受，或重新生成配对码。"
   unknown_device:
     title: "找不到设备"
-    next: "它可能已被移除。"
+    next: "该设备可能已被移除。"
   ambiguous_device:
     title: "有多台设备匹配"
     next: "请从列表中选择设备。"
@@ -95,7 +95,7 @@ explain:
     next: "请输入 IP 地址，例如 192.168.1.20。"
   no_answer:
     title: "该地址没有响应"
-    next: "请在对方设备上打开 Solferry，并确认其对所有人可见。"
+    next: "请在对方设备上打开 Solferry，并确认已开启“允许他人发现我”。"
   protocol:
-    title: "Solferry 出了问题"
-    next: "这是一个错误，请附上详细信息报告。"
+    title: "Solferry 出了点问题"
+    next: "这是程序 bug，请附上详细信息反馈给我们。"

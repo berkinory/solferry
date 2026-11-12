@@ -39,36 +39,36 @@
     <string name="devices_send_text">%1$s にテキストを送信</string>
     <string name="devices_options">%1$s のオプション</string>
     <string name="devices_auto_accept">確認せずに受信</string>
-    <string name="devices_last_transfer">最後の転送</string>
-    <string name="devices_forget">削除</string>
-    <string name="devices_forget_title">%1$s を削除しますか?</string>
-    <string name="devices_forget_body">再びペアリングするまで、未ペアリングのデバイスに戻ります。</string>
+    <string name="devices_last_transfer">前回の転送</string>
+    <string name="devices_forget">ペアリング解除</string>
+    <string name="devices_forget_title">%1$s とのペアリングを解除しますか？</string>
+    <string name="devices_forget_body">もう一度ペアリングするまで、未ペアリングのデバイスとして扱われます。</string>
     <string name="nearby_title">近くのデバイス</string>
     <string name="nearby_use_code">コードを使う</string>
     <string name="nearby_searching">デバイスを探しています</string>
-    <string name="nearby_searching_hint">このネットワーク上の別のデバイスで Solferry を開くと、ここに表示されます。</string>
-    <string name="nearby_scanning">このネットワーク上の新しいデバイスを探しています</string>
+    <string name="nearby_searching_hint">同じネットワーク上の別のデバイスで Solferry を開くと、ここに表示されます。</string>
+    <string name="nearby_scanning">このネットワークで新しいデバイスを探しています</string>
     <string name="browser_title">相手のデバイスにアプリがない場合</string>
-    <string name="browser_body">同じネットワーク上のブラウザからファイルを受け取れます。ブラウザに送るには、ファイルを選んで「リンクで共有」を選んでください。</string>
+    <string name="browser_body">同じネットワーク上のブラウザからファイルを受け取れます。ブラウザに送るときは、ファイルを選んで「リンクで共有」を選択します。</string>
 
     <!-- Incoming offers and text -->
-    <string name="offer_title">ファイルの受信</string>
-    <string name="offer_wants_to_send">%1$s が送信しようとしています</string>
+    <string name="offer_title">ファイルの受信リクエスト</string>
+    <string name="offer_wants_to_send">%1$s がファイルを送ろうとしています</string>
     <plurals name="offer_files">
         <item quantity="other">%d 個のファイル</item>
     </plurals>
     <string name="offer_size">%1$s、%2$s</string>
-    <string name="offer_accept">受け入れる</string>
-    <string name="offer_always_accept">常に受け入れる</string>
+    <string name="offer_accept">承認</string>
+    <string name="offer_always_accept">常に承認</string>
     <string name="offer_block">ブロック</string>
-    <string name="offer_block_title">%1$s をブロックしますか?</string>
+    <string name="offer_block_title">%1$s をブロックしますか？</string>
     <string name="offer_block_body">ファイルの送信やペアリングのリクエストができなくなります。ブロックは後で解除できます。</string>
     <string name="text_from">%1$s からのテキスト</string>
     <string name="text_copy">コピー</string>
 
     <!-- Send -->
     <plurals name="send_to_devices">
-        <item quantity="other">%d 台のデバイスに送信</item>
+        <item quantity="other">%d 台に送信</item>
     </plurals>
     <string name="send_source_media">写真と動画</string>
     <string name="send_source_files">ファイル</string>
@@ -80,21 +80,21 @@
     <string name="link_share">リンクで共有</string>
     <string name="link_receive">リンクで受信</string>
     <string name="link_share_hint">同じネットワーク上のブラウザで開くと、ファイルをダウンロードできます。</string>
-    <string name="link_receive_hint">同じネットワーク上のブラウザで開くと、ここにファイルを送れます。</string>
+    <string name="link_receive_hint">同じネットワーク上のブラウザで開くと、このデバイスにファイルを送れます。</string>
     <string name="link_copy">リンクをコピー</string>
     <string name="link_received">受信済み</string>
     <string name="link_stop">停止</string>
 
     <!-- Pairing -->
     <string name="pair_request_title">ペアリングのリクエスト</string>
-    <string name="pair_request_wants">%1$s がペアリングを求めています</string>
-    <string name="pair_request_hint">相手の画面に同じコードが表示されている場合のみ確認してください。</string>
-    <string name="pair_confirm">確認</string>
-    <string name="pair_compare_title">コードを照合</string>
-    <string name="pair_compare_hint">相手のデバイスにこのコードが表示されていることを確認し、相手側で承認してください。</string>
+    <string name="pair_request_wants">%1$s がペアリングをリクエストしています</string>
+    <string name="pair_request_hint">相手の画面に同じコードが表示されている場合のみ承認してください。</string>
+    <string name="pair_confirm">承認</string>
+    <string name="pair_compare_title">コードの確認</string>
+    <string name="pair_compare_hint">相手のデバイスに同じコードが表示されていることを確かめてから、相手のデバイスで承認してください。</string>
     <string name="pair_code_title">コードでペアリング</string>
     <string name="pair_show_title">コードを表示</string>
-    <string name="pair_show_hint">別のネットワークのデバイスや、近くに見つからない場合に使います。ここでコードを表示し、相手側で入力してください。</string>
+    <string name="pair_show_hint">別のネットワークにあるデバイスや、近くのデバイスとして見つからない場合に使います。ここでコードを表示し、相手のデバイスで入力してください。</string>
     <string name="pair_show_code">コードを表示</string>
     <string name="pair_invite_expiry">1 回限り、10 分間有効です。</string>
     <string name="pair_copy_code">コードをコピー</string>
@@ -112,8 +112,8 @@
 
     <!-- Onboarding -->
     <string name="onboarding_title">Solferry へようこそ</string>
-    <string name="onboarding_body">自分のデバイス間でファイルを送れます。アカウント不要、クラウドにも何も残りません。</string>
-    <string name="onboarding_name_title">デバイスの名前</string>
+    <string name="onboarding_body">自分のデバイス間でファイルを送れます。アカウントは不要で、クラウドも使いません。</string>
+    <string name="onboarding_name_title">デバイス名</string>
     <string name="onboarding_name_hint">近くのデバイスにはこの名前が表示されます。</string>
     <string name="onboarding_start">はじめる</string>
 
@@ -123,20 +123,20 @@
     <string name="settings_name_placeholder">名前</string>
     <string name="settings_save">保存</string>
     <string name="settings_find_title">ほかのデバイスに表示</string>
-    <string name="settings_find_on">ネットワーク上のデバイスからこのデバイスが見え、送信をリクエストできます。</string>
-    <string name="settings_find_off">新しいデバイスからは見つかりません。ペアリング済みのデバイスは引き続き接続できます。</string>
+    <string name="settings_find_on">同じネットワーク上のデバイスからこのデバイスが見え、ファイルの送信をリクエストできます。</string>
+    <string name="settings_find_off">新しいデバイスからは見つかりません。ペアリング済みのデバイスからは引き続き接続できます。</string>
     <string name="settings_background_title">バックグラウンドで受信</string>
-    <string name="settings_background_body">Solferry を閉じていても接続を受け付けます。通知が表示され、電池の消費が増えます。</string>
+    <string name="settings_background_body">Solferry を閉じていても受信できます。通知が常に表示され、バッテリーの消費が増えます。</string>
     <string name="language_title">言語</string>
     <string name="language_system">システムのデフォルト</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">リレー</string>
-    <string name="relay_guide">設定ガイド</string>
-    <string name="relay_body">自分で運用するリレーを使って、別のネットワークのデバイスに接続します。</string>
+    <string name="relay_guide">セットアップガイド</string>
+    <string name="relay_body">自分で運用するリレーを経由して、別のネットワークにあるデバイスに接続します。</string>
     <string name="relay_add">追加</string>
     <string name="relay_checking">確認中</string>
     <string name="relay_connected">接続済み</string>
-    <string name="relay_udp_blocked">接続済み、UDP 7842 がブロックされています</string>
+    <string name="relay_udp_blocked">接続済み (UDP 7842 はブロックされています)</string>
     <string name="relay_refused">拒否されました。リンクを確認してください</string>
     <string name="relay_unreachable">サーバーに接続できません</string>
     <string name="folder_title">ファイルの保存先</string>
@@ -164,12 +164,12 @@
     <string name="error_save_failed">%1$s: %2$s に保存できませんでした</string>
     <string name="error_save_downloads">ダウンロード</string>
     <string name="error_save_recovered">受信したファイル</string>
-    <string name="error_folder_unusable">そのフォルダは使用できません</string>
+    <string name="error_folder_unusable">このフォルダは使用できません</string>
     <string name="error_folder_lost">%1$s にアクセスできなくなりました。%2$s に保存します</string>
     <string name="error_open_file">ファイルを開けませんでした。もう一度共有してください</string>
 
     <!-- Notifications -->
-    <string name="channel_asks">リクエストと受信</string>
+    <string name="channel_asks">リクエストと受信完了</string>
     <string name="channel_transfers">進行中の転送</string>
     <string name="channel_standby">バックグラウンドでの受信</string>
     <plurals name="notify_progress">
@@ -177,9 +177,9 @@
     </plurals>
     <string name="notify_standby">受信の準備ができています</string>
     <string name="notify_offer_body">%1$s がファイルを送ろうとしています</string>
-    <string name="notify_pairing_body">%1$s がこのデバイスとのペアリングを求めています</string>
+    <string name="notify_pairing_body">%1$s がこのデバイスとのペアリングをリクエストしています</string>
     <string name="notify_text_copied">クリップボードにコピーしました</string>
-    <string name="notify_text_open">Solferry を開いてコピー</string>
+    <string name="notify_text_open">Solferry を開いてコピーしてください</string>
     <string name="notify_received_title">ファイルを受信しました</string>
-    <string name="notify_received_body">%2$s から %1$s (%3$s)</string>
+    <string name="notify_received_body">%2$s から %1$s。保存先: %3$s</string>
 </resources>
