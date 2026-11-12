@@ -19,13 +19,13 @@ explain:
     title: "ネットワークを開始できませんでした"
     next: "Solferry を再起動して、もう一度お試しください。"
   invalid_relay_url:
-    title: "リレーのアドレスが正しくありません"
-    next: "リレーに表示されたリンクを、https://relay.example.com#token のように最後まで貼り付けてください。"
+    title: "Relay のアドレスが正しくありません"
+    next: "Relay に表示されたリンクを、https://relay.example.com#token のように最後まで貼り付けてください。"
   unreachable:
     title: "デバイスに接続できません"
-    next: "相手のデバイスで Solferry を開いてください。別のネットワークにいる場合は、Tailscale を使うか自分のリレーを追加してください。"
+    next: "相手のデバイスで Solferry を開いてください。別のネットワークにいる場合は、Tailscale を使うか自分の Relay を追加してください。"
   relay_check_failed:
-    title: "動作していないリレーがあります"
+    title: "動作していない Relay があります"
     next: "状態は設定で確認できます。"
   not_paired:
     title: "先にこのデバイスとペアリングしてください"

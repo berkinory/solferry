@@ -19,13 +19,13 @@ explain:
     title: "无法启动网络"
     next: "请重新启动 Solferry 后再试。"
   invalid_relay_url:
-    title: "中继地址无效"
-    next: "请粘贴中继给出的完整链接，例如 https://relay.example.com#token。"
+    title: "Relay 地址无效"
+    next: "请粘贴 Relay 给出的完整链接，例如 https://relay.example.com#token。"
   unreachable:
     title: "无法连接设备"
-    next: "请在对方设备上打开 Solferry。如果不在同一网络，请使用 Tailscale 或添加你自己的中继。"
+    next: "请在对方设备上打开 Solferry。如果不在同一网络，请使用 Tailscale 或添加你自己的 Relay。"
   relay_check_failed:
-    title: "有中继无法正常工作"
+    title: "有 Relay 无法正常工作"
     next: "可在设置中查看其状态。"
   not_paired:
     title: "请先与此设备配对"
