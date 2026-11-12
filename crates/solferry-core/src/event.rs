@@ -75,6 +75,10 @@ pub enum Event {
         name: String,
         bytes: u64,
     },
+    /// A paired device just checked whether this one is there, so it is there too.
+    Present {
+        peer: EndpointId,
+    },
     /// A browser sent text through a receive link.
     LinkText {
         text: String,

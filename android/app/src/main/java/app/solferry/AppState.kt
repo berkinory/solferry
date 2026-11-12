@@ -95,6 +95,7 @@ data class AppState(
         is Update.History -> copy(history = update.entries)
         is Update.Nearby -> copy(nearby = update.devices)
         is Update.Reachable -> copy(reachable = update.ids.toSet())
+        is Update.Present -> copy(reachable = reachable.orEmpty() + update.id)
         is Update.Relays -> copy(relays = update.relays)
         is Update.RelayFailed -> toast(Tone.Error, update.problem.title)
         is Update.Blocked -> copy(blocked = update.devices)

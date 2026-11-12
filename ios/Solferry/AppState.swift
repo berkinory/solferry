@@ -109,6 +109,7 @@ struct AppState {
         case let .history(entries): history = entries
         case let .nearby(list): nearby = list
         case let .reachable(ids): reachable = Set(ids)
+        case let .present(id): reachable = (reachable ?? []).union([id])
         case let .relays(list):
             relays = list
         case let .relayFailed(problem): toast(.failure, problem.title)

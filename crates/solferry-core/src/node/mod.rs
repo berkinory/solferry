@@ -75,6 +75,8 @@ pub(crate) struct Shared {
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
     history: Mutex<History>,
     running: Mutex<HashMap<TransferId, PastTransfer>>,
+    /// When each paired device last checked whether this one is there.
+    pub(crate) checked_in: Mutex<HashMap<EndpointId, std::time::Instant>>,
     uses_relays: bool,
 }
 
@@ -204,6 +206,7 @@ impl Node {
             active: Mutex::new(HashMap::new()),
             history: Mutex::new(History::load(&data_dir)),
             running: Mutex::new(HashMap::new()),
+            checked_in: Mutex::new(HashMap::new()),
             uses_relays,
         });
         if !isolated {
@@ -213,7 +216,7 @@ impl Node {
             .accept(ALPN_TRANSFER, inbound::TransferHandler(shared.clone()))
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
             .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
-            .accept(ALPN_PRESENCE, presence::PresenceHandler)
+            .accept(ALPN_PRESENCE, presence::PresenceHandler(shared.clone()))
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }

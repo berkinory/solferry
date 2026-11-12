@@ -278,6 +278,9 @@ impl AppState {
                 }
                 self.toast(Tone::Success, t!("toast.link_received", name = name), None);
             }
+            Event::Present { peer } => {
+                self.reachable.get_or_insert_with(HashSet::new).insert(peer);
+            }
             Event::LinkText { text } => {
                 if let Some(link) = &mut self.link {
                     link.texts.push(text);
