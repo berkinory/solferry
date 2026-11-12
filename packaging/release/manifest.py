@@ -11,8 +11,8 @@ from pathlib import Path
 
 REPOSITORY = "https://github.com/berkinory/solferry"
 UPDATES = {
-    "macos-aarch64": "Solferry-macos.dmg",
-    "macos-x86_64": "Solferry-macos.dmg",
+    "macos-aarch64": "Solferry-macos-aarch64.dmg",
+    "macos-x86_64": "Solferry-macos-x86_64.dmg",
     "windows-x86_64": "Solferry-windows-setup.exe",
     "linux-x86_64": "Solferry-linux-x86_64.AppImage",
     "linux-aarch64": "Solferry-linux-aarch64.AppImage",
