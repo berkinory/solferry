@@ -2,7 +2,7 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
-## Unreleased
+## 0.0.3 - 2026-11-12
 
 ### Added
 
@@ -15,6 +15,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 
 ### Changed
 
+- A new app icon: the mark as frosted glass, lit from behind.
 - The desktop window and everything in it are smaller, closer to the apps around it.
 - Sheets slide away when they close instead of vanishing, on desktop and Android.
 - Android asks for notifications from onboarding instead of popping the prompt up on its own, and macOS asks from a button instead of at the first incoming file.
