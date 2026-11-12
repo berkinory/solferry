@@ -55,7 +55,7 @@ fn fitted(text: &str, budget: usize) -> String {
 /// The template's own words always show, then as much of the name as still fits.
 fn phrase(template: &str, name: &str, budget: usize) -> String {
     const SLOT: &str = "%{name}";
-    let room = budget.saturating_sub(template.len().saturating_sub(SLOT.len()));
+    let room = budget.saturating_sub(template.chars().count().saturating_sub(SLOT.len()));
     template.replace(SLOT, &fitted(name, room))
 }
 
