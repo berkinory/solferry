@@ -20,6 +20,8 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 ### Fixed
 
 - A device you just paired no longer stays in Nearby with a Pair button.
+- Paired devices show as online right away when one is on a router's 2.4 GHz band and the other on 5 GHz, or when a phone drops multicast to save power. Before, they could look offline for minutes.
+- Choosing a tab on desktop no longer also presses the button underneath it.
 
 ## 0.0.2 - 2026-11-12
 
