@@ -249,7 +249,7 @@ fn blocked_row(device: &BlockedDevice, cx: &mut Context<MainView>) -> AnyElement
 }
 
 fn about(id: Option<EndpointId>, cx: &mut Context<MainView>) -> AnyElement {
-    let short = id.map(|id| id.fmt_short().to_string()).unwrap_or_default();
+    let short = id.map_or_else(String::new, |id| id.fmt_short().to_string());
     div()
         .flex()
         .justify_between()
