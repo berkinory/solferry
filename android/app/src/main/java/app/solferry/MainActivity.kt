@@ -59,6 +59,7 @@ import app.solferry.ui.ToasterOverSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
+import uniffi.solferry_ffi.setLocale
 
 private enum class Screen { Home, History, Settings }
 
@@ -80,6 +81,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // A language change recreates the activity, so the core's texts follow the app's language from here.
+        setLocale(resources.configuration.locales[0].toLanguageTag())
         shared = sharedUris(intent)
         val engine = (application as SolferryApp).engine
         engine.resumeStandby()
