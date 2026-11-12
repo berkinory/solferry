@@ -136,9 +136,9 @@
     <string name="language_title">שפה</string>
     <string name="language_system">ברירת המחדל של המערכת</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">ממסר</string>
+    <string name="relay_title">Relay</string>
     <string name="relay_guide">מדריך התקנה</string>
-    <string name="relay_body">חיבור למכשירים ברשתות אחרות דרך ממסר שמופעל אצלך.</string>
+    <string name="relay_body">חיבור למכשירים ברשתות אחרות דרך Relay שמופעל אצלך.</string>
     <string name="relay_add">הוספה</string>
     <string name="relay_checking">בבדיקה</string>
     <string name="relay_connected">מחובר</string>

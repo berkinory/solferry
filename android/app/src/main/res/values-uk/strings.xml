@@ -136,9 +136,9 @@
     <string name="language_title">Мова</string>
     <string name="language_system">Як у системі</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Ретранслятор</string>
+    <string name="relay_title">Relay</string>
     <string name="relay_guide">Інструкція з налаштування</string>
-    <string name="relay_body">Підключайтеся до пристроїв в інших мережах через власний ретранслятор.</string>
+    <string name="relay_body">Підключайтеся до пристроїв в інших мережах через власний Relay.</string>
     <string name="relay_add">Додати</string>
     <string name="relay_checking">Перевірка</string>
     <string name="relay_connected">Підключено</string>

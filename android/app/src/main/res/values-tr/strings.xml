@@ -132,9 +132,9 @@
     <string name="language_title">Dil</string>
     <string name="language_system">Sistem dili</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">Röle</string>
+    <string name="relay_title">Relay</string>
     <string name="relay_guide">Kurulum rehberi</string>
-    <string name="relay_body">Kendi kurduğun bir röle üzerinden başka ağlardaki cihazlara ulaş.</string>
+    <string name="relay_body">Kendi kurduğun bir Relay üzerinden başka ağlardaki cihazlara ulaş.</string>
     <string name="relay_add">Ekle</string>
     <string name="relay_checking">Kontrol ediliyor</string>
     <string name="relay_connected">Bağlı</string>

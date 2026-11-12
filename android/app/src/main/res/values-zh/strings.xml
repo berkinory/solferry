@@ -130,9 +130,9 @@
     <string name="language_title">语言</string>
     <string name="language_system">跟随系统</string>
     <string name="settings_version">Solferry %1$s</string>
-    <string name="relay_title">中继</string>
+    <string name="relay_title">Relay</string>
     <string name="relay_guide">部署指南</string>
-    <string name="relay_body">通过你自己部署的中继，连接其他网络中的设备。</string>
+    <string name="relay_body">通过你自己部署的 Relay，连接其他网络中的设备。</string>
     <string name="relay_add">添加</string>
     <string name="relay_checking">正在检查</string>
     <string name="relay_connected">已连接</string>
