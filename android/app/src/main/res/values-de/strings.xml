@@ -128,7 +128,7 @@
     <string name="settings_find_on">Geräte in deinem Netzwerk sehen dieses Gerät und können dir Dateien anbieten.</string>
     <string name="settings_find_off">Neue Geräte können dieses Gerät nicht finden. Gekoppelte Geräte erreichen es weiterhin.</string>
     <string name="settings_background_title">Im Hintergrund empfangen</string>
-    <string name="settings_background_body">Empfangen, während Solferry geschlossen ist. Zeigt eine Mitteilung, braucht mehr Akku.</string>
+    <string name="settings_background_body">Empfangen, während Solferry geschlossen ist. Zeigt eine Benachrichtigung, braucht mehr Akku.</string>
     <string name="language_title">Sprache</string>
     <string name="language_system">Systemsprache</string>
     <string name="settings_version">Solferry %1$s</string>

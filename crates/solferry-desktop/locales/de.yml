@@ -230,14 +230,14 @@ updates:
 permissions:
   title: "Berechtigungen"
   notifications:
-    title: "Mitteilungen"
+    title: "Benachrichtigungen"
     detail: "Für eingehende Dateien, Texte und Kopplungsanfragen."
   local_network:
     title: "Lokales Netzwerk"
     detail: "Findet deine Geräte und sendet direkt an sie."
   firewall:
     title: "Firewall"
-    detail: "Erlaube private Netzwerke, damit Geräte in der Nähe dieses erreichen."
+    detail: "Erlaube private Netzwerke, damit Geräte in der Nähe dieses Gerät erreichen."
   allowed: "Erlaubt"
   off: "Aus"
   not_asked: "Noch nicht gefragt"

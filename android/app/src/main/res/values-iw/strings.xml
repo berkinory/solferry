@@ -132,7 +132,7 @@
     <string name="settings_find_on">מכשירים ברשת שלך יכולים לראות את המכשיר הזה ולבקש לשלוח אליו.</string>
     <string name="settings_find_off">מכשירים חדשים לא יכולים למצוא את המכשיר הזה. מכשירים מצומדים עדיין יכולים להתחבר אליו.</string>
     <string name="settings_background_title">קבלה ברקע</string>
-    <string name="settings_background_body">קבלה גם כש-Solferry סגורה. מוצגת התראה, וצריכת הסוללה גבוהה יותר.</string>
+    <string name="settings_background_body">קבלה גם כש־Solferry סגורה. מוצגת התראה, וצריכת הסוללה גבוהה יותר.</string>
     <string name="language_title">שפה</string>
     <string name="language_system">ברירת המחדל של המערכת</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -146,7 +146,7 @@
     <string name="relay_refused">החיבור נדחה, כדאי לבדוק את הקישור</string>
     <string name="relay_unreachable">אין חיבור לשרת</string>
     <string name="folder_title">תיקיית שמירה</string>
-    <string name="folder_downloads">Downloads/Solferry</string>
+    <string name="folder_downloads">הורדות/Solferry</string>
     <string name="folder_reset">איפוס</string>
     <string name="folder_change">שינוי</string>
     <string name="updates_title">עדכונים</string>
@@ -196,7 +196,7 @@
     <string name="notify_received_body">%1$s מ־%2$s, ב־%3$s</string>
     <string name="permissions_title">הרשאות</string>
     <string name="permissions_notifications">התראות</string>
-    <string name="permissions_notifications_detail">לקבצים, טקסטים ובקשות התאמה נכנסים.</string>
+    <string name="permissions_notifications_detail">לקבצים, טקסטים ובקשות צימוד נכנסים.</string>
     <string name="permissions_allowed">מאושר</string>
     <string name="permissions_off">כבוי</string>
     <string name="permissions_allow">מתן הרשאה</string>

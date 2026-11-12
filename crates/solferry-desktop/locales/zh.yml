@@ -138,7 +138,7 @@ pairing:
   pairing: "正在配对…"
   address_title: "输入 IP 地址"
   own_addresses: "本设备的地址：%{addresses}"
-  invite_hint: "用于其他网络中的设备。在这里显示代码，在那边输入。"
+  invite_hint: "用于其他网络中的设备。在这里显示配对码，在另一台设备上输入。"
   invite: "显示配对码"
   copy: "复制配对码"
   copied: "已复制"

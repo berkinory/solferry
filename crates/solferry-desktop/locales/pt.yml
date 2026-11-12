@@ -237,7 +237,7 @@ permissions:
     detail: "Encontra seus dispositivos e envia direto para eles."
   firewall:
     title: "Firewall"
-    detail: "Permita redes privadas para que dispositivos próximos alcancem este."
+    detail: "Permita redes privadas para que dispositivos próximos possam se conectar a este."
   allowed: "Permitido"
   off: "Desativado"
   not_asked: "Ainda não pedido"

@@ -99,7 +99,7 @@ link:
   share_title: "Udostępnij przez link"
   no_app:
     title: "Brak aplikacji na drugim urządzeniu"
-    body: "Przeglądarka w twojej sieci może wysłać ci pliki lub tekst."
+    body: "Przeglądarka w Twojej sieci może wysłać Ci pliki lub tekst."
     receive: "Odbierz przez link"
 history:
   title: "Historia"
@@ -234,10 +234,10 @@ permissions:
     detail: "Dla przychodzących plików, tekstów i próśb o sparowanie."
   local_network:
     title: "Sieć lokalna"
-    detail: "Znajduje twoje urządzenia i wysyła do nich bezpośrednio."
+    detail: "Znajduje Twoje urządzenia i wysyła do nich bezpośrednio."
   firewall:
     title: "Zapora"
-    detail: "Zezwól na sieci prywatne, żeby urządzenia w pobliżu mogły połączyć się z tym."
+    detail: "Zezwól na sieci prywatne, żeby urządzenia w pobliżu mogły połączyć się z tym urządzeniem."
   allowed: "Dozwolone"
   off: "Wyłączone"
   not_asked: "Jeszcze nie pytano"

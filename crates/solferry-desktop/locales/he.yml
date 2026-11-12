@@ -231,7 +231,7 @@ permissions:
   title: "הרשאות"
   notifications:
     title: "התראות"
-    detail: "לקבצים, טקסטים ובקשות התאמה נכנסים."
+    detail: "לקבצים, טקסטים ובקשות צימוד נכנסים."
   local_network:
     title: "רשת מקומית"
     detail: "מוצאת את המכשירים שלך ושולחת אליהם ישירות."

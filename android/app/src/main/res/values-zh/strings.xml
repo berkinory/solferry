@@ -94,7 +94,7 @@
     <string name="pair_compare_hint">请确认对方设备显示的是这个配对码，然后在对方设备上接受。</string>
     <string name="pair_code_title">使用配对码配对</string>
     <string name="pair_show_title">显示配对码</string>
-    <string name="pair_show_hint">用于其他网络中的设备。在这里显示代码，在那边输入。</string>
+    <string name="pair_show_hint">用于其他网络中的设备。在这里显示配对码，在另一台设备上输入。</string>
     <string name="pair_show_code">显示配对码</string>
     <string name="pair_invite_expiry">仅限使用一次，10 分钟内有效。</string>
     <string name="pair_copy_code">复制配对码</string>

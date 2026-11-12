@@ -22,7 +22,7 @@ notification:
     title: "Archivos recibidos"
     body: "%{title} de %{peer}"
 format:
-  percent: "%{value}%"
+  percent: "%{value} %"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"
@@ -237,7 +237,7 @@ permissions:
     detail: "Encuentra tus dispositivos y les envía directamente."
   firewall:
     title: "Firewall"
-    detail: "Permite las redes privadas para que los dispositivos cercanos lleguen a este."
+    detail: "Permite las redes privadas para que los dispositivos cercanos puedan conectarse a este."
   allowed: "Permitido"
   off: "Desactivado"
   not_asked: "Aún no se ha pedido"

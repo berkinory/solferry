@@ -196,7 +196,7 @@
     <string name="notify_received_body">%1$s від %2$s, у папці %3$s</string>
     <string name="permissions_title">Дозволи</string>
     <string name="permissions_notifications">Сповіщення</string>
-    <string name="permissions_notifications_detail">Для вхідних файлів, тексту й запитів на з\'єднання.</string>
+    <string name="permissions_notifications_detail">Для вхідних файлів, тексту й запитів на створення пари.</string>
     <string name="permissions_allowed">Дозволено</string>
     <string name="permissions_off">Вимкнено</string>
     <string name="permissions_allow">Дозволити</string>

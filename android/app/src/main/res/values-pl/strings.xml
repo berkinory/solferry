@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Otwórz Solferry na innym urządzeniu w tej sieci, a pojawi się tutaj.</string>
     <string name="nearby_scanning">Wyszukiwanie nowych urządzeń w tej sieci</string>
     <string name="browser_title">Brak aplikacji na drugim urządzeniu</string>
-    <string name="browser_body">Przeglądarka w twojej sieci może wysłać ci pliki lub tekst.</string>
+    <string name="browser_body">Przeglądarka w Twojej sieci może wysłać Ci pliki lub tekst.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Przychodzące pliki</string>
@@ -132,7 +132,7 @@
     <string name="settings_find_on">Urządzenia w Twojej sieci widzą to urządzenie i mogą proponować mu pliki.</string>
     <string name="settings_find_off">Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć.</string>
     <string name="settings_background_title">Odbieraj w tle</string>
-    <string name="settings_background_body">Odbieraj, gdy Solferry jest zamknięty. Pokazuje powiadomienie, zużywa więcej baterii.</string>
+    <string name="settings_background_body">Odbieraj, gdy Solferry jest zamknięte. Pokazuje powiadomienie, zużywa więcej baterii.</string>
     <string name="language_title">Język</string>
     <string name="language_system">Domyślny systemowy</string>
     <string name="settings_version">Solferry %1$s</string>

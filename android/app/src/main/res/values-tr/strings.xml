@@ -79,11 +79,11 @@
     <string name="send_text_placeholder">Metin yaz veya yapıştır</string>
 
     <!-- Browser links -->
-    <string name="link_share">Bağlantıyla paylaş</string>
-    <string name="link_receive">Bağlantıyla al</string>
+    <string name="link_share">Linkle paylaş</string>
+    <string name="link_receive">Linkle al</string>
     <string name="link_share_hint">Dosyaları indirmek için aynı ağdaki bir tarayıcıda aç.</string>
     <string name="link_receive_hint">Buraya dosya ya da metin göndermek için aynı ağdaki bir tarayıcıda aç.</string>
-    <string name="link_copy">Bağlantıyı kopyala</string>
+    <string name="link_copy">Linki kopyala</string>
     <string name="link_received">Alınanlar</string>
     <string name="link_stop">Durdur</string>
 
@@ -139,7 +139,7 @@
     <string name="relay_checking">Kontrol ediliyor</string>
     <string name="relay_connected">Bağlı</string>
     <string name="relay_udp_blocked">Bağlı ama UDP 7842 engelli</string>
-    <string name="relay_refused">Reddedildi, bağlantıyı kontrol et</string>
+    <string name="relay_refused">Reddedildi, linki kontrol et</string>
     <string name="relay_unreachable">Sunucuya ulaşılamıyor</string>
     <string name="folder_title">Kayıt klasörü</string>
     <string name="folder_downloads">İndirilenler/Solferry</string>
