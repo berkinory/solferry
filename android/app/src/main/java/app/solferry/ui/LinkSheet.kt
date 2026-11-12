@@ -44,7 +44,7 @@ fun LinkSheet(link: LinkState, engine: Engine) =
                 Well { link.received.forEach { Muted(it, Modifier.padding(8.dp)) } }
             }
         }
-        Button(close, Modifier.fillMaxWidth(), label = stringResource(R.string.link_stop), kind = ButtonKind.Danger)
+        Button(close, Modifier.align(Alignment.CenterHorizontally), label = stringResource(R.string.link_stop), kind = ButtonKind.Danger)
     }
 
 @Composable

@@ -63,17 +63,21 @@ private fun Asker(peer: Identity, title: String, detail: String) = Row(
 }
 
 @Composable
-fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) = Sheet(stringResource(R.string.pair_request_title), { engine.answerPairing(prompt.key, false) }) { close ->
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
-        DeviceTile(prompt.peer)
-        Text(stringResource(R.string.pair_request_wants, prompt.name), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Caption(prompt.peer.fingerprint)
-    }
-    Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
-    Muted(stringResource(R.string.pair_request_hint), Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
-    Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.CenterHorizontally)) {
-        Button({ engine.answerPairing(prompt.key, true); close() }, label = stringResource(R.string.pair_confirm), icon = R.drawable.ic_check, kind = ButtonKind.Primary)
-        Button({ engine.answerPairing(prompt.key, false); close() }, label = stringResource(R.string.common_decline), kind = ButtonKind.Warning)
+fun PairRequestSheet(prompt: PairingPrompt, engine: Engine) {
+    // Answered once the sheet has slid away, since the answer takes the prompt off the screen.
+    var accepted by remember(prompt.key) { mutableStateOf(false) }
+    Sheet(stringResource(R.string.pair_request_title), { engine.answerPairing(prompt.key, accepted) }) { close ->
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
+            DeviceTile(prompt.peer)
+            Text(stringResource(R.string.pair_request_wants, prompt.name), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Caption(prompt.peer.fingerprint)
+        }
+        Frame { Well(padding = 12.dp) { Digits(prompt.code) } }
+        Muted(stringResource(R.string.pair_request_hint), Modifier.fillMaxWidth().padding(top = SpaceTokens.sm.dp), textAlign = TextAlign.Center)
+        Row(Modifier.fillMaxWidth().padding(top = SpaceTokens.md.dp), horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp, Alignment.CenterHorizontally)) {
+            Button({ accepted = true; close() }, label = stringResource(R.string.pair_confirm), icon = R.drawable.ic_check, kind = ButtonKind.Primary)
+            Button(close, label = stringResource(R.string.common_decline), kind = ButtonKind.Warning)
+        }
     }
 }
 
