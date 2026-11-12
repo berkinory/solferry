@@ -49,6 +49,12 @@ p { color: var(--muted); margin: 0 0 17px; }
 .bar { height: 3px; border-radius: 2px; background: var(--raised); overflow: hidden; }
 .bar > i { display: block; height: 100%; width: 0; background: var(--primary); transition: width .2s; }
 .file { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.frame.text { margin-top: 13px; }
+#text { display: block; width: 100%; resize: vertical; min-height: 96px; padding: 8px; border: 0; background: transparent; color: var(--ink); font: inherit; outline: none; }
+#text::placeholder { color: var(--muted); }
+.send { display: flex; align-items: center; justify-content: flex-end; gap: 13px; }
+.send .primary { width: auto; height: 40px; margin: 0; padding: 0 17px; border-radius: 14px; }
+.primary:disabled { opacity: .5; cursor: default; filter: none; }
 footer { margin-top: 26px; color: var(--muted); font-size: 13px; text-align: center; }
 </style>
 </head>

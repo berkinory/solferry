@@ -9,7 +9,7 @@ mod pairing;
 mod presence;
 mod probe;
 mod subnet;
-mod text;
+pub(crate) mod text;
 
 use std::collections::HashMap;
 use std::fmt;

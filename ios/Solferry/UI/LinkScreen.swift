@@ -13,7 +13,7 @@ struct LinkScreen: View {
                 QrCode(text: url)
                 Text(url).font(.mutedText).multilineTextAlignment(.center).textSelection(.enabled)
                 Muted(link.receiving
-                    ? "Open it in a browser on the same network to send files here."
+                    ? "Open it in a browser on the same network to send files or text here."
                     : "Open it in a browser on the same network to download the files.")
                     .multilineTextAlignment(.center)
                 ActionButton(label: copied ? "Copied" : "Copy link", glyph: copied ? .check : .copy, scale: .small) {
@@ -22,12 +22,21 @@ struct LinkScreen: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            if !link.received.isEmpty {
+            if !link.received.isEmpty || !link.texts.isEmpty {
                 Card(glyph: .download, title: "Received") {
-                    Well { ForEach(Array(link.received.enumerated()), id: \.offset) { Muted(verbatim: $0.element).padding(SpaceTokens.xs) } }
+                    Well {
+                        ForEach(Array(link.texts.enumerated()), id: \.offset) { _, text in
+                            HStack(alignment: .top, spacing: SpaceTokens.sm) {
+                                Text(verbatim: text).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
+                                ActionButton(label: "Copy", glyph: .copy, scale: .small) { engine.copy(text) }
+                            }
+                            .padding(SpaceTokens.xs)
+                        }
+                        ForEach(Array(link.received.enumerated()), id: \.offset) { Muted(verbatim: $0.element).padding(SpaceTokens.xs) }
+                    }
                 }
             }
-            ActionButton(label: "Stop", kind: .danger, wide: true) { engine.bridge.stopLink() }
+            ActionButton(label: "Stop", kind: .danger) { engine.bridge.stopLink() }
         }
     }
 }

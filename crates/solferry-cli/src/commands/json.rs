@@ -63,6 +63,7 @@ pub fn encode(event: &Event) -> Value {
         Event::LinkReceived { name, bytes } => {
             json!({ "event": "link_received", "name": name, "bytes": bytes })
         }
+        Event::LinkText { text } => json!({ "event": "link_text", "text": text }),
         Event::Failed { id, error } => {
             with_error(json!({ "event": "failed", "id": id.to_string() }), error)
         }

@@ -32,11 +32,12 @@ struct PairingPrompt: Identifiable {
     var id: UInt64 { key }
 }
 
-/// A link a browser can open. `received` lists what browsers sent through it so far.
+/// A link a browser can open, with the files and texts browsers sent through it so far.
 struct LinkState {
     let urls: [String]
     let receiving: Bool
     var received: [String] = []
+    var texts: [String] = []
 }
 
 struct ReceivedText: Identifiable {
@@ -188,6 +189,8 @@ struct AppState {
         case let .linkReceived(name, _):
             link?.received.append(name)
             toast(.success, String(localized: "Received \(name)"))
+        case let .linkText(text):
+            link?.texts.append(text)
         }
     }
 

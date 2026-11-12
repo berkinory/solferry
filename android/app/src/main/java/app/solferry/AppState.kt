@@ -39,7 +39,12 @@ data class Transfer(
 }
 
 /** A link a browser can open. `received` lists what browsers sent through it so far. */
-data class LinkState(val urls: List<String>, val receiving: Boolean, val received: List<String> = emptyList())
+data class LinkState(
+    val urls: List<String>,
+    val receiving: Boolean,
+    val received: List<String> = emptyList(),
+    val texts: List<String> = emptyList(),
+)
 
 data class PickedFile(val uri: android.net.Uri, val name: String, val size: Long?)
 
@@ -131,6 +136,7 @@ data class AppState(
         is Update.LinkStopped -> copy(link = null)
         is Update.LinkFailed -> toast(Tone.Error, update.problem.title).copy(link = null)
         is Update.LinkReceived -> toast(Tone.Success, res.getString(R.string.transfer_received, update.name)).copy(link = link?.let { it.copy(received = it.received + update.name) })
+        is Update.LinkText -> copy(link = link?.let { it.copy(texts = it.texts + update.text) })
     }
 
     fun toast(tone: Tone, title: String) =

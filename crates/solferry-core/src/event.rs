@@ -75,6 +75,10 @@ pub enum Event {
         name: String,
         bytes: u64,
     },
+    /// A browser sent text through a receive link.
+    LinkText {
+        text: String,
+    },
     Failed {
         id: TransferId,
         error: Error,

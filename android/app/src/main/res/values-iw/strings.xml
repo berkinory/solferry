@@ -86,7 +86,7 @@
     <string name="link_share">שיתוף בקישור</string>
     <string name="link_receive">קבלה בקישור</string>
     <string name="link_share_hint">אפשר לפתוח את הקישור בדפדפן באותה רשת כדי להוריד את הקבצים.</string>
-    <string name="link_receive_hint">אפשר לפתוח את הקישור בדפדפן באותה רשת כדי לשלוח לכאן קבצים.</string>
+    <string name="link_receive_hint">אפשר לפתוח את הקישור בדפדפן באותה רשת כדי לשלוח לכאן קבצים או טקסט.</string>
     <string name="link_copy">העתקת הקישור</string>
     <string name="link_received">התקבלו</string>
     <string name="link_stop">עצירה</string>

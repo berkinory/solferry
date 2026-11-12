@@ -91,7 +91,7 @@ send:
 link:
   copy: "Bağlantıyı kopyala"
   copied: "Kopyalandı"
-  receive_hint: "Buraya dosya göndermek için aynı ağdaki bir tarayıcıda aç."
+  receive_hint: "Buraya dosya ya da metin göndermek için aynı ağdaki bir tarayıcıda aç."
   share_hint: "Dosyaları indirmek için aynı ağdaki bir tarayıcıda aç."
   received: "Alınanlar"
   stop: "Durdur"

@@ -82,7 +82,7 @@
     <string name="link_share">Bağlantıyla paylaş</string>
     <string name="link_receive">Bağlantıyla al</string>
     <string name="link_share_hint">Dosyaları indirmek için aynı ağdaki bir tarayıcıda aç.</string>
-    <string name="link_receive_hint">Buraya dosya göndermek için aynı ağdaki bir tarayıcıda aç.</string>
+    <string name="link_receive_hint">Buraya dosya ya da metin göndermek için aynı ağdaki bir tarayıcıda aç.</string>
     <string name="link_copy">Bağlantıyı kopyala</string>
     <string name="link_received">Alınanlar</string>
     <string name="link_stop">Durdur</string>

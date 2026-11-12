@@ -86,7 +86,7 @@
     <string name="link_share">Поделиться ссылкой</string>
     <string name="link_receive">Получить по ссылке</string>
     <string name="link_share_hint">Откройте её в браузере в той же сети, чтобы скачать файлы.</string>
-    <string name="link_receive_hint">Откройте её в браузере в той же сети, чтобы отправить сюда файлы.</string>
+    <string name="link_receive_hint">Откройте её в браузере в той же сети, чтобы отправить сюда файлы или текст.</string>
     <string name="link_copy">Копировать ссылку</string>
     <string name="link_received">Получено</string>
     <string name="link_stop">Остановить</string>

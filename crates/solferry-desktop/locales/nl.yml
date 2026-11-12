@@ -91,7 +91,7 @@ send:
 link:
   copy: "Link kopiëren"
   copied: "Gekopieerd"
-  receive_hint: "Open de link in een browser op hetzelfde netwerk om bestanden hierheen te sturen."
+  receive_hint: "Open de link in een browser op hetzelfde netwerk om bestanden of tekst hierheen te sturen."
   share_hint: "Open de link in een browser op hetzelfde netwerk om de bestanden te downloaden."
   received: "Ontvangen"
   stop: "Stoppen"

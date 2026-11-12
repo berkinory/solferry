@@ -91,7 +91,7 @@ send:
 link:
   copy: "复制链接"
   copied: "已复制"
-  receive_hint: "在同一网络的浏览器中打开，即可向本设备发送文件。"
+  receive_hint: "在同一网络的浏览器中打开，即可向本设备发送文件或文本。"
   share_hint: "在同一网络的浏览器中打开，即可下载这些文件。"
   received: "已收到"
   stop: "停止"

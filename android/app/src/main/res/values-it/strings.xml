@@ -84,7 +84,7 @@
     <string name="link_share">Condividi tramite link</string>
     <string name="link_receive">Ricevi tramite link</string>
     <string name="link_share_hint">Aprilo in un browser sulla stessa rete per scaricare i file.</string>
-    <string name="link_receive_hint">Aprilo in un browser sulla stessa rete per inviare file a questo dispositivo.</string>
+    <string name="link_receive_hint">Aprilo in un browser sulla stessa rete per inviare file o testo a questo dispositivo.</string>
     <string name="link_copy">Copia link</string>
     <string name="link_received">Ricevuti</string>
     <string name="link_stop">Interrompi</string>

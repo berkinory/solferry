@@ -84,7 +84,7 @@
     <string name="link_share">Share via link</string>
     <string name="link_receive">Receive via link</string>
     <string name="link_share_hint">Open it in a browser on the same network to download the files.</string>
-    <string name="link_receive_hint">Open it in a browser on the same network to send files here.</string>
+    <string name="link_receive_hint">Open it in a browser on the same network to send files or text here.</string>
     <string name="link_copy">Copy link</string>
     <string name="link_received">Received</string>
     <string name="link_stop">Stop</string>

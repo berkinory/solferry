@@ -82,7 +82,7 @@
     <string name="link_share">Delen via link</string>
     <string name="link_receive">Ontvangen via link</string>
     <string name="link_share_hint">Open de link in een browser op hetzelfde netwerk om de bestanden te downloaden.</string>
-    <string name="link_receive_hint">Open de link in een browser op hetzelfde netwerk om bestanden hierheen te sturen.</string>
+    <string name="link_receive_hint">Open de link in een browser op hetzelfde netwerk om bestanden of tekst hierheen te sturen.</string>
     <string name="link_copy">Link kopiëren</string>
     <string name="link_received">Ontvangen</string>
     <string name="link_stop">Stoppen</string>

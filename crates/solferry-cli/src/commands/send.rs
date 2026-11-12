@@ -160,6 +160,7 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
             Event::Reconnecting { .. } => bar.set_message("reconnecting"),
             Event::Waiting { .. }
             | Event::LinkReceived { .. }
+            | Event::LinkText { .. }
             | Event::Started { .. }
             | Event::Paired { .. }
             | Event::TextReceived { .. } => {}

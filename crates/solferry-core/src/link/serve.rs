@@ -24,6 +24,7 @@ use super::files::Served;
 use super::{Link, Mode, page};
 use crate::error::{Error, Result};
 use crate::event::Event;
+use crate::node::text::MAX_TEXT_LEN;
 use crate::route;
 use crate::transfer::free_path;
 use crate::transfer::paths::sanitize;
@@ -103,6 +104,7 @@ async fn respond(
             Some(index) => download(&files[index]),
             None => plain(StatusCode::NOT_FOUND, "Not found"),
         },
+        (&Method::PUT, Mode::Receive(_), "/t") => text(&state, request.into_body()).await,
         (&Method::PUT, Mode::Receive(folder), rest) => match rest.strip_prefix("/u/").map(decode) {
             Some(Some(name)) => upload(&state, folder, &name, request.into_body()).await,
             _ => plain(StatusCode::BAD_REQUEST, "Bad file name"),
@@ -198,6 +200,20 @@ async fn upload(state: &State, folder: &Path, name: &str, mut body: Incoming) ->
             tracing::warn!(%error, "link upload failed");
             plain(StatusCode::INTERNAL_SERVER_ERROR, "Couldn't save the file")
         }
+    }
+}
+
+async fn text(state: &State, body: Incoming) -> Response<Body> {
+    let limited = http_body_util::Limited::new(body, MAX_TEXT_LEN);
+    let Ok(collected) = limited.collect().await else {
+        return plain(StatusCode::PAYLOAD_TOO_LARGE, "Too long");
+    };
+    match String::from_utf8(collected.to_bytes().to_vec()) {
+        Ok(text) if !text.trim().is_empty() => {
+            let _ = state.events.send(Event::LinkText { text });
+            plain(StatusCode::CREATED, "Sent")
+        }
+        _ => plain(StatusCode::BAD_REQUEST, "No text"),
     }
 }
 

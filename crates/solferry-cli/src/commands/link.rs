@@ -30,10 +30,13 @@ pub async fn run(data_dir: PathBuf, paths: Vec<PathBuf>, json: bool) -> Result<(
         tokio::select! {
             _ = tokio::signal::ctrl_c() => break,
             event = events.recv() => match event {
-                Ok(event @ Event::LinkReceived { .. }) if json => println!("{}", super::json::encode(&event)),
+                Ok(event @ (Event::LinkReceived { .. } | Event::LinkText { .. })) if json => {
+                    println!("{}", super::json::encode(&event));
+                }
                 Ok(Event::LinkReceived { name, bytes }) => {
                     println!("Received {name}, {}", indicatif::HumanBytes(bytes));
                 }
+                Ok(Event::LinkText { text }) => println!("Received text:\n{text}"),
                 _ => {}
             },
         }

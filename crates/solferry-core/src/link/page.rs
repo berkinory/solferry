@@ -32,10 +32,14 @@ pub(super) fn share(files: &[Served]) -> String {
 
 pub(super) fn receive() -> String {
     fill(
-        r##"<h1>Send files</h1><p>They go straight to the device that showed you this page.</p>
+        r##"<h1>Send files or text</h1><p>They go straight to the device that showed you this page.</p>
 <div class="frame"><div class="well">
 <label id="drop"><input id="pick" type="file" multiple><span class="badge"><svg class="i"><use href="#upload"/></svg></span>Drop files here or tap to choose</label>
 <div id="sent"></div>
+</div></div>
+<div class="frame text"><div class="well">
+<textarea id="text" rows="4" placeholder="Type or paste text"></textarea>
+<div class="send"><span id="text-state" class="state"></span><button id="send-text" class="primary" disabled>Send text</button></div>
 </div></div>
 <script>
 const drop = document.getElementById('drop'), list = document.getElementById('sent');
@@ -62,6 +66,14 @@ function send(files) {
     }));
   }
 }
+const text = document.getElementById('text'), sendText = document.getElementById('send-text'), textState = document.getElementById('text-state');
+text.oninput = () => { sendText.disabled = !text.value.trim(); textState.textContent = ''; };
+sendText.onclick = async () => {
+  sendText.disabled = true;
+  const ok = await fetch('t', { method: 'PUT', body: text.value }).then(r => r.status === 201, () => false);
+  textState.textContent = ok ? 'Sent' : 'Failed'; textState.className = 'state ' + (ok ? 'sent' : 'failed');
+  if (ok) text.value = ''; else sendText.disabled = false;
+};
 document.getElementById('pick').onchange = e => { send(e.target.files); e.target.value = ''; };
 drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
 drop.ondragleave = () => drop.classList.remove('over');

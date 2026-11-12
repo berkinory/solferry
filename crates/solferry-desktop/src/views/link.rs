@@ -10,6 +10,8 @@ use crate::service::Command;
 use crate::state::LinkView;
 use crate::tokens::SPACE_SM;
 
+const PREVIEW_LINES: usize = 3;
+
 /// A link for a browser on the same network. Closing the sheet stops it.
 pub fn sheet(view: &MainView, link: &LinkView, cx: &mut Context<MainView>) -> AnyElement {
     let url = link.urls.first().cloned().unwrap_or_default();
@@ -34,9 +36,12 @@ pub fn sheet(view: &MainView, link: &LinkView, cx: &mut Context<MainView>) -> An
                 view.show_copied(cx);
             },
         )));
-    let received = (!link.received.is_empty()).then(|| {
-        let rows = link.received.iter().map(|name| ui::text(name.clone()).truncate().p(px(5.)));
-        ui::card(Glyph::Download, &t!("link.received"), None, cx).child(ui::well(cx).children(rows))
+    let received = (!link.received.is_empty() || !link.texts.is_empty()).then(|| {
+        let texts: Vec<_> =
+            link.texts.iter().enumerate().map(|(index, text)| text_row(index, text, cx)).collect();
+        let files = link.received.iter().map(|name| ui::text(name.clone()).truncate().p(px(5.)));
+        ui::card(Glyph::Download, &t!("link.received"), None, cx)
+            .child(ui::well(cx).children(texts).children(files))
     });
     let stop = Button::new("stop-link").danger().label(t!("link.stop")).on_click(cx.listener(
         |view, _, window, cx| {
@@ -58,6 +63,28 @@ pub fn sheet(view: &MainView, link: &LinkView, cx: &mut Context<MainView>) -> An
         |_, _, cx| MainView::command(Command::StopLink, cx),
         cx,
     )
+}
+
+/// Text a browser sent, a few lines of it, with a way to copy all of it.
+fn text_row(index: usize, text: &str, cx: &mut Context<MainView>) -> AnyElement {
+    let copied = text.to_owned();
+    div()
+        .flex()
+        .items_start()
+        .gap(px(SPACE_SM))
+        .p(px(5.))
+        .child(ui::text(text.to_owned()).line_clamp(PREVIEW_LINES).flex_1().min_w_0())
+        .child(
+            Button::new(("copy-link-text", index))
+                .ghost()
+                .xs()
+                .icon(Glyph::Copy)
+                .tooltip(t!("texts.copy"))
+                .on_click(cx.listener(move |_, _, _, cx| {
+                    cx.write_to_clipboard(ClipboardItem::new_string(copied.clone()));
+                })),
+        )
+        .into_any_element()
 }
 
 pub fn card(cx: &mut Context<MainView>) -> AnyElement {

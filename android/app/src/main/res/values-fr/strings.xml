@@ -84,7 +84,7 @@
     <string name="link_share">Partager par lien</string>
     <string name="link_receive">Recevoir par lien</string>
     <string name="link_share_hint">Ouvrez-le dans un navigateur sur le même réseau pour télécharger les fichiers.</string>
-    <string name="link_receive_hint">Ouvrez-le dans un navigateur sur le même réseau pour envoyer des fichiers ici.</string>
+    <string name="link_receive_hint">Ouvrez-le dans un navigateur sur le même réseau pour envoyer des fichiers ou du texte ici.</string>
     <string name="link_copy">Copier le lien</string>
     <string name="link_received">Reçus</string>
     <string name="link_stop">Arrêter</string>

@@ -2,6 +2,7 @@ package app.solferry.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.Engine
 import app.solferry.LinkState
@@ -39,9 +41,17 @@ fun LinkSheet(link: LinkState, engine: Engine) =
                 icon = if (copied) R.drawable.ic_check else R.drawable.ic_copy, size = ButtonSize.Sm,
             )
         }
-        if (link.received.isNotEmpty()) {
+        if (link.received.isNotEmpty() || link.texts.isNotEmpty()) {
             Card(R.drawable.ic_download, stringResource(R.string.link_received)) {
-                Well { link.received.forEach { Muted(it, Modifier.padding(8.dp)) } }
+                Well {
+                    link.texts.forEach { text ->
+                        Row(Modifier.padding(8.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                            Text(text, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            Button({ engine.copy(text) }, icon = R.drawable.ic_copy, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.text_copy))
+                        }
+                    }
+                    link.received.forEach { Muted(it, Modifier.padding(8.dp)) }
+                }
             }
         }
         Button(close, Modifier.align(Alignment.CenterHorizontally), label = stringResource(R.string.link_stop), kind = ButtonKind.Danger)

@@ -80,7 +80,7 @@
     <string name="link_share">通过链接共享</string>
     <string name="link_receive">通过链接接收</string>
     <string name="link_share_hint">在同一网络的浏览器中打开，即可下载这些文件。</string>
-    <string name="link_receive_hint">在同一网络的浏览器中打开，即可向本设备发送文件。</string>
+    <string name="link_receive_hint">在同一网络的浏览器中打开，即可向本设备发送文件或文本。</string>
     <string name="link_copy">复制链接</string>
     <string name="link_received">已收到</string>
     <string name="link_stop">停止</string>

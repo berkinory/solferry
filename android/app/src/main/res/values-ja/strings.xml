@@ -80,7 +80,7 @@
     <string name="link_share">リンクで共有</string>
     <string name="link_receive">リンクで受信</string>
     <string name="link_share_hint">同じネットワーク上のブラウザで開くと、ファイルをダウンロードできます。</string>
-    <string name="link_receive_hint">同じネットワーク上のブラウザで開くと、このデバイスにファイルを送れます。</string>
+    <string name="link_receive_hint">同じネットワーク上のブラウザで開くと、このデバイスにファイルやテキストを送れます。</string>
     <string name="link_copy">リンクをコピー</string>
     <string name="link_received">受信済み</string>
     <string name="link_stop">停止</string>

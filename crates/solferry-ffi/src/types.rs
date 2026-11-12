@@ -353,6 +353,10 @@ pub enum Update {
         name: String,
         bytes: u64,
     },
+    /// A browser sent text through the receive link.
+    LinkText {
+        text: String,
+    },
 }
 
 impl Update {
@@ -390,6 +394,7 @@ impl Update {
             Event::LinkReceived { name, bytes } => {
                 Self::LinkReceived { name: name.clone(), bytes: *bytes }
             }
+            Event::LinkText { text } => Self::LinkText { text: text.clone() },
             Event::Failed { id, error: Error::Cancelled } => Self::Cancelled { id: id.to_string() },
             Event::Failed { id, error } => {
                 Self::Failed { id: id.to_string(), problem: error.into() }

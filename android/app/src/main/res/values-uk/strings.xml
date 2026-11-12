@@ -86,7 +86,7 @@
     <string name="link_share">Поділитися посиланням</string>
     <string name="link_receive">Отримати за посиланням</string>
     <string name="link_share_hint">Відкрийте його в браузері в тій самій мережі, щоб завантажити файли.</string>
-    <string name="link_receive_hint">Відкрийте його в браузері в тій самій мережі, щоб надіслати сюди файли.</string>
+    <string name="link_receive_hint">Відкрийте його в браузері в тій самій мережі, щоб надіслати сюди файли або текст.</string>
     <string name="link_copy">Копіювати посилання</string>
     <string name="link_received">Отримано</string>
     <string name="link_stop">Зупинити</string>

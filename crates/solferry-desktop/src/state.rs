@@ -35,12 +35,13 @@ pub struct Transfer {
     pub phase: Phase,
 }
 
-/// A link a browser can open. `received` lists what browsers sent through it so far.
+/// A link a browser can open, with the files and texts browsers sent through it so far.
 #[derive(Clone)]
 pub struct LinkView {
     pub urls: Vec<String>,
     pub receiving: bool,
     pub received: Vec<String>,
+    pub texts: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -172,7 +173,8 @@ impl AppState {
             }
             Update::Invite(code) => self.invite = Some(code),
             Update::LinkReady { urls, receiving } => {
-                self.link = Some(LinkView { urls, receiving, received: Vec::new() });
+                self.link =
+                    Some(LinkView { urls, receiving, received: Vec::new(), texts: Vec::new() });
             }
             Update::LinkStopped => self.link = None,
             Update::LinkFailed(error) => {
@@ -275,6 +277,11 @@ impl AppState {
                     link.received.push(name.clone());
                 }
                 self.toast(Tone::Success, t!("toast.link_received", name = name), None);
+            }
+            Event::LinkText { text } => {
+                if let Some(link) = &mut self.link {
+                    link.texts.push(text);
+                }
             }
             Event::Progress { id, transferred, total } => {
                 if let Some(transfer) = self.transfer(id) {

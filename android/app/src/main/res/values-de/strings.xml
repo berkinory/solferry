@@ -82,7 +82,7 @@
     <string name="link_share">Per Link teilen</string>
     <string name="link_receive">Per Link empfangen</string>
     <string name="link_share_hint">Öffne ihn in einem Browser im selben Netzwerk, um die Dateien herunterzuladen.</string>
-    <string name="link_receive_hint">Öffne ihn in einem Browser im selben Netzwerk, um Dateien hierher zu senden.</string>
+    <string name="link_receive_hint">Öffne ihn in einem Browser im selben Netzwerk, um Dateien oder Text hierher zu senden.</string>
     <string name="link_copy">Link kopieren</string>
     <string name="link_received">Empfangen</string>
     <string name="link_stop">Beenden</string>

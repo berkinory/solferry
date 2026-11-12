@@ -86,7 +86,7 @@
     <string name="link_share">Udostępnij przez link</string>
     <string name="link_receive">Odbierz przez link</string>
     <string name="link_share_hint">Otwórz go w przeglądarce w tej samej sieci, aby pobrać pliki.</string>
-    <string name="link_receive_hint">Otwórz go w przeglądarce w tej samej sieci, aby wysłać tu pliki.</string>
+    <string name="link_receive_hint">Otwórz go w przeglądarce w tej samej sieci, aby wysłać tu pliki lub tekst.</string>
     <string name="link_copy">Kopiuj link</string>
     <string name="link_received">Odebrano</string>
     <string name="link_stop">Zatrzymaj</string>

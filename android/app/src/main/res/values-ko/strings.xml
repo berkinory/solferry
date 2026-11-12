@@ -80,7 +80,7 @@
     <string name="link_share">링크로 공유</string>
     <string name="link_receive">링크로 받기</string>
     <string name="link_share_hint">같은 네트워크의 브라우저에서 열면 파일을 다운로드할 수 있어요.</string>
-    <string name="link_receive_hint">같은 네트워크의 브라우저에서 열면 이 기기로 파일을 보낼 수 있어요.</string>
+    <string name="link_receive_hint">같은 네트워크의 브라우저에서 열면 이 기기로 파일이나 텍스트를 보낼 수 있어요.</string>
     <string name="link_copy">링크 복사</string>
     <string name="link_received">받음</string>
     <string name="link_stop">중지</string>
