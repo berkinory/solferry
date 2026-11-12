@@ -193,4 +193,8 @@
     <string name="permissions_off">Kapalı</string>
     <string name="permissions_allow">İzin ver</string>
     <string name="permissions_open_settings">Ayarları aç</string>
+    <string name="appearance_title">Görünüm</string>
+    <string name="appearance_system">Sistem</string>
+    <string name="appearance_light">Açık</string>
+    <string name="appearance_dark">Koyu</string>
 </resources>

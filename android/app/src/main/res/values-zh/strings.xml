@@ -189,4 +189,8 @@
     <string name="permissions_off">已关闭</string>
     <string name="permissions_allow">允许</string>
     <string name="permissions_open_settings">打开设置</string>
+    <string name="appearance_title">外观</string>
+    <string name="appearance_system">跟随系统</string>
+    <string name="appearance_light">浅色</string>
+    <string name="appearance_dark">深色</string>
 </resources>

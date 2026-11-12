@@ -193,4 +193,8 @@
     <string name="permissions_off">Aus</string>
     <string name="permissions_allow">Erlauben</string>
     <string name="permissions_open_settings">Einstellungen öffnen</string>
+    <string name="appearance_title">Erscheinungsbild</string>
+    <string name="appearance_system">System</string>
+    <string name="appearance_light">Hell</string>
+    <string name="appearance_dark">Dunkel</string>
 </resources>

@@ -197,4 +197,8 @@
     <string name="permissions_off">Desativado</string>
     <string name="permissions_allow">Permitir</string>
     <string name="permissions_open_settings">Abrir configurações</string>
+    <string name="appearance_title">Aparência</string>
+    <string name="appearance_system">Sistema</string>
+    <string name="appearance_light">Claro</string>
+    <string name="appearance_dark">Escuro</string>
 </resources>

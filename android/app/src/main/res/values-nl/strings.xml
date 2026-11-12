@@ -193,4 +193,8 @@
     <string name="permissions_off">Uit</string>
     <string name="permissions_allow">Toestaan</string>
     <string name="permissions_open_settings">Instellingen openen</string>
+    <string name="appearance_title">Weergave</string>
+    <string name="appearance_system">Systeem</string>
+    <string name="appearance_light">Licht</string>
+    <string name="appearance_dark">Donker</string>
 </resources>

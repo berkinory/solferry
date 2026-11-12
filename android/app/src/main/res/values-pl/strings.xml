@@ -201,4 +201,8 @@
     <string name="permissions_off">Wyłączone</string>
     <string name="permissions_allow">Zezwól</string>
     <string name="permissions_open_settings">Otwórz ustawienia</string>
+    <string name="appearance_title">Wygląd</string>
+    <string name="appearance_system">Systemowy</string>
+    <string name="appearance_light">Jasny</string>
+    <string name="appearance_dark">Ciemny</string>
 </resources>

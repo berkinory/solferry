@@ -197,4 +197,8 @@
     <string name="permissions_off">Off</string>
     <string name="permissions_allow">Allow</string>
     <string name="permissions_open_settings">Open settings</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_system">System</string>
+    <string name="appearance_light">Light</string>
+    <string name="appearance_dark">Dark</string>
 </resources>

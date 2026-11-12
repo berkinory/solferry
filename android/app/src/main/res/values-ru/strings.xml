@@ -201,4 +201,8 @@
     <string name="permissions_off">Выключено</string>
     <string name="permissions_allow">Разрешить</string>
     <string name="permissions_open_settings">Открыть настройки</string>
+    <string name="appearance_title">Оформление</string>
+    <string name="appearance_system">Как в системе</string>
+    <string name="appearance_light">Светлое</string>
+    <string name="appearance_dark">Тёмное</string>
 </resources>

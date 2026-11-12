@@ -201,4 +201,8 @@
     <string name="permissions_off">כבוי</string>
     <string name="permissions_allow">מתן הרשאה</string>
     <string name="permissions_open_settings">פתיחת ההגדרות</string>
+    <string name="appearance_title">מראה</string>
+    <string name="appearance_system">לפי המערכת</string>
+    <string name="appearance_light">בהיר</string>
+    <string name="appearance_dark">כהה</string>
 </resources>

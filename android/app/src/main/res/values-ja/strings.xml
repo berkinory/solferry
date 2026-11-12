@@ -189,4 +189,8 @@
     <string name="permissions_off">オフ</string>
     <string name="permissions_allow">許可</string>
     <string name="permissions_open_settings">設定を開く</string>
+    <string name="appearance_title">外観</string>
+    <string name="appearance_system">システム</string>
+    <string name="appearance_light">ライト</string>
+    <string name="appearance_dark">ダーク</string>
 </resources>

@@ -65,6 +65,20 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.stri
             }
         }
     }
+    BackgroundCard(state, engine)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) AppearanceCard(engine)
+    me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
+    if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
+    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+        Caption(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), Modifier.weight(1f))
+        Caption(me?.fingerprint.orEmpty())
+    }
+}
+
+/** Receiving while Solferry is closed, in settings and in onboarding. */
+@Composable
+fun BackgroundCard(state: AppState, engine: Engine) =
     Card(R.drawable.ic_download, stringResource(R.string.settings_background_title)) {
         PaddedWell {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
@@ -73,11 +87,3 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.stri
             }
         }
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
-    me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
-    if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
-    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        Caption(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), Modifier.weight(1f))
-        Caption(me?.fingerprint.orEmpty())
-    }
-}

@@ -189,4 +189,8 @@
     <string name="permissions_off">꺼짐</string>
     <string name="permissions_allow">허용</string>
     <string name="permissions_open_settings">설정 열기</string>
+    <string name="appearance_title">화면 모드</string>
+    <string name="appearance_system">시스템</string>
+    <string name="appearance_light">라이트</string>
+    <string name="appearance_dark">다크</string>
 </resources>
