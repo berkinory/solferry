@@ -14,7 +14,7 @@ struct AddDeviceScreen: View {
                     if let invite = state.invite {
                         Invite(code: invite)
                     } else {
-                        Muted("For a device on another network, or when this one can't be found nearby. Show a code here and enter it there.")
+                        Muted("For devices on another network. Show a code here, enter it there.")
                         ActionButton(label: "Show code", glyph: .qr, kind: .primary, wide: true) { engine.bridge.invite() }
                     }
                 }

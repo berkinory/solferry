@@ -49,7 +49,7 @@
     <string name="nearby_searching_hint">Open Solferry op een ander apparaat op dit netwerk en het verschijnt hier.</string>
     <string name="nearby_scanning">Zoeken naar nieuwe apparaten op dit netwerk</string>
     <string name="browser_title">Geen app op het andere apparaat</string>
-    <string name="browser_body">Een browser op hetzelfde netwerk kan je bestanden sturen. Zelf bestanden naar een browser sturen? Selecteer ze en kies Delen via link.</string>
+    <string name="browser_body">Een browser op je netwerk kan je bestanden of tekst sturen.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Inkomende bestanden</string>
@@ -96,7 +96,7 @@
     <string name="pair_compare_hint">Controleer of het andere apparaat deze code toont en accepteer het verzoek daar.</string>
     <string name="pair_code_title">Koppelen met een code</string>
     <string name="pair_show_title">Code tonen</string>
-    <string name="pair_show_hint">Voor een apparaat op een ander netwerk, of als het niet in de buurt verschijnt. Toon hier een code en voer die daar in.</string>
+    <string name="pair_show_hint">Voor apparaten op een ander netwerk. Toon hier een code en voer die daar in.</string>
     <string name="pair_show_code">Code tonen</string>
     <string name="pair_invite_expiry">Eenmalig te gebruiken, 10 minuten geldig.</string>
     <string name="pair_copy_code">Code kopiëren</string>
@@ -128,7 +128,7 @@
     <string name="settings_find_on">Apparaten op je netwerk kunnen dit apparaat zien en vragen om iets te sturen.</string>
     <string name="settings_find_off">Nieuwe apparaten kunnen dit apparaat niet vinden. Gekoppelde apparaten bereiken het nog wel.</string>
     <string name="settings_background_title">Ontvangen op de achtergrond</string>
-    <string name="settings_background_body">Blijf bereikbaar als Solferry gesloten is. Toont een melding en gebruikt meer batterij.</string>
+    <string name="settings_background_body">Ontvang terwijl Solferry gesloten is. Toont een melding, gebruikt meer batterij.</string>
     <string name="language_title">Taal</string>
     <string name="language_system">Systeemstandaard</string>
     <string name="settings_version">Solferry %1$s</string>
@@ -186,4 +186,15 @@
     <string name="notify_text_open">Open Solferry om het te kopiëren</string>
     <string name="notify_received_title">Bestanden ontvangen</string>
     <string name="notify_received_body">%1$s van %2$s, in %3$s</string>
+    <string name="permissions_title">Toestemmingen</string>
+    <string name="permissions_notifications">Meldingen</string>
+    <string name="permissions_notifications_detail">Voor binnenkomende bestanden, teksten en koppelverzoeken.</string>
+    <string name="permissions_allowed">Toegestaan</string>
+    <string name="permissions_off">Uit</string>
+    <string name="permissions_allow">Toestaan</string>
+    <string name="permissions_open_settings">Instellingen openen</string>
+    <string name="appearance_title">Weergave</string>
+    <string name="appearance_system">Systeem</string>
+    <string name="appearance_light">Licht</string>
+    <string name="appearance_dark">Donker</string>
 </resources>

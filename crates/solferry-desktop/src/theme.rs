@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 
-use gpui_kit::component::{ActiveTheme, Theme, ThemeRegistry};
-use gpui_kit::{App, Hsla, Rgba, rgb};
+use gpui_kit::component::{ActiveTheme, Theme, ThemeMode, ThemeRegistry};
+use gpui_kit::{App, Hsla, Rgba, Window, rgb};
+use solferry_core::Appearance;
 
 use crate::tokens::{DARK, LIGHT, Palette};
 
@@ -22,6 +23,15 @@ pub fn install(cx: &mut App) {
     let theme = Theme::global_mut(cx);
     theme.light_theme = light.expect("theme.json defines the light theme");
     theme.dark_theme = dark.expect("theme.json defines the dark theme");
+}
+
+/// Draws the app light or dark, or as the system does now.
+pub fn apply(appearance: Appearance, window: &mut Window, cx: &mut App) {
+    match appearance {
+        Appearance::System => Theme::sync_system_appearance(Some(window), cx),
+        Appearance::Light => Theme::change(ThemeMode::Light, Some(window), cx),
+        Appearance::Dark => Theme::change(ThemeMode::Dark, Some(window), cx),
+    }
 }
 
 pub fn palette(cx: &App) -> &'static Palette {

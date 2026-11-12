@@ -99,7 +99,7 @@ link:
   share_title: "שיתוף בקישור"
   no_app:
     title: "אין אפליקציה במכשיר השני"
-    body: "דפדפן באותה רשת יכול לשלוח לך קבצים. כדי לשלוח קבצים לדפדפן, בוחרים אותם ואז שיתוף בקישור."
+    body: "דפדפן ברשת שלך יכול לשלוח לך קבצים או טקסט."
     receive: "קבלה בקישור"
 history:
   title: "היסטוריה"
@@ -138,7 +138,7 @@ pairing:
   pairing: "מתבצע צימוד..."
   address_title: "הזנת כתובת IP"
   own_addresses: "הכתובת של המכשיר הזה: %{addresses}."
-  invite_hint: "למכשיר ברשת אחרת, או כשהוא לא מופיע בקרבת מקום. מציגים קוד כאן ומזינים אותו שם."
+  invite_hint: "למכשירים ברשת אחרת. מציגים קוד כאן ומזינים אותו שם."
   invite: "הצגת קוד"
   copy: "העתקת הקוד"
   copied: "הועתק"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "מכשירים בקרבת מקום יראו את השם הזה."
   start: "קדימה, מתחילים"
 settings:
+  appearance:
+    title: "מראה"
+    system: "לפי המערכת"
+    light: "בהיר"
+    dark: "כהה"
   starting: "בהפעלה..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "לא ניתן לבדוק אם יש עדכונים"
   restart: "הפעלה מחדש"
   download: "הורדה"
+permissions:
+  title: "הרשאות"
+  notifications:
+    title: "התראות"
+    detail: "לקבצים, טקסטים ובקשות התאמה נכנסים."
+  local_network:
+    title: "רשת מקומית"
+    detail: "מוצאת את המכשירים שלך ושולחת אליהם ישירות."
+  firewall:
+    title: "חומת אש"
+    detail: "צריך לאשר רשתות פרטיות כדי שמכשירים בקרבת מקום יוכלו להגיע למכשיר הזה."
+  allowed: "מאושר"
+  off: "כבוי"
+  not_asked: "עוד לא נשאל"
+  allow: "מתן הרשאה"
+  open_settings: "פתיחת ההגדרות"

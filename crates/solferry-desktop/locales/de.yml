@@ -99,7 +99,7 @@ link:
   share_title: "Per Link teilen"
   no_app:
     title: "Keine App auf dem anderen Gerät?"
-    body: "Ein Browser im selben Netzwerk kann dir Dateien senden. Um Dateien an einen Browser zu senden, wähle sie aus und dann „Per Link teilen“."
+    body: "Ein Browser in deinem Netzwerk kann dir Dateien oder Text senden."
     receive: "Per Link empfangen"
 history:
   title: "Verlauf"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Wird gekoppelt..."
   address_title: "IP-Adresse eingeben"
   own_addresses: "Dieses Gerät ist unter %{addresses} erreichbar."
-  invite_hint: "Für Geräte in einem anderen Netzwerk oder wenn sie in der Nähe nicht auftauchen. Zeige hier einen Code an und gib ihn auf dem anderen Gerät ein."
+  invite_hint: "Für Geräte in einem anderen Netzwerk. Zeig hier einen Code und gib ihn dort ein."
   invite: "Code anzeigen"
   copy: "Code kopieren"
   copied: "Kopiert"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Geräte in der Nähe sehen diesen Namen."
   start: "Los geht's"
 settings:
+  appearance:
+    title: "Erscheinungsbild"
+    system: "System"
+    light: "Hell"
+    dark: "Dunkel"
   starting: "Wird gestartet..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "Suche nach Updates fehlgeschlagen"
   restart: "Neu starten"
   download: "Herunterladen"
+permissions:
+  title: "Berechtigungen"
+  notifications:
+    title: "Mitteilungen"
+    detail: "Für eingehende Dateien, Texte und Kopplungsanfragen."
+  local_network:
+    title: "Lokales Netzwerk"
+    detail: "Findet deine Geräte und sendet direkt an sie."
+  firewall:
+    title: "Firewall"
+    detail: "Erlaube private Netzwerke, damit Geräte in der Nähe dieses erreichen."
+  allowed: "Erlaubt"
+  off: "Aus"
+  not_asked: "Noch nicht gefragt"
+  allow: "Erlauben"
+  open_settings: "Einstellungen öffnen"

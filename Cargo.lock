@@ -8259,10 +8259,14 @@ name = "solferry-desktop"
 version = "0.0.2"
 dependencies = [
  "auto-launch",
+ "block2 0.6.2",
  "futures",
  "gpui-kit",
  "iroh",
  "ksni",
+ "objc2 0.6.5",
+ "objc2-foundation 0.3.2",
+ "objc2-user-notifications",
  "qrcode",
  "rust-i18n",
  "solferry-core",
@@ -8272,6 +8276,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tray-icon",
+ "windows 0.62.2",
  "winresource",
 ]
 

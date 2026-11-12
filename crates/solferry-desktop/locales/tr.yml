@@ -99,7 +99,7 @@ link:
   share_title: "Bağlantıyla paylaş"
   no_app:
     title: "Diğer cihazda uygulama yok mu?"
-    body: "Aynı ağdaki bir tarayıcı da sana dosya gönderebilir. Tarayıcıya dosya göndermek içinse dosyaları seçip “Bağlantıyla paylaş” seçeneğini kullan."
+    body: "Ağındaki bir tarayıcı sana dosya ya da metin gönderebilir."
     receive: "Bağlantıyla al"
 history:
   title: "Geçmiş"
@@ -138,7 +138,7 @@ pairing:
   pairing: "Eşleştiriliyor..."
   address_title: "IP adresi gir"
   own_addresses: "Bu cihazın adresi: %{addresses}."
-  invite_hint: "Cihaz başka bir ağdaysa ya da yakında görünmüyorsa bunu kullan. Kodu burada göster, diğer cihazda gir."
+  invite_hint: "Başka ağdaki cihazlar için. Kodu burada göster, orada gir."
   invite: "Kodu göster"
   copy: "Kodu kopyala"
   copied: "Kopyalandı"
@@ -168,6 +168,11 @@ onboarding:
   name_hint: "Yakındaki cihazlar bu adı görür."
   start: "Başla"
 settings:
+  appearance:
+    title: "Görünüm"
+    system: "Sistem"
+    light: "Açık"
+    dark: "Koyu"
   starting: "Başlatılıyor..."
   version: "Solferry %{version}"
   device:
@@ -222,3 +227,19 @@ updates:
   failed: "Güncellemeler kontrol edilemedi"
   restart: "Yeniden başlat"
   download: "İndir"
+permissions:
+  title: "İzinler"
+  notifications:
+    title: "Bildirimler"
+    detail: "Gelen dosyalar, metinler ve eşleşme istekleri için."
+  local_network:
+    title: "Yerel ağ"
+    detail: "Cihazlarını bulup onlara doğrudan gönderir."
+  firewall:
+    title: "Güvenlik duvarı"
+    detail: "Yakındaki cihazlar ulaşabilsin diye özel ağlara izin ver."
+  allowed: "İzin verildi"
+  off: "Kapalı"
+  not_asked: "Henüz sorulmadı"
+  allow: "İzin ver"
+  open_settings: "Ayarları aç"

@@ -4,6 +4,11 @@ mod assets;
 mod format;
 mod instance;
 mod login;
+#[cfg_attr(
+    not(any(target_os = "macos", windows)),
+    allow(dead_code, reason = "Linux asks for no permissions")
+)]
+mod permissions;
 mod qr;
 mod service;
 mod shell;
