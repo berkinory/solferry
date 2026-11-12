@@ -1,6 +1,7 @@
 mod args;
 mod commands;
 mod explain;
+mod help;
 
 use std::process::ExitCode;
 
