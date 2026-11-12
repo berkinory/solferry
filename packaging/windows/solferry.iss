@@ -36,7 +36,7 @@ Source: "{#Release}\solferry-desktop.exe"; DestDir: "{app}"; DestName: "Solferry
 Source: "{#Release}\solferry.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Solferry"; Filename: "{app}\Solferry.exe"
+Name: "{group}\Solferry"; Filename: "{app}\Solferry.exe"; AppUserModelID: "app.solferry.desktop"
 Name: "{userdesktop}\Solferry"; Filename: "{app}\Solferry.exe"; Tasks: desktopicon
 
 [Run]
