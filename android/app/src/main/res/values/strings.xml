@@ -115,6 +115,13 @@
     <string name="history_empty_body">Files you send or receive show up here.</string>
     <string name="history_failed">Failed</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to Solferry</string>
+    <string name="onboarding_body">Send files between your devices. No account, nothing in the cloud.</string>
+    <string name="onboarding_name_title">Your device\'s name</string>
+    <string name="onboarding_name_hint">Nearby devices see this name.</string>
+    <string name="onboarding_start">Get started</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_name_title">Device name</string>

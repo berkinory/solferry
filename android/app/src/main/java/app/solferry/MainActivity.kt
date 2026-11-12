@@ -45,6 +45,7 @@ import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
 import app.solferry.ui.LinkSheet
 import app.solferry.ui.LocalToaster
+import app.solferry.ui.OnboardingScreen
 import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
@@ -107,10 +108,15 @@ class MainActivity : ComponentActivity() {
                 val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), picked)
                 val media = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(), picked)
                 val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-                LaunchedEffect(Unit) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                var onboarded by remember { mutableStateOf(engine.onboarded) }
+                LaunchedEffect(onboarded) {
+                    if (onboarded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
+                }
+                if (!onboarded) {
+                    OnboardingScreen(state, engine) { onboarded = true }
+                    return@SolferryTheme
                 }
                 LaunchedEffect(state.pairedCount) {
                     if (state.pairedCount > 0 && shared.isEmpty()) {
