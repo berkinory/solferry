@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Skicka</string>
+    <string name="common_cancel">Avbryt</string>
+    <string name="common_dismiss">Stäng</string>
+    <string name="common_decline">Neka</string>
+    <string name="common_paste">Klistra in</string>
+    <string name="common_copied">Kopierad</string>
+    <string name="common_pair">Parkoppla</string>
+    <string name="common_pairing">Parkopplar</string>
+    <string name="common_remove">Ta bort %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">Online</string>
+    <string name="device_offline">Offline</string>
+    <string name="device_paired">Parkopplad</string>
+    <string name="device_not_paired">Inte parkopplad</string>
+    <string name="device_unnamed">Namnlös enhet</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Överför</string>
+    <string name="tab_history">Historik</string>
+    <string name="tab_settings">Inställningar</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">nyss</string>
+    <string name="ago_minutes">%1$d min sedan</string>
+    <string name="ago_hours">%1$d tim sedan</string>
+    <string name="ago_yesterday">i går</string>
+    <string name="ago_days">%1$d d sedan</string>
+    <string name="ago_months">%1$d mån sedan</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Skicka filer</string>
+    <string name="home_send_hint">Tryck för att välja vad du vill skicka</string>
+    <string name="devices_title">Enheter</string>
+    <string name="devices_send_text">Skicka text till %1$s</string>
+    <string name="devices_options">Alternativ för %1$s</string>
+    <string name="devices_auto_accept">Ta emot utan att fråga</string>
+    <string name="devices_last_transfer">Senaste överföring</string>
+    <string name="devices_forget">Glöm</string>
+    <string name="devices_forget_title">Glömma %1$s?</string>
+    <string name="devices_forget_body">Den blir en oparkopplad enhet igen tills du parkopplar på nytt.</string>
+    <string name="nearby_title">I närheten</string>
+    <string name="nearby_use_code">Använd en kod</string>
+    <string name="nearby_searching">Letar efter enheter</string>
+    <string name="nearby_searching_hint">Öppna Solferry på en annan enhet i det här nätverket så dyker den upp här.</string>
+    <string name="nearby_scanning">Letar efter nya enheter i det här nätverket</string>
+    <string name="browser_title">Ingen app på den andra enheten</string>
+    <string name="browser_body">En webbläsare i samma nätverk kan skicka filer till dig. För att skicka filer till en webbläsare väljer du dem och sedan Dela via länk.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Inkommande filer</string>
+    <string name="offer_wants_to_send">%1$s vill skicka</string>
+    <plurals name="offer_files">
+        <item quantity="one">%d fil</item>
+        <item quantity="other">%d filer</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Godkänn</string>
+    <string name="offer_always_accept">Godkänn alltid</string>
+    <string name="offer_block">Blockera</string>
+    <string name="offer_block_title">Blockera %1$s?</string>
+    <string name="offer_block_body">Den kan inte skicka filer eller be om parkoppling. Du kan häva blockeringen senare.</string>
+    <string name="text_from">Text från %1$s</string>
+    <string name="text_copy">Kopiera</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="one">Skicka till %d enhet</item>
+        <item quantity="other">Skicka till %d enheter</item>
+    </plurals>
+    <string name="send_source_media">Foton och videor</string>
+    <string name="send_source_files">Filer</string>
+    <string name="send_text_title">Skicka text</string>
+    <string name="send_text_to">Till %1$s</string>
+    <string name="send_text_placeholder">Skriv eller klistra in text</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Dela via länk</string>
+    <string name="link_receive">Ta emot via länk</string>
+    <string name="link_share_hint">Öppna den i en webbläsare i samma nätverk för att ladda ned filerna.</string>
+    <string name="link_receive_hint">Öppna den i en webbläsare i samma nätverk för att skicka filer hit.</string>
+    <string name="link_copy">Kopiera länk</string>
+    <string name="link_received">Mottaget</string>
+    <string name="link_stop">Stoppa</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Begäran om parkoppling</string>
+    <string name="pair_request_wants">%1$s vill parkoppla</string>
+    <string name="pair_request_hint">Bekräfta bara om den andra skärmen visar samma kod.</string>
+    <string name="pair_confirm">Bekräfta</string>
+    <string name="pair_compare_title">Jämför koder</string>
+    <string name="pair_compare_hint">Kontrollera att den andra enheten visar den här koden och godkänn sedan där.</string>
+    <string name="pair_code_title">Parkoppla med en kod</string>
+    <string name="pair_show_title">Visa en kod</string>
+    <string name="pair_show_hint">För en enhet i ett annat nätverk, eller när den här inte hittas i närheten. Visa en kod här och ange den där.</string>
+    <string name="pair_show_code">Visa kod</string>
+    <string name="pair_invite_expiry">Fungerar en gång, i 10 minuter.</string>
+    <string name="pair_copy_code">Kopiera kod</string>
+    <string name="pair_enter_title">Ange en kod</string>
+    <string name="pair_enter_placeholder">Klistra in en sf1-kod</string>
+    <string name="pair_address_title">Ange en IP-adress</string>
+    <string name="pair_own_address">Den här enheten har adressen %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Historik</string>
+    <string name="history_clear">Rensa</string>
+    <string name="history_empty_title">Inga överföringar än</string>
+    <string name="history_empty_body">Filer du skickar eller tar emot visas här.</string>
+    <string name="history_failed">Misslyckades</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Välkommen till Solferry</string>
+    <string name="onboarding_body">Skicka filer mellan dina enheter. Inget konto, inget i molnet.</string>
+    <string name="onboarding_name_title">Din enhets namn</string>
+    <string name="onboarding_name_hint">Enheter i närheten ser det här namnet.</string>
+    <string name="onboarding_start">Kom igång</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Inställningar</string>
+    <string name="settings_name_title">Enhetsnamn</string>
+    <string name="settings_name_placeholder">Namn</string>
+    <string name="settings_save">Spara</string>
+    <string name="settings_find_title">Låt andra hitta mig</string>
+    <string name="settings_find_on">Enheter i ditt nätverk kan se den här och be om att skicka.</string>
+    <string name="settings_find_off">Ingen ny kan hitta den här enheten. Parkopplade enheter når den fortfarande.</string>
+    <string name="settings_background_title">Ta emot i bakgrunden</string>
+    <string name="settings_background_body">Förbli nåbar när Solferry är stängt. Visar en notis och drar mer batteri.</string>
+    <string name="language_title">Språk</string>
+    <string name="language_system">Systemstandard</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Relä</string>
+    <string name="relay_guide">Installationsguide</string>
+    <string name="relay_body">Nå enheter i andra nätverk via ett relä som du kör själv.</string>
+    <string name="relay_add">Lägg till</string>
+    <string name="relay_checking">Kontrollerar</string>
+    <string name="relay_connected">Ansluten</string>
+    <string name="relay_udp_blocked">Ansluten, UDP 7842 är blockerad</string>
+    <string name="relay_refused">Nekades, kontrollera länken</string>
+    <string name="relay_unreachable">Kan inte nå servern</string>
+    <string name="folder_title">Spara filer i</string>
+    <string name="folder_downloads">Nedladdningar/Solferry</string>
+    <string name="folder_reset">Återställ</string>
+    <string name="folder_change">Ändra</string>
+    <string name="updates_title">Uppdateringar</string>
+    <string name="updates_auto">Sök efter uppdateringar automatiskt</string>
+    <string name="updates_available">Solferry %1$s finns tillgänglig</string>
+    <string name="updates_download">Ladda ned</string>
+    <string name="blocked_title">Blockerade</string>
+    <string name="blocked_unblock">Häv blockering</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Väntar på %1$s</string>
+    <string name="transfer_reconnecting">Återansluter till %1$s</string>
+    <string name="transfer_sending">Skickar %1$s</string>
+    <string name="transfer_receiving">Tar emot %1$s</string>
+    <string name="transfer_sent">Skickade %1$s</string>
+    <string name="transfer_received">Tog emot %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d överföring</item>
+        <item quantity="other">%d överföringar</item>
+    </plurals>
+    <string name="toast_paired">Parkopplad med %1$s</string>
+    <string name="error_save_failed">%1$s: Kunde inte spara i %2$s</string>
+    <string name="error_save_downloads">Nedladdningar</string>
+    <string name="error_save_recovered">Mottagna filer</string>
+    <string name="error_folder_unusable">Kunde inte använda den mappen</string>
+    <string name="error_folder_lost">Förlorade åtkomst till %1$s, sparar i %2$s</string>
+    <string name="error_open_file">Kunde inte öppna filen, försök dela den igen</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Förfrågningar och ankomster</string>
+    <string name="channel_transfers">Pågående överföringar</string>
+    <string name="channel_standby">Tar emot i bakgrunden</string>
+    <plurals name="notify_progress">
+        <item quantity="one">%d överföring pågår</item>
+        <item quantity="other">%d överföringar pågår</item>
+    </plurals>
+    <string name="notify_standby">Redo att ta emot</string>
+    <string name="notify_offer_body">%1$s vill skicka filer till dig</string>
+    <string name="notify_pairing_body">%1$s vill parkoppla med den här enheten</string>
+    <string name="notify_text_copied">Kopierad till urklipp</string>
+    <string name="notify_text_open">Öppna Solferry för att kopiera den</string>
+    <string name="notify_received_title">Filer mottagna</string>
+    <string name="notify_received_body">%1$s från %2$s, i %3$s</string>
+</resources>

@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Thiết bị chưa đặt tên"
+transfer:
+  and_more: "%{first} và các tệp khác"
+about:
+  unreachable: "Không kết nối được với %{name}"
+  declined: "%{name} đã từ chối"
+  busy: "%{name} đang bận"
+  not_paired: "Hãy ghép nối với %{name} trước"
+explain:
+  storage:
+    title: "Không đọc hoặc ghi được tệp"
+    next: "Kiểm tra thư mục, quyền truy cập và dung lượng trống."
+  corrupt_data:
+    title: "Cài đặt của Solferry bị hỏng"
+    next: "Xóa tệp bị hỏng trong thư mục dữ liệu của Solferry. Có thể bạn sẽ phải ghép nối lại các thiết bị."
+  network_start:
+    title: "Không khởi động được mạng"
+    next: "Khởi động lại Solferry để thử lại."
+  invalid_relay_url:
+    title: "Địa chỉ relay không hợp lệ"
+    next: "Dán toàn bộ liên kết mà relay của bạn hiển thị, ví dụ https://relay.example.com#token."
+  unreachable:
+    title: "Không kết nối được với thiết bị"
+    next: "Mở Solferry trên thiết bị đó. Nếu ở mạng khác, hãy dùng Tailscale hoặc thêm relay của riêng bạn."
+  relay_check_failed:
+    title: "Một relay không hoạt động"
+    next: "Xem trạng thái của relay trong Cài đặt."
+  not_paired:
+    title: "Hãy ghép nối với thiết bị này trước"
+    next: "Chỉ thiết bị đã ghép nối mới kết nối được với nó từ đây."
+  version_mismatch:
+    title: "Phiên bản Solferry không khớp"
+    next: "Cập nhật Solferry trên cả hai thiết bị."
+  busy:
+    title: "Thiết bị kia đang bận"
+    next: "Chờ các lượt truyền của nó hoàn tất rồi thử lại."
+  cancelled:
+    title: "Đã hủy truyền"
+    next: "Gửi lại để tiếp tục từ chỗ đã dừng."
+  declined:
+    title: "Đã từ chối nhận"
+    next: "Người bên kia đã từ chối."
+  no_space:
+    title: "Không đủ dung lượng"
+    next: "Giải phóng dung lượng trên thiết bị nhận rồi thử lại."
+  delivery_failed:
+    title: "Không lưu được các tệp"
+    next: "Kiểm tra thư mục tải về trên thiết bị nhận."
+  invalid_offer:
+    title: "Đã chặn lượt truyền không an toàn"
+    next: "Thiết bị kia gửi các tệp mà Solferry không thể nhận."
+  source_changed:
+    title: "Một tệp đã thay đổi khi đang gửi"
+    next: "Chờ tệp ngừng thay đổi rồi thử lại."
+  unsupported_name:
+    title: "Không gửi được tệp vì tên tệp"
+    next: "Đổi tên tệp rồi thử lại."
+  nothing_to_send:
+    title: "Không có gì để gửi"
+    next: "Chọn ít nhất một tệp. Lối tắt và liên kết sẽ bị bỏ qua."
+  hash_mismatch:
+    title: "Đã phát hiện dữ liệu bị hỏng"
+    next: "Bản bị lỗi đã bị loại bỏ. Hãy gửi lại."
+  connection_lost:
+    title: "Mất kết nối"
+    next: "Thử lại. Lượt truyền sẽ tiếp tục từ chỗ đã dừng."
+  invalid_ticket:
+    title: "Mã không hợp lệ"
+    next: "Dán toàn bộ mã, bắt đầu bằng sf1."
+  ticket_expired:
+    title: "Mã đã hết hạn"
+    next: "Mã chỉ dùng được trong 10 phút. Hãy tạo mã mới."
+  update:
+    title: "Không cập nhật được Solferry"
+    next: "Thử lại sau hoặc tải về từ GitHub."
+  own_ticket:
+    title: "Đây là mã của chính thiết bị này"
+    next: "Hãy nhập mã trên thiết bị kia."
+  no_local_network:
+    title: "Không ở trong mạng cục bộ"
+    next: "Kết nối Wi-Fi hoặc điểm phát sóng rồi chia sẻ lại."
+  pairing_refused:
+    title: "Yêu cầu ghép nối bị từ chối"
+    next: "Nhờ họ chấp nhận, hoặc tạo mã mới."
+  unknown_device:
+    title: "Không tìm thấy thiết bị"
+    next: "Có thể thiết bị đã bị xóa."
+  ambiguous_device:
+    title: "Có nhiều thiết bị trùng khớp"
+    next: "Chọn thiết bị trong danh sách."
+  invalid_address:
+    title: "Địa chỉ không hợp lệ"
+    next: "Nhập địa chỉ IP, ví dụ 192.168.1.20."
+  no_answer:
+    title: "Không có phản hồi từ địa chỉ đó"
+    next: "Mở Solferry trên thiết bị đó và kiểm tra rằng nó đang hiển thị với mọi người."
+  protocol:
+    title: "Solferry gặp sự cố"
+    next: "Đây là lỗi phần mềm. Vui lòng báo lỗi kèm thông tin chi tiết."

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Trimite</string>
+    <string name="common_cancel">Anulează</string>
+    <string name="common_dismiss">Închide</string>
+    <string name="common_decline">Refuză</string>
+    <string name="common_paste">Lipește</string>
+    <string name="common_copied">Copiat</string>
+    <string name="common_pair">Asociază</string>
+    <string name="common_pairing">Se asociază</string>
+    <string name="common_remove">Elimină %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">Online</string>
+    <string name="device_offline">Offline</string>
+    <string name="device_paired">Asociat</string>
+    <string name="device_not_paired">Neasociat</string>
+    <string name="device_unnamed">Dispozitiv fără nume</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Transfer</string>
+    <string name="tab_history">Istoric</string>
+    <string name="tab_settings">Setări</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">chiar acum</string>
+    <string name="ago_minutes">acum %1$d min</string>
+    <string name="ago_hours">acum %1$d h</string>
+    <string name="ago_yesterday">ieri</string>
+    <string name="ago_days">acum %1$d z</string>
+    <string name="ago_months">acum %1$d lun.</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Trimite fișiere</string>
+    <string name="home_send_hint">Atingeți pentru a alege ce trimiteți</string>
+    <string name="devices_title">Dispozitive</string>
+    <string name="devices_send_text">Trimite text către %1$s</string>
+    <string name="devices_options">Opțiuni pentru %1$s</string>
+    <string name="devices_auto_accept">Primește fără să întrebe</string>
+    <string name="devices_last_transfer">Ultimul transfer</string>
+    <string name="devices_forget">Uită</string>
+    <string name="devices_forget_title">Uitați %1$s?</string>
+    <string name="devices_forget_body">Va redeveni un dispozitiv neasociat până când îl asociați din nou.</string>
+    <string name="nearby_title">În apropiere</string>
+    <string name="nearby_use_code">Folosește un cod</string>
+    <string name="nearby_searching">Se caută dispozitive</string>
+    <string name="nearby_searching_hint">Deschideți Solferry pe alt dispozitiv din această rețea și va apărea aici.</string>
+    <string name="nearby_scanning">Se caută dispozitive noi în această rețea</string>
+    <string name="browser_title">Aplicația nu e pe celălalt dispozitiv</string>
+    <string name="browser_body">Un browser din aceeași rețea vă poate trimite fișiere. Ca să trimiteți fișiere unui browser, selectați-le și alegeți Distribuie prin link.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Fișiere primite</string>
+    <string name="offer_wants_to_send">%1$s vrea să trimită</string>
+    <plurals name="offer_files">
+        <item quantity="one">%d fișier</item>
+        <item quantity="few">%d fișiere</item>
+        <item quantity="other">%d de fișiere</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Acceptă</string>
+    <string name="offer_always_accept">Acceptă mereu</string>
+    <string name="offer_block">Blochează</string>
+    <string name="offer_block_title">Blocați %1$s?</string>
+    <string name="offer_block_body">Nu va putea trimite fișiere sau cere asocierea. Îl puteți debloca mai târziu.</string>
+    <string name="text_from">Text de la %1$s</string>
+    <string name="text_copy">Copiază</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="one">Trimite la %d dispozitiv</item>
+        <item quantity="few">Trimite la %d dispozitive</item>
+        <item quantity="other">Trimite la %d de dispozitive</item>
+    </plurals>
+    <string name="send_source_media">Fotografii și videoclipuri</string>
+    <string name="send_source_files">Fișiere</string>
+    <string name="send_text_title">Trimite text</string>
+    <string name="send_text_to">Către %1$s</string>
+    <string name="send_text_placeholder">Scrieți sau lipiți text</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Distribuie prin link</string>
+    <string name="link_receive">Primește prin link</string>
+    <string name="link_share_hint">Deschideți-l într-un browser din aceeași rețea pentru a descărca fișierele.</string>
+    <string name="link_receive_hint">Deschideți-l într-un browser din aceeași rețea pentru a trimite fișiere aici.</string>
+    <string name="link_copy">Copiază linkul</string>
+    <string name="link_received">Primit</string>
+    <string name="link_stop">Oprește</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Cerere de asociere</string>
+    <string name="pair_request_wants">%1$s vrea să se asocieze</string>
+    <string name="pair_request_hint">Confirmați doar dacă celălalt ecran afișează același cod.</string>
+    <string name="pair_confirm">Confirmă</string>
+    <string name="pair_compare_title">Comparați codurile</string>
+    <string name="pair_compare_hint">Verificați că celălalt dispozitiv afișează acest cod, apoi acceptați acolo.</string>
+    <string name="pair_code_title">Asociere cu un cod</string>
+    <string name="pair_show_title">Afișează un cod</string>
+    <string name="pair_show_hint">Pentru un dispozitiv din altă rețea sau când acesta nu poate fi găsit în apropiere. Afișați un cod aici și introduceți-l acolo.</string>
+    <string name="pair_show_code">Afișează codul</string>
+    <string name="pair_invite_expiry">Funcționează o dată, timp de 10 minute.</string>
+    <string name="pair_copy_code">Copiază codul</string>
+    <string name="pair_enter_title">Introduceți un cod</string>
+    <string name="pair_enter_placeholder">Lipiți un cod sf1</string>
+    <string name="pair_address_title">Introduceți o adresă IP</string>
+    <string name="pair_own_address">Adresa acestui dispozitiv: %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Istoric</string>
+    <string name="history_clear">Șterge</string>
+    <string name="history_empty_title">Niciun transfer încă</string>
+    <string name="history_empty_body">Fișierele pe care le trimiteți sau le primiți apar aici.</string>
+    <string name="history_failed">Eșuat</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Bun venit în Solferry</string>
+    <string name="onboarding_body">Trimiteți fișiere între dispozitivele dvs. Fără cont, nimic în cloud.</string>
+    <string name="onboarding_name_title">Numele dispozitivului</string>
+    <string name="onboarding_name_hint">Dispozitivele din apropiere văd acest nume.</string>
+    <string name="onboarding_start">Să începem</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Setări</string>
+    <string name="settings_name_title">Numele dispozitivului</string>
+    <string name="settings_name_placeholder">Nume</string>
+    <string name="settings_save">Salvează</string>
+    <string name="settings_find_title">Vizibil pentru alții</string>
+    <string name="settings_find_on">Dispozitivele din rețeaua dvs. îl pot vedea și pot cere să trimită.</string>
+    <string name="settings_find_off">Nimeni nou nu poate găsi acest dispozitiv. Dispozitivele asociate îl pot accesa în continuare.</string>
+    <string name="settings_background_title">Primește în fundal</string>
+    <string name="settings_background_body">Rămâne accesibil când Solferry e închis. Afișează o notificare și consumă mai multă baterie.</string>
+    <string name="language_title">Limbă</string>
+    <string name="language_system">Implicit de sistem</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Releu</string>
+    <string name="relay_guide">Ghid de configurare</string>
+    <string name="relay_body">Accesați dispozitive din alte rețele printr-un releu administrat de dvs.</string>
+    <string name="relay_add">Adaugă</string>
+    <string name="relay_checking">Se verifică</string>
+    <string name="relay_connected">Conectat</string>
+    <string name="relay_udp_blocked">Conectat, UDP 7842 este blocat</string>
+    <string name="relay_refused">Refuzat, verificați linkul</string>
+    <string name="relay_unreachable">Serverul nu poate fi accesat</string>
+    <string name="folder_title">Salvează fișierele în</string>
+    <string name="folder_downloads">Descărcări/Solferry</string>
+    <string name="folder_reset">Resetează</string>
+    <string name="folder_change">Schimbă</string>
+    <string name="updates_title">Actualizări</string>
+    <string name="updates_auto">Caută automat actualizări</string>
+    <string name="updates_available">Solferry %1$s este disponibil</string>
+    <string name="updates_download">Descarcă</string>
+    <string name="blocked_title">Blocate</string>
+    <string name="blocked_unblock">Deblochează</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Se așteaptă %1$s</string>
+    <string name="transfer_reconnecting">Se reconectează la %1$s</string>
+    <string name="transfer_sending">Se trimite %1$s</string>
+    <string name="transfer_receiving">Se primește %1$s</string>
+    <string name="transfer_sent">S-a trimis %1$s</string>
+    <string name="transfer_received">S-a primit %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d transfer</item>
+        <item quantity="few">%d transferuri</item>
+        <item quantity="other">%d de transferuri</item>
+    </plurals>
+    <string name="toast_paired">Asociat cu %1$s</string>
+    <string name="error_save_failed">%1$s: Nu s-a putut salva în %2$s</string>
+    <string name="error_save_downloads">Descărcări</string>
+    <string name="error_save_recovered">Fișiere primite</string>
+    <string name="error_folder_unusable">Dosarul nu poate fi folosit</string>
+    <string name="error_folder_lost">Acces pierdut la %1$s, se salvează în %2$s</string>
+    <string name="error_open_file">Fișierul nu a putut fi deschis, încercați să-l distribuiți din nou</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Cereri și fișiere sosite</string>
+    <string name="channel_transfers">Transferuri în curs</string>
+    <string name="channel_standby">Primire în fundal</string>
+    <plurals name="notify_progress">
+        <item quantity="one">%d transfer în curs</item>
+        <item quantity="few">%d transferuri în curs</item>
+        <item quantity="other">%d de transferuri în curs</item>
+    </plurals>
+    <string name="notify_standby">Gata de primire</string>
+    <string name="notify_offer_body">%1$s vrea să vă trimită fișiere</string>
+    <string name="notify_pairing_body">%1$s vrea să se asocieze cu acest dispozitiv</string>
+    <string name="notify_text_copied">Copiat în clipboard</string>
+    <string name="notify_text_open">Deschideți Solferry pentru a-l copia</string>
+    <string name="notify_received_title">Fișiere primite</string>
+    <string name="notify_received_body">%1$s de la %2$s, în %3$s</string>
+</resources>

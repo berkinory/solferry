@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Odeslat</string>
+    <string name="common_cancel">Zrušit</string>
+    <string name="common_dismiss">Zavřít</string>
+    <string name="common_decline">Odmítnout</string>
+    <string name="common_paste">Vložit</string>
+    <string name="common_copied">Zkopírováno</string>
+    <string name="common_pair">Spárovat</string>
+    <string name="common_pairing">Párování</string>
+    <string name="common_remove">Odebrat %1$s</string>
+    <string name="common_percent">%1$d %%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">Online</string>
+    <string name="device_offline">Offline</string>
+    <string name="device_paired">Spárováno</string>
+    <string name="device_not_paired">Nespárováno</string>
+    <string name="device_unnamed">Nepojmenované zařízení</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Přenos</string>
+    <string name="tab_history">Historie</string>
+    <string name="tab_settings">Nastavení</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">právě teď</string>
+    <string name="ago_minutes">před %1$d min</string>
+    <string name="ago_hours">před %1$d h</string>
+    <string name="ago_yesterday">včera</string>
+    <string name="ago_days">před %1$d d</string>
+    <string name="ago_months">před %1$d měs.</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Odeslat soubory</string>
+    <string name="home_send_hint">Klepnutím vyberte, co chcete odeslat</string>
+    <string name="devices_title">Zařízení</string>
+    <string name="devices_send_text">Poslat text zařízení %1$s</string>
+    <string name="devices_options">Možnosti pro %1$s</string>
+    <string name="devices_auto_accept">Přijímat bez ptaní</string>
+    <string name="devices_last_transfer">Poslední přenos</string>
+    <string name="devices_forget">Zapomenout</string>
+    <string name="devices_forget_title">Zapomenout %1$s?</string>
+    <string name="devices_forget_body">Zařízení bude znovu nespárované, dokud ho opět nespárujete.</string>
+    <string name="nearby_title">V okolí</string>
+    <string name="nearby_use_code">Použít kód</string>
+    <string name="nearby_searching">Hledání zařízení</string>
+    <string name="nearby_searching_hint">Otevřete Solferry na jiném zařízení v této síti a objeví se tady.</string>
+    <string name="nearby_scanning">Hledání nových zařízení v této síti</string>
+    <string name="browser_title">Druhé zařízení nemá aplikaci</string>
+    <string name="browser_body">Prohlížeč ve stejné síti vám může posílat soubory. Chcete-li soubory poslat do prohlížeče, vyberte je a zvolte Sdílet odkazem.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Příchozí soubory</string>
+    <string name="offer_wants_to_send">%1$s chce poslat</string>
+    <plurals name="offer_files">
+        <item quantity="one">%d soubor</item>
+        <item quantity="few">%d soubory</item>
+        <item quantity="many">%d souboru</item>
+        <item quantity="other">%d souborů</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Přijmout</string>
+    <string name="offer_always_accept">Vždy přijímat</string>
+    <string name="offer_block">Blokovat</string>
+    <string name="offer_block_title">Blokovat %1$s?</string>
+    <string name="offer_block_body">Nebude moct posílat soubory ani žádat o spárování. Odblokovat ho můžete později.</string>
+    <string name="text_from">Text od %1$s</string>
+    <string name="text_copy">Kopírovat</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="one">Odeslat do %d zařízení</item>
+        <item quantity="few">Odeslat do %d zařízení</item>
+        <item quantity="many">Odeslat do %d zařízení</item>
+        <item quantity="other">Odeslat do %d zařízení</item>
+    </plurals>
+    <string name="send_source_media">Fotky a videa</string>
+    <string name="send_source_files">Soubory</string>
+    <string name="send_text_title">Poslat text</string>
+    <string name="send_text_to">Komu: %1$s</string>
+    <string name="send_text_placeholder">Napište nebo vložte text</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Sdílet odkazem</string>
+    <string name="link_receive">Přijmout přes odkaz</string>
+    <string name="link_share_hint">Otevřete ho v prohlížeči ve stejné síti a stáhněte soubory.</string>
+    <string name="link_receive_hint">Otevřete ho v prohlížeči ve stejné síti a pošlete soubory sem.</string>
+    <string name="link_copy">Kopírovat odkaz</string>
+    <string name="link_received">Přijato</string>
+    <string name="link_stop">Zastavit</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Žádost o spárování</string>
+    <string name="pair_request_wants">%1$s se chce spárovat</string>
+    <string name="pair_request_hint">Potvrďte, jen pokud druhá obrazovka ukazuje stejný kód.</string>
+    <string name="pair_confirm">Potvrdit</string>
+    <string name="pair_compare_title">Porovnejte kódy</string>
+    <string name="pair_compare_hint">Zkontrolujte, že druhé zařízení ukazuje tento kód, a pak to potvrďte tam.</string>
+    <string name="pair_code_title">Spárovat pomocí kódu</string>
+    <string name="pair_show_title">Zobrazit kód</string>
+    <string name="pair_show_hint">Pro zařízení v jiné síti, nebo když toto nejde najít v okolí. Zobrazte kód tady a zadejte ho tam.</string>
+    <string name="pair_show_code">Zobrazit kód</string>
+    <string name="pair_invite_expiry">Funguje jednou, po dobu 10 minut.</string>
+    <string name="pair_copy_code">Kopírovat kód</string>
+    <string name="pair_enter_title">Zadat kód</string>
+    <string name="pair_enter_placeholder">Vložte kód sf1</string>
+    <string name="pair_address_title">Zadat IP adresu</string>
+    <string name="pair_own_address">Adresa tohoto zařízení: %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Historie</string>
+    <string name="history_clear">Vymazat</string>
+    <string name="history_empty_title">Zatím žádné přenosy</string>
+    <string name="history_empty_body">Soubory, které odešlete nebo přijmete, se zobrazí tady.</string>
+    <string name="history_failed">Nezdařilo se</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Vítá vás Solferry</string>
+    <string name="onboarding_body">Posílejte soubory mezi svými zařízeními. Bez účtu, nic v cloudu.</string>
+    <string name="onboarding_name_title">Název vašeho zařízení</string>
+    <string name="onboarding_name_hint">Tento název uvidí zařízení v okolí.</string>
+    <string name="onboarding_start">Začít</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Nastavení</string>
+    <string name="settings_name_title">Název zařízení</string>
+    <string name="settings_name_placeholder">Název</string>
+    <string name="settings_save">Uložit</string>
+    <string name="settings_find_title">Viditelné pro ostatní</string>
+    <string name="settings_find_on">Zařízení ve vaší síti toto zařízení uvidí a mohou požádat o odeslání.</string>
+    <string name="settings_find_off">Nikdo nový toto zařízení nenajde. Spárovaná zařízení se k němu stále dostanou.</string>
+    <string name="settings_background_title">Přijímat na pozadí</string>
+    <string name="settings_background_body">Solferry bude dostupné i po zavření. Zobrazí oznámení a víc vybíjí baterii.</string>
+    <string name="language_title">Jazyk</string>
+    <string name="language_system">Podle systému</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Relay</string>
+    <string name="relay_guide">Návod k nastavení</string>
+    <string name="relay_body">Připojte se k zařízením v jiných sítích přes vlastní relay server.</string>
+    <string name="relay_add">Přidat</string>
+    <string name="relay_checking">Kontrola</string>
+    <string name="relay_connected">Připojeno</string>
+    <string name="relay_udp_blocked">Připojeno, UDP 7842 je blokované</string>
+    <string name="relay_refused">Odmítnuto, zkontrolujte odkaz</string>
+    <string name="relay_unreachable">Server není dostupný</string>
+    <string name="folder_title">Ukládat soubory do</string>
+    <string name="folder_downloads">Stažené soubory/Solferry</string>
+    <string name="folder_reset">Obnovit</string>
+    <string name="folder_change">Změnit</string>
+    <string name="updates_title">Aktualizace</string>
+    <string name="updates_auto">Automaticky kontrolovat aktualizace</string>
+    <string name="updates_available">Je k dispozici Solferry %1$s</string>
+    <string name="updates_download">Stáhnout</string>
+    <string name="blocked_title">Blokovaná</string>
+    <string name="blocked_unblock">Odblokovat</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Čeká se na %1$s</string>
+    <string name="transfer_reconnecting">Znovu se připojuje k %1$s</string>
+    <string name="transfer_sending">Odesílání: %1$s</string>
+    <string name="transfer_receiving">Příjem: %1$s</string>
+    <string name="transfer_sent">Odesláno: %1$s</string>
+    <string name="transfer_received">Přijato: %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d přenos</item>
+        <item quantity="few">%d přenosy</item>
+        <item quantity="many">%d přenosu</item>
+        <item quantity="other">%d přenosů</item>
+    </plurals>
+    <string name="toast_paired">Spárováno se zařízením %1$s</string>
+    <string name="error_save_failed">%1$s: Nelze uložit do %2$s</string>
+    <string name="error_save_downloads">Stažené soubory</string>
+    <string name="error_save_recovered">Přijaté soubory</string>
+    <string name="error_folder_unusable">Tuto složku nelze použít</string>
+    <string name="error_folder_lost">Přístup k %1$s byl ztracen, ukládá se do %2$s</string>
+    <string name="error_open_file">Soubor nelze otevřít, zkuste ho sdílet znovu</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Žádosti a příchozí soubory</string>
+    <string name="channel_transfers">Probíhající přenosy</string>
+    <string name="channel_standby">Příjem na pozadí</string>
+    <plurals name="notify_progress">
+        <item quantity="one">Probíhá %d přenos</item>
+        <item quantity="few">Probíhají %d přenosy</item>
+        <item quantity="many">Probíhá %d přenosu</item>
+        <item quantity="other">Probíhá %d přenosů</item>
+    </plurals>
+    <string name="notify_standby">Připraveno k příjmu</string>
+    <string name="notify_offer_body">%1$s vám chce poslat soubory</string>
+    <string name="notify_pairing_body">%1$s se chce spárovat s tímto zařízením</string>
+    <string name="notify_text_copied">Zkopírováno do schránky</string>
+    <string name="notify_text_open">Zkopírujete ho v Solferry</string>
+    <string name="notify_received_title">Soubory přijaty</string>
+    <string name="notify_received_body">%1$s od %2$s, uloženo do %3$s</string>
+</resources>

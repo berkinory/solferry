@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Namnlös enhet"
+transfer:
+  and_more: "%{first} med flera"
+about:
+  unreachable: "Kan inte nå %{name}"
+  declined: "%{name} tackade nej"
+  busy: "%{name} är upptagen"
+  not_paired: "Parkoppla med %{name} först"
+explain:
+  storage:
+    title: "Kunde inte läsa eller skriva en fil"
+    next: "Kontrollera mappen, behörigheterna och ledigt utrymme."
+  corrupt_data:
+    title: "Solferrys inställningar är skadade"
+    next: "Radera den skadade filen i Solferrys datamapp. Du kan behöva parkoppla enheterna igen."
+  network_start:
+    title: "Nätverket startade inte"
+    next: "Starta om Solferry för att försöka igen."
+  invalid_relay_url:
+    title: "Reläadressen är ogiltig"
+    next: "Klistra in hela länken som ditt relä skrev ut, till exempel https://relay.example.com#token."
+  unreachable:
+    title: "Enheten kan inte nås"
+    next: "Öppna Solferry där. På ett annat nätverk använder du Tailscale eller lägger till ett eget relä."
+  relay_check_failed:
+    title: "Ett relä fungerar inte"
+    next: "Se dess status i Inställningar."
+  not_paired:
+    title: "Parkoppla med enheten först"
+    next: "Bara parkopplade enheter kan nå den härifrån."
+  version_mismatch:
+    title: "Solferry-versionerna matchar inte"
+    next: "Uppdatera Solferry på båda enheterna."
+  busy:
+    title: "Den andra enheten är upptagen"
+    next: "Vänta tills dess överföringar är klara och försök igen."
+  cancelled:
+    title: "Överföringen avbröts"
+    next: "Skicka igen för att fortsätta där den stannade."
+  declined:
+    title: "Överföringen nekades"
+    next: "Den andra personen tackade nej."
+  no_space:
+    title: "Inte tillräckligt med lagringsutrymme"
+    next: "Frigör utrymme på den mottagande enheten och försök igen."
+  delivery_failed:
+    title: "Filerna kunde inte sparas"
+    next: "Kontrollera nedladdningsmappen på den mottagande enheten."
+  invalid_offer:
+    title: "Osäker överföring nekades"
+    next: "Den andra enheten erbjöd filer som Solferry inte kan ta emot."
+  source_changed:
+    title: "En fil ändrades under sändningen"
+    next: "Vänta tills den slutar ändras och försök igen."
+  unsupported_name:
+    title: "Ett filnamn kan inte skickas"
+    next: "Byt namn på filen och försök igen."
+  nothing_to_send:
+    title: "Inget att skicka"
+    next: "Välj minst en fil. Genvägar och länkar hoppas över."
+  hash_mismatch:
+    title: "Skadad data upptäcktes"
+    next: "Den felaktiga kopian kastades. Skicka den igen."
+  connection_lost:
+    title: "Anslutningen bröts"
+    next: "Försök igen. Överföringar fortsätter där de stannade."
+  invalid_ticket:
+    title: "Koden är ogiltig"
+    next: "Klistra in hela koden, som börjar med sf1."
+  ticket_expired:
+    title: "Koden har gått ut"
+    next: "Koder gäller i 10 minuter. Skapa en ny."
+  update:
+    title: "Kunde inte uppdatera Solferry"
+    next: "Försök igen senare eller ladda ned den från GitHub."
+  own_ticket:
+    title: "Det är den här enhetens egen kod"
+    next: "Ange den på den andra enheten i stället."
+  no_local_network:
+    title: "Inte ansluten till ett lokalt nätverk"
+    next: "Anslut till wifi eller en surfzon och dela igen."
+  pairing_refused:
+    title: "Parkopplingen nekades"
+    next: "Be dem godkänna, eller skapa en ny kod."
+  unknown_device:
+    title: "Enheten hittades inte"
+    next: "Den kan ha tagits bort."
+  ambiguous_device:
+    title: "Flera enheter matchar"
+    next: "Välj enheten i listan."
+  invalid_address:
+    title: "Adressen är ogiltig"
+    next: "Ange en IP-adress, till exempel 192.168.1.20."
+  no_answer:
+    title: "Inget svar från den adressen"
+    next: "Öppna Solferry där och kontrollera att den är synlig för alla."
+  protocol:
+    title: "Något gick fel i Solferry"
+    next: "Det här är en bugg. Rapportera den gärna med detaljerna."
