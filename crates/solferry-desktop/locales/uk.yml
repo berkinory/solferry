@@ -22,6 +22,7 @@ notification:
     title: "Файли отримано"
     body: "%{title} від %{peer}"
 format:
+  percent: "%{value}%"
   size:
     b: "%{amount} Б"
     kb: "%{amount} КБ"

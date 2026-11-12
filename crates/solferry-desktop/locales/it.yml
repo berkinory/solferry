@@ -22,6 +22,7 @@ notification:
     title: "File ricevuti"
     body: "%{title} da %{peer}"
 format:
+  percent: "%{value}%"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"

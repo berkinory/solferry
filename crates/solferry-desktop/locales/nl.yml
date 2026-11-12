@@ -22,6 +22,7 @@ notification:
     title: "Bestanden ontvangen"
     body: "%{title} van %{peer}"
 format:
+  percent: "%{value}%"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"

@@ -140,7 +140,7 @@ fn percent(fraction: f32, cx: &Context<MainView>) -> impl IntoElement {
         .flex_none()
         .text_size(px(14.))
         .text_color(faded(cx))
-        .child(format!("{}%", format::whole(f64::from(fraction) * 100.)))
+        .child(t!("format.percent", value = format::whole(f64::from(fraction) * 100.)))
 }
 
 fn row(close: bool) -> Div {

@@ -22,6 +22,7 @@ notification:
     title: "파일을 받았어요"
     body: "%{peer}에서 보낸 %{title}"
 format:
+  percent: "%{value}%"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"

@@ -22,6 +22,7 @@ notification:
     title: "Dateien empfangen"
     body: "%{title} von %{peer}"
 format:
+  percent: "%{value} %"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"

@@ -22,6 +22,7 @@ notification:
     title: "Fichiers reçus"
     body: "%{peer} vous a envoyé %{title}"
 format:
+  percent: "%{value} %"
   size:
     b: "%{amount} o"
     kb: "%{amount} Ko"
