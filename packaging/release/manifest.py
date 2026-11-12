@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Writes SHA256SUMS and the update manifest for everything in the given folder."""
+"""Writes the update manifest for everything in a release folder: manifest.py DIST VERSION OUT
+
+The manifest lists every file's hash, and the apps install the files under UPDATES. The workflow
+signs these exact bytes and wraps them with the signature into latest.json."""
 
 import hashlib
 import json
@@ -8,10 +11,9 @@ from pathlib import Path
 
 REPOSITORY = "https://github.com/berkinory/solferry"
 UPDATES = {
-    "macos-aarch64": "Solferry-macos-aarch64.zip",
-    "macos-x86_64": "Solferry-macos-x86_64.zip",
-    "windows-x86_64": "Solferry-windows-x86_64.exe",
-    "windows-aarch64": "Solferry-windows-aarch64.exe",
+    "macos-aarch64": "Solferry-macos.dmg",
+    "macos-x86_64": "Solferry-macos.dmg",
+    "windows-x86_64": "Solferry-windows-setup.exe",
     "linux-x86_64": "Solferry-linux-x86_64.AppImage",
     "linux-aarch64": "Solferry-linux-aarch64.AppImage",
 }
@@ -26,23 +28,22 @@ def sha256(path):
 
 
 def main():
-    dist, version = Path(sys.argv[1]), sys.argv[2]
-    hashes = {path.name: sha256(path) for path in sorted(dist.iterdir()) if path.is_file()}
-    (dist / "SHA256SUMS").write_text("".join(f"{value}  {name}\n" for name, value in hashes.items()))
-    missing = [name for name in UPDATES.values() if name not in hashes]
+    dist, version, out = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
+    files = {path.name: sha256(path) for path in sorted(dist.iterdir()) if path.is_file()}
+    missing = sorted({name for name in UPDATES.values() if name not in files})
     if missing:
         raise SystemExit(f"missing update files: {missing}")
     assets = {
         platform: {
             "url": f"{REPOSITORY}/releases/download/v{version}/{name}",
-            "sha256": hashes[name],
+            "sha256": files[name],
             "size": (dist / name).stat().st_size,
         }
         for platform, name in UPDATES.items()
     }
     page = f"{REPOSITORY}/releases/tag/v{version}"
-    manifest = {"version": version, "page": page, "assets": assets}
-    (dist / "latest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    manifest = {"version": version, "page": page, "assets": assets, "files": files}
+    out.write_text(json.dumps(manifest, indent=2) + "\n")
 
 
 if __name__ == "__main__":

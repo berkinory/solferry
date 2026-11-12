@@ -49,12 +49,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { platform: macos-aarch64, os: macos-15, target: aarch64-apple-darwin }
-          - { platform: macos-x86_64, os: macos-15, target: x86_64-apple-darwin }
-          - { platform: windows-x86_64, os: windows-2025, target: x86_64-pc-windows-msvc }
-          - { platform: windows-aarch64, os: windows-11-arm, target: aarch64-pc-windows-msvc }
-          - { platform: linux-x86_64, os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, cli: x86_64-unknown-linux-musl }
-          - { platform: linux-aarch64, os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, cli: aarch64-unknown-linux-musl }
+          # macOS ships one universal app, merged from both architectures by lipo.
+          - { platform: macos, os: macos-15, target: universal-apple-darwin, targets: "aarch64-apple-darwin,x86_64-apple-darwin" }
+          - { platform: windows-x86_64, os: windows-2025, target: x86_64-pc-windows-msvc, targets: x86_64-pc-windows-msvc }
+          - { platform: linux-x86_64, os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, cli: x86_64-unknown-linux-musl, targets: "x86_64-unknown-linux-gnu,x86_64-unknown-linux-musl" }
+          - { platform: linux-aarch64, os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, cli: aarch64-unknown-linux-musl, targets: "aarch64-unknown-linux-gnu,aarch64-unknown-linux-musl" }
     runs-on: ${{ matrix.os }}
     env:
       RELEASE: target/${{ matrix.target }}/dist
@@ -65,7 +64,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}${{ matrix.cli && format(',{0}', matrix.cli) || '' }}
+          targets: ${{ matrix.targets }}
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
@@ -83,8 +82,19 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop
-          cargo build --profile dist --locked --target ${{ matrix.cli || matrix.target }} -p solferry-cli
+          if [ "$RUNNER_OS" = macOS ]; then
+            for target in aarch64-apple-darwin x86_64-apple-darwin; do
+              cargo build --profile dist --locked --target $target -p solferry-desktop
+              cargo build --profile dist --locked --target $target -p solferry-cli
+            done
+            mkdir -p "$RELEASE"
+            for binary in solferry-desktop solferry; do
+              lipo -create -output "$RELEASE/$binary" target/{aarch64,x86_64}-apple-darwin/dist/$binary
+            done
+          else
+            cargo build --profile dist --locked --target ${{ matrix.target }} -p solferry-desktop
+            cargo build --profile dist --locked --target ${{ matrix.cli || matrix.target }} -p solferry-cli
+          fi
           mkdir dist
 
       - if: runner.os == 'macOS'
@@ -134,8 +144,7 @@ jobs:
         name: Package for Windows
         shell: bash
         run: |
-          cp "$RELEASE/solferry-desktop.exe" "dist/Solferry-$SOLFERRY_PLATFORM.exe"
-          (cd "$RELEASE" && 7z a -mx=9 "$GITHUB_WORKSPACE/dist/solferry-cli-$SOLFERRY_PLATFORM.zip" solferry.exe)
+          export SOLFERRY_RELEASE=$(cygpath -w "$PWD/$RELEASE")
           choco install innosetup --no-progress -y
           "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" packaging/windows/solferry.iss
 
@@ -251,33 +260,34 @@ jobs:
           pattern: "{desktop-*,android}"
           merge-multiple: true
 
-      - name: Write the checksums and the signed update manifest
+      - name: Write the signed update manifest
         run: |
-          packaging/release/manifest.py dist "$VERSION"
+          MANIFEST="$RUNNER_TEMP/manifest.json"
+          packaging/release/manifest.py dist "$VERSION" "$MANIFEST"
+          SIGNATURE=
           if [ -z "$SIGNING_KEY" ]; then
             [ "$PUBLISH" = false ] || { echo "::error::SOLFERRY_UPDATE_SIGNING_KEY is missing"; exit 1; }
             echo "::warning::No update signing key, the manifest stays unsigned"
-            exit 0
+          else
+            KEY="$RUNNER_TEMP/update.pem"
+            (umask 077; printf '%s\n' "$SIGNING_KEY" > "$KEY")
+            openssl pkeyutl -sign -rawin -inkey "$KEY" -in "$MANIFEST" -out "$RUNNER_TEMP/raw.sig"
+            rm "$KEY"
+            # Refuses a signing key that doesn't belong to the key the apps were built with.
+            PUBLIC_DER=$(printf '302a300506032b6570032100%s' "$SOLFERRY_UPDATE_KEY" | xxd -r -p | base64 -w0)
+            printf -- '-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----\n' "$PUBLIC_DER" > "$RUNNER_TEMP/update.pub"
+            openssl pkeyutl -verify -rawin -pubin -inkey "$RUNNER_TEMP/update.pub" -in "$MANIFEST" -sigfile "$RUNNER_TEMP/raw.sig"
+            SIGNATURE=$(xxd -p -c 64 "$RUNNER_TEMP/raw.sig")
           fi
-          KEY="$RUNNER_TEMP/update.pem"
-          (umask 077; printf '%s\n' "$SIGNING_KEY" > "$KEY")
-          openssl pkeyutl -sign -rawin -inkey "$KEY" -in dist/latest.json -out "$RUNNER_TEMP/raw.sig"
-          xxd -p -c 64 "$RUNNER_TEMP/raw.sig" > dist/latest.json.sig
-          rm "$KEY"
-          # Refuses a signing key that doesn't belong to the key the apps were built with.
-          PUBLIC_DER=$(printf '302a300506032b6570032100%s' "$SOLFERRY_UPDATE_KEY" | xxd -r -p | base64 -w0)
-          printf -- '-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----\n' "$PUBLIC_DER" > "$RUNNER_TEMP/update.pub"
-          openssl pkeyutl -verify -rawin -pubin -inkey "$RUNNER_TEMP/update.pub" -in dist/latest.json -sigfile "$RUNNER_TEMP/raw.sig"
+          jq -n --rawfile manifest "$MANIFEST" --arg signature "$SIGNATURE" \
+            '{manifest: $manifest, signature: $signature}' > dist/latest.json
 
       - name: Keep the result of a dry run
         if: env.PUBLISH != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: manifest
-          path: |
-            dist/SHA256SUMS
-            dist/latest.json
-            dist/latest.json.sig
+          path: dist/latest.json
           retention-days: 1
 
       - if: env.PUBLISH == 'true'
@@ -322,9 +332,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          gh release download "v$VERSION" --pattern SHA256SUMS
+          gh release download "v$VERSION" --pattern latest.json
           git clone "https://x-access-token:$TAP_TOKEN@github.com/berkinory/homebrew-brew.git" tap
-          packaging/homebrew/render.py SHA256SUMS "$VERSION" tap
+          packaging/homebrew/render.py latest.json "$VERSION" tap
           cd tap
           git config user.name "solferry-release"
           git config user.email "solferry-release@users.noreply.github.com"
