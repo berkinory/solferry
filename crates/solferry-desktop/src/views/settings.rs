@@ -13,6 +13,7 @@ use super::button::Button;
 use super::main_view::MainView;
 use super::{relays, ui, updates};
 use crate::assets::Glyph;
+use crate::login;
 use crate::service::Command;
 use crate::tokens::{SPACE_MD, SPACE_SM, SPACE_XS};
 
@@ -53,6 +54,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(relays::section(view, &config, cx))
         .child(visibility_section(&config, cx))
         .child(tray_section(&config, cx))
+        .child(login_section(cx))
         .children(update::enabled().then(|| updates::section(config.check_updates, &status, cx)))
         .children(blocked_section(&blocked, cx))
         .child(about(id, cx))
@@ -164,6 +166,35 @@ fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                             .accessibility_label(label)
                             .on_click(cx.listener(|view, on: &bool, _, cx| {
                                 view.set_show_in_tray(*on, cx);
+                            })),
+                    ),
+            ),
+        )
+        .into_any_element()
+}
+
+/// Asks the system each time, since its login entry is the only record and the user can remove it.
+fn login_section(cx: &mut Context<MainView>) -> AnyElement {
+    let on = login::enabled();
+    let detail = if on { t!("settings.login.on") } else { t!("settings.login.off") };
+    let title = t!("settings.login.title");
+    ui::card(Glyph::Computer, &title, None, cx)
+        .child(
+            ui::padded_well(cx).child(
+                div()
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .gap(px(SPACE_MD))
+                    .child(ui::muted(detail, cx).flex_1())
+                    .child(
+                        Switch::new("login")
+                            .large()
+                            .checked(on)
+                            .accessibility_label(title)
+                            .on_click(cx.listener(|_, on: &bool, _, cx| {
+                                login::set(*on);
+                                cx.notify();
                             })),
                     ),
             ),
