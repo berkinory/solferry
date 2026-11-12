@@ -17,12 +17,12 @@ fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
         .flex()
         .items_center()
         .justify_center()
-        .size(px(53.))
+        .size(px(50.))
         .rounded(px(RADIUS_FIELD))
         .bg(cx.theme().secondary)
         .border_1()
         .border_color(cx.theme().border)
-        .child(icon(Glyph::History, 24.).text_color(cx.theme().muted_foreground));
+        .child(icon(Glyph::History, 23.).text_color(cx.theme().muted_foreground));
     div()
         .flex()
         .flex_col()
@@ -71,7 +71,7 @@ fn row(past: &PastTransfer, cx: &Context<MainView>) -> AnyElement {
         .gap(px(SPACE_XS))
         .text_size(px(TYPE_LABEL))
         .text_color(muted)
-        .child(icon(ui::platform_glyph(past.platform), 11.).text_color(muted))
+        .child(icon(ui::platform_glyph(past.platform), 10.).text_color(muted))
         .child(div().flex_1().min_w_0().truncate().child(past.peer_name.clone()))
         .child(ui::caption(format::ago(past.finished_ms), cx).flex_none());
     div()

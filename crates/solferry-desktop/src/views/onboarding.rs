@@ -17,7 +17,7 @@ use crate::state::AppState;
 use crate::theme::{color, palette};
 use crate::tokens::{SPACE_LG, SPACE_SM, SPACE_XL, TYPE_BODY};
 
-const WIDTH: f32 = 352.0;
+const WIDTH: f32 = 333.0;
 
 pub struct Onboarding {
     state: Entity<AppState>,
@@ -83,11 +83,11 @@ impl Render for Onboarding {
                 .flex_col()
                 .items_center()
                 .gap(px(SPACE_SM))
-                .child(svg().path(MARK).size(px(49.)).text_color(color(palette(cx).brand)))
+                .child(svg().path(MARK).size(px(46.)).text_color(color(palette(cx).brand)))
                 .child(
                     div()
                         .mt(px(SPACE_SM))
-                        .text_size(px(23.))
+                        .text_size(px(22.))
                         .font_weight(FontWeight::MEDIUM)
                         .child(t!("onboarding.title")),
                 )

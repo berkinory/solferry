@@ -29,7 +29,7 @@ use crate::tokens::{SPACE_SM, TYPE_LABEL};
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
 const FLY_FOR: Duration = Duration::from_millis(380);
 const CONTENT_WIDTH: f32 = 720.0;
-const HEADER_HEIGHT: f32 = 53.0;
+const HEADER_HEIGHT: f32 = 50.0;
 const CONTENT_TOP: f32 = 4.0;
 /// The mark's art sits low in its box, and letters read high in theirs.
 const MARK_LIFT: f32 = -2.0;
@@ -67,6 +67,7 @@ pub struct MainView {
     pub pill_seen: u64,
     pub transfers_open: bool,
     pub fatal_open: bool,
+    pub sheet_motion: super::sheet::Motion,
     targets: HashMap<EndpointId, Target>,
     pub code_input: Entity<InputState>,
     pub address_input: Entity<InputState>,
@@ -148,6 +149,7 @@ impl MainView {
             pill_seen: 0,
             transfers_open: false,
             fatal_open: false,
+            sheet_motion: super::sheet::Motion::Rising,
             targets: HashMap::new(),
             code_input,
             address_input,
@@ -212,6 +214,8 @@ impl MainView {
     fn back(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.dialog.take().is_some() {
             cx.notify();
+        } else if matches!(self.page, Page::Send | Page::Pair | Page::Text) {
+            self.dismiss(Self::leave_page, window, cx);
         } else if self.page != Page::Home {
             self.leave_page(window, cx);
         }
@@ -256,7 +260,7 @@ impl MainView {
 
     /// Hands the files over and leaves once the cursor has flown. The pill takes it from there:
     /// it waits for the other device, then shows progress, and a toast says if a send failed.
-    pub fn send_selected(&mut self, cx: &mut Context<Self>) {
+    pub fn send_selected(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if self.send_phase != SendPhase::Idle {
             return;
         }
@@ -265,9 +269,11 @@ impl MainView {
         Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
         self.send_phase = SendPhase::Flying;
         cx.notify();
-        cx.spawn(async move |view, cx| {
+        cx.spawn_in(window, async move |view, cx| {
             cx.background_executor().timer(FLY_FOR).await;
-            let _ = view.update(cx, MainView::clear_pending);
+            let _ = view.update_in(cx, |view, window, cx| {
+                view.dismiss(|view, _, cx| view.clear_pending(cx), window, cx);
+            });
         })
         .detach();
     }
@@ -457,7 +463,7 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .justify_center()
         .gap(px(6.))
         .child(
-            svg().path(MARK).size(px(15.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
+            svg().path(MARK).size(px(14.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
         )
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }

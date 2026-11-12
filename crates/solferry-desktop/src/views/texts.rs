@@ -15,7 +15,7 @@ use crate::state::{AppState, SharedText};
 use crate::tokens::{SPACE_SM, SPACE_XS};
 
 const PREVIEW_LINES: usize = 4;
-const TEXT_HEIGHT: f32 = 141.0;
+const TEXT_HEIGHT: f32 = 134.0;
 
 pub fn render(state: &AppState, cx: &mut Context<MainView>) -> Option<AnyElement> {
     state.text.as_ref().map(|shared| card(shared, cx))
@@ -85,13 +85,15 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         )
         .child(Textarea::new(&view.text_input).h(px(TEXT_HEIGHT)))
         .child(
-            Button::new("send-text")
-                .primary()
-                .icon(Glyph::Send)
-                .label(t!("texts.send"))
-                .on_click(cx.listener(|view, _, window, cx| view.send_text(window, cx))),
+            div().flex().justify_center().pt(px(SPACE_SM)).child(
+                Button::new("send-text")
+                    .primary()
+                    .icon(Glyph::Send)
+                    .label(t!("texts.send"))
+                    .on_click(cx.listener(|view, _, window, cx| view.send_text(window, cx))),
+            ),
         );
-    super::sheet::present(t!("texts.title"), content, MainView::leave_page, cx)
+    super::sheet::present(view, t!("texts.title"), content, MainView::leave_page, cx)
 }
 
 impl MainView {
@@ -115,9 +117,9 @@ impl MainView {
 
     fn send_text(&mut self, window: &mut Window, cx: &mut Context<MainView>) {
         let text = self.text_input.read(cx).value().to_string();
-        let Some(target) = self.texting.take().filter(|_| !text.trim().is_empty()) else { return };
+        let Some(target) = self.texting.clone().filter(|_| !text.trim().is_empty()) else { return };
         MainView::command(Command::SendText { target, text }, cx);
-        self.leave_page(window, cx);
+        self.dismiss(MainView::leave_page, window, cx);
     }
 
     pub fn mark_copied(&mut self, key: u64, cx: &mut Context<MainView>) {

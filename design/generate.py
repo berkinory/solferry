@@ -67,7 +67,7 @@ def radii(tokens):
 
 
 # A desktop window sits among denser native apps than a phone screen does.
-DESKTOP_SCALE = 0.95
+DESKTOP_SCALE = 0.9
 
 
 def scales(tokens):

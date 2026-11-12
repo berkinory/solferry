@@ -163,7 +163,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
         .id(id)
         .flex()
         .items_center()
-        .gap(px(11.))
+        .gap(px(10.))
         .p(px(6.))
         .rounded(px(RADIUS_CONTROL))
         .border_1()
@@ -251,7 +251,7 @@ fn device_details(
         .gap(px(SPACE_XS))
         .child(ui::muted(what, cx))
         .child(ui::muted(moment, cx).opacity(0.6));
-    let line = || div().flex().items_center().justify_between().h(px(34.)).pl(px(48.)).pr(px(6.));
+    let line = || div().flex().items_center().justify_between().h(px(32.)).pl(px(45.)).pr(px(6.));
     div()
         .flex()
         .flex_col()

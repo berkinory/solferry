@@ -14,10 +14,10 @@ use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
 
-const FAN_WIDTH: f32 = 132.0;
-const FAN_GAP: f32 = 36.0;
-const FAN_OPEN: f32 = 51.0;
-const FAN_SIZE: f32 = 53.0;
+const FAN_WIDTH: f32 = 125.0;
+const FAN_GAP: f32 = 34.0;
+const FAN_OPEN: f32 = 48.0;
+const FAN_SIZE: f32 = 50.0;
 const FAN_TILT: f32 = 0.2;
 
 /// A file card leaning away from the middle. Only SVGs can rotate, so the card is drawn as one.
@@ -41,7 +41,7 @@ fn fan_tile(slot: &'static str, glyph: Glyph, side: f32, open: bool, cx: &App) -
         .child(layer(FAN_SIZE, 0.).text_color(cx.theme().border))
         .child(layer(FAN_SIZE - 2., 1.).text_color(cx.theme().secondary))
         .child(
-            icon(glyph, 20.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
+            icon(glyph, 19.).text_color(cx.theme().muted_foreground).with_transformation(turn()),
         );
     if !open {
         return tile.into_any_element();
@@ -73,11 +73,11 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
         .bg(color(palette.primary_fill))
         .border_1()
         .border_color(color(palette.primary_border))
-        .child(icon(Glyph::Send, 24.).text_color(color(palette.on_primary)));
+        .child(icon(Glyph::Send, 23.).text_color(color(palette.on_primary)));
     let fan = div()
         .relative()
         .w(px(FAN_WIDTH))
-        .h(px(62.))
+        .h(px(59.))
         .child(fan_tile("fan-left", Glyph::TypeImage, -1., dragging, cx))
         .child(fan_tile("fan-right", Glyph::TypePdf, 1., dragging, cx))
         .child(core);
@@ -86,7 +86,7 @@ fn drop_zone(dragging: bool, cx: &mut Context<MainView>) -> AnyElement {
         .items_center()
         .justify_center()
         .gap(px(SPACE_SM))
-        .h(px(156.))
+        .h(px(148.))
         .border_1()
         .border_color(transparent_black())
         .cursor_pointer()

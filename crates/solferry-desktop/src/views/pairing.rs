@@ -81,7 +81,7 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 ),
             )
             .child(address_card(view, &state, cx));
-    super::sheet::present(t!("pairing.title"), content, MainView::leave_page, cx)
+    super::sheet::present(view, t!("pairing.title"), content, MainView::leave_page, cx)
 }
 
 /// For a device on another subnet, or on a network that keeps devices from finding each other.

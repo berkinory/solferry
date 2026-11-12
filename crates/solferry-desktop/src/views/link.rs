@@ -38,21 +38,33 @@ pub fn sheet(view: &MainView, link: &LinkView, cx: &mut Context<MainView>) -> An
         let rows = link.received.iter().map(|name| ui::text(name.clone()).truncate().p(px(5.)));
         ui::card(Glyph::Download, &t!("link.received"), None, cx).child(ui::well(cx).children(rows))
     });
-    let content = div().flex().flex_col().gap(px(SPACE_SM)).child(code).children(received).child(
-        Button::new("stop-link")
-            .danger()
-            .label(t!("link.stop"))
-            .on_click(cx.listener(|_, _, _, cx| MainView::command(Command::StopLink, cx))),
-    );
+    let stop = Button::new("stop-link").danger().label(t!("link.stop")).on_click(cx.listener(
+        |view, _, window, cx| {
+            view.dismiss(|_, _, cx| MainView::command(Command::StopLink, cx), window, cx);
+        },
+    ));
+    let content = div()
+        .flex()
+        .flex_col()
+        .gap(px(SPACE_SM))
+        .child(code)
+        .children(received)
+        .child(div().flex().justify_center().pt(px(SPACE_SM)).child(stop));
     let title = if link.receiving { t!("link.receive_title") } else { t!("link.share_title") };
-    super::sheet::present(title, content, |_, _, cx| MainView::command(Command::StopLink, cx), cx)
+    super::sheet::present(
+        view,
+        title,
+        content,
+        |_, _, cx| MainView::command(Command::StopLink, cx),
+        cx,
+    )
 }
 
 pub fn card(cx: &mut Context<MainView>) -> AnyElement {
     ui::card(Glyph::Link, &t!("link.no_app.title"), None, cx)
         .child(
             ui::padded_well(cx).child(ui::muted(t!("link.no_app.body"), cx)).child(
-                div().pt(px(SPACE_SM)).child(
+                div().flex().pt(px(SPACE_SM)).child(
                     Button::new("receive-link")
                         .sm()
                         .icon(Glyph::Download)

@@ -9,9 +9,9 @@ use crate::assets::Glyph;
 use crate::state::PairingPrompt;
 use crate::tokens::{RADIUS_FLOOR, SPACE_MD, SPACE_SM, SPACE_XS};
 
-const DIGIT_WIDTH: f32 = 37.0;
-const DIGIT_HEIGHT: f32 = 49.0;
-const DIGIT_SIZE: f32 = 22.0;
+const DIGIT_WIDTH: f32 = 35.0;
+const DIGIT_HEIGHT: f32 = 46.0;
+const DIGIT_SIZE: f32 = 21.0;
 
 fn digit(value: char, cx: &Context<MainView>) -> AnyElement {
     div()
@@ -41,13 +41,13 @@ fn digits(code: &str, cx: &Context<MainView>) -> Div {
             .flex_row()
             .justify_center()
             .gap(px(SPACE_MD))
-            .py(px(17.))
+            .py(px(16.))
             .child(group().children(first))
             .child(group().children(all)),
     )
 }
 
-fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
+fn request(view: &MainView, prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
     let key = prompt.key;
     let peer = div()
         .flex()
@@ -68,14 +68,15 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
                 .primary()
                 .icon(Glyph::Check)
                 .label(t!("confirm.accept"))
-                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, true, cx))),
+                .on_click(cx.listener(move |view, _, window, cx| {
+                    view.dismiss(move |view, _, cx| view.answer_pairing(key, true, cx), window, cx);
+                })),
         )
-        .child(
-            Button::new("pair-decline")
-                .warning()
-                .label(t!("confirm.decline"))
-                .on_click(cx.listener(move |view, _, _, cx| view.answer_pairing(key, false, cx))),
-        );
+        .child(Button::new("pair-decline").warning().label(t!("confirm.decline")).on_click(
+            cx.listener(move |view, _, window, cx| {
+                view.dismiss(move |view, _, cx| view.answer_pairing(key, false, cx), window, cx);
+            }),
+        ));
     let content = div()
         .flex()
         .flex_col()
@@ -85,10 +86,10 @@ fn request(prompt: &PairingPrompt, cx: &mut Context<MainView>) -> AnyElement {
             div().flex().justify_center().pt(px(SPACE_SM)).child(ui::muted(t!("confirm.hint"), cx)),
         )
         .child(answers);
-    super::sheet::present(t!("confirm.title"), content, MainView::decline_first_pairing, cx)
+    super::sheet::present(view, t!("confirm.title"), content, MainView::decline_first_pairing, cx)
 }
 
-fn compare(code: &str, cx: &mut Context<MainView>) -> AnyElement {
+fn compare(view: &MainView, code: &str, cx: &mut Context<MainView>) -> AnyElement {
     let content = div().flex().flex_col().pt(px(SPACE_XS)).child(digits(code, cx)).child(
         div()
             .flex()
@@ -96,12 +97,14 @@ fn compare(code: &str, cx: &mut Context<MainView>) -> AnyElement {
             .pt(px(SPACE_SM))
             .child(ui::muted(t!("confirm.compare_hint"), cx)),
     );
-    super::sheet::present(t!("confirm.compare_title"), content, MainView::stop_comparing, cx)
+    super::sheet::present(view, t!("confirm.compare_title"), content, MainView::stop_comparing, cx)
 }
 
 /// Pairing takes over the screen the way sending does, ahead of anything else open.
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> Option<AnyElement> {
     let state = view.state.read(cx);
     let (prompt, code) = (state.pairing_prompts.first().cloned(), state.pairing_code.clone());
-    prompt.map(|prompt| request(&prompt, cx)).or_else(|| code.map(|code| compare(&code, cx)))
+    prompt
+        .map(|prompt| request(view, &prompt, cx))
+        .or_else(|| code.map(|code| compare(view, &code, cx)))
 }

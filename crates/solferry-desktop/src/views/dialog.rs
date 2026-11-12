@@ -14,7 +14,7 @@ use super::ui;
 use crate::service::Command;
 use crate::tokens::{RADIUS_CARD, SPACE_LG, SPACE_SM, SPACE_XS};
 
-const WIDTH: f32 = 308.0;
+const WIDTH: f32 = 292.0;
 
 pub enum Dialog {
     Forget { id: EndpointId, name: String },
@@ -79,8 +79,8 @@ pub fn render(dialog: &Dialog, cx: &mut Context<MainView>) -> AnyElement {
             },
             BoxShadow {
                 color: black().opacity(0.18),
-                offset: point(px(0.), px(11.)),
-                blur_radius: px(28.),
+                offset: point(px(0.), px(10.)),
+                blur_radius: px(27.),
                 spread_radius: px(0.),
                 inset: false,
             },

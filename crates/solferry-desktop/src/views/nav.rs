@@ -15,10 +15,10 @@ use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, TYPE_LABEL};
 
 /// Room the scrolling content leaves so nothing ends up under the bar.
-pub const CLEARANCE: f32 = 65.0;
+pub const CLEARANCE: f32 = 62.0;
 
-const ITEM_WIDTH: f32 = 99.0;
-const ITEM_HEIGHT: f32 = 35.0;
+const ITEM_WIDTH: f32 = 94.0;
+const ITEM_HEIGHT: f32 = 33.0;
 const INSET: f32 = 4.0;
 const SLIDE: Duration = Duration::from_millis(240);
 const TABS: [(Page, Glyph, &str); 3] = [
@@ -66,14 +66,14 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .text_size(px(TYPE_LABEL))
                 .text_color(tone)
                 .on_click(cx.listener(move |view, _, window, cx| view.open_page(page, window, cx)))
-                .child(icon(glyph, 14.).text_color(tone))
+                .child(icon(glyph, 13.).text_color(tone))
                 .child(t!(key))
                 .into_any_element()
         })
         .collect();
     div()
         .absolute()
-        .bottom(px(11.))
+        .bottom(px(10.))
         .left_0()
         .right_0()
         .flex()
@@ -90,7 +90,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                 .shadow(vec![BoxShadow {
                     color: black().opacity(0.2),
                     offset: point(px(0.), px(5.)),
-                    blur_radius: px(16.),
+                    blur_radius: px(15.),
                     spread_radius: px(0.),
                     inset: false,
                 }])

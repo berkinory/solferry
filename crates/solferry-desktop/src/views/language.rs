@@ -35,8 +35,8 @@ const LANGUAGES: &[(&str, &str, &str)] = &[
     ("pl", "Polski", "pl"),
     ("he", "עברית", "il"),
 ];
-const FLAG: f32 = 16.0;
-const MENU_HEIGHT: f32 = 282.0;
+const FLAG: f32 = 15.0;
+const MENU_HEIGHT: f32 = 267.0;
 
 /// Shows the app in `language`, or in the system's when there is none.
 pub fn apply(language: Option<&str>) {
@@ -102,7 +102,7 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                             .child(name(language)),
                     )
                     .children(
-                        chosen.then(|| icon(Glyph::Check, 14.).text_color(cx.theme().foreground)),
+                        chosen.then(|| icon(Glyph::Check, 13.).text_color(cx.theme().foreground)),
                     )
                     .on_click(move |_, window, cx| {
                         popover.update(cx, |state, cx| state.dismiss(window, cx));
@@ -111,7 +111,7 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
             });
             div()
                 .id("language-menu")
-                .w(px(194.))
+                .w(px(184.))
                 .max_h(px(MENU_HEIGHT))
                 .p(px(4.))
                 .overflow_y_scrollbar()

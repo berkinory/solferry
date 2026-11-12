@@ -19,7 +19,7 @@ use crate::service::{Command, Target};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
-const BUTTON_WIDTH: f32 = 199.0;
+const BUTTON_WIDTH: f32 = 189.0;
 
 #[expect(clippy::cast_possible_truncation, reason = "a list position fits in f32")]
 fn fraction(value: usize) -> f32 {
@@ -44,9 +44,9 @@ fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement
         .flex()
         .items_center()
         .gap(px(SPACE_SM))
-        .h(px(34.))
+        .h(px(32.))
         .px(px(SPACE_SM))
-        .child(icon(glyph, 19.).text_color(cx.theme().muted_foreground))
+        .child(icon(glyph, 18.).text_color(cx.theme().muted_foreground))
         .child(ui::text(name).flex_1().min_w_0().truncate())
         .children(size.map(|size| ui::muted(size, cx)))
         .child(
@@ -55,12 +55,12 @@ fn file_row(index: usize, path: &Path, cx: &mut Context<MainView>) -> AnyElement
                 .flex()
                 .items_center()
                 .justify_center()
-                .size(px(26.))
+                .size(px(25.))
                 .rounded(px(RADIUS_CONTROL))
                 .cursor_pointer()
                 .hover(|style| style.opacity(0.7))
                 .on_click(cx.listener(move |view, _, _, cx| view.remove_pending(index, cx)))
-                .child(icon(Glyph::Delete, 15.).text_color(danger)),
+                .child(icon(Glyph::Delete, 14.).text_color(danger)),
         )
         .with_animation(
             SharedString::from(format!("file-in-{index}")),
@@ -83,7 +83,7 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
         .id(SharedString::from(format!("target-{id}")))
         .flex()
         .items_center()
-        .gap(px(11.))
+        .gap(px(10.))
         .p(px(6.))
         .rounded(px(RADIUS_CONTROL))
         .cursor_pointer()
@@ -122,11 +122,11 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     };
     let on_primary = color(palette.on_primary);
     let symbol: AnyElement = match phase {
-        SendPhase::Idle => icon(Glyph::Cursor, 19.)
+        SendPhase::Idle => icon(Glyph::Cursor, 18.)
             .text_color(on_primary)
             .with_transformation(cursor_at(0.))
             .into_any_element(),
-        SendPhase::Flying => icon(Glyph::Cursor, 19.)
+        SendPhase::Flying => icon(Glyph::Cursor, 18.)
             .text_color(on_primary)
             .with_animation(
                 "cursor-launch",
@@ -143,7 +143,7 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .justify_center()
         .gap(px(SPACE_SM))
         .w(px(BUTTON_WIDTH))
-        .h(px(48.))
+        .h(px(45.))
         .rounded(px(RADIUS_FIELD))
         .bg(fill)
         .overflow_hidden()
@@ -156,7 +156,7 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         SendPhase::Idle => button
             .cursor_pointer()
             .hover(|style| style.opacity(0.92))
-            .on_click(cx.listener(|view, _, _, cx| view.send_selected(cx)))
+            .on_click(cx.listener(|view, _, window, cx| view.send_selected(window, cx)))
             .into_any_element(),
         SendPhase::Flying => button.into_any_element(),
     };
@@ -192,5 +192,5 @@ pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
                     })),
             ),
         );
-    super::sheet::present(t!("send.title"), content, |view, _, cx| view.clear_pending(cx), cx)
+    super::sheet::present(view, t!("send.title"), content, |view, _, cx| view.clear_pending(cx), cx)
 }

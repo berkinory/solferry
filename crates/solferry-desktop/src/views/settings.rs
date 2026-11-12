@@ -233,7 +233,7 @@ fn blocked_row(device: &BlockedDevice, cx: &mut Context<MainView>) -> AnyElement
     div()
         .flex()
         .items_center()
-        .gap(px(11.))
+        .gap(px(10.))
         .p(px(6.))
         .child(ui::tile(Glyph::Blocked, cx))
         .child(who)

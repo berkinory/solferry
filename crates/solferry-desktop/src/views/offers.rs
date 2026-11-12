@@ -64,7 +64,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(11.))
+                        .gap(px(10.))
                         .child(ui::device_tile(summary.platform, true, cx))
                         .child(
                             div()
