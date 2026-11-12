@@ -7,4 +7,6 @@ extend-exclude = [
   "crates/*/locales/[!e]*.yml",
   "crates/*/locales/e[!n]*.yml",
   "android/app/src/main/res/values-*/strings.xml",
+  # String catalogs hold every language in one file.
+  "ios/Solferry/*.xcstrings",
 ]

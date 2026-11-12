@@ -4,8 +4,14 @@ import UserNotifications
 /// System notifications for things that need a person. On screen, the app itself shows them.
 @MainActor
 enum Notifier {
-    static func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    nonisolated static func status() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    /// Shows the system's prompt, which iOS does only once, and returns what it says now.
+    nonisolated static func request() async -> UNAuthorizationStatus {
+        _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+        return await status()
     }
 
     static func offer(key: UInt64, name: String) {

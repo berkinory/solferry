@@ -19,9 +19,11 @@ struct SettingsScreen: View {
                     }
                 }
             }
+            PermissionsCard()
             RelayCard()
             SaveFolderCard()
             VisibilityCard(found: me?.visibility != "Hidden")
+            AppearanceCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
                 Caption("Solferry \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
@@ -116,11 +118,11 @@ private struct RelayCard: View {
 
     var body: some View {
         let state = engine.state
-        Card(glyph: .relay, title: "Relay") {
+        Card(glyph: .relay, title: "Relay server") {
             ActionButton(label: "Setup Guide", glyph: .external, kind: .ghost, scale: .small) { openURL(guide) }
         } content: {
             PaddedWell {
-                Muted("Reach devices on other networks through a relay you run.")
+                Muted("Reach devices on other networks through a relay server you run.")
                 ForEach(state.relays, id: \.link) { RelayRow(relay: $0) }
                 HStack(spacing: SpaceTokens.sm) {
                     Field(text: $link, placeholder: "https://relay.example.com#token", onSubmit: add) { PasteInto(text: $link) }

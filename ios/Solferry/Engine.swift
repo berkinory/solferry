@@ -24,14 +24,13 @@ final class Engine {
     init() {
         let events = BridgeEvents()
         events.engine = self
-        setLocale(locale: Locale.preferredLanguages.first ?? "en")
+        setLocale(locale: Bundle.main.preferredLocalizations.first ?? "en")
         bridge = Solferry(
             dataDir: Engine.dataDirectory().path,
             downloadDir: Exporter.staging.path,
             deviceName: UIDevice.current.name,
             listener: events
         )
-        Notifier.requestPermission()
         let folder = destination()
         Task.detached { [weak self] in
             let saved = Exporter.recover(to: folder)

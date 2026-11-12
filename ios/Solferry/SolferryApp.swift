@@ -16,12 +16,17 @@ enum Place: Hashable {
 @main
 struct SolferryApp: App {
     @State private var engine = Engine()
+    @AppStorage("onboarded") private var onboarded = false
+    @AppStorage(Appearance.key) private var appearance = Appearance.system
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(engine)
-                .themed()
+            Group {
+                if onboarded { RootView() } else { OnboardingScreen { onboarded = true } }
+            }
+            .environment(engine)
+            .themed()
+            .preferredColorScheme(appearance.scheme)
         }
     }
 }
