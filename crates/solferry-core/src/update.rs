@@ -37,12 +37,28 @@ pub struct Asset {
     pub size: u64,
 }
 
+impl Asset {
+    /// The file's name as published, which the installers need to recognize it.
+    #[must_use]
+    pub fn file_name(&self) -> &str {
+        self.url.rsplit('/').next().unwrap_or("update")
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct Release {
     pub version: String,
     /// The release's page, for platforms that can't install by themselves.
     pub page: String,
     assets: HashMap<String, Asset>,
+}
+
+/// `latest.json`: the manifest's exact bytes as a string, so the signature covers what was signed
+/// and not a re-serialization of it.
+#[derive(Deserialize)]
+struct Signed {
+    manifest: String,
+    signature: String,
 }
 
 impl Release {
@@ -123,9 +139,9 @@ fn newer(release: &str, current: &str) -> Result<bool> {
 pub async fn check() -> Result<Option<Release>> {
     let Some(key) = VERIFYING_KEY else { return Ok(None) };
     let client = client()?;
-    let manifest = small_file(&client, MANIFEST_URL).await?;
-    let signature = small_file(&client, &format!("{MANIFEST_URL}.sig")).await?;
-    let release = verified(&manifest, &signature, key)?;
+    let signed: Signed =
+        serde_json::from_slice(&small_file(&client, MANIFEST_URL).await?).map_err(failed)?;
+    let release = verified(signed.manifest.as_bytes(), signed.signature.as_bytes(), key)?;
     Ok(newer(&release.version, env!("CARGO_PKG_VERSION"))?.then_some(release))
 }
 

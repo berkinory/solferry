@@ -1,5 +1,6 @@
 #!/bin/bash
-# Builds Solferry.app next to the given release binary. Signs it with SOLFERRY_SIGN_IDENTITY, or ad hoc without one.
+# Builds Solferry.app next to the given release binaries, with the CLI inside when it was built.
+# Signs it with SOLFERRY_SIGN_IDENTITY, or ad hoc without one.
 set -euo pipefail
 
 RELEASE=${1:-target/release}
@@ -19,8 +20,14 @@ for size in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONS" -o "$APP/Contents/Resources/solferry.icns"
 if [ -n "${SOLFERRY_SIGN_IDENTITY:-}" ]; then
-    codesign --force --options runtime --timestamp --sign "$SOLFERRY_SIGN_IDENTITY" "$APP"
+    SIGN=(--options runtime --timestamp --sign "$SOLFERRY_SIGN_IDENTITY")
 else
-    codesign --force --sign - "$APP"
+    SIGN=(--sign -)
 fi
+# Nested code is signed before the bundle that seals it.
+if [ -f "$RELEASE/solferry" ]; then
+    cp "$RELEASE/solferry" "$APP/Contents/MacOS/"
+    codesign --force "${SIGN[@]}" "$APP/Contents/MacOS/solferry"
+fi
+codesign --force "${SIGN[@]}" "$APP"
 echo "$APP"

@@ -24,9 +24,11 @@ Downloads are on the [releases page](https://github.com/berkinory/solferry/relea
 ```sh
 brew tap berkinory/brew
 brew trust berkinory/brew
-brew install --cask solferry   # the macOS app
-brew install solferry-cli      # the command line tool
+brew install --cask solferry   # the macOS app, with the solferry command
+brew install solferry-cli      # the command line tool alone, on Linux
 ```
+
+On Windows the installer puts the `solferry` command on your PATH too.
 
 The desktop apps update themselves unless you turn that off in Settings.
 

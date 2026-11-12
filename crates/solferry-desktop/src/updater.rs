@@ -42,7 +42,8 @@ pub enum Status {
 enum Target {
     Bundle(PathBuf),
     AppImage(PathBuf),
-    Executable(PathBuf),
+    /// Windows, where the downloaded installer does the replacing once this process has gone.
+    Installed(PathBuf),
 }
 
 impl Target {
@@ -55,7 +56,7 @@ impl Target {
                 .is_some_and(|ext| ext == "app")
                 .then(|| Self::Bundle(bundle.into()))?
         } else if cfg!(windows) {
-            Self::Executable(std::env::current_exe().ok()?)
+            Self::Installed(std::env::current_exe().ok()?)
         } else {
             // Child processes inherit APPIMAGE, so it only counts when this binary runs from it.
             let image = std::env::var_os("APPIMAGE")?;
@@ -68,7 +69,7 @@ impl Target {
 
     fn path(&self) -> &Path {
         match self {
-            Self::Bundle(path) | Self::AppImage(path) | Self::Executable(path) => path,
+            Self::Bundle(path) | Self::AppImage(path) | Self::Installed(path) => path,
         }
     }
 }
@@ -102,12 +103,22 @@ fn succeeded(command: &mut Command) -> io::Result<()> {
     if status.success() { Ok(()) } else { Err(io::Error::other(format!("{command:?} failed"))) }
 }
 
+/// Copies the app out of the downloaded disk image and swaps it in.
 fn replace_bundle(payload: &Path, bundle: &Path) -> io::Result<()> {
     let folder = bundle.parent().ok_or_else(|| io::Error::other("the app has no folder"))?;
-    let unpacked = folder.join(".solferry-update");
+    let mount = payload.with_extension("mount");
+    let unpacked = folder.join(".solferry-update.app");
     let _ = remove(&unpacked);
-    succeeded(Command::new("/usr/bin/ditto").arg("-x").arg("-k").arg(payload).arg(&unpacked))?;
-    let result = swap(&unpacked.join("Solferry.app"), bundle);
+    succeeded(
+        Command::new("/usr/bin/hdiutil")
+            .args(["attach", "-nobrowse", "-readonly", "-noautoopen", "-mountpoint"])
+            .arg(&mount)
+            .arg(payload),
+    )?;
+    let copied =
+        succeeded(Command::new("/usr/bin/ditto").arg(mount.join("Solferry.app")).arg(&unpacked));
+    let _ = succeeded(Command::new("/usr/bin/hdiutil").args(["detach", "-force"]).arg(&mount));
+    let result = copied.and_then(|()| swap(&unpacked, bundle));
     let _ = remove(&unpacked);
     result
 }
@@ -127,12 +138,12 @@ fn replace(target: &Target, payload: &Path) -> io::Result<()> {
     match target {
         Target::Bundle(bundle) => replace_bundle(payload, bundle),
         Target::AppImage(image) => replace_appimage(payload, image),
-        Target::Executable(_) => self_replace::self_replace(payload),
+        Target::Installed(_) => Ok(()),
     }
 }
 
 /// Starts the new version once this process has gone, so the two never share the device key.
-fn relaunch(target: &Target) -> io::Result<()> {
+fn relaunch(target: &Target, payload: &Path) -> io::Result<()> {
     const WAIT: &str = r#"while kill -0 "$0" 2>/dev/null; do sleep 0.1; done; exec "$@""#;
     let pid = std::process::id().to_string();
     let mut command = match target {
@@ -146,15 +157,19 @@ fn relaunch(target: &Target) -> io::Result<()> {
             command.args(["-c", WAIT, &pid]).arg(image);
             command
         }
-        Target::Executable(exe) => powershell_relaunch(&pid, exe),
+        Target::Installed(exe) => install_and_relaunch(&pid, payload, exe),
     };
     command.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).spawn().map(|_| ())
 }
 
-fn powershell_relaunch(pid: &str, exe: &Path) -> Command {
-    let path = exe.display().to_string().replace('\'', "''");
-    let script =
-        format!("Wait-Process -Id {pid} -ErrorAction SilentlyContinue; Start-Process '{path}'");
+fn install_and_relaunch(pid: &str, installer: &Path, exe: &Path) -> Command {
+    let quoted = |path: &Path| path.display().to_string().replace('\'', "''");
+    let (installer, exe) = (quoted(installer), quoted(exe));
+    let script = format!(
+        "Wait-Process -Id {pid} -ErrorAction SilentlyContinue; \
+         Start-Process -Wait '{installer}' -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'; \
+         Start-Process '{exe}'"
+    );
     let mut command = Command::new("powershell");
     command.args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script]);
     #[cfg(windows)]
@@ -231,7 +246,7 @@ impl Updater {
             return Ok(Status::Available { version, page: release.page.clone() });
         };
         let folder = self.data_dir.join(STAGE_DIR);
-        let payload = folder.join(format!("{version}.update"));
+        let payload = folder.join(asset.file_name());
         if !update::matches(asset, &payload).await {
             let _ = tokio::fs::remove_dir_all(&folder).await;
             tokio::fs::create_dir_all(&folder)
@@ -257,10 +272,13 @@ impl Updater {
         let Some((payload, target)) = staged else { return };
         let (out, folder) = (self.updates.clone(), self.data_dir.join(STAGE_DIR));
         tokio::task::spawn_blocking(move || {
-            let result = replace(&target, &payload).and_then(|()| relaunch(&target));
+            let result = replace(&target, &payload).and_then(|()| relaunch(&target, &payload));
             let update = match result {
                 Ok(()) => {
-                    let _ = std::fs::remove_dir_all(folder);
+                    // The Windows installer still has to run from there.
+                    if !matches!(target, Target::Installed(_)) {
+                        let _ = std::fs::remove_dir_all(folder);
+                    }
                     Update::Restarting
                 }
                 Err(error) => {

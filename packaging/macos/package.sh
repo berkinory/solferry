@@ -1,6 +1,6 @@
 #!/bin/bash
-# Turns a built release into the published macOS files: the DMG people install, the zip the
-# updater swaps in, and the CLI. Signs and notarizes when SOLFERRY_SIGN_IDENTITY is set.
+# Turns a built release into the published DMG, which people install and the updater unpacks.
+# Signs and notarizes when SOLFERRY_SIGN_IDENTITY is set.
 set -euo pipefail
 
 RELEASE=$1
@@ -39,10 +39,7 @@ if [ -n "$IDENTITY" ]; then
     SUBMISSION=$(mktemp -d)/Solferry.zip
     ditto -c -k --keepParent "$APP" "$SUBMISSION"
     notarize "$SUBMISSION" "$APP"
-    codesign --force --options runtime --timestamp --sign "$IDENTITY" "$RELEASE/solferry"
 fi
-
-ditto -c -k --keepParent "$APP" "$DIST/Solferry-$PLATFORM.zip"
 
 STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
@@ -53,5 +50,3 @@ if [ -n "$IDENTITY" ]; then
     codesign --force --timestamp --sign "$IDENTITY" "$DMG"
     notarize "$DMG" "$DMG"
 fi
-
-tar -C "$RELEASE" -czf "$DIST/solferry-cli-$PLATFORM.tar.gz" solferry
