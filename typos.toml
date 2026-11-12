@@ -1,2 +1,10 @@
 [files]
-extend-exclude = ["LICENSE", "Cargo.lock", "vendor"]
+# Translations are not English, so every locale but English is skipped.
+extend-exclude = [
+  "LICENSE",
+  "Cargo.lock",
+  "vendor",
+  "crates/*/locales/[!e]*.yml",
+  "crates/*/locales/e[!n]*.yml",
+  "android/app/src/main/res/values-*/strings.xml",
+]

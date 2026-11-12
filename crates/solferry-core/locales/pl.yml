@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Urządzenie bez nazwy"
+transfer:
+  and_more: "%{first} i inne"
+about:
+  unreachable: "Brak połączenia z: %{name}"
+  declined: "%{name}: odrzucono"
+  busy: "%{name}: zajęte"
+  not_paired: "Najpierw sparuj urządzenie: %{name}"
+explain:
+  storage:
+    title: "Nie udało się odczytać ani zapisać pliku"
+    next: "Sprawdź folder, uprawnienia i wolne miejsce."
+  corrupt_data:
+    title: "Ustawienia Solferry są uszkodzone"
+    next: "Usuń uszkodzony plik z folderu danych Solferry. Być może trzeba będzie ponownie sparować urządzenia."
+  network_start:
+    title: "Nie udało się uruchomić sieci"
+    next: "Uruchom ponownie Solferry, aby spróbować jeszcze raz."
+  invalid_relay_url:
+    title: "Nieprawidłowy adres przekaźnika"
+    next: "Wklej cały link wyświetlony przez przekaźnik, np. https://relay.example.com#token."
+  unreachable:
+    title: "Urządzenie jest niedostępne"
+    next: "Otwórz na nim Solferry. Jeśli jest w innej sieci, użyj Tailscale lub dodaj własny przekaźnik."
+  relay_check_failed:
+    title: "Przekaźnik nie działa"
+    next: "Sprawdź jego stan w Ustawieniach."
+  not_paired:
+    title: "Najpierw sparuj to urządzenie"
+    next: "Tylko sparowane urządzenia mogą się z nim stąd połączyć."
+  version_mismatch:
+    title: "Wersje Solferry są niezgodne"
+    next: "Zaktualizuj Solferry na obu urządzeniach."
+  busy:
+    title: "Drugie urządzenie jest zajęte"
+    next: "Poczekaj, aż zakończy trwające transfery, i spróbuj ponownie."
+  cancelled:
+    title: "Transfer anulowany"
+    next: "Wyślij ponownie, a transfer wznowi się od miejsca przerwania."
+  declined:
+    title: "Transfer odrzucony"
+    next: "Druga osoba odmówiła."
+  no_space:
+    title: "Za mało miejsca na dysku"
+    next: "Zwolnij miejsce na urządzeniu odbierającym i spróbuj ponownie."
+  delivery_failed:
+    title: "Nie udało się zapisać plików"
+    next: "Sprawdź folder pobierania na urządzeniu odbierającym."
+  invalid_offer:
+    title: "Odrzucono niebezpieczny transfer"
+    next: "Drugie urządzenie zaoferowało pliki, których Solferry nie może przyjąć."
+  source_changed:
+    title: "Plik zmienił się podczas wysyłania"
+    next: "Poczekaj, aż przestanie się zmieniać, i spróbuj ponownie."
+  unsupported_name:
+    title: "Nieobsługiwana nazwa pliku"
+    next: "Zmień nazwę pliku i spróbuj ponownie."
+  nothing_to_send:
+    title: "Nic do wysłania"
+    next: "Wybierz co najmniej jeden plik. Skróty i linki są pomijane."
+  hash_mismatch:
+    title: "Wykryto uszkodzone dane"
+    next: "Wadliwa kopia została odrzucona. Wyślij ponownie."
+  connection_lost:
+    title: "Utracono połączenie"
+    next: "Spróbuj ponownie. Transfer wznowi się od miejsca przerwania."
+  invalid_ticket:
+    title: "Ten kod jest nieprawidłowy"
+    next: "Wklej cały kod. Zaczyna się od sf1."
+  ticket_expired:
+    title: "Ten kod wygasł"
+    next: "Kody są ważne 10 minut. Utwórz nowy."
+  update:
+    title: "Nie udało się zaktualizować Solferry"
+    next: "Spróbuj później lub pobierz nową wersję z GitHuba."
+  own_ticket:
+    title: "To kod z tego urządzenia"
+    next: "Wpisz go na drugim urządzeniu."
+  no_local_network:
+    title: "Brak połączenia z siecią lokalną"
+    next: "Połącz się z Wi-Fi lub hotspotem i udostępnij ponownie."
+  pairing_refused:
+    title: "Parowanie odrzucone"
+    next: "Poproś drugą osobę o akceptację lub utwórz nowy kod."
+  unknown_device:
+    title: "Nie znaleziono urządzenia"
+    next: "Mogło zostać usunięte."
+  ambiguous_device:
+    title: "Pasuje więcej niż jedno urządzenie"
+    next: "Wybierz urządzenie z listy."
+  invalid_address:
+    title: "Ten adres jest nieprawidłowy"
+    next: "Wpisz adres IP, np. 192.168.1.20."
+  no_answer:
+    title: "Brak odpowiedzi pod tym adresem"
+    next: "Otwórz tam Solferry i sprawdź, czy jest widoczne dla innych."
+  protocol:
+    title: "W Solferry wystąpił błąd"
+    next: "To błąd w aplikacji. Zgłoś go razem ze szczegółami."

@@ -22,6 +22,7 @@ notification:
     title: "Files received"
     body: "%{title} from %{peer}"
 format:
+  percent: "%{value}%"
   size:
     b: "%{amount} B"
     kb: "%{amount} KB"
@@ -160,6 +161,12 @@ dialog:
     title: "Block %{name}?"
     body: "It can't send files or ask to pair. You can unblock it in Settings."
     action: "Block"
+onboarding:
+  title: "Welcome to Solferry"
+  body: "Send files between your devices. No account, nothing in the cloud."
+  name_label: "Your device's name"
+  name_hint: "Nearby devices see this name."
+  start: "Get started"
 settings:
   starting: "Starting..."
   version: "Solferry %{version}"
@@ -184,6 +191,10 @@ settings:
     title: "Open at login"
     on: "Solferry starts quietly when you log in, ready to receive."
     off: "Solferry only runs when you open it."
+  language:
+    title: "Language"
+    detail: "Used for every screen and notification."
+    system: "System default"
   blocked:
     title: "Blocked"
     unblock: "Unblock"

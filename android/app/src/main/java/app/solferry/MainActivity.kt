@@ -45,6 +45,7 @@ import app.solferry.ui.HistoryScreen
 import app.solferry.ui.HomeScreen
 import app.solferry.ui.LinkSheet
 import app.solferry.ui.LocalToaster
+import app.solferry.ui.OnboardingScreen
 import app.solferry.ui.PairRequestSheet
 import app.solferry.ui.SendSheet
 import app.solferry.ui.SettingsScreen
@@ -58,6 +59,7 @@ import app.solferry.ui.ToasterOverSheet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uniffi.solferry_ffi.PairedDevice
+import uniffi.solferry_ffi.setLocale
 
 private enum class Screen { Home, History, Settings }
 
@@ -79,6 +81,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // A language change recreates the activity, so the core's texts follow the app's language from here.
+        setLocale(resources.configuration.locales[0].toLanguageTag())
         shared = sharedUris(intent)
         val engine = (application as SolferryApp).engine
         engine.resumeStandby()
@@ -107,10 +111,15 @@ class MainActivity : ComponentActivity() {
                 val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), picked)
                 val media = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(), picked)
                 val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-                LaunchedEffect(Unit) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                var onboarded by remember { mutableStateOf(engine.onboarded) }
+                LaunchedEffect(onboarded) {
+                    if (onboarded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
+                }
+                if (!onboarded) {
+                    OnboardingScreen(state, engine) { onboarded = true }
+                    return@SolferryTheme
                 }
                 LaunchedEffect(state.pairedCount) {
                     if (state.pairedCount > 0 && shared.isEmpty()) {

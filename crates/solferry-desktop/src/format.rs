@@ -31,8 +31,9 @@ pub fn ago(ms: u64) -> String {
         1..60 => t!("format.ago.minutes", count = minutes),
         60..1440 => t!("format.ago.hours", count = minutes / 60),
         1440..2880 => t!("format.ago.yesterday"),
-        2880..43200 => t!("format.ago.days", count = minutes / 1440),
-        _ => t!("format.ago.months", count = (minutes / 43200).max(1)),
+        // Days run to two months, so a month count is never 1 and every language can use one form.
+        2880..86400 => t!("format.ago.days", count = minutes / 1440),
+        _ => t!("format.ago.months", count = minutes / 43200),
     }
     .into_owned()
 }

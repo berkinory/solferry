@@ -115,6 +115,13 @@
     <string name="history_empty_body">Files you send or receive show up here.</string>
     <string name="history_failed">Failed</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to Solferry</string>
+    <string name="onboarding_body">Send files between your devices. No account, nothing in the cloud.</string>
+    <string name="onboarding_name_title">Your device\'s name</string>
+    <string name="onboarding_name_hint">Nearby devices see this name.</string>
+    <string name="onboarding_start">Get started</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_name_title">Device name</string>
@@ -125,6 +132,8 @@
     <string name="settings_find_off">Nobody new can find this device. Paired devices can still reach it.</string>
     <string name="settings_background_title">Receive in the background</string>
     <string name="settings_background_body">Stay reachable while Solferry is closed. Shows a notification and uses more battery.</string>
+    <string name="language_title">Language</string>
+    <string name="language_system">System default</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay</string>
     <string name="relay_guide">Setup Guide</string>

@@ -70,6 +70,7 @@ pub enum Command {
     InstallUpdate,
     SetCheckUpdates(bool),
     SetShowInTray(bool),
+    SetLanguage(Option<String>),
     /// Shares these paths with browsers, or takes files from them when there are none.
     Link(Vec<PathBuf>),
     StopLink,
@@ -299,6 +300,11 @@ async fn run(
             Command::SetShowInTray(shown) => {
                 if let Ok(config) = Config::load(&data_dir) {
                     let _ = Config { show_in_tray: shown, ..config }.save(&data_dir);
+                }
+            }
+            Command::SetLanguage(language) => {
+                if let Ok(config) = Config::load(&data_dir) {
+                    let _ = Config { language, ..config }.save(&data_dir);
                 }
             }
             Command::Link(paths) => {

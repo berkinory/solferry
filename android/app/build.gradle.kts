@@ -55,6 +55,10 @@ android {
         }
     }
 
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     buildFeatures {
         buildConfig = true
         compose = true

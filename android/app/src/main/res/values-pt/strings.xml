@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Enviar</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_dismiss">Dispensar</string>
+    <string name="common_decline">Recusar</string>
+    <string name="common_paste">Colar</string>
+    <string name="common_copied">Copiado</string>
+    <string name="common_pair">Parear</string>
+    <string name="common_pairing">Pareando</string>
+    <string name="common_remove">Remover %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">On-line</string>
+    <string name="device_offline">Off-line</string>
+    <string name="device_paired">Pareado</string>
+    <string name="device_not_paired">Não pareado</string>
+    <string name="device_unnamed">Dispositivo sem nome</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Transferir</string>
+    <string name="tab_history">Histórico</string>
+    <string name="tab_settings">Configurações</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">agora</string>
+    <string name="ago_minutes">há %1$d min</string>
+    <string name="ago_hours">há %1$d h</string>
+    <string name="ago_yesterday">ontem</string>
+    <string name="ago_days">há %1$d dias</string>
+    <string name="ago_months">há %1$d meses</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Enviar arquivos</string>
+    <string name="home_send_hint">Toque para escolher o que enviar</string>
+    <string name="devices_title">Dispositivos</string>
+    <string name="devices_send_text">Enviar texto para %1$s</string>
+    <string name="devices_options">Opções de %1$s</string>
+    <string name="devices_auto_accept">Receber sem perguntar</string>
+    <string name="devices_last_transfer">Última transferência</string>
+    <string name="devices_forget">Esquecer</string>
+    <string name="devices_forget_title">Esquecer %1$s?</string>
+    <string name="devices_forget_body">Ele deixa de estar pareado até você parear de novo.</string>
+    <string name="nearby_title">Por perto</string>
+    <string name="nearby_use_code">Usar um código</string>
+    <string name="nearby_searching">Procurando dispositivos</string>
+    <string name="nearby_searching_hint">Abra o Solferry em outro dispositivo desta rede e ele vai aparecer aqui.</string>
+    <string name="nearby_scanning">Procurando novos dispositivos nesta rede</string>
+    <string name="browser_title">O outro dispositivo não tem o app</string>
+    <string name="browser_body">Um navegador na mesma rede também pode enviar arquivos para você. Para enviar arquivos a um navegador, selecione-os e escolha Compartilhar por link.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Arquivos a receber</string>
+    <string name="offer_wants_to_send">%1$s quer enviar</string>
+    <plurals name="offer_files">
+        <item quantity="one">%d arquivo</item>
+        <item quantity="many">%d arquivos</item>
+        <item quantity="other">%d arquivos</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Aceitar</string>
+    <string name="offer_always_accept">Sempre aceitar</string>
+    <string name="offer_block">Bloquear</string>
+    <string name="offer_block_title">Bloquear %1$s?</string>
+    <string name="offer_block_body">Ele não poderá enviar arquivos nem pedir pareamento. Você pode desbloquear depois.</string>
+    <string name="text_from">Texto de %1$s</string>
+    <string name="text_copy">Copiar</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="one">Enviar para %d dispositivo</item>
+        <item quantity="many">Enviar para %d dispositivos</item>
+        <item quantity="other">Enviar para %d dispositivos</item>
+    </plurals>
+    <string name="send_source_media">Fotos e vídeos</string>
+    <string name="send_source_files">Arquivos</string>
+    <string name="send_text_title">Enviar texto</string>
+    <string name="send_text_to">Para %1$s</string>
+    <string name="send_text_placeholder">Digite ou cole um texto</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Compartilhar por link</string>
+    <string name="link_receive">Receber por link</string>
+    <string name="link_share_hint">Abra o link em um navegador na mesma rede para baixar os arquivos.</string>
+    <string name="link_receive_hint">Abra o link em um navegador na mesma rede para enviar arquivos para este dispositivo.</string>
+    <string name="link_copy">Copiar link</string>
+    <string name="link_received">Recebidos</string>
+    <string name="link_stop">Parar</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Solicitação de pareamento</string>
+    <string name="pair_request_wants">%1$s quer parear</string>
+    <string name="pair_request_hint">Só confirme se a outra tela mostrar o mesmo código.</string>
+    <string name="pair_confirm">Confirmar</string>
+    <string name="pair_compare_title">Comparar códigos</string>
+    <string name="pair_compare_hint">Verifique se o outro dispositivo mostra este código e aceite por lá.</string>
+    <string name="pair_code_title">Parear com um código</string>
+    <string name="pair_show_title">Mostrar um código</string>
+    <string name="pair_show_hint">Para um dispositivo em outra rede ou que não aparece por perto. Mostre um código aqui e digite-o no outro dispositivo.</string>
+    <string name="pair_show_code">Mostrar código</string>
+    <string name="pair_invite_expiry">Vale para um único uso e expira em 10 minutos.</string>
+    <string name="pair_copy_code">Copiar código</string>
+    <string name="pair_enter_title">Digitar um código</string>
+    <string name="pair_enter_placeholder">Cole um código sf1</string>
+    <string name="pair_address_title">Digitar um endereço IP</string>
+    <string name="pair_own_address">IP deste dispositivo: %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Histórico</string>
+    <string name="history_clear">Limpar</string>
+    <string name="history_empty_title">Nenhuma transferência ainda</string>
+    <string name="history_empty_body">Os arquivos que você enviar ou receber vão aparecer aqui.</string>
+    <string name="history_failed">Falha</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Boas-vindas ao Solferry</string>
+    <string name="onboarding_body">Envie arquivos entre seus dispositivos. Sem conta e nada na nuvem.</string>
+    <string name="onboarding_name_title">Nome do seu dispositivo</string>
+    <string name="onboarding_name_hint">Dispositivos por perto vão ver este nome.</string>
+    <string name="onboarding_start">Começar</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="settings_name_title">Nome do dispositivo</string>
+    <string name="settings_name_placeholder">Nome</string>
+    <string name="settings_save">Salvar</string>
+    <string name="settings_find_title">Permitir que me encontrem</string>
+    <string name="settings_find_on">Os dispositivos na sua rede podem ver este e pedir para enviar arquivos.</string>
+    <string name="settings_find_off">Nenhum dispositivo novo pode encontrar este. Os pareados ainda podem se conectar a ele.</string>
+    <string name="settings_background_title">Receber em segundo plano</string>
+    <string name="settings_background_body">Fica disponível mesmo com o Solferry fechado. Mostra uma notificação e usa mais bateria.</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_system">Idioma do sistema</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Relay</string>
+    <string name="relay_guide">Guia de configuração</string>
+    <string name="relay_body">Conecte-se a dispositivos em outras redes por meio de um relay seu.</string>
+    <string name="relay_add">Adicionar</string>
+    <string name="relay_checking">Verificando</string>
+    <string name="relay_connected">Conectado</string>
+    <string name="relay_udp_blocked">Conectado, porta UDP 7842 bloqueada</string>
+    <string name="relay_refused">Recusado, verifique o link</string>
+    <string name="relay_unreachable">Não foi possível se conectar ao servidor</string>
+    <string name="folder_title">Salvar arquivos em</string>
+    <string name="folder_downloads">Downloads/Solferry</string>
+    <string name="folder_reset">Redefinir</string>
+    <string name="folder_change">Alterar</string>
+    <string name="updates_title">Atualizações</string>
+    <string name="updates_auto">Verificar atualizações automaticamente</string>
+    <string name="updates_available">O Solferry %1$s está disponível</string>
+    <string name="updates_download">Baixar</string>
+    <string name="blocked_title">Bloqueados</string>
+    <string name="blocked_unblock">Desbloquear</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Aguardando %1$s</string>
+    <string name="transfer_reconnecting">Reconectando a %1$s</string>
+    <string name="transfer_sending">Enviando %1$s</string>
+    <string name="transfer_receiving">Recebendo %1$s</string>
+    <string name="transfer_sent">Enviado: %1$s</string>
+    <string name="transfer_received">Recebido: %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d transferência</item>
+        <item quantity="many">%d transferências</item>
+        <item quantity="other">%d transferências</item>
+    </plurals>
+    <string name="toast_paired">Pareado com %1$s</string>
+    <string name="error_save_failed">%1$s: não foi possível salvar em %2$s</string>
+    <string name="error_save_downloads">Downloads</string>
+    <string name="error_save_recovered">Arquivos recebidos</string>
+    <string name="error_folder_unusable">Não foi possível usar essa pasta</string>
+    <string name="error_folder_lost">Sem acesso a %1$s, salvando em %2$s</string>
+    <string name="error_open_file">Não foi possível abrir esse arquivo. Tente compartilhar de novo.</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Solicitações e arquivos recebidos</string>
+    <string name="channel_transfers">Transferências em andamento</string>
+    <string name="channel_standby">Recebendo em segundo plano</string>
+    <plurals name="notify_progress">
+        <item quantity="one">%d transferência em andamento</item>
+        <item quantity="many">%d transferências em andamento</item>
+        <item quantity="other">%d transferências em andamento</item>
+    </plurals>
+    <string name="notify_standby">Pronto para receber</string>
+    <string name="notify_offer_body">%1$s quer enviar arquivos para você</string>
+    <string name="notify_pairing_body">%1$s quer parear com este dispositivo</string>
+    <string name="notify_text_copied">Copiado para a área de transferência</string>
+    <string name="notify_text_open">Abra o Solferry para copiar</string>
+    <string name="notify_received_title">Arquivos recebidos</string>
+    <string name="notify_received_body">%1$s de %2$s, em %3$s</string>
+</resources>

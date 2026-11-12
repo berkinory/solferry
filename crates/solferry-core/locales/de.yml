@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Unbenanntes Gerät"
+transfer:
+  and_more: "%{first} und weitere"
+about:
+  unreachable: "%{name} ist nicht erreichbar"
+  declined: "%{name} hat abgelehnt"
+  busy: "%{name} ist gerade beschäftigt"
+  not_paired: "Kopple zuerst mit %{name}"
+explain:
+  storage:
+    title: "Datei konnte nicht gelesen oder geschrieben werden"
+    next: "Prüfe den Ordner, die Berechtigungen und den freien Speicherplatz."
+  corrupt_data:
+    title: "Solferry-Einstellungen sind beschädigt"
+    next: "Lösche die beschädigte Datei im Datenordner von Solferry. Eventuell musst du deine Geräte neu koppeln."
+  network_start:
+    title: "Netzwerk konnte nicht gestartet werden"
+    next: "Starte Solferry neu, um es noch einmal zu versuchen."
+  invalid_relay_url:
+    title: "Diese Relay-Adresse ist ungültig"
+    next: "Füge den vollständigen Link ein, den dein Relay ausgegeben hat, z. B. https://relay.example.com#token."
+  unreachable:
+    title: "Gerät nicht erreichbar"
+    next: "Öffne Solferry auf dem Gerät. Ist es in einem anderen Netzwerk, nutze Tailscale oder füge ein eigenes Relay hinzu."
+  relay_check_failed:
+    title: "Ein Relay funktioniert nicht"
+    next: "Den Status findest du in den Einstellungen."
+  not_paired:
+    title: "Kopple zuerst mit diesem Gerät"
+    next: "Es ist nur für gekoppelte Geräte erreichbar."
+  version_mismatch:
+    title: "Solferry-Versionen passen nicht zusammen"
+    next: "Aktualisiere Solferry auf beiden Geräten."
+  busy:
+    title: "Das andere Gerät ist beschäftigt"
+    next: "Warte, bis seine Übertragungen abgeschlossen sind, und versuche es dann erneut."
+  cancelled:
+    title: "Übertragung abgebrochen"
+    next: "Sende erneut, um an derselben Stelle fortzufahren."
+  declined:
+    title: "Übertragung abgelehnt"
+    next: "Die andere Person hat abgelehnt."
+  no_space:
+    title: "Nicht genug Speicherplatz"
+    next: "Gib auf dem empfangenden Gerät Speicherplatz frei und versuche es erneut."
+  delivery_failed:
+    title: "Die Dateien konnten nicht gespeichert werden"
+    next: "Prüfe den Download-Ordner auf dem empfangenden Gerät."
+  invalid_offer:
+    title: "Unsichere Übertragung abgelehnt"
+    next: "Das andere Gerät hat Dateien angeboten, die Solferry nicht annehmen kann."
+  source_changed:
+    title: "Eine Datei wurde beim Senden geändert"
+    next: "Warte, bis sie nicht mehr geändert wird, und versuche es erneut."
+  unsupported_name:
+    title: "Ein Dateiname wird nicht unterstützt"
+    next: "Benenne die Datei um und versuche es erneut."
+  nothing_to_send:
+    title: "Nichts zu senden"
+    next: "Wähle mindestens eine Datei aus. Verknüpfungen und symbolische Links werden übersprungen."
+  hash_mismatch:
+    title: "Beschädigte Daten erkannt"
+    next: "Die fehlerhafte Kopie wurde verworfen. Sende die Datei erneut."
+  connection_lost:
+    title: "Verbindung unterbrochen"
+    next: "Versuche es erneut. Übertragungen werden an derselben Stelle fortgesetzt."
+  invalid_ticket:
+    title: "Dieser Code ist ungültig"
+    next: "Füge den vollständigen Code ein, der mit sf1 beginnt."
+  ticket_expired:
+    title: "Dieser Code ist abgelaufen"
+    next: "Codes gelten 10 Minuten. Erstelle einen neuen."
+  update:
+    title: "Solferry konnte nicht aktualisiert werden"
+    next: "Versuche es später erneut oder lade es von GitHub herunter."
+  own_ticket:
+    title: "Das ist der Code dieses Geräts"
+    next: "Gib ihn auf dem anderen Gerät ein."
+  no_local_network:
+    title: "Kein lokales Netzwerk"
+    next: "Verbinde dich mit einem WLAN oder Hotspot und teile dann erneut."
+  pairing_refused:
+    title: "Kopplung abgelehnt"
+    next: "Bitte die andere Person, die Anfrage anzunehmen, oder erstelle einen neuen Code."
+  unknown_device:
+    title: "Gerät nicht gefunden"
+    next: "Es wurde möglicherweise entfernt."
+  ambiguous_device:
+    title: "Mehrere Geräte kommen infrage"
+    next: "Wähle das Gerät aus der Liste aus."
+  invalid_address:
+    title: "Diese Adresse ist ungültig"
+    next: "Gib eine IP-Adresse wie 192.168.1.20 ein."
+  no_answer:
+    title: "Keine Antwort von dieser Adresse"
+    next: "Öffne Solferry auf dem Gerät und prüfe, ob es für andere auffindbar ist."
+  protocol:
+    title: "In Solferry ist etwas schiefgelaufen"
+    next: "Das ist ein Fehler in der App. Bitte melde ihn mit den Details."

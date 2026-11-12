@@ -6,7 +6,7 @@ use gpui_kit::component::input::{InputEvent, InputState, TextareaState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Theme, TitleBar};
 use gpui_kit::{
-    AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
+    AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
     InteractiveElement, IntoElement, ParentElement, PathPromptOptions, Render, Styled, Window, div,
     px, svg,
 };
@@ -15,6 +15,7 @@ use rust_i18n::t;
 
 use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
+use super::onboarding::Onboarding;
 use super::{
     confirm, history, home, nav, pairing, relays, send, settings, texts, toast, toast_timing,
 };
@@ -72,6 +73,7 @@ pub struct MainView {
     pub name_input: Entity<InputState>,
     pub relay_input: Entity<InputState>,
     pub text_input: Entity<TextareaState>,
+    onboarding: Option<Entity<Onboarding>>,
     focus: FocusHandle,
 }
 
@@ -152,6 +154,7 @@ impl MainView {
             name_input,
             relay_input,
             text_input,
+            onboarding: None,
             focus,
         }
     }
@@ -348,6 +351,9 @@ impl Focusable for MainView {
 
 impl Render for MainView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if let Some(screen) = self.onboarding(window, cx) {
+            return screen;
+        }
         let overlay = self.dialog.as_ref().map(|open| dialog::render(open, cx));
         let link = self.state.read(cx).link.clone();
         let sheet = confirm::sheet(self, cx)
@@ -408,6 +414,33 @@ impl Render for MainView {
             .children(sheet)
             .children(overlay)
             .children(toasts)
+            .into_any_element()
+    }
+}
+
+impl MainView {
+    /// The first launch screen, until it has been finished once.
+    fn onboarding(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Option<AnyElement> {
+        let config = self.state.read(cx).config.clone().filter(|config| !config.onboarded);
+        let Some(config) = config else {
+            self.onboarding = None;
+            return None;
+        };
+        let state = self.state.clone();
+        let screen = self
+            .onboarding
+            .get_or_insert_with(|| cx.new(|cx| Onboarding::new(state, config.name, window, cx)))
+            .clone();
+        let frame = div()
+            .flex()
+            .flex_col()
+            .size_full()
+            .bg(cx.theme().background)
+            .text_color(cx.theme().foreground)
+            .font_family(cx.theme().font_family.clone())
+            .child(TitleBar::new())
+            .child(div().flex_1().min_h_0().child(screen));
+        Some(frame.into_any_element())
     }
 }
 

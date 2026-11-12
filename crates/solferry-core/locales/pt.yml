@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Dispositivo sem nome"
+transfer:
+  and_more: "%{first} e outros"
+about:
+  unreachable: "Não foi possível se conectar a %{name}"
+  declined: "%{name} recusou"
+  busy: "%{name} está ocupado"
+  not_paired: "Pareie com %{name} primeiro"
+explain:
+  storage:
+    title: "Não foi possível ler ou gravar um arquivo"
+    next: "Verifique a pasta, as permissões e o espaço livre."
+  corrupt_data:
+    title: "As configurações do Solferry estão corrompidas"
+    next: "Exclua o arquivo corrompido da pasta de dados do Solferry. Talvez seja preciso parear os dispositivos de novo."
+  network_start:
+    title: "Não foi possível iniciar a rede"
+    next: "Reinicie o Solferry para tentar de novo."
+  invalid_relay_url:
+    title: "Endereço de relay inválido"
+    next: "Cole o link completo que o seu relay mostrou, como https://relay.example.com#token."
+  unreachable:
+    title: "Não foi possível se conectar ao dispositivo"
+    next: "Abra o Solferry nele. Se ele estiver em outra rede, use o Tailscale ou adicione seu próprio relay."
+  relay_check_failed:
+    title: "Um relay não está funcionando"
+    next: "Veja o status dele em Configurações."
+  not_paired:
+    title: "Pareie com este dispositivo primeiro"
+    next: "Só dispositivos pareados podem se conectar a ele daqui."
+  version_mismatch:
+    title: "As versões do Solferry são diferentes"
+    next: "Atualize o Solferry nos dois dispositivos."
+  busy:
+    title: "O outro dispositivo está ocupado"
+    next: "Espere as transferências dele terminarem e tente de novo."
+  cancelled:
+    title: "Transferência cancelada"
+    next: "Envie de novo para continuar de onde parou."
+  declined:
+    title: "Transferência recusada"
+    next: "A outra pessoa recusou."
+  no_space:
+    title: "Espaço em disco insuficiente"
+    next: "Libere espaço no dispositivo de destino e tente de novo."
+  delivery_failed:
+    title: "Não foi possível salvar os arquivos"
+    next: "Verifique a pasta de downloads no dispositivo de destino."
+  invalid_offer:
+    title: "Transferência não segura bloqueada"
+    next: "O outro dispositivo ofereceu arquivos que o Solferry não pode aceitar."
+  source_changed:
+    title: "Um arquivo mudou durante o envio"
+    next: "Espere o arquivo parar de mudar e tente de novo."
+  unsupported_name:
+    title: "Nome de arquivo incompatível"
+    next: "Renomeie o arquivo e tente de novo."
+  nothing_to_send:
+    title: "Nada para enviar"
+    next: "Escolha pelo menos um arquivo. Atalhos e links simbólicos são ignorados."
+  hash_mismatch:
+    title: "Dados corrompidos detectados"
+    next: "A cópia corrompida foi descartada. Envie de novo."
+  connection_lost:
+    title: "Conexão perdida"
+    next: "Tente de novo. As transferências continuam de onde pararam."
+  invalid_ticket:
+    title: "Código inválido"
+    next: "Cole o código inteiro, que começa com sf1."
+  ticket_expired:
+    title: "O código expirou"
+    next: "Os códigos valem por 10 minutos. Crie um novo."
+  update:
+    title: "Não foi possível atualizar o Solferry"
+    next: "Tente de novo mais tarde ou baixe pelo GitHub."
+  own_ticket:
+    title: "Esse é o código deste dispositivo"
+    next: "Digite-o no outro dispositivo."
+  no_local_network:
+    title: "Você não está em uma rede local"
+    next: "Conecte-se a uma rede Wi-Fi ou a um hotspot e compartilhe de novo."
+  pairing_refused:
+    title: "O pareamento foi recusado"
+    next: "Peça para a outra pessoa aceitar ou crie um novo código."
+  unknown_device:
+    title: "Dispositivo não encontrado"
+    next: "Talvez ele tenha sido removido."
+  ambiguous_device:
+    title: "Mais de um dispositivo corresponde"
+    next: "Escolha o dispositivo na lista."
+  invalid_address:
+    title: "Endereço inválido"
+    next: "Digite um endereço IP, como 192.168.1.20."
+  no_answer:
+    title: "Nenhuma resposta nesse endereço"
+    next: "Abra o Solferry nele e verifique se ele está visível para todos."
+  protocol:
+    title: "Algo deu errado no Solferry"
+    next: "Isso é um bug. Relate o problema com os detalhes."

@@ -87,6 +87,10 @@ class Engine(private val context: Context) : Listener {
         Keepalive.sync(context, state.value.transfers, state.value.standby)
     }
 
+    val onboarded get() = settings.getBoolean(ONBOARDED, false)
+
+    fun finishOnboarding() = settings.edit { putBoolean(ONBOARDED, true) }
+
     /** Call from the foreground: Android refuses to start the service from anywhere else. */
     fun resumeStandby() = StandbyService.sync(context, state.value.standby)
 
@@ -256,6 +260,7 @@ class Engine(private val context: Context) : Listener {
 
     private companion object {
         const val STANDBY = "standby"
+        const val ONBOARDED = "onboarded"
         const val SAVE_FOLDER = "save_folder"
         const val SAVE_FOLDER_NAME = "save_folder_name"
     }

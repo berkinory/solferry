@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">보내기</string>
+    <string name="common_cancel">취소</string>
+    <string name="common_dismiss">닫기</string>
+    <string name="common_decline">거절</string>
+    <string name="common_paste">붙여넣기</string>
+    <string name="common_copied">복사됨</string>
+    <string name="common_pair">페어링</string>
+    <string name="common_pairing">페어링 중</string>
+    <string name="common_remove">%1$s 삭제</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">온라인</string>
+    <string name="device_offline">오프라인</string>
+    <string name="device_paired">페어링됨</string>
+    <string name="device_not_paired">페어링 안 됨</string>
+    <string name="device_unnamed">이름 없는 기기</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">전송</string>
+    <string name="tab_history">기록</string>
+    <string name="tab_settings">설정</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">방금</string>
+    <string name="ago_minutes">%1$d분 전</string>
+    <string name="ago_hours">%1$d시간 전</string>
+    <string name="ago_yesterday">어제</string>
+    <string name="ago_days">%1$d일 전</string>
+    <string name="ago_months">%1$d개월 전</string>
+
+    <!-- Home -->
+    <string name="home_send_files">파일 보내기</string>
+    <string name="home_send_hint">탭해서 보낼 항목 선택</string>
+    <string name="devices_title">기기</string>
+    <string name="devices_send_text">%1$s에 텍스트 보내기</string>
+    <string name="devices_options">%1$s 옵션</string>
+    <string name="devices_auto_accept">묻지 않고 받기</string>
+    <string name="devices_last_transfer">최근 전송</string>
+    <string name="devices_forget">페어링 해제</string>
+    <string name="devices_forget_title">%1$s과(와) 페어링을 해제할까요?</string>
+    <string name="devices_forget_body">다시 페어링하기 전까지 페어링되지 않은 기기로 표시돼요.</string>
+    <string name="nearby_title">주변 기기</string>
+    <string name="nearby_use_code">코드 사용</string>
+    <string name="nearby_searching">기기를 찾는 중</string>
+    <string name="nearby_searching_hint">같은 네트워크에 있는 다른 기기에서 Solferry를 열면 여기에 표시돼요.</string>
+    <string name="nearby_scanning">이 네트워크에서 새 기기를 찾는 중</string>
+    <string name="browser_title">상대 기기에 앱이 없나요?</string>
+    <string name="browser_body">같은 네트워크의 브라우저에서도 파일을 보낼 수 있어요. 브라우저로 보내려면 파일을 고른 후 \'링크로 공유\'를 선택하세요.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">파일 수신 요청</string>
+    <string name="offer_wants_to_send">%1$s에서 파일을 보내려고 해요</string>
+    <plurals name="offer_files">
+        <item quantity="other">파일 %d개</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">수락</string>
+    <string name="offer_always_accept">항상 수락</string>
+    <string name="offer_block">차단</string>
+    <string name="offer_block_title">%1$s을(를) 차단할까요?</string>
+    <string name="offer_block_body">이 기기는 파일을 보내거나 페어링을 요청할 수 없게 돼요. 차단은 나중에 해제할 수 있어요.</string>
+    <string name="text_from">%1$s에서 보낸 텍스트</string>
+    <string name="text_copy">복사</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="other">기기 %d대에 보내기</item>
+    </plurals>
+    <string name="send_source_media">사진 및 동영상</string>
+    <string name="send_source_files">파일</string>
+    <string name="send_text_title">텍스트 보내기</string>
+    <string name="send_text_to">받는 기기: %1$s</string>
+    <string name="send_text_placeholder">텍스트를 입력하거나 붙여넣으세요</string>
+
+    <!-- Browser links -->
+    <string name="link_share">링크로 공유</string>
+    <string name="link_receive">링크로 받기</string>
+    <string name="link_share_hint">같은 네트워크의 브라우저에서 열면 파일을 다운로드할 수 있어요.</string>
+    <string name="link_receive_hint">같은 네트워크의 브라우저에서 열면 이 기기로 파일을 보낼 수 있어요.</string>
+    <string name="link_copy">링크 복사</string>
+    <string name="link_received">받음</string>
+    <string name="link_stop">중지</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">페어링 요청</string>
+    <string name="pair_request_wants">%1$s에서 페어링하려고 해요</string>
+    <string name="pair_request_hint">상대 화면에 같은 코드가 표시될 때만 수락하세요.</string>
+    <string name="pair_confirm">수락</string>
+    <string name="pair_compare_title">코드 확인</string>
+    <string name="pair_compare_hint">상대 기기에 같은 코드가 표시되는지 확인한 후 상대 기기에서 수락하세요.</string>
+    <string name="pair_code_title">코드로 페어링</string>
+    <string name="pair_show_title">코드 표시</string>
+    <string name="pair_show_hint">다른 네트워크에 있는 기기이거나 주변 기기에서 찾을 수 없을 때 사용하세요. 여기서 코드를 표시하고 상대 기기에서 입력하세요.</string>
+    <string name="pair_show_code">코드 표시</string>
+    <string name="pair_invite_expiry">10분 동안 한 번만 사용할 수 있어요.</string>
+    <string name="pair_copy_code">코드 복사</string>
+    <string name="pair_enter_title">코드 입력</string>
+    <string name="pair_enter_placeholder">sf1 코드 붙여넣기</string>
+    <string name="pair_address_title">IP 주소 입력</string>
+    <string name="pair_own_address">이 기기의 주소: %1$s</string>
+
+    <!-- History -->
+    <string name="history_title">기록</string>
+    <string name="history_clear">지우기</string>
+    <string name="history_empty_title">아직 전송 기록이 없어요</string>
+    <string name="history_empty_body">보내거나 받은 파일이 여기에 표시돼요.</string>
+    <string name="history_failed">실패</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Solferry에 오신 걸 환영해요</string>
+    <string name="onboarding_body">내 기기끼리 파일을 주고받으세요. 계정도 클라우드도 필요 없어요.</string>
+    <string name="onboarding_name_title">기기 이름</string>
+    <string name="onboarding_name_hint">주변 기기에 이 이름이 표시돼요.</string>
+    <string name="onboarding_start">시작하기</string>
+
+    <!-- Settings -->
+    <string name="settings_title">설정</string>
+    <string name="settings_name_title">기기 이름</string>
+    <string name="settings_name_placeholder">이름</string>
+    <string name="settings_save">저장</string>
+    <string name="settings_find_title">다른 기기에 표시</string>
+    <string name="settings_find_on">같은 네트워크의 기기가 이 기기를 보고 파일 전송을 요청할 수 있어요.</string>
+    <string name="settings_find_off">새 기기는 이 기기를 찾을 수 없어요. 페어링된 기기는 계속 연결할 수 있어요.</string>
+    <string name="settings_background_title">백그라운드에서 받기</string>
+    <string name="settings_background_body">Solferry를 닫아도 파일을 받을 수 있어요. 알림이 계속 표시되고 배터리를 더 사용해요.</string>
+    <string name="language_title">언어</string>
+    <string name="language_system">시스템 기본값</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">릴레이</string>
+    <string name="relay_guide">설치 가이드</string>
+    <string name="relay_body">직접 운영하는 릴레이를 통해 다른 네트워크의 기기에 연결해요.</string>
+    <string name="relay_add">추가</string>
+    <string name="relay_checking">확인 중</string>
+    <string name="relay_connected">연결됨</string>
+    <string name="relay_udp_blocked">연결됨 (UDP 7842 차단됨)</string>
+    <string name="relay_refused">거부됨, 링크를 확인하세요</string>
+    <string name="relay_unreachable">서버에 연결할 수 없음</string>
+    <string name="folder_title">파일 저장 위치</string>
+    <string name="folder_downloads">다운로드/Solferry</string>
+    <string name="folder_reset">초기화</string>
+    <string name="folder_change">변경</string>
+    <string name="updates_title">업데이트</string>
+    <string name="updates_auto">자동으로 업데이트 확인</string>
+    <string name="updates_available">Solferry %1$s 업데이트 가능</string>
+    <string name="updates_download">다운로드</string>
+    <string name="blocked_title">차단됨</string>
+    <string name="blocked_unblock">차단 해제</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">%1$s 기다리는 중</string>
+    <string name="transfer_reconnecting">%1$s에 다시 연결 중</string>
+    <string name="transfer_sending">%1$s 보내는 중</string>
+    <string name="transfer_receiving">%1$s 받는 중</string>
+    <string name="transfer_sent">%1$s 전송 완료</string>
+    <string name="transfer_received">%1$s 수신 완료</string>
+    <plurals name="transfer_count">
+        <item quantity="other">전송 %d건</item>
+    </plurals>
+    <string name="toast_paired">%1$s과(와) 페어링했어요</string>
+    <string name="error_save_failed">%1$s: %2$s에 저장하지 못했어요</string>
+    <string name="error_save_downloads">다운로드</string>
+    <string name="error_save_recovered">받은 파일</string>
+    <string name="error_folder_unusable">이 폴더는 사용할 수 없어요</string>
+    <string name="error_folder_lost">%1$s에 접근할 수 없어 %2$s에 저장해요</string>
+    <string name="error_open_file">파일을 열 수 없어요. 다시 공유해 보세요</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">요청 및 받은 파일</string>
+    <string name="channel_transfers">진행 중인 전송</string>
+    <string name="channel_standby">백그라운드 수신</string>
+    <plurals name="notify_progress">
+        <item quantity="other">전송 %d건 진행 중</item>
+    </plurals>
+    <string name="notify_standby">받을 준비 완료</string>
+    <string name="notify_offer_body">%1$s에서 파일을 보내려고 해요</string>
+    <string name="notify_pairing_body">%1$s에서 이 기기와 페어링하려고 해요</string>
+    <string name="notify_text_copied">클립보드에 복사했어요</string>
+    <string name="notify_text_open">Solferry를 열어 복사하세요</string>
+    <string name="notify_received_title">파일을 받았어요</string>
+    <string name="notify_received_body">%2$s에서 보낸 %1$s, 저장 위치: %3$s</string>
+</resources>

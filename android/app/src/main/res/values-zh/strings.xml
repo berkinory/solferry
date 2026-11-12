@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">发送</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_dismiss">关闭</string>
+    <string name="common_decline">拒绝</string>
+    <string name="common_paste">粘贴</string>
+    <string name="common_copied">已复制</string>
+    <string name="common_pair">配对</string>
+    <string name="common_pairing">正在配对</string>
+    <string name="common_remove">移除 %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">在线</string>
+    <string name="device_offline">离线</string>
+    <string name="device_paired">已配对</string>
+    <string name="device_not_paired">未配对</string>
+    <string name="device_unnamed">未命名设备</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">传输</string>
+    <string name="tab_history">历史记录</string>
+    <string name="tab_settings">设置</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">刚刚</string>
+    <string name="ago_minutes">%1$d分钟前</string>
+    <string name="ago_hours">%1$d小时前</string>
+    <string name="ago_yesterday">昨天</string>
+    <string name="ago_days">%1$d天前</string>
+    <string name="ago_months">%1$d个月前</string>
+
+    <!-- Home -->
+    <string name="home_send_files">发送文件</string>
+    <string name="home_send_hint">点按选择要发送的内容</string>
+    <string name="devices_title">设备</string>
+    <string name="devices_send_text">向 %1$s 发送文本</string>
+    <string name="devices_options">%1$s 的更多选项</string>
+    <string name="devices_auto_accept">自动接收</string>
+    <string name="devices_last_transfer">上次传输</string>
+    <string name="devices_forget">取消配对</string>
+    <string name="devices_forget_title">要取消与 %1$s 的配对吗？</string>
+    <string name="devices_forget_body">重新配对前，它将显示为未配对设备。</string>
+    <string name="nearby_title">附近的设备</string>
+    <string name="nearby_use_code">使用配对码</string>
+    <string name="nearby_searching">正在查找设备</string>
+    <string name="nearby_searching_hint">在同一网络中的另一台设备上打开 Solferry，它就会显示在这里。</string>
+    <string name="nearby_scanning">正在此网络中查找新设备</string>
+    <string name="browser_title">对方设备没有安装应用？</string>
+    <string name="browser_body">同一网络中的浏览器也能向你发送文件。如要发送给浏览器，请先选择文件，再选择“通过链接共享”。</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">文件传输请求</string>
+    <string name="offer_wants_to_send">%1$s 想向你发送文件</string>
+    <plurals name="offer_files">
+        <item quantity="other">%d 个文件</item>
+    </plurals>
+    <string name="offer_size">%1$s，%2$s</string>
+    <string name="offer_accept">接受</string>
+    <string name="offer_always_accept">始终接受</string>
+    <string name="offer_block">屏蔽</string>
+    <string name="offer_block_title">要屏蔽 %1$s 吗？</string>
+    <string name="offer_block_body">它将无法向你发送文件或请求配对。你之后可以解除屏蔽。</string>
+    <string name="text_from">来自 %1$s 的文本</string>
+    <string name="text_copy">复制</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="other">发送到 %d 台设备</item>
+    </plurals>
+    <string name="send_source_media">照片和视频</string>
+    <string name="send_source_files">文件</string>
+    <string name="send_text_title">发送文本</string>
+    <string name="send_text_to">发送给 %1$s</string>
+    <string name="send_text_placeholder">输入或粘贴文本</string>
+
+    <!-- Browser links -->
+    <string name="link_share">通过链接共享</string>
+    <string name="link_receive">通过链接接收</string>
+    <string name="link_share_hint">在同一网络的浏览器中打开，即可下载这些文件。</string>
+    <string name="link_receive_hint">在同一网络的浏览器中打开，即可向本设备发送文件。</string>
+    <string name="link_copy">复制链接</string>
+    <string name="link_received">已收到</string>
+    <string name="link_stop">停止</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">配对请求</string>
+    <string name="pair_request_wants">%1$s 想与你配对</string>
+    <string name="pair_request_hint">请仅在对方屏幕显示相同配对码时确认。</string>
+    <string name="pair_confirm">确认</string>
+    <string name="pair_compare_title">核对配对码</string>
+    <string name="pair_compare_hint">请确认对方设备显示的是这个配对码，然后在对方设备上接受。</string>
+    <string name="pair_code_title">使用配对码配对</string>
+    <string name="pair_show_title">显示配对码</string>
+    <string name="pair_show_hint">适用于其他网络中的设备，或在附近找不到本设备时。在这里显示配对码，然后在对方设备上输入。</string>
+    <string name="pair_show_code">显示配对码</string>
+    <string name="pair_invite_expiry">仅限使用一次，10 分钟内有效。</string>
+    <string name="pair_copy_code">复制配对码</string>
+    <string name="pair_enter_title">输入配对码</string>
+    <string name="pair_enter_placeholder">粘贴以 sf1 开头的配对码</string>
+    <string name="pair_address_title">输入 IP 地址</string>
+    <string name="pair_own_address">本设备的地址：%1$s</string>
+
+    <!-- History -->
+    <string name="history_title">历史记录</string>
+    <string name="history_clear">清除</string>
+    <string name="history_empty_title">还没有传输记录</string>
+    <string name="history_empty_body">你发送或接收的文件会显示在这里。</string>
+    <string name="history_failed">失败</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">欢迎使用 Solferry</string>
+    <string name="onboarding_body">在你的设备之间互传文件。无需账号，不经过云端。</string>
+    <string name="onboarding_name_title">设备名称</string>
+    <string name="onboarding_name_hint">附近的设备会看到这个名称。</string>
+    <string name="onboarding_start">开始使用</string>
+
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <string name="settings_name_title">设备名称</string>
+    <string name="settings_name_placeholder">名称</string>
+    <string name="settings_save">保存</string>
+    <string name="settings_find_title">允许他人发现我</string>
+    <string name="settings_find_on">同一网络中的设备可以看到本设备，并请求向你发送文件。</string>
+    <string name="settings_find_off">新设备无法发现本设备，已配对的设备仍可连接。</string>
+    <string name="settings_background_title">在后台接收</string>
+    <string name="settings_background_body">关闭 Solferry 后仍可接收文件。通知栏会常驻一条通知，耗电也会增加。</string>
+    <string name="language_title">语言</string>
+    <string name="language_system">跟随系统</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">中继</string>
+    <string name="relay_guide">部署指南</string>
+    <string name="relay_body">通过你自己部署的中继，连接其他网络中的设备。</string>
+    <string name="relay_add">添加</string>
+    <string name="relay_checking">正在检查</string>
+    <string name="relay_connected">已连接</string>
+    <string name="relay_udp_blocked">已连接，但 UDP 7842 被阻止</string>
+    <string name="relay_refused">连接被拒绝，请检查链接</string>
+    <string name="relay_unreachable">无法连接服务器</string>
+    <string name="folder_title">文件保存位置</string>
+    <string name="folder_downloads">下载/Solferry</string>
+    <string name="folder_reset">恢复默认</string>
+    <string name="folder_change">更改</string>
+    <string name="updates_title">更新</string>
+    <string name="updates_auto">自动检查更新</string>
+    <string name="updates_available">Solferry %1$s 现已推出</string>
+    <string name="updates_download">下载</string>
+    <string name="blocked_title">已屏蔽</string>
+    <string name="blocked_unblock">解除屏蔽</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">正在等待 %1$s</string>
+    <string name="transfer_reconnecting">正在重新连接 %1$s</string>
+    <string name="transfer_sending">正在发送 %1$s</string>
+    <string name="transfer_receiving">正在接收 %1$s</string>
+    <string name="transfer_sent">已发送 %1$s</string>
+    <string name="transfer_received">已收到 %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="other">%d 项传输</item>
+    </plurals>
+    <string name="toast_paired">已与 %1$s 配对</string>
+    <string name="error_save_failed">%1$s：无法保存到 %2$s</string>
+    <string name="error_save_downloads">下载</string>
+    <string name="error_save_recovered">收到的文件</string>
+    <string name="error_folder_unusable">无法使用该文件夹</string>
+    <string name="error_folder_lost">无法再访问 %1$s，将改为保存到 %2$s</string>
+    <string name="error_open_file">无法打开该文件，请尝试重新分享</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">请求和接收提醒</string>
+    <string name="channel_transfers">正在进行的传输</string>
+    <string name="channel_standby">后台接收</string>
+    <plurals name="notify_progress">
+        <item quantity="other">正在进行 %d 项传输</item>
+    </plurals>
+    <string name="notify_standby">随时可以接收</string>
+    <string name="notify_offer_body">%1$s 想向你发送文件</string>
+    <string name="notify_pairing_body">%1$s 想与此设备配对</string>
+    <string name="notify_text_copied">已复制到剪贴板</string>
+    <string name="notify_text_open">打开 Solferry 即可复制</string>
+    <string name="notify_received_title">已收到文件</string>
+    <string name="notify_received_body">来自 %2$s 的 %1$s，已保存到 %3$s</string>
+</resources>

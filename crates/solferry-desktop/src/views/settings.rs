@@ -11,7 +11,7 @@ use solferry_core::{BlockedDevice, Config, Visibility, update};
 
 use super::button::Button;
 use super::main_view::MainView;
-use super::{relays, ui, updates};
+use super::{language, relays, ui, updates};
 use crate::assets::Glyph;
 use crate::login;
 use crate::service::Command;
@@ -55,6 +55,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(visibility_section(&config, cx))
         .child(tray_section(&config, cx))
         .child(login_section(cx))
+        .child(language::section(&config, cx))
         .children(update::enabled().then(|| updates::section(config.check_updates, &status, cx)))
         .children(blocked_section(&blocked, cx))
         .child(about(id, cx))
@@ -121,7 +122,7 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("findable")
                             .large()
@@ -158,7 +159,7 @@ fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("tray")
                             .large()
@@ -186,7 +187,7 @@ fn login_section(cx: &mut Context<MainView>) -> AnyElement {
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("login")
                             .large()

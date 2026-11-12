@@ -1,5 +1,6 @@
 package app.solferry.ui
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -71,6 +72,7 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.stri
             }
         }
     }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
     me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
     if (state.blocked.isNotEmpty()) BlockedCard(state.blocked, engine)
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {

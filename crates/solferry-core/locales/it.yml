@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Dispositivo senza nome"
+transfer:
+  and_more: "%{first} e altri"
+about:
+  unreachable: "Impossibile raggiungere %{name}"
+  declined: "%{name} ha rifiutato"
+  busy: "%{name} è occupato"
+  not_paired: "Prima abbina %{name}"
+explain:
+  storage:
+    title: "Impossibile leggere o scrivere un file"
+    next: "Controlla la cartella, i permessi e lo spazio libero."
+  corrupt_data:
+    title: "Le impostazioni di Solferry sono danneggiate"
+    next: "Elimina il file danneggiato dalla cartella dei dati di Solferry. Potresti dover abbinare di nuovo i dispositivi."
+  network_start:
+    title: "Impossibile avviare la rete"
+    next: "Riavvia Solferry per riprovare."
+  invalid_relay_url:
+    title: "Indirizzo del relay non valido"
+    next: "Incolla il link completo mostrato dal tuo relay, ad esempio https://relay.example.com#token."
+  unreachable:
+    title: "Dispositivo non raggiungibile"
+    next: "Apri Solferry sull'altro dispositivo. Se è su un'altra rete, usa Tailscale o aggiungi un relay tuo."
+  relay_check_failed:
+    title: "Un relay non funziona"
+    next: "Controlla il suo stato nelle Impostazioni."
+  not_paired:
+    title: "Prima abbina questo dispositivo"
+    next: "Da qui possono raggiungerlo solo i dispositivi abbinati."
+  version_mismatch:
+    title: "Versioni di Solferry diverse"
+    next: "Aggiorna Solferry su entrambi i dispositivi."
+  busy:
+    title: "L'altro dispositivo è occupato"
+    next: "Attendi che finisca i trasferimenti in corso e riprova."
+  cancelled:
+    title: "Trasferimento annullato"
+    next: "Invia di nuovo per riprendere da dove si era interrotto."
+  declined:
+    title: "Trasferimento rifiutato"
+    next: "L'altra persona ha detto di no."
+  no_space:
+    title: "Spazio su disco insufficiente"
+    next: "Libera spazio sul dispositivo di destinazione e riprova."
+  delivery_failed:
+    title: "Impossibile salvare i file"
+    next: "Controlla la cartella dei download sul dispositivo di destinazione."
+  invalid_offer:
+    title: "Trasferimento non sicuro bloccato"
+    next: "L'altro dispositivo ha proposto file che Solferry non può accettare."
+  source_changed:
+    title: "Un file è cambiato durante l'invio"
+    next: "Attendi che il file smetta di cambiare e riprova."
+  unsupported_name:
+    title: "Nome di file non supportato"
+    next: "Rinomina il file e riprova."
+  nothing_to_send:
+    title: "Niente da inviare"
+    next: "Scegli almeno un file. Collegamenti e link simbolici vengono ignorati."
+  hash_mismatch:
+    title: "Rilevati dati danneggiati"
+    next: "La copia danneggiata è stata scartata. Invia di nuovo."
+  connection_lost:
+    title: "Connessione persa"
+    next: "Riprova. I trasferimenti riprendono da dove si erano interrotti."
+  invalid_ticket:
+    title: "Codice non valido"
+    next: "Incolla il codice completo, che inizia con sf1."
+  ticket_expired:
+    title: "Codice scaduto"
+    next: "I codici valgono 10 minuti. Creane uno nuovo."
+  update:
+    title: "Impossibile aggiornare Solferry"
+    next: "Riprova più tardi o scaricalo da GitHub."
+  own_ticket:
+    title: "È il codice di questo dispositivo"
+    next: "Inseriscilo sull'altro dispositivo."
+  no_local_network:
+    title: "Nessuna rete locale"
+    next: "Connettiti a una rete Wi-Fi o a un hotspot, poi condividi di nuovo."
+  pairing_refused:
+    title: "Abbinamento rifiutato"
+    next: "Chiedi all'altra persona di accettare o crea un nuovo codice."
+  unknown_device:
+    title: "Dispositivo non trovato"
+    next: "Potrebbe essere stato rimosso."
+  ambiguous_device:
+    title: "Più dispositivi corrispondono"
+    next: "Scegli il dispositivo dall'elenco."
+  invalid_address:
+    title: "Indirizzo non valido"
+    next: "Inserisci un indirizzo IP, ad esempio 192.168.1.20."
+  no_answer:
+    title: "Nessuna risposta da questo indirizzo"
+    next: "Apri Solferry sull'altro dispositivo e verifica che sia visibile a tutti."
+  protocol:
+    title: "Si è verificato un problema in Solferry"
+    next: "È un bug. Segnalalo includendo i dettagli."

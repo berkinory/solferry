@@ -72,6 +72,7 @@ pub(super) fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<
             | Command::InstallUpdate
             | Command::SetCheckUpdates(_)
             | Command::SetShowInTray(_)
+            | Command::SetLanguage(_)
             | Command::Link(_)
             | Command::StopLink
             | Command::Quit => {}

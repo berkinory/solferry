@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Adsız cihaz"
+transfer:
+  and_more: "%{first} ve diğerleri"
+about:
+  unreachable: "%{name} cihazına ulaşılamıyor"
+  declined: "%{name} reddetti"
+  busy: "%{name} meşgul"
+  not_paired: "Önce %{name} ile eşleştir"
+explain:
+  storage:
+    title: "Dosya okunamadı veya yazılamadı"
+    next: "Klasörü, izinleri ve boş alanı kontrol et."
+  corrupt_data:
+    title: "Solferry ayarları bozulmuş"
+    next: "Solferry'nin veri klasöründeki bozuk dosyayı sil. Cihazlarını yeniden eşleştirmen gerekebilir."
+  network_start:
+    title: "Ağ başlatılamadı"
+    next: "Solferry'yi yeniden başlatıp tekrar dene."
+  invalid_relay_url:
+    title: "Bu röle adresi geçerli değil"
+    next: "Rölenin verdiği bağlantının tamamını yapıştır. Örnek: https://relay.example.com#token"
+  unreachable:
+    title: "Cihaza ulaşılamıyor"
+    next: "O cihazda Solferry'yi aç. Farklı bir ağdaysa Tailscale kullan ya da kendi röleni ekle."
+  relay_check_failed:
+    title: "Bir röle çalışmıyor"
+    next: "Durumunu Ayarlar'da görebilirsin."
+  not_paired:
+    title: "Önce bu cihazla eşleştir"
+    next: "Bu cihaza yalnızca eşleştirilmiş cihazlar ulaşabilir."
+  version_mismatch:
+    title: "Solferry sürümleri uyuşmuyor"
+    next: "İki cihazda da Solferry'yi güncelle."
+  busy:
+    title: "Diğer cihaz meşgul"
+    next: "Oradaki aktarımlar bitince tekrar dene."
+  cancelled:
+    title: "Aktarım iptal edildi"
+    next: "Kaldığı yerden devam etmek için tekrar gönder."
+  declined:
+    title: "Aktarım reddedildi"
+    next: "Karşı taraf kabul etmedi."
+  no_space:
+    title: "Yeterli depolama alanı yok"
+    next: "Alıcı cihazda yer açıp tekrar dene."
+  delivery_failed:
+    title: "Dosyalar kaydedilemedi"
+    next: "Alıcı cihazdaki indirme klasörünü kontrol et."
+  invalid_offer:
+    title: "Güvenli olmayan aktarım reddedildi"
+    next: "Diğer cihaz, Solferry'nin kabul edemeyeceği dosyalar göndermek istedi."
+  source_changed:
+    title: "Gönderilirken bir dosya değişti"
+    next: "Dosyadaki değişiklikler bitince tekrar dene."
+  unsupported_name:
+    title: "Bir dosya adı desteklenmiyor"
+    next: "Dosyayı yeniden adlandırıp tekrar dene."
+  nothing_to_send:
+    title: "Gönderilecek bir şey yok"
+    next: "En az bir dosya seç. Kısayollar ve sembolik bağlantılar gönderilmez."
+  hash_mismatch:
+    title: "Bozuk veri tespit edildi"
+    next: "Hatalı kopya silindi. Tekrar gönder."
+  connection_lost:
+    title: "Bağlantı koptu"
+    next: "Tekrar dene. Aktarımlar kaldığı yerden devam eder."
+  invalid_ticket:
+    title: "Bu kod geçerli değil"
+    next: "sf1 ile başlayan kodun tamamını yapıştır."
+  ticket_expired:
+    title: "Bu kodun süresi doldu"
+    next: "Kodlar 10 dakika geçerli. Yeni bir kod oluştur."
+  update:
+    title: "Solferry güncellenemedi"
+    next: "Daha sonra tekrar dene ya da GitHub'dan indir."
+  own_ticket:
+    title: "Bu kod zaten bu cihaza ait"
+    next: "Kodu diğer cihazda gir."
+  no_local_network:
+    title: "Yerel ağa bağlı değilsin"
+    next: "Bir Wi-Fi ağına veya erişim noktasına bağlan, sonra tekrar paylaş."
+  pairing_refused:
+    title: "Eşleştirme reddedildi"
+    next: "Karşı taraftan kabul etmesini iste ya da yeni bir kod oluştur."
+  unknown_device:
+    title: "Cihaz bulunamadı"
+    next: "Kaldırılmış olabilir."
+  ambiguous_device:
+    title: "Bu ada uyan birden fazla cihaz var"
+    next: "Listeden cihazı seç."
+  invalid_address:
+    title: "Bu adres geçerli değil"
+    next: "192.168.1.20 gibi bir IP adresi gir."
+  no_answer:
+    title: "Bu adresten yanıt gelmedi"
+    next: "O cihazda Solferry'yi aç ve herkese görünür olduğundan emin ol."
+  protocol:
+    title: "Solferry'de bir sorun oluştu"
+    next: "Bu bir yazılım hatası. Lütfen ayrıntılarıyla birlikte bildir."

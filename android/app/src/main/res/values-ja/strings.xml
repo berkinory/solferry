@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">送信</string>
+    <string name="common_cancel">キャンセル</string>
+    <string name="common_dismiss">閉じる</string>
+    <string name="common_decline">拒否</string>
+    <string name="common_paste">貼り付け</string>
+    <string name="common_copied">コピーしました</string>
+    <string name="common_pair">ペアリング</string>
+    <string name="common_pairing">ペアリング中</string>
+    <string name="common_remove">%1$s を削除</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">オンライン</string>
+    <string name="device_offline">オフライン</string>
+    <string name="device_paired">ペアリング済み</string>
+    <string name="device_not_paired">未ペアリング</string>
+    <string name="device_unnamed">名前のないデバイス</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">転送</string>
+    <string name="tab_history">履歴</string>
+    <string name="tab_settings">設定</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">たった今</string>
+    <string name="ago_minutes">%1$d分前</string>
+    <string name="ago_hours">%1$d時間前</string>
+    <string name="ago_yesterday">昨日</string>
+    <string name="ago_days">%1$d日前</string>
+    <string name="ago_months">%1$dか月前</string>
+
+    <!-- Home -->
+    <string name="home_send_files">ファイルを送信</string>
+    <string name="home_send_hint">タップして送るものを選択</string>
+    <string name="devices_title">デバイス</string>
+    <string name="devices_send_text">%1$s にテキストを送信</string>
+    <string name="devices_options">%1$s のオプション</string>
+    <string name="devices_auto_accept">確認せずに受信</string>
+    <string name="devices_last_transfer">前回の転送</string>
+    <string name="devices_forget">ペアリング解除</string>
+    <string name="devices_forget_title">%1$s とのペアリングを解除しますか？</string>
+    <string name="devices_forget_body">もう一度ペアリングするまで、未ペアリングのデバイスとして扱われます。</string>
+    <string name="nearby_title">近くのデバイス</string>
+    <string name="nearby_use_code">コードを使う</string>
+    <string name="nearby_searching">デバイスを探しています</string>
+    <string name="nearby_searching_hint">同じネットワーク上の別のデバイスで Solferry を開くと、ここに表示されます。</string>
+    <string name="nearby_scanning">このネットワークで新しいデバイスを探しています</string>
+    <string name="browser_title">相手のデバイスにアプリがない場合</string>
+    <string name="browser_body">同じネットワーク上のブラウザからファイルを受け取れます。ブラウザに送るときは、ファイルを選んで「リンクで共有」を選択します。</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">ファイルの受信リクエスト</string>
+    <string name="offer_wants_to_send">%1$s がファイルを送ろうとしています</string>
+    <plurals name="offer_files">
+        <item quantity="other">%d 個のファイル</item>
+    </plurals>
+    <string name="offer_size">%1$s、%2$s</string>
+    <string name="offer_accept">承認</string>
+    <string name="offer_always_accept">常に承認</string>
+    <string name="offer_block">ブロック</string>
+    <string name="offer_block_title">%1$s をブロックしますか？</string>
+    <string name="offer_block_body">ファイルの送信やペアリングのリクエストができなくなります。ブロックは後で解除できます。</string>
+    <string name="text_from">%1$s からのテキスト</string>
+    <string name="text_copy">コピー</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="other">%d 台に送信</item>
+    </plurals>
+    <string name="send_source_media">写真と動画</string>
+    <string name="send_source_files">ファイル</string>
+    <string name="send_text_title">テキストを送信</string>
+    <string name="send_text_to">宛先: %1$s</string>
+    <string name="send_text_placeholder">テキストを入力または貼り付け</string>
+
+    <!-- Browser links -->
+    <string name="link_share">リンクで共有</string>
+    <string name="link_receive">リンクで受信</string>
+    <string name="link_share_hint">同じネットワーク上のブラウザで開くと、ファイルをダウンロードできます。</string>
+    <string name="link_receive_hint">同じネットワーク上のブラウザで開くと、このデバイスにファイルを送れます。</string>
+    <string name="link_copy">リンクをコピー</string>
+    <string name="link_received">受信済み</string>
+    <string name="link_stop">停止</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">ペアリングのリクエスト</string>
+    <string name="pair_request_wants">%1$s がペアリングをリクエストしています</string>
+    <string name="pair_request_hint">相手の画面に同じコードが表示されている場合のみ承認してください。</string>
+    <string name="pair_confirm">承認</string>
+    <string name="pair_compare_title">コードの確認</string>
+    <string name="pair_compare_hint">相手のデバイスに同じコードが表示されていることを確かめてから、相手のデバイスで承認してください。</string>
+    <string name="pair_code_title">コードでペアリング</string>
+    <string name="pair_show_title">コードを表示</string>
+    <string name="pair_show_hint">別のネットワークにあるデバイスや、近くのデバイスとして見つからない場合に使います。ここでコードを表示し、相手のデバイスで入力してください。</string>
+    <string name="pair_show_code">コードを表示</string>
+    <string name="pair_invite_expiry">1 回限り、10 分間有効です。</string>
+    <string name="pair_copy_code">コードをコピー</string>
+    <string name="pair_enter_title">コードを入力</string>
+    <string name="pair_enter_placeholder">sf1 コードを貼り付け</string>
+    <string name="pair_address_title">IP アドレスを入力</string>
+    <string name="pair_own_address">このデバイスのアドレス: %1$s</string>
+
+    <!-- History -->
+    <string name="history_title">履歴</string>
+    <string name="history_clear">消去</string>
+    <string name="history_empty_title">まだ転送はありません</string>
+    <string name="history_empty_body">送受信したファイルがここに表示されます。</string>
+    <string name="history_failed">失敗</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Solferry へようこそ</string>
+    <string name="onboarding_body">自分のデバイス間でファイルを送れます。アカウントは不要で、クラウドも使いません。</string>
+    <string name="onboarding_name_title">デバイス名</string>
+    <string name="onboarding_name_hint">近くのデバイスにはこの名前が表示されます。</string>
+    <string name="onboarding_start">はじめる</string>
+
+    <!-- Settings -->
+    <string name="settings_title">設定</string>
+    <string name="settings_name_title">デバイス名</string>
+    <string name="settings_name_placeholder">名前</string>
+    <string name="settings_save">保存</string>
+    <string name="settings_find_title">ほかのデバイスに表示</string>
+    <string name="settings_find_on">同じネットワーク上のデバイスからこのデバイスが見え、ファイルの送信をリクエストできます。</string>
+    <string name="settings_find_off">新しいデバイスからは見つかりません。ペアリング済みのデバイスからは引き続き接続できます。</string>
+    <string name="settings_background_title">バックグラウンドで受信</string>
+    <string name="settings_background_body">Solferry を閉じていても受信できます。通知が常に表示され、バッテリーの消費が増えます。</string>
+    <string name="language_title">言語</string>
+    <string name="language_system">システムのデフォルト</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">リレー</string>
+    <string name="relay_guide">セットアップガイド</string>
+    <string name="relay_body">自分で運用するリレーを経由して、別のネットワークにあるデバイスに接続します。</string>
+    <string name="relay_add">追加</string>
+    <string name="relay_checking">確認中</string>
+    <string name="relay_connected">接続済み</string>
+    <string name="relay_udp_blocked">接続済み (UDP 7842 はブロックされています)</string>
+    <string name="relay_refused">拒否されました。リンクを確認してください</string>
+    <string name="relay_unreachable">サーバーに接続できません</string>
+    <string name="folder_title">ファイルの保存先</string>
+    <string name="folder_downloads">ダウンロード/Solferry</string>
+    <string name="folder_reset">リセット</string>
+    <string name="folder_change">変更</string>
+    <string name="updates_title">アップデート</string>
+    <string name="updates_auto">アップデートを自動で確認</string>
+    <string name="updates_available">Solferry %1$s が利用可能です</string>
+    <string name="updates_download">ダウンロード</string>
+    <string name="blocked_title">ブロック中</string>
+    <string name="blocked_unblock">ブロック解除</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">%1$s を待っています</string>
+    <string name="transfer_reconnecting">%1$s に再接続中</string>
+    <string name="transfer_sending">%1$s を送信中</string>
+    <string name="transfer_receiving">%1$s を受信中</string>
+    <string name="transfer_sent">%1$s を送信しました</string>
+    <string name="transfer_received">%1$s を受信しました</string>
+    <plurals name="transfer_count">
+        <item quantity="other">%d 件の転送</item>
+    </plurals>
+    <string name="toast_paired">%1$s とペアリングしました</string>
+    <string name="error_save_failed">%1$s: %2$s に保存できませんでした</string>
+    <string name="error_save_downloads">ダウンロード</string>
+    <string name="error_save_recovered">受信したファイル</string>
+    <string name="error_folder_unusable">このフォルダは使用できません</string>
+    <string name="error_folder_lost">%1$s にアクセスできなくなりました。%2$s に保存します</string>
+    <string name="error_open_file">ファイルを開けませんでした。もう一度共有してください</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">リクエストと受信完了</string>
+    <string name="channel_transfers">進行中の転送</string>
+    <string name="channel_standby">バックグラウンドでの受信</string>
+    <plurals name="notify_progress">
+        <item quantity="other">%d 件を転送中</item>
+    </plurals>
+    <string name="notify_standby">受信の準備ができています</string>
+    <string name="notify_offer_body">%1$s がファイルを送ろうとしています</string>
+    <string name="notify_pairing_body">%1$s がこのデバイスとのペアリングをリクエストしています</string>
+    <string name="notify_text_copied">クリップボードにコピーしました</string>
+    <string name="notify_text_open">Solferry を開いてコピーしてください</string>
+    <string name="notify_received_title">ファイルを受信しました</string>
+    <string name="notify_received_body">%2$s から %1$s。保存先: %3$s</string>
+</resources>

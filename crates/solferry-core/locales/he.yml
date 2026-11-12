@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "מכשיר ללא שם"
+transfer:
+  and_more: "%{first} ועוד"
+about:
+  unreachable: "אין חיבור אל %{name}"
+  declined: "%{name} דחה את הבקשה"
+  busy: "%{name} תפוס כרגע"
+  not_paired: "צריך קודם לצמד את %{name}"
+explain:
+  storage:
+    title: "לא ניתן לקרוא או לכתוב קובץ"
+    next: "כדאי לבדוק את התיקייה, את ההרשאות ואת השטח הפנוי."
+  corrupt_data:
+    title: "ההגדרות של Solferry פגומות"
+    next: "צריך למחוק את הקובץ הפגום בתיקיית הנתונים של Solferry. ייתכן שיהיה צורך לצמד מכשירים מחדש."
+  network_start:
+    title: "הרשת לא הופעלה"
+    next: "אפשר להפעיל מחדש את Solferry ולנסות שוב."
+  invalid_relay_url:
+    title: "כתובת הממסר לא תקינה"
+    next: "צריך להדביק את הקישור המלא שהממסר הציג, למשל https://relay.example.com#token."
+  unreachable:
+    title: "אין חיבור למכשיר"
+    next: "צריך לפתוח בו את Solferry. ברשת אחרת אפשר להשתמש ב־Tailscale או להוסיף ממסר משלך."
+  relay_check_failed:
+    title: "אחד הממסרים לא עובד"
+    next: "הסטטוס שלו מופיע בהגדרות."
+  not_paired:
+    title: "צריך קודם לצמד את המכשיר הזה"
+    next: "רק מכשירים מצומדים יכולים להתחבר אליו מכאן."
+  version_mismatch:
+    title: "גרסאות Solferry לא תואמות"
+    next: "צריך לעדכן את Solferry בשני המכשירים."
+  busy:
+    title: "המכשיר השני תפוס"
+    next: "כדאי לחכות שההעברות שלו יסתיימו ולנסות שוב."
+  cancelled:
+    title: "ההעברה בוטלה"
+    next: "אפשר לשלוח שוב, וההעברה תמשיך מהמקום שבו נעצרה."
+  declined:
+    title: "ההעברה נדחתה"
+    next: "הצד השני סירב לקבל."
+  no_space:
+    title: "אין מספיק שטח אחסון"
+    next: "צריך לפנות מקום במכשיר המקבל ולנסות שוב."
+  delivery_failed:
+    title: "לא ניתן לשמור את הקבצים"
+    next: "כדאי לבדוק את תיקיית ההורדות במכשיר המקבל."
+  invalid_offer:
+    title: "העברה לא בטוחה נחסמה"
+    next: "המכשיר השני הציע קבצים ש־Solferry לא יכולה לקבל."
+  source_changed:
+    title: "קובץ השתנה בזמן השליחה"
+    next: "כדאי לחכות שהקובץ יפסיק להשתנות ולנסות שוב."
+  unsupported_name:
+    title: "אי אפשר לשלוח קובץ בשם הזה"
+    next: "צריך לשנות את שם הקובץ ולנסות שוב."
+  nothing_to_send:
+    title: "אין מה לשלוח"
+    next: "צריך לבחור לפחות קובץ אחד. קיצורי דרך וקישורים לא נשלחים."
+  hash_mismatch:
+    title: "התגלו נתונים פגומים"
+    next: "העותק הפגום נמחק. אפשר לשלוח שוב."
+  connection_lost:
+    title: "החיבור נותק"
+    next: "אפשר לנסות שוב. ההעברות ימשיכו מהמקום שבו נעצרו."
+  invalid_ticket:
+    title: "הקוד לא תקין"
+    next: "צריך להדביק את הקוד המלא, שמתחיל ב־sf1."
+  ticket_expired:
+    title: "פג תוקף הקוד"
+    next: "קוד תקף ל־10 דקות. אפשר ליצור קוד חדש."
+  update:
+    title: "לא ניתן לעדכן את Solferry"
+    next: "אפשר לנסות שוב מאוחר יותר, או להוריד את הגרסה מ־GitHub."
+  own_ticket:
+    title: "זה הקוד של המכשיר הזה"
+    next: "צריך להזין אותו במכשיר השני."
+  no_local_network:
+    title: "אין חיבור לרשת מקומית"
+    next: "צריך להתחבר ל־Wi-Fi או לנקודה חמה ולשתף שוב."
+  pairing_refused:
+    title: "הצימוד נדחה"
+    next: "אפשר לבקש מהצד השני לאשר, או ליצור קוד חדש."
+  unknown_device:
+    title: "המכשיר לא נמצא"
+    next: "ייתכן שהוא הוסר."
+  ambiguous_device:
+    title: "יותר ממכשיר אחד מתאים"
+    next: "צריך לבחור את המכשיר מהרשימה."
+  invalid_address:
+    title: "הכתובת לא תקינה"
+    next: "צריך להזין כתובת IP, למשל 192.168.1.20."
+  no_answer:
+    title: "אין מענה בכתובת הזו"
+    next: "צריך לפתוח שם את Solferry ולוודא שהמכשיר גלוי לאחרים."
+  protocol:
+    title: "משהו השתבש ב־Solferry"
+    next: "זה באג. נשמח לקבל דיווח עם הפרטים."

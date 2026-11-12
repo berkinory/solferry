@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Надіслати</string>
+    <string name="common_cancel">Скасувати</string>
+    <string name="common_dismiss">Сховати</string>
+    <string name="common_decline">Відхилити</string>
+    <string name="common_paste">Вставити</string>
+    <string name="common_copied">Скопійовано</string>
+    <string name="common_pair">Створити пару</string>
+    <string name="common_pairing">Створення пари</string>
+    <string name="common_remove">Вилучити %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">У мережі</string>
+    <string name="device_offline">Не в мережі</string>
+    <string name="device_paired">У парі</string>
+    <string name="device_not_paired">Не в парі</string>
+    <string name="device_unnamed">Пристрій без назви</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Передача</string>
+    <string name="tab_history">Історія</string>
+    <string name="tab_settings">Налаштування</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">щойно</string>
+    <string name="ago_minutes">%1$d хв тому</string>
+    <string name="ago_hours">%1$d год тому</string>
+    <string name="ago_yesterday">учора</string>
+    <string name="ago_days">%1$d дн. тому</string>
+    <string name="ago_months">%1$d міс. тому</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Надіслати файли</string>
+    <string name="home_send_hint">Торкніться, щоб вибрати, що надіслати</string>
+    <string name="devices_title">Пристрої</string>
+    <string name="devices_send_text">Надіслати текст: %1$s</string>
+    <string name="devices_options">Параметри: %1$s</string>
+    <string name="devices_auto_accept">Приймати без підтвердження</string>
+    <string name="devices_last_transfer">Остання передача</string>
+    <string name="devices_forget">Забути</string>
+    <string name="devices_forget_title">Забути %1$s?</string>
+    <string name="devices_forget_body">Пристрій більше не буде в парі, доки ви знову її не створите.</string>
+    <string name="nearby_title">Поруч</string>
+    <string name="nearby_use_code">Використати код</string>
+    <string name="nearby_searching">Пошук пристроїв</string>
+    <string name="nearby_searching_hint">Відкрийте Solferry на іншому пристрої в цій мережі, і він з’явиться тут.</string>
+    <string name="nearby_scanning">Пошук нових пристроїв у цій мережі</string>
+    <string name="browser_title">На іншому пристрої немає застосунку</string>
+    <string name="browser_body">Браузер у тій самій мережі може надіслати вам файли. Щоб надіслати файли в браузер, виберіть їх і натисніть «Поділитися посиланням».</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">Вхідні файли</string>
+    <string name="offer_wants_to_send">%1$s хоче надіслати</string>
+    <plurals name="offer_files">
+        <item quantity="one">%d файл</item>
+        <item quantity="few">%d файли</item>
+        <item quantity="many">%d файлів</item>
+        <item quantity="other">%d файлу</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Прийняти</string>
+    <string name="offer_always_accept">Завжди приймати</string>
+    <string name="offer_block">Заблокувати</string>
+    <string name="offer_block_title">Заблокувати %1$s?</string>
+    <string name="offer_block_body">Він не зможе надсилати файли або запитувати створення пари. Розблокувати його можна пізніше.</string>
+    <string name="text_from">Текст від %1$s</string>
+    <string name="text_copy">Копіювати</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="one">Надіслати на %d пристрій</item>
+        <item quantity="few">Надіслати на %d пристрої</item>
+        <item quantity="many">Надіслати на %d пристроїв</item>
+        <item quantity="other">Надіслати на %d пристрою</item>
+    </plurals>
+    <string name="send_source_media">Фото й відео</string>
+    <string name="send_source_files">Файли</string>
+    <string name="send_text_title">Надіслати текст</string>
+    <string name="send_text_to">Кому: %1$s</string>
+    <string name="send_text_placeholder">Введіть або вставте текст</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Поділитися посиланням</string>
+    <string name="link_receive">Отримати за посиланням</string>
+    <string name="link_share_hint">Відкрийте його в браузері в тій самій мережі, щоб завантажити файли.</string>
+    <string name="link_receive_hint">Відкрийте його в браузері в тій самій мережі, щоб надіслати сюди файли.</string>
+    <string name="link_copy">Копіювати посилання</string>
+    <string name="link_received">Отримано</string>
+    <string name="link_stop">Зупинити</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Запит на створення пари</string>
+    <string name="pair_request_wants">%1$s хоче створити пару</string>
+    <string name="pair_request_hint">Підтверджуйте, лише якщо на іншому екрані такий самий код.</string>
+    <string name="pair_confirm">Підтвердити</string>
+    <string name="pair_compare_title">Порівняйте коди</string>
+    <string name="pair_compare_hint">Переконайтеся, що на іншому пристрої цей самий код, і прийміть запит там.</string>
+    <string name="pair_code_title">Створити пару за кодом</string>
+    <string name="pair_show_title">Показати код</string>
+    <string name="pair_show_hint">Якщо пристрій в іншій мережі або цей пристрій не видно поруч, покажіть код тут і введіть його там.</string>
+    <string name="pair_show_code">Показати код</string>
+    <string name="pair_invite_expiry">Код одноразовий і діє 10 хвилин.</string>
+    <string name="pair_copy_code">Копіювати код</string>
+    <string name="pair_enter_title">Ввести код</string>
+    <string name="pair_enter_placeholder">Вставте код sf1</string>
+    <string name="pair_address_title">Ввести IP-адресу</string>
+    <string name="pair_own_address">Адреса цього пристрою: %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Історія</string>
+    <string name="history_clear">Очистити</string>
+    <string name="history_empty_title">Передач ще немає</string>
+    <string name="history_empty_body">Тут з’являться надіслані й отримані файли.</string>
+    <string name="history_failed">Не вдалося</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Вітаємо в Solferry</string>
+    <string name="onboarding_body">Надсилайте файли між своїми пристроями. Без облікового запису й без хмари.</string>
+    <string name="onboarding_name_title">Назва вашого пристрою</string>
+    <string name="onboarding_name_hint">Цю назву бачать пристрої поруч.</string>
+    <string name="onboarding_start">Почати</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Налаштування</string>
+    <string name="settings_name_title">Назва пристрою</string>
+    <string name="settings_name_placeholder">Назва</string>
+    <string name="settings_save">Зберегти</string>
+    <string name="settings_find_title">Видимість для інших</string>
+    <string name="settings_find_on">Пристрої у вашій мережі бачать цей пристрій і можуть пропонувати йому файли.</string>
+    <string name="settings_find_off">Нові пристрої його не знайдуть. Пристрої в парі й надалі можуть підключатися.</string>
+    <string name="settings_background_title">Приймання у фоні</string>
+    <string name="settings_background_body">Solferry залишається на зв’язку, навіть коли закритий. Показує сповіщення й витрачає більше заряду.</string>
+    <string name="language_title">Мова</string>
+    <string name="language_system">Як у системі</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Ретранслятор</string>
+    <string name="relay_guide">Інструкція з налаштування</string>
+    <string name="relay_body">Підключайтеся до пристроїв в інших мережах через власний ретранслятор.</string>
+    <string name="relay_add">Додати</string>
+    <string name="relay_checking">Перевірка</string>
+    <string name="relay_connected">Підключено</string>
+    <string name="relay_udp_blocked">Підключено, але UDP 7842 заблоковано</string>
+    <string name="relay_refused">Доступ заборонено, перевірте посилання</string>
+    <string name="relay_unreachable">Сервер недоступний</string>
+    <string name="folder_title">Зберігати файли в</string>
+    <string name="folder_downloads">Завантаження/Solferry</string>
+    <string name="folder_reset">Скинути</string>
+    <string name="folder_change">Змінити</string>
+    <string name="updates_title">Оновлення</string>
+    <string name="updates_auto">Перевіряти оновлення автоматично</string>
+    <string name="updates_available">Доступна версія Solferry %1$s</string>
+    <string name="updates_download">Завантажити</string>
+    <string name="blocked_title">Заблоковані</string>
+    <string name="blocked_unblock">Розблокувати</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Очікування: %1$s</string>
+    <string name="transfer_reconnecting">Повторне підключення: %1$s</string>
+    <string name="transfer_sending">Надсилання: %1$s</string>
+    <string name="transfer_receiving">Отримання: %1$s</string>
+    <string name="transfer_sent">Надіслано: %1$s</string>
+    <string name="transfer_received">Отримано: %1$s</string>
+    <plurals name="transfer_count">
+        <item quantity="one">%d передача</item>
+        <item quantity="few">%d передачі</item>
+        <item quantity="many">%d передач</item>
+        <item quantity="other">%d передачі</item>
+    </plurals>
+    <string name="toast_paired">Пару з %1$s створено</string>
+    <string name="error_save_failed">%1$s: не вдалося зберегти в папку %2$s</string>
+    <string name="error_save_downloads">Завантаження</string>
+    <string name="error_save_recovered">Отримані файли</string>
+    <string name="error_folder_unusable">Не вдалося використати цю папку</string>
+    <string name="error_folder_lost">Немає доступу до папки %1$s. Файли зберігаються в %2$s</string>
+    <string name="error_open_file">Не вдалося відкрити файл. Спробуйте поділитися ним ще раз</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Запити й отримані файли</string>
+    <string name="channel_transfers">Поточні передачі</string>
+    <string name="channel_standby">Приймання у фоні</string>
+    <plurals name="notify_progress">
+        <item quantity="one">Триває %d передача</item>
+        <item quantity="few">Тривають %d передачі</item>
+        <item quantity="many">Триває %d передач</item>
+        <item quantity="other">Триває %d передачі</item>
+    </plurals>
+    <string name="notify_standby">Готовий до приймання</string>
+    <string name="notify_offer_body">%1$s хоче надіслати вам файли</string>
+    <string name="notify_pairing_body">%1$s хоче створити пару з цим пристроєм</string>
+    <string name="notify_text_copied">Скопійовано в буфер обміну</string>
+    <string name="notify_text_open">Відкрийте Solferry, щоб скопіювати</string>
+    <string name="notify_received_title">Файли отримано</string>
+    <string name="notify_received_body">%1$s від %2$s, у папці %3$s</string>
+</resources>

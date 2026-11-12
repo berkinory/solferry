@@ -55,7 +55,7 @@ fn fitted(text: &str, budget: usize) -> String {
 /// The template's own words always show, then as much of the name as still fits.
 fn phrase(template: &str, name: &str, budget: usize) -> String {
     const SLOT: &str = "%{name}";
-    let room = budget.saturating_sub(template.len().saturating_sub(SLOT.len()));
+    let room = budget.saturating_sub(template.chars().count().saturating_sub(SLOT.len()));
     template.replace(SLOT, &fitted(name, room))
 }
 
@@ -140,7 +140,7 @@ fn percent(fraction: f32, cx: &Context<MainView>) -> impl IntoElement {
         .flex_none()
         .text_size(px(14.))
         .text_color(faded(cx))
-        .child(format!("{}%", format::whole(f64::from(fraction) * 100.)))
+        .child(t!("format.percent", value = format::whole(f64::from(fraction) * 100.)))
 }
 
 fn row(close: bool) -> Div {
