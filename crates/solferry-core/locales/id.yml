@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "Perangkat tanpa nama"
+transfer:
+  and_more: "%{first} dan lainnya"
+about:
+  unreachable: "Tidak dapat menjangkau %{name}"
+  declined: "%{name} menolak"
+  busy: "%{name} sedang sibuk"
+  not_paired: "Sambungkan dengan %{name} terlebih dahulu"
+explain:
+  storage:
+    title: "Tidak dapat membaca atau menulis file"
+    next: "Periksa folder, izin, dan ruang kosong."
+  corrupt_data:
+    title: "Pengaturan Solferry rusak"
+    next: "Hapus file yang rusak di folder data Solferry. Anda mungkin perlu menyambungkan perangkat lagi."
+  network_start:
+    title: "Jaringan gagal dimulai"
+    next: "Mulai ulang Solferry untuk mencoba lagi."
+  invalid_relay_url:
+    title: "Alamat relay tidak valid"
+    next: "Tempel link lengkap yang ditampilkan relay Anda, seperti https://relay.example.com#token."
+  unreachable:
+    title: "Perangkat tidak dapat dijangkau"
+    next: "Buka Solferry di perangkat itu. Jika di jaringan lain, gunakan Tailscale atau tambahkan relay Anda sendiri."
+  relay_check_failed:
+    title: "Sebuah relay tidak berfungsi"
+    next: "Lihat statusnya di Pengaturan."
+  not_paired:
+    title: "Sambungkan dengan perangkat ini terlebih dahulu"
+    next: "Hanya perangkat yang tersambung yang dapat menjangkaunya dari sini."
+  version_mismatch:
+    title: "Versi Solferry tidak cocok"
+    next: "Update Solferry di kedua perangkat."
+  busy:
+    title: "Perangkat lain sedang sibuk"
+    next: "Tunggu hingga transfernya selesai, lalu coba lagi."
+  cancelled:
+    title: "Transfer dibatalkan"
+    next: "Kirim lagi untuk melanjutkan dari titik terakhir."
+  declined:
+    title: "Transfer ditolak"
+    next: "Penerima menolaknya."
+  no_space:
+    title: "Ruang disk tidak cukup"
+    next: "Kosongkan ruang di perangkat penerima, lalu coba lagi."
+  delivery_failed:
+    title: "File tidak dapat disimpan"
+    next: "Periksa folder download di perangkat penerima."
+  invalid_offer:
+    title: "Transfer tidak aman ditolak"
+    next: "Perangkat lain menawarkan file yang tidak dapat diterima Solferry."
+  source_changed:
+    title: "Sebuah file berubah saat dikirim"
+    next: "Tunggu hingga file tidak berubah lagi, lalu coba lagi."
+  unsupported_name:
+    title: "Nama file tidak dapat dikirim"
+    next: "Ganti nama file, lalu coba lagi."
+  nothing_to_send:
+    title: "Tidak ada yang dikirim"
+    next: "Pilih setidaknya satu file. Pintasan dan link dilewati."
+  hash_mismatch:
+    title: "Data rusak terdeteksi"
+    next: "Salinan yang rusak telah dibuang. Kirim lagi."
+  connection_lost:
+    title: "Koneksi terputus"
+    next: "Coba lagi. Transfer berlanjut dari titik terakhir."
+  invalid_ticket:
+    title: "Kode tidak valid"
+    next: "Tempel kode lengkap yang diawali sf1."
+  ticket_expired:
+    title: "Kode sudah kedaluwarsa"
+    next: "Kode berlaku 10 menit. Buat kode baru."
+  update:
+    title: "Tidak dapat mengupdate Solferry"
+    next: "Coba lagi nanti, atau download dari GitHub."
+  own_ticket:
+    title: "Ini kode milik perangkat ini"
+    next: "Masukkan kode ini di perangkat lain."
+  no_local_network:
+    title: "Tidak terhubung ke jaringan lokal"
+    next: "Hubungkan ke Wi-Fi atau hotspot, lalu bagikan lagi."
+  pairing_refused:
+    title: "Penyambungan ditolak"
+    next: "Minta mereka untuk menerima, atau buat kode baru."
+  unknown_device:
+    title: "Perangkat tidak ditemukan"
+    next: "Perangkat mungkin telah dihapus."
+  ambiguous_device:
+    title: "Lebih dari satu perangkat cocok"
+    next: "Pilih perangkat dari daftar."
+  invalid_address:
+    title: "Alamat tidak valid"
+    next: "Masukkan alamat IP seperti 192.168.1.20."
+  no_answer:
+    title: "Tidak ada respons di alamat itu"
+    next: "Buka Solferry di perangkat itu dan pastikan perangkat terlihat oleh semua orang."
+  protocol:
+    title: "Terjadi masalah di Solferry"
+    next: "Ini bug. Harap laporkan beserta detailnya."

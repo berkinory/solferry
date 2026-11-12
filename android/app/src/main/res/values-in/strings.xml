@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared across screens -->
+    <string name="common_send">Kirim</string>
+    <string name="common_cancel">Batal</string>
+    <string name="common_dismiss">Tutup</string>
+    <string name="common_decline">Tolak</string>
+    <string name="common_paste">Tempel</string>
+    <string name="common_copied">Disalin</string>
+    <string name="common_pair">Sambungkan</string>
+    <string name="common_pairing">Menyambungkan</string>
+    <string name="common_remove">Hapus %1$s</string>
+    <string name="common_percent">%1$d%%</string>
+
+    <!-- Device status lines -->
+    <string name="device_online">Online</string>
+    <string name="device_offline">Offline</string>
+    <string name="device_paired">Tersambung</string>
+    <string name="device_not_paired">Belum tersambung</string>
+    <string name="device_unnamed">Perangkat tanpa nama</string>
+
+    <!-- Tab bar -->
+    <string name="tab_transfer">Transfer</string>
+    <string name="tab_history">Riwayat</string>
+    <string name="tab_settings">Setelan</string>
+
+    <!-- Relative time -->
+    <string name="ago_now">baru saja</string>
+    <string name="ago_minutes">%1$d mnt lalu</string>
+    <string name="ago_hours">%1$d jam lalu</string>
+    <string name="ago_yesterday">kemarin</string>
+    <string name="ago_days">%1$d hr lalu</string>
+    <string name="ago_months">%1$d bln lalu</string>
+
+    <!-- Home -->
+    <string name="home_send_files">Kirim file</string>
+    <string name="home_send_hint">Ketuk untuk memilih yang akan dikirim</string>
+    <string name="devices_title">Perangkat</string>
+    <string name="devices_send_text">Kirim teks ke %1$s</string>
+    <string name="devices_options">Opsi untuk %1$s</string>
+    <string name="devices_auto_accept">Terima tanpa bertanya</string>
+    <string name="devices_last_transfer">Transfer terakhir</string>
+    <string name="devices_forget">Lupakan</string>
+    <string name="devices_forget_title">Lupakan %1$s?</string>
+    <string name="devices_forget_body">Perangkat ini kembali menjadi tidak tersambung sampai Anda menyambungkannya lagi.</string>
+    <string name="nearby_title">Di sekitar</string>
+    <string name="nearby_use_code">Gunakan kode</string>
+    <string name="nearby_searching">Mencari perangkat</string>
+    <string name="nearby_searching_hint">Buka Solferry di perangkat lain di jaringan ini dan perangkat itu akan muncul di sini.</string>
+    <string name="nearby_scanning">Mencari perangkat baru di jaringan ini</string>
+    <string name="browser_title">Tidak ada aplikasi di perangkat lain</string>
+    <string name="browser_body">Browser di jaringan yang sama dapat mengirim file kepada Anda. Untuk mengirim file ke browser, pilih file lalu pilih Bagikan lewat link.</string>
+
+    <!-- Incoming offers and text -->
+    <string name="offer_title">File masuk</string>
+    <string name="offer_wants_to_send">%1$s ingin mengirim</string>
+    <plurals name="offer_files">
+        <item quantity="other">%d file</item>
+    </plurals>
+    <string name="offer_size">%1$s, %2$s</string>
+    <string name="offer_accept">Terima</string>
+    <string name="offer_always_accept">Selalu terima</string>
+    <string name="offer_block">Blokir</string>
+    <string name="offer_block_title">Blokir %1$s?</string>
+    <string name="offer_block_body">Perangkat ini tidak dapat mengirim file atau meminta penyambungan. Anda dapat membuka blokirnya nanti.</string>
+    <string name="text_from">Teks dari %1$s</string>
+    <string name="text_copy">Salin</string>
+
+    <!-- Send -->
+    <plurals name="send_to_devices">
+        <item quantity="other">Kirim ke %d perangkat</item>
+    </plurals>
+    <string name="send_source_media">Foto dan video</string>
+    <string name="send_source_files">File</string>
+    <string name="send_text_title">Kirim teks</string>
+    <string name="send_text_to">Ke %1$s</string>
+    <string name="send_text_placeholder">Ketik atau tempel teks</string>
+
+    <!-- Browser links -->
+    <string name="link_share">Bagikan lewat link</string>
+    <string name="link_receive">Terima lewat link</string>
+    <string name="link_share_hint">Buka di browser pada jaringan yang sama untuk mendownload file.</string>
+    <string name="link_receive_hint">Buka di browser pada jaringan yang sama untuk mengirim file ke sini.</string>
+    <string name="link_copy">Salin link</string>
+    <string name="link_received">Diterima</string>
+    <string name="link_stop">Hentikan</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Permintaan penyambungan</string>
+    <string name="pair_request_wants">%1$s ingin tersambung</string>
+    <string name="pair_request_hint">Konfirmasi hanya jika layar perangkat lain menampilkan kode yang sama.</string>
+    <string name="pair_confirm">Konfirmasi</string>
+    <string name="pair_compare_title">Bandingkan kode</string>
+    <string name="pair_compare_hint">Pastikan perangkat lain menampilkan kode ini, lalu terima di sana.</string>
+    <string name="pair_code_title">Sambungkan dengan kode</string>
+    <string name="pair_show_title">Tampilkan kode</string>
+    <string name="pair_show_hint">Untuk perangkat di jaringan lain, atau jika perangkat ini tidak ditemukan di sekitar. Tampilkan kode di sini dan masukkan di sana.</string>
+    <string name="pair_show_code">Tampilkan kode</string>
+    <string name="pair_invite_expiry">Sekali pakai, berlaku 10 menit.</string>
+    <string name="pair_copy_code">Salin kode</string>
+    <string name="pair_enter_title">Masukkan kode</string>
+    <string name="pair_enter_placeholder">Tempel kode sf1</string>
+    <string name="pair_address_title">Masukkan alamat IP</string>
+    <string name="pair_own_address">Alamat perangkat ini: %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">Riwayat</string>
+    <string name="history_clear">Hapus</string>
+    <string name="history_empty_title">Belum ada transfer</string>
+    <string name="history_empty_body">File yang Anda kirim atau terima muncul di sini.</string>
+    <string name="history_failed">Gagal</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Selamat datang di Solferry</string>
+    <string name="onboarding_body">Kirim file antarperangkat Anda. Tanpa akun, tanpa cloud.</string>
+    <string name="onboarding_name_title">Nama perangkat Anda</string>
+    <string name="onboarding_name_hint">Perangkat di sekitar melihat nama ini.</string>
+    <string name="onboarding_start">Mulai</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Setelan</string>
+    <string name="settings_name_title">Nama perangkat</string>
+    <string name="settings_name_placeholder">Nama</string>
+    <string name="settings_save">Simpan</string>
+    <string name="settings_find_title">Izinkan orang lain menemukan saya</string>
+    <string name="settings_find_on">Perangkat di jaringan Anda dapat melihat perangkat ini dan meminta untuk mengirim.</string>
+    <string name="settings_find_off">Perangkat baru tidak dapat menemukan perangkat ini. Perangkat yang tersambung tetap dapat menjangkaunya.</string>
+    <string name="settings_background_title">Terima di latar belakang</string>
+    <string name="settings_background_body">Tetap dapat dijangkau saat Solferry ditutup. Menampilkan notifikasi dan menggunakan lebih banyak baterai.</string>
+    <string name="language_title">Bahasa</string>
+    <string name="language_system">Default sistem</string>
+    <string name="settings_version">Solferry %1$s</string>
+    <string name="relay_title">Relay</string>
+    <string name="relay_guide">Panduan Penyiapan</string>
+    <string name="relay_body">Jangkau perangkat di jaringan lain melalui relay yang Anda jalankan sendiri.</string>
+    <string name="relay_add">Tambah</string>
+    <string name="relay_checking">Memeriksa</string>
+    <string name="relay_connected">Terhubung</string>
+    <string name="relay_udp_blocked">Terhubung, UDP 7842 diblokir</string>
+    <string name="relay_refused">Ditolak, periksa link-nya</string>
+    <string name="relay_unreachable">Tidak dapat menjangkau server</string>
+    <string name="folder_title">Simpan file ke</string>
+    <string name="folder_downloads">Download/Solferry</string>
+    <string name="folder_reset">Reset</string>
+    <string name="folder_change">Ubah</string>
+    <string name="updates_title">Update</string>
+    <string name="updates_auto">Periksa update secara otomatis</string>
+    <string name="updates_available">Solferry %1$s tersedia</string>
+    <string name="updates_download">Download</string>
+    <string name="blocked_title">Diblokir</string>
+    <string name="blocked_unblock">Buka blokir</string>
+
+    <!-- Transfer pill and toasts -->
+    <string name="transfer_waiting">Menunggu %1$s</string>
+    <string name="transfer_reconnecting">Menghubungkan ulang ke %1$s</string>
+    <string name="transfer_sending">Mengirim %1$s</string>
+    <string name="transfer_receiving">Menerima %1$s</string>
+    <string name="transfer_sent">%1$s terkirim</string>
+    <string name="transfer_received">%1$s diterima</string>
+    <plurals name="transfer_count">
+        <item quantity="other">%d transfer</item>
+    </plurals>
+    <string name="toast_paired">Tersambung dengan %1$s</string>
+    <string name="error_save_failed">%1$s: Tidak dapat menyimpan ke %2$s</string>
+    <string name="error_save_downloads">Download</string>
+    <string name="error_save_recovered">File yang diterima</string>
+    <string name="error_folder_unusable">Folder itu tidak dapat digunakan</string>
+    <string name="error_folder_lost">Akses ke %1$s hilang, menyimpan ke %2$s</string>
+    <string name="error_open_file">Tidak dapat membuka file itu, coba bagikan lagi</string>
+
+    <!-- Notifications -->
+    <string name="channel_asks">Permintaan dan file masuk</string>
+    <string name="channel_transfers">Transfer yang sedang berjalan</string>
+    <string name="channel_standby">Menerima di latar belakang</string>
+    <plurals name="notify_progress">
+        <item quantity="other">Memindahkan %d transfer</item>
+    </plurals>
+    <string name="notify_standby">Siap menerima</string>
+    <string name="notify_offer_body">%1$s ingin mengirim file kepada Anda</string>
+    <string name="notify_pairing_body">%1$s ingin tersambung dengan perangkat ini</string>
+    <string name="notify_text_copied">Disalin ke papan klip</string>
+    <string name="notify_text_open">Buka Solferry untuk menyalinnya</string>
+    <string name="notify_received_title">File diterima</string>
+    <string name="notify_received_body">%1$s dari %2$s, di %3$s</string>
+</resources>

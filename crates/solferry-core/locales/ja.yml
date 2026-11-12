@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "名前のないデバイス"
+transfer:
+  and_more: "%{first} ほか"
+about:
+  unreachable: "%{name} に接続できません"
+  declined: "%{name} が拒否しました"
+  busy: "%{name} は使用中です"
+  not_paired: "先に %{name} とペアリングしてください"
+explain:
+  storage:
+    title: "ファイルを読み書きできませんでした"
+    next: "フォルダ、アクセス権、空き容量を確認してください。"
+  corrupt_data:
+    title: "Solferry の設定が破損しています"
+    next: "Solferry のデータフォルダにある破損したファイルを削除してください。デバイスの再ペアリングが必要になる場合があります。"
+  network_start:
+    title: "ネットワークを開始できませんでした"
+    next: "Solferry を再起動してもう一度お試しください。"
+  invalid_relay_url:
+    title: "リレーのアドレスが正しくありません"
+    next: "リレーが表示したリンク全体を貼り付けてください (例: https://relay.example.com#token)。"
+  unreachable:
+    title: "デバイスに接続できません"
+    next: "相手側で Solferry を開いてください。別のネットワークにいる場合は Tailscale を使うか、自分のリレーを追加してください。"
+  relay_check_failed:
+    title: "リレーが動作していません"
+    next: "設定で状態を確認してください。"
+  not_paired:
+    title: "先にこのデバイスとペアリングしてください"
+    next: "ここからはペアリング済みのデバイスにしか接続できません。"
+  version_mismatch:
+    title: "Solferry のバージョンが一致しません"
+    next: "両方のデバイスで Solferry をアップデートしてください。"
+  busy:
+    title: "相手のデバイスは使用中です"
+    next: "転送が終わるのを待ってから、もう一度お試しください。"
+  cancelled:
+    title: "転送をキャンセルしました"
+    next: "もう一度送信すると、中断したところから再開します。"
+  declined:
+    title: "転送が拒否されました"
+    next: "相手が受信を断りました。"
+  no_space:
+    title: "ディスクの空き容量が足りません"
+    next: "受信側のデバイスの空き容量を増やして、もう一度お試しください。"
+  delivery_failed:
+    title: "ファイルを保存できませんでした"
+    next: "受信側のデバイスの保存先フォルダを確認してください。"
+  invalid_offer:
+    title: "安全でない転送を拒否しました"
+    next: "相手のデバイスが Solferry で受け取れないファイルを送ろうとしました。"
+  source_changed:
+    title: "送信中にファイルが変更されました"
+    next: "変更が止まるのを待って、もう一度お試しください。"
+  unsupported_name:
+    title: "送信できないファイル名があります"
+    next: "ファイル名を変更して、もう一度お試しください。"
+  nothing_to_send:
+    title: "送信するものがありません"
+    next: "ファイルを 1 つ以上選んでください。ショートカットとリンクはスキップされます。"
+  hash_mismatch:
+    title: "破損したデータを検出しました"
+    next: "壊れたデータは破棄されました。もう一度送信してください。"
+  connection_lost:
+    title: "接続が切れました"
+    next: "もう一度お試しください。転送は中断したところから再開します。"
+  invalid_ticket:
+    title: "コードが正しくありません"
+    next: "sf1 で始まるコード全体を貼り付けてください。"
+  ticket_expired:
+    title: "コードの有効期限が切れました"
+    next: "コードの有効期間は 10 分です。新しいコードを作成してください。"
+  update:
+    title: "Solferry をアップデートできませんでした"
+    next: "後でもう一度試すか、GitHub からダウンロードしてください。"
+  own_ticket:
+    title: "このデバイス自身のコードです"
+    next: "相手のデバイスで入力してください。"
+  no_local_network:
+    title: "ローカルネットワークに接続されていません"
+    next: "Wi-Fi かテザリングに接続してから、もう一度共有してください。"
+  pairing_refused:
+    title: "ペアリングが拒否されました"
+    next: "相手に承認を頼むか、新しいコードを作成してください。"
+  unknown_device:
+    title: "デバイスが見つかりません"
+    next: "削除された可能性があります。"
+  ambiguous_device:
+    title: "複数のデバイスが該当します"
+    next: "リストからデバイスを選んでください。"
+  invalid_address:
+    title: "アドレスが正しくありません"
+    next: "192.168.1.20 のような IP アドレスを入力してください。"
+  no_answer:
+    title: "そのアドレスから応答がありません"
+    next: "相手側で Solferry を開き、すべてのユーザーに表示される設定になっているか確認してください。"
+  protocol:
+    title: "Solferry で問題が発生しました"
+    next: "これはバグです。詳細を添えて報告してください。"

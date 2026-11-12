@@ -1,0 +1,101 @@
+_version: 1
+device:
+  unnamed: "未命名裝置"
+transfer:
+  and_more: "%{first} 等"
+about:
+  unreachable: "無法連線至 %{name}"
+  declined: "%{name} 已拒絕"
+  busy: "%{name} 忙碌中"
+  not_paired: "請先與 %{name} 配對"
+explain:
+  storage:
+    title: "無法讀取或寫入檔案"
+    next: "請檢查資料夾、權限和可用空間。"
+  corrupt_data:
+    title: "Solferry 的設定已損毀"
+    next: "請刪除 Solferry 資料夾中損毀的檔案。你可能需要重新配對裝置。"
+  network_start:
+    title: "網路無法啟動"
+    next: "請重新啟動 Solferry 後再試一次。"
+  invalid_relay_url:
+    title: "中繼位址無效"
+    next: "請貼上中繼顯示的完整連結，例如 https://relay.example.com#token。"
+  unreachable:
+    title: "無法連線至裝置"
+    next: "請在對方裝置上開啟 Solferry。若在不同網路，請使用 Tailscale 或加入你自己的中繼。"
+  relay_check_failed:
+    title: "有中繼無法運作"
+    next: "請在設定中查看其狀態。"
+  not_paired:
+    title: "請先與此裝置配對"
+    next: "從這裡只能連線至已配對的裝置。"
+  version_mismatch:
+    title: "Solferry 版本不一致"
+    next: "請在兩台裝置上都更新 Solferry。"
+  busy:
+    title: "對方裝置忙碌中"
+    next: "請等它的傳輸完成後再試一次。"
+  cancelled:
+    title: "已取消傳輸"
+    next: "再傳送一次即可從中斷處繼續。"
+  declined:
+    title: "傳輸遭拒"
+    next: "對方拒絕了接收。"
+  no_space:
+    title: "磁碟空間不足"
+    next: "請在接收裝置上釋放空間後再試一次。"
+  delivery_failed:
+    title: "無法儲存檔案"
+    next: "請檢查接收裝置上的下載資料夾。"
+  invalid_offer:
+    title: "已拒絕不安全的傳輸"
+    next: "對方裝置傳送了 Solferry 無法接受的檔案。"
+  source_changed:
+    title: "傳送期間檔案有變更"
+    next: "請等檔案不再變更後再試一次。"
+  unsupported_name:
+    title: "有檔案名稱無法傳送"
+    next: "請重新命名檔案後再試一次。"
+  nothing_to_send:
+    title: "沒有可傳送的內容"
+    next: "請至少選擇一個檔案。捷徑和連結會略過。"
+  hash_mismatch:
+    title: "偵測到損毀的資料"
+    next: "已捨棄損毀的副本，請重新傳送。"
+  connection_lost:
+    title: "連線中斷"
+    next: "請再試一次。傳輸會從中斷處繼續。"
+  invalid_ticket:
+    title: "代碼無效"
+    next: "請貼上以 sf1 開頭的完整代碼。"
+  ticket_expired:
+    title: "代碼已過期"
+    next: "代碼的有效時間為 10 分鐘，請建立新代碼。"
+  update:
+    title: "無法更新 Solferry"
+    next: "請稍後再試，或從 GitHub 下載。"
+  own_ticket:
+    title: "這是此裝置自己的代碼"
+    next: "請改在另一台裝置上輸入。"
+  no_local_network:
+    title: "未連上區域網路"
+    next: "請連上 Wi-Fi 或熱點，然後再分享一次。"
+  pairing_refused:
+    title: "配對遭拒"
+    next: "請對方接受，或建立新代碼。"
+  unknown_device:
+    title: "找不到裝置"
+    next: "它可能已被移除。"
+  ambiguous_device:
+    title: "有多台裝置符合"
+    next: "請從列表中選擇裝置。"
+  invalid_address:
+    title: "位址無效"
+    next: "請輸入 IP 位址，例如 192.168.1.20。"
+  no_answer:
+    title: "該位址沒有回應"
+    next: "請在對方裝置上開啟 Solferry，並確認它對所有人可見。"
+  protocol:
+    title: "Solferry 發生問題"
+    next: "這是程式錯誤，請附上詳細資訊回報。"
