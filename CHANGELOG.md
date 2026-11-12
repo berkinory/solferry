@@ -1,32 +1,29 @@
 # Changelog
 
-Notable changes are recorded here. The format follows Keep a Changelog.
+Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
 ## Unreleased
 
+### Changed
+
+- The desktop app is smaller, closer to the size of the apps around it.
+- Sheets slide away when they close, on desktop and Android.
+- The macOS menu bar icon follows the menu bar's color and is sharp on Retina screens.
+- The device key is kept in a file only you can read, on every platform, so macOS no longer asks for Keychain access. Devices paired with an earlier version on macOS or Windows need to be paired again.
+
+## 0.0.2 - 2026-11-12
+
 ### Added
 
-- Device identity, pairing and trust store
-- Resumable, verified file transfers over iroh
-- Local-first networking: no servers by default, optional self-hosted relays shared through pairing
-- Per-device approval and blocking
-- Pairing nearby devices by comparing a code
-- Tailscale devices listed automatically
-- Android option to keep receiving while the app is closed
-- iOS app in SwiftUI
-- Transfer history, a separate send screen and tab navigation
-- `solferry relay check` and a one-command relay installer
-- Live route updates during a transfer
-- `solferry` command with JSON event output
-- Self-hosted relay deployment
-- Network scenarios for NAT, loss, outages and restarts
-- Desktop app for Linux, Windows and macOS with tray, pairing and settings
-- Online and offline status for paired devices
-- "Always accept" on incoming files, so pairing no longer grants it
-- Android: your relays, blocked devices, long transfers as user-initiated jobs, signed release APK
-- Device platforms shared on pairing and discovery, shown as platform icons
-- Clipboard text sharing with paired devices, from the desktop and with `solferry send --text`
-- Large files sent as up to 16 parallel segments, each verified and resumable on its own
-- Identity colors and key fingerprints, so devices with the same name still look different
-- Abandoned partial transfers cleared at startup
-- Android app: send from the picker or share sheet, pair by code or nearby, share clipboard text, receive into Downloads/Solferry
+- A first-launch screen that asks what to call your device.
+- Solferry in 15 languages, following your system or chosen in Settings: English, Türkçe, Deutsch, Français, Italiano, Español, Português, Русский, Українська, 日本語, 한국어, 简体中文, Nederlands, Polski and עברית.
+- Every CLI command can answer in JSON, and `receive` takes its answers over stdin, so scripts and agents can drive Solferry.
+
+### Changed
+
+- Separate macOS downloads for Apple silicon and Intel.
+- The Android app is 16 MB instead of 40 MB, and every download is smaller.
+
+## 0.0.1 - 2026-11-12
+
+Initial release.

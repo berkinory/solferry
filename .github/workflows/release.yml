@@ -35,6 +35,10 @@ jobs:
               echo "::error::Tag $GITHUB_REF_NAME doesn't match the workspace version $VERSION"
               exit 1
             }
+            packaging/release/notes.sh "$VERSION" > /dev/null || {
+              echo "::error::Write the $VERSION section of CHANGELOG.md before tagging"
+              exit 1
+            }
             [ -n "$SOLFERRY_UPDATE_KEY" ] || {
               echo "::error::The repository variable SOLFERRY_UPDATE_KEY is missing"
               exit 1
@@ -315,7 +319,8 @@ jobs:
       - name: Publish the release
         if: env.PUBLISH == 'true'
         run: |
-          gh release create "v$VERSION" dist/* --draft --verify-tag --generate-notes --title "Solferry $VERSION"
+          packaging/release/notes.sh "$VERSION" > "$RUNNER_TEMP/notes.md"
+          gh release create "v$VERSION" dist/* --draft --verify-tag --notes-file "$RUNNER_TEMP/notes.md" --title "Solferry $VERSION"
           gh release edit "v$VERSION" --draft=false --latest
 
   homebrew:
