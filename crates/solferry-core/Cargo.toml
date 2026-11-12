@@ -40,9 +40,6 @@ tracing.workspace = true
 walkdir.workspace = true
 webpki-roots.workspace = true
 
-[target.'cfg(target_os = "windows")'.dependencies]
-keyring = { workspace = true, features = ["windows-native"] }
-
 [dev-dependencies]
 tempfile.workspace = true
 
@@ -50,5 +47,4 @@ tempfile.workspace = true
 workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-keyring = { workspace = true, features = ["apple-native"] }
 xattr = "1"

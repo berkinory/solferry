@@ -28,6 +28,5 @@ Notable changes are recorded here. The format follows Keep a Changelog.
 - Clipboard text sharing with paired devices, from the desktop and with `solferry send --text`
 - Large files sent as up to 16 parallel segments, each verified and resumable on its own
 - Identity colors and key fingerprints, so devices with the same name still look different
-- Device key kept in the macOS Keychain and Windows Credential Manager
 - Abandoned partial transfers cleared at startup
 - Android app: send from the picker or share sheet, pair by code or nearby, share clipboard text, receive into Downloads/Solferry

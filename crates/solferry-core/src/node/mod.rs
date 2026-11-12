@@ -181,10 +181,9 @@ impl Node {
         let downloads = config.download_dir.clone();
         tokio::task::spawn_blocking(move || crate::transfer::prune_abandoned(&downloads));
         let key_dir = data_dir.clone();
-        let secret =
-            tokio::task::spawn_blocking(move || identity::load_or_create(&key_dir, !isolated))
-                .await
-                .map_err(|error| Error::Protocol(error.to_string()))??;
+        let secret = tokio::task::spawn_blocking(move || identity::load_or_create(&key_dir))
+            .await
+            .map_err(|error| Error::Protocol(error.to_string()))??;
         let trust = TrustStore::load(&data_dir)?;
         let relays = if isolated { Vec::new() } else { known_relays(&config, &trust)? };
         let uses_relays = !relays.is_empty();

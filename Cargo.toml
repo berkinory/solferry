@@ -38,7 +38,6 @@ hyper = { version = "1", default-features = false, features = [
 ] }
 hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
 indicatif = "0.18"
-keyring = { version = "3.6", default-features = false }
 ksni = { version = "0.3", default-features = false, features = [
   "async-io",
   "blocking",
