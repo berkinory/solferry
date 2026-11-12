@@ -5,76 +5,76 @@ transfer:
   and_more: "%{first} y más"
 about:
   unreachable: "No se puede conectar con %{name}"
-  declined: "%{name} rechazó"
+  declined: "%{name} lo ha rechazado"
   busy: "%{name} está ocupado"
   not_paired: "Primero vincula %{name}"
 explain:
   storage:
-    title: "No se pudo leer ni escribir un archivo"
+    title: "No se ha podido leer o escribir un archivo"
     next: "Revisa la carpeta, los permisos y el espacio libre."
   corrupt_data:
     title: "Los ajustes de Solferry están dañados"
-    next: "Elimina el archivo dañado en la carpeta de datos de Solferry. Puede que tengas que volver a vincular los dispositivos."
+    next: "Elimina el archivo dañado de la carpeta de datos de Solferry. Puede que tengas que volver a vincular los dispositivos."
   network_start:
-    title: "La red no se inició"
+    title: "No se ha podido iniciar la red"
     next: "Reinicia Solferry para volver a intentarlo."
   invalid_relay_url:
-    title: "Esa dirección de relay no es válida"
-    next: "Pega el enlace completo que mostró tu relay, como https://relay.example.com#token."
+    title: "La dirección del relay no es válida"
+    next: "Pega el enlace completo que muestra tu relay, como https://relay.example.com#token."
   unreachable:
     title: "No se puede conectar con el dispositivo"
-    next: "Abre Solferry en él. En otra red, usa Tailscale o añade tu propio relay."
+    next: "Abre Solferry en ese dispositivo. Si está en otra red, usa Tailscale o añade tu propio relay."
   relay_check_failed:
     title: "Un relay no funciona"
     next: "Consulta su estado en Ajustes."
   not_paired:
     title: "Primero vincula este dispositivo"
-    next: "Solo los dispositivos vinculados pueden conectarse desde aquí."
+    next: "Solo los dispositivos vinculados pueden conectarse con él desde aquí."
   version_mismatch:
     title: "Las versiones de Solferry no coinciden"
-    next: "Actualiza Solferry en ambos dispositivos."
+    next: "Actualiza Solferry en los dos dispositivos."
   busy:
     title: "El otro dispositivo está ocupado"
     next: "Espera a que terminen sus transferencias y vuelve a intentarlo."
   cancelled:
     title: "Transferencia cancelada"
-    next: "Vuelve a enviar para continuar donde se detuvo."
+    next: "Vuelve a enviarlo para continuar donde se quedó."
   declined:
     title: "Transferencia rechazada"
-    next: "La otra persona dijo que no."
+    next: "La otra persona ha dicho que no."
   no_space:
-    title: "No hay suficiente espacio"
-    next: "Libera espacio en el dispositivo que recibe y vuelve a intentarlo."
+    title: "No hay espacio suficiente"
+    next: "Libera espacio en el dispositivo de destino y vuelve a intentarlo."
   delivery_failed:
-    title: "No se pudieron guardar los archivos"
-    next: "Revisa la carpeta de descargas en el dispositivo que recibe."
+    title: "No se han podido guardar los archivos"
+    next: "Revisa la carpeta de descargas del dispositivo de destino."
   invalid_offer:
-    title: "Transferencia no segura rechazada"
-    next: "El otro dispositivo ofreció archivos que Solferry no puede aceptar."
+    title: "Transferencia no segura bloqueada"
+    next: "El otro dispositivo ha ofrecido archivos que Solferry no puede aceptar."
   source_changed:
-    title: "Un archivo cambió durante el envío"
+    title: "Un archivo ha cambiado durante el envío"
     next: "Espera a que deje de cambiar y vuelve a intentarlo."
   unsupported_name:
-    title: "No se puede enviar un nombre de archivo"
+    title: "Nombre de archivo no compatible"
     next: "Cambia el nombre del archivo y vuelve a intentarlo."
   nothing_to_send:
-    title: "Nada que enviar"
-    next: "Elige al menos un archivo. Los accesos directos y enlaces se omiten."
+    title: "No hay nada que enviar"
+    next: "Elige al menos un archivo. Se omiten los accesos directos y los enlaces simbólicos."
   hash_mismatch:
-    title: "Se detectaron datos dañados"
-    next: "La copia defectuosa se descartó. Vuelve a enviarla."
+    title: "Se han detectado datos dañados"
+    next: "Se ha descartado la copia dañada. Vuelve a enviarlo."
   connection_lost:
-    title: "Se perdió la conexión"
-    next: "Vuelve a intentarlo. Las transferencias continúan donde se detuvieron."
+    title: "Se ha perdido la conexión"
+    next: "Vuelve a intentarlo. Las transferencias continúan donde se quedaron."
   invalid_ticket:
-    title: "Ese código no es válido"
+    title: "Código no válido"
     next: "Pega el código completo, que empieza por sf1."
   ticket_expired:
-    title: "Ese código caducó"
+    title: "El código ha caducado"
     next: "Los códigos duran 10 minutos. Crea uno nuevo."
   update:
-    title: "No se pudo actualizar Solferry"
-    next: "Vuelve a intentarlo más tarde o descárgalo de GitHub."
+    title: "No se ha podido actualizar Solferry"
+    next: "Vuelve a intentarlo más tarde o descárgalo desde GitHub."
   own_ticket:
     title: "Es el código de este dispositivo"
     next: "Introdúcelo en el otro dispositivo."
@@ -82,20 +82,20 @@ explain:
     title: "No estás en una red local"
     next: "Conéctate a una red Wi-Fi o a un punto de acceso y vuelve a compartir."
   pairing_refused:
-    title: "Se rechazó la vinculación"
-    next: "Pide que acepten o crea un código nuevo."
+    title: "Se ha rechazado la vinculación"
+    next: "Pide a la otra persona que acepte o crea un código nuevo."
   unknown_device:
-    title: "No se encontró el dispositivo"
+    title: "No se ha encontrado el dispositivo"
     next: "Puede que se haya eliminado."
   ambiguous_device:
     title: "Coincide más de un dispositivo"
-    next: "Elige el dispositivo de la lista."
+    next: "Elige el dispositivo en la lista."
   invalid_address:
-    title: "Esa dirección no es válida"
-    next: "Introduce una dirección IP como 192.168.1.20."
+    title: "Dirección no válida"
+    next: "Introduce una dirección IP, como 192.168.1.20."
   no_answer:
-    title: "Nadie respondió en esa dirección"
-    next: "Abre Solferry en él y comprueba que sea visible para todos."
+    title: "No hay respuesta en esa dirección"
+    next: "Abre Solferry en ese dispositivo y comprueba que sea visible para todos."
   protocol:
-    title: "Algo salió mal en Solferry"
-    next: "Es un error. Infórmalo con los detalles."
+    title: "Algo ha fallado en Solferry"
+    next: "Es un fallo de Solferry. Avísanos e incluye los detalles."
