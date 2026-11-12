@@ -30,6 +30,10 @@ pub struct Config {
     pub check_updates: bool,
     /// Whether the desktop app keeps an icon in the tray or menu bar.
     pub show_in_tray: bool,
+    /// The desktop app's language, such as `tr`. `None` follows the system.
+    pub language: Option<String>,
+    /// Whether the desktop app has shown its first launch screen.
+    pub onboarded: bool,
 }
 
 impl Default for Config {
@@ -44,6 +48,8 @@ impl Default for Config {
                 .unwrap_or_else(|| PathBuf::from(".")),
             check_updates: true,
             show_in_tray: true,
+            language: None,
+            onboarded: false,
         }
     }
 }
