@@ -1,7 +1,7 @@
 import PhotosUI
 import SwiftUI
 
-private let presenceEverySeconds = 20.0
+private let presenceEverySeconds = 5.0
 
 private enum Presented: Identifiable {
     case pairing, code, send, text, link, source

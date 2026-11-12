@@ -11,9 +11,10 @@ use solferry_proto::{ALPN_PRESENCE, close};
 use super::{Node, Shared};
 use crate::event::Event;
 
-const ANSWER_WAIT: Duration = Duration::from_secs(5);
-/// Apps check every 20 seconds, so this covers two missed rounds.
-const CHECK_IN_FRESH: Duration = Duration::from_secs(45);
+/// A handshake on a local network takes milliseconds, and one through a relay about a second.
+const ANSWER_WAIT: Duration = Duration::from_secs(3);
+/// Apps check every 5 seconds, so this covers two missed rounds and a slow answer.
+const CHECK_IN_FRESH: Duration = Duration::from_secs(12);
 
 /// A finished handshake is the whole answer, so nothing is ever said on this protocol.
 ///

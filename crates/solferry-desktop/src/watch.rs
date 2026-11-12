@@ -7,7 +7,7 @@ use tokio::task::AbortHandle;
 use crate::service::{Pending, PendingPairings, Update};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
-const PRESENCE_EVERY: Duration = Duration::from_secs(20);
+const PRESENCE_EVERY: Duration = Duration::from_secs(5);
 
 /// Drops prompts whose peer left or whose wait ran out, so nobody answers a request that is gone.
 pub fn sweep_prompts(
@@ -42,6 +42,8 @@ pub fn sweep_prompts(
 pub fn follow_presence(node: Node, updates: UnboundedSender<Update>) -> AbortHandle {
     tokio::spawn(async move {
         let mut every = tokio::time::interval(PRESENCE_EVERY);
+        // A round that waits on an absent device runs late; the next one still waits its turn.
+        every.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
         loop {
             every.tick().await;
             let _ = updates.unbounded_send(Update::Reachable(node.reachable().await));
