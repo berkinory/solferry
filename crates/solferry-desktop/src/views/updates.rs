@@ -72,7 +72,7 @@ pub fn section(enabled: bool, status: &Status, cx: &mut Context<MainView>) -> An
         .child(
             ui::padded_well(cx)
                 .child(
-                    row().child(ui::muted(t!("updates.automatic"), cx).flex_1()).child(
+                    row().child(ui::muted(t!("updates.automatic"), cx).flex_1().min_w_0()).child(
                         Switch::new("check-updates")
                             .large()
                             .checked(enabled)

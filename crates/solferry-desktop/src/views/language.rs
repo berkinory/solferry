@@ -122,7 +122,7 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(t!("settings.language.detail"), cx).flex_1())
+                    .child(ui::muted(t!("settings.language.detail"), cx).flex_1().min_w_0())
                     .child(picker),
             ),
         )

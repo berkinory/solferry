@@ -122,7 +122,7 @@ fn visibility_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("findable")
                             .large()
@@ -159,7 +159,7 @@ fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("tray")
                             .large()
@@ -187,7 +187,7 @@ fn login_section(cx: &mut Context<MainView>) -> AnyElement {
                     .items_center()
                     .justify_between()
                     .gap(px(SPACE_MD))
-                    .child(ui::muted(detail, cx).flex_1())
+                    .child(ui::muted(detail, cx).flex_1().min_w_0())
                     .child(
                         Switch::new("login")
                             .large()
