@@ -180,6 +180,10 @@ settings:
     shown_macos: "Keeps Solferry in the menu bar, ready to receive with the window closed."
     hidden: "Closing the window quits Solferry."
     hidden_macos: "Solferry stays in the Dock when you close the window."
+  login:
+    title: "Open at login"
+    on: "Solferry starts quietly when you log in, ready to receive."
+    off: "Solferry only runs when you open it."
   blocked:
     title: "Blocked"
     unblock: "Unblock"

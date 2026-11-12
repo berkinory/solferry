@@ -127,9 +127,13 @@ mod platform {
             std::thread::spawn(move || {
                 let mut slot = slot.lock().unwrap_or_else(PoisonError::into_inner);
                 match (slot.wanted, slot.handle.take()) {
-                    (true, None) => match (SolferryTray { actions }).spawn() {
+                    (true, None) => match (SolferryTray { actions: actions.clone() }).spawn() {
                         Ok(handle) => slot.handle = Some(handle),
-                        Err(error) => tracing::warn!(%error, "tray is unavailable"),
+                        Err(error) => {
+                            tracing::warn!(%error, "tray is unavailable");
+                            // Many desktops have no tray, so the window has to stay reachable.
+                            let _ = actions.send(TrayAction::Open);
+                        }
                     },
                     (true, Some(handle)) => slot.handle = Some(handle),
                     (false, Some(handle)) => handle.shutdown().wait(),

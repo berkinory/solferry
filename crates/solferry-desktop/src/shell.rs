@@ -10,6 +10,7 @@ use gpui_kit::{
 use rust_i18n::t;
 use solferry_core::{Direction, Event};
 
+use crate::instance::Instance;
 use crate::service::{Command, Handle, Update};
 use crate::state::AppState;
 use crate::tray::{Tray, TrayAction, TrayEvents};
@@ -19,7 +20,8 @@ const WINDOW_WIDTH: f32 = 520.0;
 const WINDOW_HEIGHT: f32 = 780.0;
 /// Keeps the window clear of a menu bar and a dock or taskbar on small screens.
 const SCREEN_MARGIN: f32 = 96.0;
-const TRAY_POLL: Duration = Duration::from_millis(150);
+/// How often the tray menu and later launches are checked for.
+const POLL_EVERY: Duration = Duration::from_millis(150);
 
 pub struct Shell {
     pub state: Entity<AppState>,
@@ -34,11 +36,14 @@ pub fn start(
     service: Handle,
     updates: UnboundedReceiver<Update>,
     (tray, actions): (Tray, TrayEvents),
+    (instance, hidden): (Instance, bool),
     cx: &mut App,
 ) {
     let state = cx.new(|_| AppState::default());
     cx.set_global(Shell { state, service, tray, window: None });
-    show_window(cx);
+    if !hidden {
+        show_window(cx);
+    }
     let mut updates = updates;
     cx.spawn(async move |cx: &mut AsyncApp| {
         while let Some(update) = updates.next().await {
@@ -48,7 +53,10 @@ pub fn start(
     .detach();
     cx.spawn(async move |cx: &mut AsyncApp| {
         loop {
-            cx.background_executor().timer(TRAY_POLL).await;
+            cx.background_executor().timer(POLL_EVERY).await;
+            if instance.woken() {
+                cx.update(show_window);
+            }
             for action in actions.drain() {
                 cx.update(|cx| match action {
                     TrayAction::Open => show_window(cx),
