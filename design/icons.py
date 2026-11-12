@@ -40,6 +40,7 @@ ICONS = {
     "history": "Clock01Icon",
     "home": "Home01Icon",
     "key": "Key01Icon",
+    "language": "GlobalIcon",
     "link": "Link01Icon",
     "loading": "Loading03Icon",
     "more": "MoreHorizontalIcon",

@@ -53,6 +53,7 @@ glyphs! {
     History => "history",
     Home => "home",
     Key => "key",
+    Language => "language",
     Link => "link",
     Linux => "linux",
     ChevronDown => "chevron-down",
