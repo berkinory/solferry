@@ -145,12 +145,7 @@ impl AppState {
                 self.fatal = None;
             }
             Update::StartFailed(error) => self.fatal = Some(error),
-            Update::Devices(devices) => {
-                for nearby in &mut self.nearby {
-                    nearby.known = devices.iter().any(|device| device.id == nearby.addr.id);
-                }
-                self.devices = devices;
-            }
+            Update::Devices(devices) => self.devices = devices,
             Update::Blocked(blocked) => self.blocked = blocked,
             Update::Updater(status) => {
                 if let Status::Ready { version } = &status
@@ -255,9 +250,6 @@ impl AppState {
         self.devices.retain(|known| known.id != device.id);
         if let Some(reachable) = &mut self.reachable {
             reachable.insert(device.id);
-        }
-        for nearby in &mut self.nearby {
-            nearby.known |= nearby.addr.id == device.id;
         }
         self.devices.push(device);
     }

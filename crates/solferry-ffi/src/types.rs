@@ -74,7 +74,6 @@ impl From<&Device> for PairedDevice {
 pub struct Nearby {
     pub identity: Identity,
     pub name: Option<String>,
-    pub known: bool,
     pub overlay: bool,
 }
 
@@ -83,7 +82,6 @@ impl From<&NearbyDevice> for Nearby {
         Self {
             identity: identity(&device.addr.id, device.platform),
             name: device.name.clone(),
-            known: device.known,
             overlay: device.overlay,
         }
     }

@@ -64,6 +64,12 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
         .map(|device| {
             let found = near(&device.id);
             let (detail, dot) = presence(found, &device.id, state);
+            let twins = state.devices.iter().filter(|other| other.name == device.name).count();
+            let detail = if twins > 1 {
+                format!("{detail} · {}", ui::fingerprint(&device.id)).into()
+            } else {
+                detail
+            };
             let online = matches!(dot, Some(Dot::Online));
             Row {
                 id: device.id,
@@ -81,7 +87,7 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
     let others = state
         .nearby
         .iter()
-        .filter(|device| !device.known)
+        .filter(|device| !state.devices.iter().any(|paired| paired.id == device.addr.id))
         .map(|device| Row {
             id: device.addr.id,
             addr: device.addr.clone(),
@@ -142,6 +148,7 @@ pub fn detail(row: &Row, cx: &App) -> AnyElement {
 
 fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let expanded = view.expanded == Some(row.id);
+    let (row_id, paired) = (row.id, row.approval.is_some());
     let (hover, highlight) = (cx.theme().accent, color(palette(cx).primary));
     let group = SharedString::from(format!("row-{}", row.id));
     let id: ElementId = group.clone().into();
@@ -176,9 +183,14 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
             let target = Target { addr: drop_target.addr.clone(), name: drop_target.name.clone() };
             view.send_now(vec![target], paths.paths().to_vec(), cx);
         }))
-        .on_click(cx.listener(move |_, _, _, cx| {
-            let target = Target { addr: target.addr.clone(), name: target.name.clone() };
-            MainView::pick_files_for(target, cx);
+        .on_click(cx.listener(move |view, _, _, cx| {
+            if paired {
+                view.expanded = if view.expanded == Some(row_id) { None } else { Some(row_id) };
+                cx.notify();
+            } else {
+                let target = Target { addr: target.addr.clone(), name: target.name.clone() };
+                MainView::pick_files_for(target, cx);
+            }
         }))
         .child(shown)
         .child(

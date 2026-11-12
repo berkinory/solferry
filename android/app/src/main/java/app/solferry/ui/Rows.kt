@@ -71,33 +71,35 @@ private fun DeviceRow(
     near: Nearby?,
     online: Boolean?,
     lastTransfer: Long?,
+    twin: Boolean,
     engine: Engine,
-    onPick: (PairedDevice) -> Unit,
     onText: (PairedDevice) -> Unit,
 ) {
     val palette = LocalPalette.current
     var open by remember { mutableStateOf(false) }
     var forgetting by remember { mutableStateOf(false) }
     Column {
-        RowBody({ onPick(device) }, highlighted = open) {
+        RowBody({ open = !open }, highlighted = open) {
             DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), near != null || online == true)
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // Two paired devices under one name, usually one reinstalled, tell apart by key.
+                val key = if (twin) " · ${device.identity.fingerprint}" else ""
                 when {
-                    near != null || online == true -> StatusLine(stringResource(R.string.device_online), palette.successFill)
-                    online == null -> StatusLine(stringResource(R.string.device_paired))
-                    else -> StatusLine(stringResource(R.string.device_offline), palette.inkMuted.copy(alpha = 0.5f))
+                    near != null || online == true -> StatusLine(stringResource(R.string.device_online) + key, palette.successFill)
+                    online == null -> StatusLine(stringResource(R.string.device_paired) + key)
+                    else -> StatusLine(stringResource(R.string.device_offline) + key, palette.inkMuted.copy(alpha = 0.5f))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Button(
-                        { onText(device) }, icon = R.drawable.ic_type_text,
-                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_send_text, device.name),
-                    )
-                    Button(
-                        { open = !open }, icon = R.drawable.ic_more,
-                        kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_options, device.name),
-                    )
+                Button(
+                    { onText(device) }, icon = R.drawable.ic_type_text,
+                    kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_send_text, device.name),
+                )
+                Button(
+                    { open = !open }, icon = R.drawable.ic_more,
+                    kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.devices_options, device.name),
+                )
             }
         }
         AnimatedVisibility(
@@ -131,7 +133,6 @@ fun DeviceCard(
     reachable: Set<String>?,
     history: List<HistoryEntry>,
     engine: Engine,
-    onPick: (PairedDevice) -> Unit,
     onText: (PairedDevice) -> Unit,
 ) =
     Card(R.drawable.ic_devices, stringResource(R.string.devices_title), aside = { Count(devices.size) }) {
@@ -140,7 +141,8 @@ fun DeviceCard(
                 key(device.identity.id) {
                     val online = reachable?.contains(device.identity.id)
                     val last = history.firstOrNull { it.peer == device.identity.id && it.completed }?.finishedMs?.toLong()
-                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, engine, onPick, onText)
+                    val twin = devices.count { it.name == device.name } > 1
+                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, twin, engine, onText)
                 }
             }
         }

@@ -48,7 +48,7 @@ private const val REFRESH_MS = 700L
 fun HomeScreen(
     state: AppState,
     engine: Engine,
-    onPickFiles: (PairedDevice?) -> Unit,
+    onPickFiles: () -> Unit,
     onText: (PairedDevice) -> Unit,
     onUseCode: () -> Unit,
 ) = Column(Modifier.fillMaxSize()) {
@@ -68,9 +68,9 @@ fun HomeScreen(
     ) {
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         state.text?.let { item(key = "text-${it.key}") { TextCard(it, engine) } }
-        item { SendZone { onPickFiles(null) } }
+        item { SendZone(onPickFiles) }
         if (state.devices.isNotEmpty()) {
-            item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine, { onPickFiles(it) }, onText) }
+            item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine, onText) }
         }
         item { NearbyCard(state.strangers, state.devices.isEmpty(), engine, onUseCode) }
         item { BrowserCard(engine) }

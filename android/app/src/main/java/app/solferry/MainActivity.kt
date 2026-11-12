@@ -99,15 +99,9 @@ class MainActivity : ComponentActivity() {
                 val state by engine.state.collectAsStateWithLifecycle()
                 var screen by rememberSaveable { mutableStateOf(Screen.Home) }
                 var pairing by rememberSaveable { mutableStateOf(false) }
-                var target by remember { mutableStateOf<PairedDevice?>(null) }
                 var choosing by rememberSaveable { mutableStateOf(false) }
                 var texting by remember { mutableStateOf<PairedDevice?>(null) }
-                val picked: (List<Uri>) -> Unit = { uris ->
-                    val device = target
-                    if (uris.isNotEmpty()) {
-                        if (device != null) engine.sendUris(device.identity.id, uris) else shared = (shared + uris).distinct()
-                    }
-                }
+                val picked: (List<Uri>) -> Unit = { uris -> if (uris.isNotEmpty()) shared = (shared + uris).distinct() }
                 val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), picked)
                 val media = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(), picked)
                 val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -141,7 +135,7 @@ class MainActivity : ComponentActivity() {
                         when (shown) {
                             Screen.Home -> HomeScreen(
                                 state, engine,
-                                onPickFiles = { device -> target = device; choosing = true },
+                                onPickFiles = { choosing = true },
                                 onText = { texting = it },
                                 onUseCode = { pairing = true },
                             )

@@ -91,7 +91,8 @@ struct AppState {
     /// Nil while files go to the Solferry folder in Files.
     var saveFolder: SaveFolder?
 
-    var strangers: [Nearby] { nearby.filter { !$0.known } }
+    /// Nearby devices not paired yet. Read against the paired list, which changes first.
+    var strangers: [Nearby] { nearby.filter { near in !devices.contains { $0.identity.id == near.identity.id } } }
     var asking: Int { offers.count + pairings.count }
     var hasRunningTransfer: Bool { transfers.contains { $0.running } }
 

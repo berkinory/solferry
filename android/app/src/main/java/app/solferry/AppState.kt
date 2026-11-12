@@ -80,7 +80,8 @@ data class AppState(
     val saveFolder: SaveFolder? = null,
     val pairedCount: Int = 0,
 ) {
-    val strangers get() = nearby.filter { !it.known }
+    /** Nearby devices not paired yet. Read against the paired list, which changes first. */
+    val strangers get() = nearby.filter { near -> devices.none { it.identity.id == near.identity.id } }
 
     fun apply(update: Update, now: Long, res: Resources): AppState = when (update) {
         is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility, update.checkUpdates), startProblem = null)
