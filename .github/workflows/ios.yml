@@ -1,0 +1,16 @@
+name: ios
+
+# Only run by hand: compiles the iOS app without a Mac at hand, unsigned, for the simulator.
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim
+      - uses: Swatinem/rust-cache@v2
+      - run: ios/build-rust.sh
+      - run: xcodebuild -project ios/Solferry.xcodeproj -target Solferry -sdk iphonesimulator -arch arm64 CODE_SIGNING_ALLOWED=NO build
