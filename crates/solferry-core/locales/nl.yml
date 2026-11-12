@@ -16,11 +16,11 @@ explain:
     title: "De instellingen van Solferry zijn beschadigd"
     next: "Verwijder het beschadigde bestand in de gegevensmap van Solferry. Misschien moet je apparaten opnieuw koppelen."
   network_start:
-    title: "Netwerk is niet gestart"
+    title: "Netwerk kon niet starten"
     next: "Start Solferry opnieuw om het nog eens te proberen."
   invalid_relay_url:
     title: "Dat relayadres is ongeldig"
-    next: "Plak de volledige link die je relay toonde, zoals https://relay.example.com#token."
+    next: "Plak de volledige link die je relay liet zien, zoals https://relay.example.com#token."
   unreachable:
     title: "Apparaat niet bereikbaar"
     next: "Open Solferry daar. Op een ander netwerk gebruik je Tailscale of voeg je je eigen relay toe."
@@ -38,7 +38,7 @@ explain:
     next: "Wacht tot de overdrachten klaar zijn en probeer het opnieuw."
   cancelled:
     title: "Overdracht geannuleerd"
-    next: "Verstuur opnieuw om verder te gaan waar het stopte."
+    next: "Verstuur opnieuw om verder te gaan waar het gebleven was."
   declined:
     title: "Overdracht geweigerd"
     next: "De ander heeft nee gezegd."
@@ -52,7 +52,7 @@ explain:
     title: "Onveilige overdracht geweigerd"
     next: "Het andere apparaat bood bestanden aan die Solferry niet kan accepteren."
   source_changed:
-    title: "Een bestand veranderde tijdens het versturen"
+    title: "Een bestand is gewijzigd tijdens het versturen"
     next: "Wacht tot het niet meer verandert en probeer het opnieuw."
   unsupported_name:
     title: "Een bestandsnaam kan niet worden verstuurd"
@@ -61,17 +61,17 @@ explain:
     title: "Niets om te versturen"
     next: "Kies minstens één bestand. Snelkoppelingen en links worden overgeslagen."
   hash_mismatch:
-    title: "Beschadigde gegevens onderschept"
-    next: "De foute kopie is verwijderd. Verstuur het opnieuw."
+    title: "Beschadigde gegevens gedetecteerd"
+    next: "De beschadigde kopie is verwijderd. Verstuur het opnieuw."
   connection_lost:
     title: "Verbinding verbroken"
-    next: "Probeer het opnieuw. Overdrachten gaan verder waar ze stopten."
+    next: "Probeer het opnieuw. Overdrachten gaan verder waar ze gebleven waren."
   invalid_ticket:
     title: "Die code is ongeldig"
-    next: "Plak de hele code, beginnend met sf1."
+    next: "Plak de volledige code, die begint met sf1."
   ticket_expired:
     title: "Die code is verlopen"
-    next: "Codes zijn 10 minuten geldig. Maak een nieuwe."
+    next: "Codes zijn 10 minuten geldig. Maak een nieuwe aan."
   update:
     title: "Kan Solferry niet bijwerken"
     next: "Probeer het later opnieuw of download het van GitHub."
@@ -83,7 +83,7 @@ explain:
     next: "Maak verbinding met wifi of een hotspot en deel opnieuw."
   pairing_refused:
     title: "Koppelen geweigerd"
-    next: "Vraag de ander om te accepteren, of maak een nieuwe code."
+    next: "Vraag de ander om te accepteren, of maak een nieuwe code aan."
   unknown_device:
     title: "Apparaat niet gevonden"
     next: "Het is misschien verwijderd."
@@ -95,7 +95,7 @@ explain:
     next: "Voer een IP-adres in zoals 192.168.1.20."
   no_answer:
     title: "Geen antwoord op dat adres"
-    next: "Open Solferry daar en controleer of het voor iedereen zichtbaar is."
+    next: "Open Solferry daar en controleer of het vindbaar is voor anderen."
   protocol:
     title: "Er ging iets mis in Solferry"
-    next: "Dit is een bug. Meld het met de details."
+    next: "Dit is een bug. Meld het alsjeblieft, met de details."

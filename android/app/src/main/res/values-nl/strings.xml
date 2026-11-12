@@ -8,7 +8,7 @@
     <string name="common_paste">Plakken</string>
     <string name="common_copied">Gekopieerd</string>
     <string name="common_pair">Koppelen</string>
-    <string name="common_pairing">Koppelen</string>
+    <string name="common_pairing">Koppelen…</string>
     <string name="common_remove">%1$s verwijderen</string>
     <string name="common_percent">%1$d%%</string>
 
@@ -27,10 +27,10 @@
     <!-- Relative time -->
     <string name="ago_now">zojuist</string>
     <string name="ago_minutes">%1$d min geleden</string>
-    <string name="ago_hours">%1$d u geleden</string>
+    <string name="ago_hours">%1$d uur geleden</string>
     <string name="ago_yesterday">gisteren</string>
-    <string name="ago_days">%1$d d geleden</string>
-    <string name="ago_months">%1$d mnd geleden</string>
+    <string name="ago_days">%1$d dagen geleden</string>
+    <string name="ago_months">%1$d maanden geleden</string>
 
     <!-- Home -->
     <string name="home_send_files">Bestanden versturen</string>
@@ -42,14 +42,14 @@
     <string name="devices_last_transfer">Laatste overdracht</string>
     <string name="devices_forget">Vergeten</string>
     <string name="devices_forget_title">%1$s vergeten?</string>
-    <string name="devices_forget_body">Het wordt weer een niet-gekoppeld apparaat tot je opnieuw koppelt.</string>
+    <string name="devices_forget_body">Het is dan niet meer gekoppeld, tot je opnieuw koppelt.</string>
     <string name="nearby_title">In de buurt</string>
     <string name="nearby_use_code">Code gebruiken</string>
     <string name="nearby_searching">Zoeken naar apparaten</string>
-    <string name="nearby_searching_hint">Open Solferry op een ander apparaat in dit netwerk en het verschijnt hier.</string>
-    <string name="nearby_scanning">Zoeken naar nieuwe apparaten in dit netwerk</string>
+    <string name="nearby_searching_hint">Open Solferry op een ander apparaat op dit netwerk en het verschijnt hier.</string>
+    <string name="nearby_scanning">Zoeken naar nieuwe apparaten op dit netwerk</string>
     <string name="browser_title">Geen app op het andere apparaat</string>
-    <string name="browser_body">Een browser op hetzelfde netwerk kan je bestanden sturen. Om er bestanden naartoe te sturen, kies je ze en dan Delen via link.</string>
+    <string name="browser_body">Een browser op hetzelfde netwerk kan je bestanden sturen. Zelf bestanden naar een browser sturen? Selecteer ze en kies Delen via link.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Inkomende bestanden</string>
@@ -63,7 +63,7 @@
     <string name="offer_always_accept">Altijd accepteren</string>
     <string name="offer_block">Blokkeren</string>
     <string name="offer_block_title">%1$s blokkeren?</string>
-    <string name="offer_block_body">Het kan geen bestanden sturen of vragen om te koppelen. Je kunt het later deblokkeren.</string>
+    <string name="offer_block_body">Het kan je geen bestanden meer sturen en niet meer vragen om te koppelen. Je kunt het later deblokkeren.</string>
     <string name="text_from">Tekst van %1$s</string>
     <string name="text_copy">Kopiëren</string>
 
@@ -81,8 +81,8 @@
     <!-- Browser links -->
     <string name="link_share">Delen via link</string>
     <string name="link_receive">Ontvangen via link</string>
-    <string name="link_share_hint">Open hem in een browser op hetzelfde netwerk om de bestanden te downloaden.</string>
-    <string name="link_receive_hint">Open hem in een browser op hetzelfde netwerk om bestanden hierheen te sturen.</string>
+    <string name="link_share_hint">Open de link in een browser op hetzelfde netwerk om de bestanden te downloaden.</string>
+    <string name="link_receive_hint">Open de link in een browser op hetzelfde netwerk om bestanden hierheen te sturen.</string>
     <string name="link_copy">Link kopiëren</string>
     <string name="link_received">Ontvangen</string>
     <string name="link_stop">Stoppen</string>
@@ -93,12 +93,12 @@
     <string name="pair_request_hint">Bevestig alleen als het andere scherm dezelfde code toont.</string>
     <string name="pair_confirm">Bevestigen</string>
     <string name="pair_compare_title">Codes vergelijken</string>
-    <string name="pair_compare_hint">Controleer of het andere apparaat deze code toont en accepteer daar.</string>
+    <string name="pair_compare_hint">Controleer of het andere apparaat deze code toont en accepteer het verzoek daar.</string>
     <string name="pair_code_title">Koppelen met een code</string>
     <string name="pair_show_title">Code tonen</string>
-    <string name="pair_show_hint">Voor een apparaat op een ander netwerk, of als dit apparaat niet in de buurt wordt gevonden. Toon hier een code en voer hem daar in.</string>
+    <string name="pair_show_hint">Voor een apparaat op een ander netwerk, of als het niet in de buurt verschijnt. Toon hier een code en voer die daar in.</string>
     <string name="pair_show_code">Code tonen</string>
-    <string name="pair_invite_expiry">Werkt één keer, 10 minuten lang.</string>
+    <string name="pair_invite_expiry">Eenmalig te gebruiken, 10 minuten geldig.</string>
     <string name="pair_copy_code">Code kopiëren</string>
     <string name="pair_enter_title">Code invoeren</string>
     <string name="pair_enter_placeholder">Plak een sf1-code</string>
@@ -124,16 +124,16 @@
     <string name="settings_name_title">Apparaatnaam</string>
     <string name="settings_name_placeholder">Naam</string>
     <string name="settings_save">Opslaan</string>
-    <string name="settings_find_title">Laat anderen me vinden</string>
+    <string name="settings_find_title">Vindbaar voor anderen</string>
     <string name="settings_find_on">Apparaten op je netwerk kunnen dit apparaat zien en vragen om iets te sturen.</string>
-    <string name="settings_find_off">Niemand nieuw kan dit apparaat vinden. Gekoppelde apparaten kunnen het nog bereiken.</string>
+    <string name="settings_find_off">Nieuwe apparaten kunnen dit apparaat niet vinden. Gekoppelde apparaten bereiken het nog wel.</string>
     <string name="settings_background_title">Ontvangen op de achtergrond</string>
     <string name="settings_background_body">Blijf bereikbaar als Solferry gesloten is. Toont een melding en gebruikt meer batterij.</string>
     <string name="language_title">Taal</string>
     <string name="language_system">Systeemstandaard</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay</string>
-    <string name="relay_guide">Installatiegids</string>
+    <string name="relay_guide">Handleiding</string>
     <string name="relay_body">Bereik apparaten op andere netwerken via een relay die je zelf draait.</string>
     <string name="relay_add">Toevoegen</string>
     <string name="relay_checking">Controleren</string>
@@ -143,7 +143,7 @@
     <string name="relay_unreachable">Kan de server niet bereiken</string>
     <string name="folder_title">Bestanden opslaan in</string>
     <string name="folder_downloads">Downloads/Solferry</string>
-    <string name="folder_reset">Herstellen</string>
+    <string name="folder_reset">Terugzetten</string>
     <string name="folder_change">Wijzigen</string>
     <string name="updates_title">Updates</string>
     <string name="updates_auto">Automatisch op updates controleren</string>
@@ -155,8 +155,8 @@
     <!-- Transfer pill and toasts -->
     <string name="transfer_waiting">Wachten op %1$s</string>
     <string name="transfer_reconnecting">Opnieuw verbinden met %1$s</string>
-    <string name="transfer_sending">%1$s versturen</string>
-    <string name="transfer_receiving">%1$s ontvangen</string>
+    <string name="transfer_sending">%1$s wordt verstuurd</string>
+    <string name="transfer_receiving">%1$s wordt ontvangen</string>
     <string name="transfer_sent">%1$s verstuurd</string>
     <string name="transfer_received">%1$s ontvangen</string>
     <plurals name="transfer_count">
@@ -168,11 +168,11 @@
     <string name="error_save_downloads">Downloads</string>
     <string name="error_save_recovered">Ontvangen bestanden</string>
     <string name="error_folder_unusable">Kan die map niet gebruiken</string>
-    <string name="error_folder_lost">Geen toegang meer tot %1$s, opslaan in %2$s</string>
-    <string name="error_open_file">Kan dat bestand niet openen, probeer het opnieuw te delen</string>
+    <string name="error_folder_lost">Geen toegang meer tot %1$s, nu opslaan in %2$s</string>
+    <string name="error_open_file">Kan dat bestand niet openen. Probeer het opnieuw te delen</string>
 
     <!-- Notifications -->
-    <string name="channel_asks">Verzoeken en ontvangsten</string>
+    <string name="channel_asks">Verzoeken en ontvangen bestanden</string>
     <string name="channel_transfers">Lopende overdrachten</string>
     <string name="channel_standby">Ontvangen op de achtergrond</string>
     <plurals name="notify_progress">
