@@ -45,7 +45,7 @@ STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
 DMG="$DIST/Solferry-$PLATFORM.dmg"
-hdiutil create -volname Solferry -srcfolder "$STAGE" -ov -format ULFO "$DMG"
+hdiutil create -volname Solferry -srcfolder "$STAGE" -ov -format ULMO "$DMG"
 if [ -n "$IDENTITY" ]; then
     codesign --force --timestamp --sign "$IDENTITY" "$DMG"
     notarize "$DMG" "$DMG"
