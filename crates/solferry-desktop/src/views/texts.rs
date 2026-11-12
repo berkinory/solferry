@@ -64,7 +64,7 @@ fn card(shared: &SharedText, cx: &mut Context<MainView>) -> AnyElement {
 
 /// Text to send to one device, starting from what is on the clipboard.
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
-    let name = view.texting.as_ref().map(|target| target.name.clone()).unwrap_or_default();
+    let name = view.texting.as_ref().map_or_else(String::new, |target| target.name.clone());
     let content = div()
         .flex()
         .flex_col()
