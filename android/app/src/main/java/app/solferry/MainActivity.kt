@@ -61,7 +61,7 @@ import uniffi.solferry_ffi.setLocale
 
 private enum class Screen { Home, History, Settings }
 
-private const val PRESENCE_EVERY_MS = 20_000L
+private const val PRESENCE_EVERY_MS = 5_000L
 
 class MainActivity : ComponentActivity() {
     private var shared by mutableStateOf<List<Uri>>(emptyList())
