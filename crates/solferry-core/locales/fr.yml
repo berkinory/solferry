@@ -2,7 +2,7 @@ _version: 1
 device:
   unnamed: "Appareil sans nom"
 transfer:
-  and_more: "%{first} et plus"
+  and_more: "%{first} et d'autres fichiers"
 about:
   unreachable: "Impossible de joindre %{name}"
   declined: "%{name} a refusé"
@@ -11,25 +11,25 @@ about:
 explain:
   storage:
     title: "Impossible de lire ou d'écrire un fichier"
-    next: "Vérifiez le dossier, les autorisations et l'espace libre."
+    next: "Vérifiez le dossier, les autorisations et l'espace disponible."
   corrupt_data:
     title: "Les paramètres de Solferry sont endommagés"
     next: "Supprimez le fichier endommagé dans le dossier de données de Solferry. Vous devrez peut-être associer à nouveau vos appareils."
   network_start:
-    title: "Le réseau n'a pas démarré"
+    title: "Le réseau n'a pas pu démarrer"
     next: "Redémarrez Solferry pour réessayer."
   invalid_relay_url:
     title: "Cette adresse de relais n'est pas valide"
-    next: "Collez le lien complet affiché par votre relais, comme https://relay.example.com#token."
+    next: "Collez le lien complet affiché par votre relais, par exemple https://relay.example.com#token."
   unreachable:
     title: "Appareil injoignable"
-    next: "Ouvrez Solferry sur cet appareil. Sur un autre réseau, utilisez Tailscale ou ajoutez votre propre relais."
+    next: "Ouvrez Solferry sur cet appareil. S'il est sur un autre réseau, utilisez Tailscale ou ajoutez votre propre relais."
   relay_check_failed:
     title: "Un relais ne fonctionne pas"
-    next: "Consultez son état dans les Paramètres."
+    next: "Consultez son état dans les paramètres."
   not_paired:
     title: "Associez d'abord cet appareil"
-    next: "Seuls les appareils associés peuvent le joindre d'ici."
+    next: "Seuls les appareils associés peuvent le joindre."
   version_mismatch:
     title: "Les versions de Solferry ne correspondent pas"
     next: "Mettez à jour Solferry sur les deux appareils."
@@ -38,37 +38,37 @@ explain:
     next: "Attendez la fin de ses transferts, puis réessayez."
   cancelled:
     title: "Transfert annulé"
-    next: "Renvoyez pour reprendre là où il s'est arrêté."
+    next: "Renvoyez les fichiers pour reprendre là où le transfert s'est arrêté."
   declined:
     title: "Transfert refusé"
     next: "L'autre personne a refusé."
   no_space:
-    title: "Espace disque insuffisant"
-    next: "Libérez de l'espace sur l'appareil de réception et réessayez."
+    title: "Espace de stockage insuffisant"
+    next: "Libérez de l'espace sur l'appareil destinataire, puis réessayez."
   delivery_failed:
-    title: "Les fichiers n'ont pas pu être enregistrés"
-    next: "Vérifiez le dossier de téléchargement sur l'appareil de réception."
+    title: "Impossible d'enregistrer les fichiers"
+    next: "Vérifiez le dossier de téléchargement sur l'appareil destinataire."
   invalid_offer:
     title: "Transfert non sécurisé refusé"
     next: "L'autre appareil a proposé des fichiers que Solferry ne peut pas accepter."
   source_changed:
-    title: "Un fichier a changé pendant l'envoi"
-    next: "Attendez qu'il ne change plus et réessayez."
+    title: "Un fichier a été modifié pendant l'envoi"
+    next: "Attendez qu'il ne soit plus modifié, puis réessayez."
   unsupported_name:
-    title: "Un nom de fichier ne peut pas être envoyé"
-    next: "Renommez le fichier et réessayez."
+    title: "Nom de fichier non pris en charge"
+    next: "Renommez le fichier, puis réessayez."
   nothing_to_send:
     title: "Rien à envoyer"
-    next: "Choisissez au moins un fichier. Les raccourcis et les liens sont ignorés."
+    next: "Choisissez au moins un fichier. Les raccourcis et les liens symboliques sont ignorés."
   hash_mismatch:
     title: "Données endommagées détectées"
-    next: "La copie défectueuse a été supprimée. Renvoyez-la."
+    next: "La copie défectueuse a été supprimée. Renvoyez le fichier."
   connection_lost:
     title: "Connexion perdue"
     next: "Réessayez. Les transferts reprennent là où ils se sont arrêtés."
   invalid_ticket:
     title: "Ce code n'est pas valide"
-    next: "Collez le code entier, qui commence par sf1."
+    next: "Collez le code complet, qui commence par sf1."
   ticket_expired:
     title: "Ce code a expiré"
     next: "Les codes sont valables 10 minutes. Créez-en un nouveau."
@@ -79,11 +79,11 @@ explain:
     title: "C'est le code de cet appareil"
     next: "Saisissez-le plutôt sur l'autre appareil."
   no_local_network:
-    title: "Pas sur un réseau local"
-    next: "Connectez-vous au Wi-Fi ou à un point d'accès, puis partagez à nouveau."
+    title: "Aucun réseau local"
+    next: "Connectez-vous à un réseau Wi-Fi ou à un point d'accès, puis partagez à nouveau."
   pairing_refused:
     title: "Association refusée"
-    next: "Demandez-lui d'accepter ou créez un nouveau code."
+    next: "Demandez à l'autre personne d'accepter, ou créez un nouveau code."
   unknown_device:
     title: "Appareil introuvable"
     next: "Il a peut-être été supprimé."
@@ -92,10 +92,10 @@ explain:
     next: "Choisissez l'appareil dans la liste."
   invalid_address:
     title: "Cette adresse n'est pas valide"
-    next: "Saisissez une adresse IP comme 192.168.1.20."
+    next: "Saisissez une adresse IP, par exemple 192.168.1.20."
   no_answer:
     title: "Aucune réponse à cette adresse"
-    next: "Ouvrez Solferry sur cet appareil et vérifiez qu'il est visible par tous."
+    next: "Ouvrez Solferry sur cet appareil et vérifiez qu'il est visible par les autres."
   protocol:
     title: "Un problème est survenu dans Solferry"
-    next: "Il s'agit d'un bug. Merci de le signaler avec les détails."
+    next: "Il s'agit d'un bug. Merci de le signaler en indiquant les détails."

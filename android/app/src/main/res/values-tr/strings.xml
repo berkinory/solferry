@@ -25,7 +25,7 @@
     <string name="tab_settings">Ayarlar</string>
 
     <!-- Relative time -->
-    <string name="ago_now">şimdi</string>
+    <string name="ago_now">az önce</string>
     <string name="ago_minutes">%1$d dk önce</string>
     <string name="ago_hours">%1$d sa önce</string>
     <string name="ago_yesterday">dün</string>
@@ -42,18 +42,18 @@
     <string name="devices_last_transfer">Son aktarım</string>
     <string name="devices_forget">Unut</string>
     <string name="devices_forget_title">%1$s unutulsun mu?</string>
-    <string name="devices_forget_body">Yeniden eşleştirene kadar eşleştirilmemiş bir cihaz olur.</string>
-    <string name="nearby_title">Yakındakiler</string>
+    <string name="devices_forget_body">Tekrar eşleştirene kadar eşleştirilmemiş bir cihaz olarak görünür.</string>
+    <string name="nearby_title">Yakındaki cihazlar</string>
     <string name="nearby_use_code">Kod kullan</string>
     <string name="nearby_searching">Cihazlar aranıyor</string>
-    <string name="nearby_searching_hint">Bu ağdaki başka bir cihazda Solferry\'yi aç, burada görünsün.</string>
+    <string name="nearby_searching_hint">Aynı ağdaki başka bir cihazda Solferry\'yi açınca burada görünür.</string>
     <string name="nearby_scanning">Bu ağda yeni cihazlar aranıyor</string>
-    <string name="browser_title">Diğer cihazda uygulama yok</string>
-    <string name="browser_body">Aynı ağdaki bir tarayıcı sana dosya gönderebilir. Tarayıcıya dosya göndermek için dosyaları seç ve Bağlantıyla paylaş\'ı kullan.</string>
+    <string name="browser_title">Diğer cihazda uygulama yok mu?</string>
+    <string name="browser_body">Aynı ağdaki bir tarayıcı da sana dosya gönderebilir. Tarayıcıya dosya göndermek içinse dosyaları seçip “Bağlantıyla paylaş” seçeneğini kullan.</string>
 
     <!-- Incoming offers and text -->
     <string name="offer_title">Gelen dosyalar</string>
-    <string name="offer_wants_to_send">%1$s göndermek istiyor</string>
+    <string name="offer_wants_to_send">%1$s dosya göndermek istiyor</string>
     <plurals name="offer_files">
         <item quantity="one">%d dosya</item>
         <item quantity="other">%d dosya</item>
@@ -63,8 +63,8 @@
     <string name="offer_always_accept">Her zaman kabul et</string>
     <string name="offer_block">Engelle</string>
     <string name="offer_block_title">%1$s engellensin mi?</string>
-    <string name="offer_block_body">Dosya gönderemez veya eşleşme isteyemez. Engeli daha sonra kaldırabilirsin.</string>
-    <string name="text_from">%1$s cihazından metin</string>
+    <string name="offer_block_body">Sana dosya gönderemez, eşleşme isteği de yollayamaz. Engeli daha sonra kaldırabilirsin.</string>
+    <string name="text_from">%1$s metin gönderdi</string>
     <string name="text_copy">Kopyala</string>
 
     <!-- Send -->
@@ -90,15 +90,15 @@
     <!-- Pairing -->
     <string name="pair_request_title">Eşleştirme isteği</string>
     <string name="pair_request_wants">%1$s eşleşmek istiyor</string>
-    <string name="pair_request_hint">Yalnızca diğer ekranda aynı kod görünüyorsa onayla.</string>
+    <string name="pair_request_hint">Yalnızca diğer ekranda da aynı kod görünüyorsa onayla.</string>
     <string name="pair_confirm">Onayla</string>
     <string name="pair_compare_title">Kodları karşılaştır</string>
-    <string name="pair_compare_hint">Diğer cihazda bu kodun göründüğünü kontrol et, sonra orada kabul et.</string>
+    <string name="pair_compare_hint">Diğer cihazda da bu kodun göründüğünü kontrol et, sonra orada onayla.</string>
     <string name="pair_code_title">Kodla eşleştir</string>
     <string name="pair_show_title">Kod göster</string>
-    <string name="pair_show_hint">Başka bir ağdaki cihaz için veya bu cihaz yakında bulunamadığında. Kodu burada göster, orada gir.</string>
+    <string name="pair_show_hint">Cihaz başka bir ağdaysa ya da yakında görünmüyorsa bunu kullan. Kodu burada göster, diğer cihazda gir.</string>
     <string name="pair_show_code">Kodu göster</string>
-    <string name="pair_invite_expiry">Bir kez, 10 dakika boyunca geçerli.</string>
+    <string name="pair_invite_expiry">Tek kullanımlık, 10 dakika geçerli.</string>
     <string name="pair_copy_code">Kodu kopyala</string>
     <string name="pair_enter_title">Kod gir</string>
     <string name="pair_enter_placeholder">sf1 kodunu yapıştır</string>
@@ -109,12 +109,12 @@
     <string name="history_title">Geçmiş</string>
     <string name="history_clear">Temizle</string>
     <string name="history_empty_title">Henüz aktarım yok</string>
-    <string name="history_empty_body">Gönderdiğin veya aldığın dosyalar burada görünür.</string>
+    <string name="history_empty_body">Gönderdiğin ve aldığın dosyalar burada görünür.</string>
     <string name="history_failed">Başarısız</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Solferry\'ye hoş geldin</string>
-    <string name="onboarding_body">Cihazların arasında dosya gönder. Hesap yok, bulutta hiçbir şey yok.</string>
+    <string name="onboarding_body">Cihazların arasında dosya gönder. Hesap gerekmez, hiçbir şey buluta gitmez.</string>
     <string name="onboarding_name_title">Cihazının adı</string>
     <string name="onboarding_name_hint">Yakındaki cihazlar bu adı görür.</string>
     <string name="onboarding_start">Başla</string>
@@ -124,37 +124,37 @@
     <string name="settings_name_title">Cihaz adı</string>
     <string name="settings_name_placeholder">Ad</string>
     <string name="settings_save">Kaydet</string>
-    <string name="settings_find_title">Başkaları beni bulabilsin</string>
-    <string name="settings_find_on">Ağındaki cihazlar bu cihazı görebilir ve göndermek için izin isteyebilir.</string>
-    <string name="settings_find_off">Yeni kimse bu cihazı bulamaz. Eşleştirilmiş cihazlar yine de ulaşabilir.</string>
-    <string name="settings_background_title">Arka planda al</string>
-    <string name="settings_background_body">Solferry kapalıyken de ulaşılabilir kal. Bir bildirim gösterir ve daha fazla pil kullanır.</string>
+    <string name="settings_find_title">Herkese görünür ol</string>
+    <string name="settings_find_on">Ağındaki cihazlar bu cihazı görebilir ve dosya göndermek için izin isteyebilir.</string>
+    <string name="settings_find_off">Yeni cihazlar bu cihazı bulamaz. Eşleştirilmiş cihazlar yine de ulaşabilir.</string>
+    <string name="settings_background_title">Arka planda dosya al</string>
+    <string name="settings_background_body">Solferry kapalıyken de dosya alabilirsin. Sürekli bir bildirim gösterir ve daha fazla pil harcar.</string>
     <string name="language_title">Dil</string>
-    <string name="language_system">Sistem varsayılanı</string>
+    <string name="language_system">Sistem dili</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Röle</string>
-    <string name="relay_guide">Kurulum Rehberi</string>
-    <string name="relay_body">Kendi çalıştırdığın bir röleyle başka ağlardaki cihazlara ulaş.</string>
+    <string name="relay_guide">Kurulum rehberi</string>
+    <string name="relay_body">Kendi kurduğun bir röle üzerinden başka ağlardaki cihazlara ulaş.</string>
     <string name="relay_add">Ekle</string>
     <string name="relay_checking">Kontrol ediliyor</string>
-    <string name="relay_connected">Bağlandı</string>
-    <string name="relay_udp_blocked">Bağlandı, UDP 7842 engelli</string>
+    <string name="relay_connected">Bağlı</string>
+    <string name="relay_udp_blocked">Bağlı ama UDP 7842 engelli</string>
     <string name="relay_refused">Reddedildi, bağlantıyı kontrol et</string>
     <string name="relay_unreachable">Sunucuya ulaşılamıyor</string>
-    <string name="folder_title">Dosyaları kaydet</string>
+    <string name="folder_title">Kayıt klasörü</string>
     <string name="folder_downloads">İndirilenler/Solferry</string>
     <string name="folder_reset">Sıfırla</string>
     <string name="folder_change">Değiştir</string>
     <string name="updates_title">Güncellemeler</string>
-    <string name="updates_auto">Güncellemeleri otomatik denetle</string>
-    <string name="updates_available">Solferry %1$s mevcut</string>
+    <string name="updates_auto">Güncellemeleri otomatik kontrol et</string>
+    <string name="updates_available">Yeni sürüm: Solferry %1$s</string>
     <string name="updates_download">İndir</string>
     <string name="blocked_title">Engellenenler</string>
     <string name="blocked_unblock">Engeli kaldır</string>
 
     <!-- Transfer pill and toasts -->
     <string name="transfer_waiting">%1$s bekleniyor</string>
-    <string name="transfer_reconnecting">%1$s ile yeniden bağlanılıyor</string>
+    <string name="transfer_reconnecting">%1$s cihazına yeniden bağlanılıyor</string>
     <string name="transfer_sending">%1$s gönderiliyor</string>
     <string name="transfer_receiving">%1$s alınıyor</string>
     <string name="transfer_sent">%1$s gönderildi</string>
@@ -164,26 +164,26 @@
         <item quantity="other">%d aktarım</item>
     </plurals>
     <string name="toast_paired">%1$s ile eşleştirildi</string>
-    <string name="error_save_failed">%1$s: %2$s konumuna kaydedilemedi</string>
+    <string name="error_save_failed">%1$s: %2$s klasörüne kaydedilemedi</string>
     <string name="error_save_downloads">İndirilenler</string>
     <string name="error_save_recovered">Alınan dosyalar</string>
-    <string name="error_folder_unusable">Bu klasör kullanılamadı</string>
-    <string name="error_folder_lost">%1$s erişimi kaybedildi, %2$s konumuna kaydediliyor</string>
+    <string name="error_folder_unusable">Bu klasör kullanılamıyor</string>
+    <string name="error_folder_lost">%1$s klasörüne artık erişilemiyor. Dosyalar %2$s klasörüne kaydedilecek.</string>
     <string name="error_open_file">Bu dosya açılamadı, tekrar paylaşmayı dene</string>
 
     <!-- Notifications -->
-    <string name="channel_asks">İstekler ve gelenler</string>
+    <string name="channel_asks">İstekler ve gelen dosyalar</string>
     <string name="channel_transfers">Devam eden aktarımlar</string>
-    <string name="channel_standby">Arka planda alma</string>
+    <string name="channel_standby">Arka planda dosya alma</string>
     <plurals name="notify_progress">
         <item quantity="one">%d aktarım sürüyor</item>
         <item quantity="other">%d aktarım sürüyor</item>
     </plurals>
-    <string name="notify_standby">Almaya hazır</string>
+    <string name="notify_standby">Dosya almaya hazır</string>
     <string name="notify_offer_body">%1$s sana dosya göndermek istiyor</string>
     <string name="notify_pairing_body">%1$s bu cihazla eşleşmek istiyor</string>
-    <string name="notify_text_copied">Panona kopyalandı</string>
+    <string name="notify_text_copied">Panoya kopyalandı</string>
     <string name="notify_text_open">Kopyalamak için Solferry\'yi aç</string>
     <string name="notify_received_title">Dosyalar alındı</string>
-    <string name="notify_received_body">%1$s, gönderen: %2$s, konum: %3$s</string>
+    <string name="notify_received_body">%2$s gönderdi: %1$s. %3$s klasörüne kaydedildi.</string>
 </resources>
