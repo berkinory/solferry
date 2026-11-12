@@ -162,6 +162,7 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
             | Event::LinkReceived { .. }
             | Event::LinkText { .. }
             | Event::Present { .. }
+            | Event::Absent { .. }
             | Event::Started { .. }
             | Event::Paired { .. }
             | Event::TextReceived { .. } => {}

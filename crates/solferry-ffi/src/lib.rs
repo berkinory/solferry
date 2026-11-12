@@ -277,6 +277,12 @@ impl Solferry {
         );
     }
 
+    /// Tells the paired devices this one is going away, for an app about to be frozen in the
+    /// background. Its next presence check brings it back.
+    pub fn leave(&self) {
+        self.with_node(move |node, _, _| async move { node.leave().await }, None);
+    }
+
     /// Asks every paired device whether it is there. Apps call this only while on screen.
     pub fn check_presence(&self) {
         self.with_node(

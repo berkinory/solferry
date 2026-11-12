@@ -21,7 +21,7 @@ use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use solferry_proto::{ALPN_PAIR, ALPN_PRESENCE, ALPN_TEXT, ALPN_TRANSFER, close};
+use solferry_proto::{ALPN_LEAVING, ALPN_PAIR, ALPN_PRESENCE, ALPN_TEXT, ALPN_TRANSFER, close};
 use tokio::sync::{Semaphore, broadcast, mpsc, watch};
 
 pub use confirm::PairingRequest;
@@ -75,8 +75,7 @@ pub(crate) struct Shared {
     pub(crate) active: Mutex<HashMap<TransferId, Connection>>,
     history: Mutex<History>,
     running: Mutex<HashMap<TransferId, PastTransfer>>,
-    /// When each paired device last checked whether this one is there.
-    pub(crate) checked_in: Mutex<HashMap<EndpointId, std::time::Instant>>,
+    pub(crate) heard: Mutex<presence::Heard>,
     uses_relays: bool,
 }
 
@@ -206,7 +205,7 @@ impl Node {
             active: Mutex::new(HashMap::new()),
             history: Mutex::new(History::load(&data_dir)),
             running: Mutex::new(HashMap::new()),
-            checked_in: Mutex::new(HashMap::new()),
+            heard: Mutex::new(presence::Heard::default()),
             uses_relays,
         });
         if !isolated {
@@ -217,6 +216,7 @@ impl Node {
             .accept(ALPN_PAIR, pairing::PairHandler(shared.clone()))
             .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
             .accept(ALPN_PRESENCE, presence::PresenceHandler(shared.clone()))
+            .accept(ALPN_LEAVING, presence::LeavingHandler(shared.clone()))
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }
@@ -310,7 +310,9 @@ impl Node {
         }
     }
 
+    /// Says goodbye to the paired devices, then stops.
     pub async fn shutdown(self) -> Result<()> {
+        self.leave().await;
         self.router.shutdown().await.map_err(|error| Error::Protocol(error.to_string()))
     }
 }

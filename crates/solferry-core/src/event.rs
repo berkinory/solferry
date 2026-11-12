@@ -79,6 +79,10 @@ pub enum Event {
     Present {
         peer: EndpointId,
     },
+    /// A paired device said it is going away.
+    Absent {
+        peer: EndpointId,
+    },
     /// A browser sent text through a receive link.
     LinkText {
         text: String,
