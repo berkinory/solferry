@@ -9,11 +9,11 @@ use super::button::Button;
 use super::main_view::MainView;
 use super::settings::change;
 use super::ui;
-use crate::tokens::SPACE_XS;
+use crate::tokens::{SPACE_SM, SPACE_XS};
 
 const MIB: u64 = 1024 * 1024;
 
-pub fn well(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
+pub fn choices(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
     let current = config.relay_speed_limit;
     let options = std::iter::once(None).chain(RELAY_SPEED_LIMITS.into_iter().map(Some));
     let choices = options.map(|limit| {
@@ -30,7 +30,11 @@ pub fn well(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                 change(view, cx, |config| config.relay_speed_limit = limit);
             }))
     });
-    ui::padded_well(cx)
+    div()
+        .flex()
+        .flex_col()
+        .gap(px(SPACE_XS))
+        .pt(px(SPACE_SM))
         .child(ui::text(t!("relays.limit.title")))
         .child(ui::muted(t!("relays.limit.hint"), cx))
         .child(div().flex().flex_wrap().gap(px(SPACE_XS)).children(choices))

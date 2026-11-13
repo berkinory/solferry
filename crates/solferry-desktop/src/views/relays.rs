@@ -33,20 +33,25 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
         .into_any_element();
     ui::card(Glyph::Relay, &t!("relays.title"), Some(guide), cx)
         .child(
-            ui::padded_well(cx).child(ui::muted(t!("relays.hint"), cx)).children(rows).child(
-                div()
-                    .flex()
-                    .gap(px(SPACE_XS))
-                    .child(div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()))
-                    .child(
-                        Button::new("add-relay")
-                            .icon(Glyph::Add)
-                            .label(t!("relays.add"))
-                            .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
-                    ),
-            ),
+            ui::padded_well(cx)
+                .child(ui::muted(t!("relays.hint"), cx))
+                .children(rows)
+                .child(
+                    div()
+                        .flex()
+                        .gap(px(SPACE_XS))
+                        .child(
+                            div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()),
+                        )
+                        .child(
+                            Button::new("add-relay")
+                                .icon(Glyph::Add)
+                                .label(t!("relays.add"))
+                                .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
+                        ),
+                )
+                .child(relay_limit::choices(config, cx)),
         )
-        .child(relay_limit::well(config, cx))
         .into_any_element()
 }
 
