@@ -114,7 +114,7 @@ async fn resolve(node: &Node, targets: &[String], json: bool) -> Result<Vec<Endp
         match node.find_device(target) {
             Ok(device) => addrs.push(device.addr()),
             Err(Error::UnknownDevice(_)) => {
-                if let Ok(id) = target.parse::<EndpointId>() {
+                if let Ok(id) = EndpointId::from_z32(target) {
                     addrs.push(EndpointAddr::new(id));
                     continue;
                 }
