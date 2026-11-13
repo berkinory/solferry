@@ -10,6 +10,9 @@ pub const fn wanted(platform: Option<Platform>) -> bool {
     matches!(platform, Some(Platform::Linux | Platform::Windows))
 }
 
+/// Where queued sends keep their JPEG copies until they settle, one folder each.
+const QUEUED_DIR: &str = "queued-heic";
+
 /// The paths to send, with HEIC photos swapped for JPEG copies that live as long as this does.
 pub struct Staged {
     _folder: TempDir,
@@ -27,13 +30,52 @@ pub fn stage(paths: &[PathBuf]) -> Option<Staged> {
         .tempdir()
         .inspect_err(|error| tracing::warn!(%error, "sending HEIC as is, no staging folder"))
         .ok()?;
-    let paths = paths
+    let paths = convert_into(paths, folder.path());
+    Some(Staged { _folder: folder, paths })
+}
+
+/// Like [`stage`], for a send that may wait days for its device: the copies go in a folder of
+/// their own under the data dir, which [`release`] removes once the send settles.
+pub fn keep(paths: &[PathBuf], data_dir: &Path) -> Vec<PathBuf> {
+    if !paths.iter().any(|path| is_heic(path)) {
+        return paths.to_vec();
+    }
+    let base = data_dir.join(QUEUED_DIR);
+    let folder = std::fs::create_dir_all(&base)
+        .and_then(|()| tempfile::Builder::new().tempdir_in(&base))
+        .map(TempDir::keep);
+    match folder {
+        Ok(folder) => {
+            let kept = convert_into(paths, &folder);
+            // Only empty when nothing converted, and then nothing will release it.
+            let _ = std::fs::remove_dir(&folder);
+            kept
+        }
+        Err(error) => {
+            tracing::warn!(%error, "queueing HEIC as is, no folder for the copies");
+            paths.to_vec()
+        }
+    }
+}
+
+/// Removes the copies [`keep`] made for `paths`, leaving everything else alone.
+pub fn release(paths: &[PathBuf], data_dir: &Path) {
+    let base = data_dir.join(QUEUED_DIR);
+    for folder in paths.iter().filter_map(|path| path.parent()) {
+        if folder.parent() == Some(base.as_path()) && folder.exists() {
+            let _ = std::fs::remove_dir_all(folder);
+        }
+    }
+}
+
+fn convert_into(paths: &[PathBuf], folder: &Path) -> Vec<PathBuf> {
+    paths
         .iter()
         .map(|path| {
             if !is_heic(path) {
                 return path.clone();
             }
-            let target = folder.path().join(jpeg_name(path));
+            let target = folder.join(jpeg_name(path));
             match convert(path, &target) {
                 Ok(()) => target,
                 Err(error) => {
@@ -42,8 +84,7 @@ pub fn stage(paths: &[PathBuf]) -> Option<Staged> {
                 }
             }
         })
-        .collect();
-    Some(Staged { _folder: folder, paths })
+        .collect()
 }
 
 fn is_heic(path: &Path) -> bool {

@@ -1,11 +1,13 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
 use futures::channel::mpsc::UnboundedSender;
-use solferry_core::{Event, Node};
+use solferry_core::{Event, Node, QueuedFiles};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
+use crate::heic;
 use crate::service::{Command, Pending, PendingPairings, Update};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
@@ -82,6 +84,25 @@ pub fn forward_events(node: Node, updates: UnboundedSender<Update>) -> AbortHand
                     }
                 }
                 Err(RecvError::Lagged(_)) => {}
+                Err(RecvError::Closed) => break,
+            }
+        }
+    })
+    .abort_handle()
+}
+
+/// Removes the JPEG copies a queued send kept once it is over, whichever way it ended.
+pub fn release_converted(node: &Node, data_dir: PathBuf) -> AbortHandle {
+    let mut events = node.events();
+    tokio::spawn(async move {
+        loop {
+            match events.recv().await {
+                Ok(Event::QueueSettled { entry, .. }) => {
+                    if let QueuedFiles::Paths(paths) = &entry.files {
+                        heic::release(paths, &data_dir);
+                    }
+                }
+                Ok(_) | Err(RecvError::Lagged(_)) => {}
                 Err(RecvError::Closed) => break,
             }
         }
