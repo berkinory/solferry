@@ -52,6 +52,7 @@ struct Me {
     let fingerprint: String
     let name: String
     let visibility: String
+    let relaySpeedLimit: UInt64?
 }
 
 enum Tone {
@@ -99,8 +100,8 @@ struct AppState {
 
     mutating func apply(_ update: Update, now: UInt64) {
         switch update {
-        case let .ready(id, fingerprint, name, _, visibility, _):
-            me = Me(id: id, fingerprint: fingerprint, name: name, visibility: visibility)
+        case let .ready(id, fingerprint, name, _, visibility, _, relaySpeedLimit):
+            me = Me(id: id, fingerprint: fingerprint, name: name, visibility: visibility, relaySpeedLimit: relaySpeedLimit)
             startProblem = nil
         case let .startFailed(problem, reason):
             startProblem = problem
