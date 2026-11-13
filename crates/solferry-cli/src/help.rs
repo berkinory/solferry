@@ -5,7 +5,8 @@ pub const SHORT: &str = "Scripting, JSON output and exit codes are covered in `s
 pub const AGENTS: &str = r#"Scripts and agents:
   --json        Every command prints JSON to stdout, one value per line.
                   status, devices, nearby, relay show, relay check: one document
-                  rename, forget, approval, block, unblock, relay add/remove:
+                  rename, forget, approval, block, unblock,
+                  relay add/remove/limit:
                     one {"action": ...} object
                   pair, join, send, receive, link: {"event": ...} lines
                 Device ids are in "id" or "peer". A transfer's "id" is the same
