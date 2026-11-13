@@ -117,7 +117,7 @@ fun OfferCard(incoming: Incoming, engine: Engine) {
 @Composable
 fun TextCard(shared: ReceivedText, engine: Engine) = Card(R.drawable.ic_clipboard, stringResource(R.string.text_from, shared.name)) {
     PaddedWell {
-        Text(shared.text, maxLines = 4, overflow = TextOverflow.Ellipsis)
+        Text(linked(shared.text), maxLines = 4, overflow = TextOverflow.Ellipsis)
         Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
             Button(
                 { engine.copy(shared.text); engine.markCopied(shared.key) }, label = stringResource(if (shared.copied) R.string.common_copied else R.string.text_copy),

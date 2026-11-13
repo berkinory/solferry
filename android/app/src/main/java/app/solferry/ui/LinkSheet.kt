@@ -46,7 +46,7 @@ fun LinkSheet(link: LinkState, engine: Engine) =
                 Well {
                     link.texts.forEach { text ->
                         Row(Modifier.padding(8.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
-                            Text(text, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            Text(linked(text), Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis)
                             Button({ engine.copy(text) }, icon = R.drawable.ic_copy, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.text_copy))
                         }
                     }
