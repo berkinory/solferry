@@ -4,7 +4,7 @@ use std::sync::Arc;
 use futures::SinkExt;
 use futures::channel::mpsc::UnboundedSender;
 use iroh::EndpointAddr;
-use solferry_core::{Config, Error, Link, LinkFile, Node, QueuedFiles};
+use solferry_core::{Config, Error, Link, LinkFile, Node, Platform, QueuedFiles};
 
 use super::{Command, ONLINE_WAIT, Target, Update};
 use crate::heic;
@@ -26,7 +26,8 @@ pub(super) fn dispatch(
             }
             Command::Queue { targets, paths } => {
                 for target in targets {
-                    let _ = updates.send(queue(&node, target, paths.clone())).await;
+                    let _ =
+                        updates.send(queue(&node, &data_dir, target, paths.clone()).await).await;
                 }
             }
             Command::Unqueue(id) => node.unqueue(id),
@@ -91,11 +92,30 @@ pub(super) fn dispatch(
     });
 }
 
-fn queue(node: &Node, target: Target, paths: Vec<PathBuf>) -> Update {
-    match node.queue(target.addr.id, QueuedFiles::Paths(paths.clone())) {
+/// Queues for a paired device that is away. HEIC photos are converted now when it can't open
+/// them, since its platform is known and the photos may be gone by the time it is back.
+async fn queue(node: &Node, data_dir: &Path, target: Target, paths: Vec<PathBuf>) -> Update {
+    let queued = if converts(data_dir, target.platform) {
+        let (originals, data_dir) = (paths.clone(), data_dir.to_owned());
+        tokio::task::spawn_blocking(move || heic::keep(&originals, &data_dir))
+            .await
+            .unwrap_or_else(|_| paths.clone())
+    } else {
+        paths.clone()
+    };
+    match node.queue(target.addr.id, QueuedFiles::Paths(queued.clone())) {
         Ok(_) => Update::Queued { name: target.name },
-        Err(error) => Update::SendFailed { target, paths, error },
+        Err(error) => {
+            heic::release(&queued, data_dir);
+            Update::SendFailed { target, paths, error }
+        }
     }
+}
+
+fn converts(data_dir: &Path, platform: Option<Platform>) -> bool {
+    cfg!(target_os = "macos")
+        && heic::wanted(platform)
+        && Config::load(data_dir).is_ok_and(|config| config.convert_heic)
 }
 
 async fn pair(node: &Node, addr: EndpointAddr, updates: &mut UnboundedSender<Update>) {
@@ -136,9 +156,7 @@ async fn send(
     paths: Vec<PathBuf>,
     updates: &UnboundedSender<Update>,
 ) {
-    let convert = cfg!(target_os = "macos")
-        && targets.iter().any(|target| heic::wanted(target.platform))
-        && Config::load(data_dir).is_ok_and(|config| config.convert_heic);
+    let convert = targets.iter().any(|target| converts(data_dir, target.platform));
     let staged = if convert {
         let originals = paths.clone();
         tokio::task::spawn_blocking(move || heic::stage(&originals))
@@ -153,6 +171,7 @@ async fn send(
         let jpegs = staged.clone().filter(|_| heic::wanted(target.platform));
         let sent = jpegs.as_ref().map_or_else(|| paths.clone(), |staged| staged.paths.clone());
         let (node, paths, mut updates) = (node.clone(), paths.clone(), updates.clone());
+        let data_dir = data_dir.to_owned();
         tokio::spawn(async move {
             let result = node.send(target.addr.clone(), sent).await;
             drop(jpegs);
@@ -161,7 +180,7 @@ async fn send(
                 Err(Error::Unreachable(_))
                     if node.find_device(&target.addr.id.to_z32()).is_ok() =>
                 {
-                    queue(&node, target, paths)
+                    queue(&node, &data_dir, target, paths).await
                 }
                 Err(error) => Update::SendFailed { target, paths, error },
                 Ok(_) => return,

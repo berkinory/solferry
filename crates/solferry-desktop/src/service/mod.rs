@@ -273,6 +273,7 @@ async fn start(
     );
     tasks.push(watch::follow_presence(node.clone(), updates.clone()));
     tasks.push(watch::restart_after_rotation(node.clone(), restarts.clone()));
+    tasks.push(watch::release_converted(&node, data_dir.to_owned()));
     tasks.push(watch::deliver_queued(node.clone()));
     Some(Session { node, tasks })
 }
