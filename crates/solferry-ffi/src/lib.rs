@@ -2,8 +2,10 @@
 //! listener. Every call returns at once; outcomes arrive as updates.
 
 mod link;
+mod queue;
 mod session;
 mod types;
+mod update;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,8 +15,10 @@ use solferry_core::{Config, NamedFile, RelayLink, Visibility};
 use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
+pub use queue::{QueueEntry, QueueResult, QueuedFile};
 use session::{Restarter, Session, Shelf, blocked, devices, history, lock};
 pub use types::*;
+pub use update::Update;
 
 uniffi::setup_scaffolding!();
 
@@ -62,6 +66,9 @@ pub fn set_locale(locale: String) {
 #[uniffi::export(with_foreign)]
 pub trait Listener: Send + Sync {
     fn update(&self, update: Update);
+    /// Opens a file the app queued under `reference` and detaches its descriptor for the bridge,
+    /// or returns `None` when the file is gone.
+    fn reopen(&self, reference: String) -> Option<i32>;
 }
 
 /// A file the app opened for sending. The bridge takes ownership of `fd` and closes it when the
@@ -469,14 +476,14 @@ fn address(node: &solferry_core::Node, shelf: &Shelf, peer: &str) -> Option<Endp
 /// Takes ownership of a descriptor the app detached. Only phones hand over descriptors.
 #[cfg(unix)]
 #[expect(clippy::unnecessary_wraps, reason = "platforms without descriptors return None")]
-fn adopt(fd: i32) -> Option<std::fs::File> {
+pub(crate) fn adopt(fd: i32) -> Option<std::fs::File> {
     use std::os::fd::{FromRawFd, OwnedFd};
     // SAFETY: the app detached the descriptor and hands its ownership to the bridge.
     Some(std::fs::File::from(unsafe { OwnedFd::from_raw_fd(fd) }))
 }
 
 #[cfg(not(unix))]
-fn adopt(_: i32) -> Option<std::fs::File> {
+pub(crate) fn adopt(_: i32) -> Option<std::fs::File> {
     None
 }
 

@@ -3,7 +3,7 @@ use std::future::Future;
 use solferry_core::{Link, LinkFile, NamedFile, Node};
 
 use crate::session::lock;
-use crate::types::Update;
+use crate::update::Update;
 use crate::{SharedFile, Solferry, adopt};
 
 #[uniffi::export]
