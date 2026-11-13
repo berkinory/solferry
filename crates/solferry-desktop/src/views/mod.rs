@@ -16,6 +16,7 @@ mod offers;
 mod onboarding;
 mod pairing;
 pub mod popover;
+mod queue;
 mod radar;
 mod relay_limit;
 mod relays;

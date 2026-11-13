@@ -8,6 +8,9 @@ menu:
   settings: "设置…"
   quit: "退出 Solferry"
 notification:
+  queue:
+    delivered: "待发送的文件已送达"
+    failed: "待发送的文件未能送达"
   offer:
     title: "文件传输请求"
     body: "%{name} 想向你发送文件"
@@ -37,6 +40,8 @@ format:
     days: "%{count}天前"
     months: "%{count}个月前"
 toast:
+  queued: "%{name} 不在线。上线后自动发送"
+  queue_delivered: "%{title} 已送达 %{name}"
   update_ready: "Solferry %{version} 已准备就绪"
   install_failed: "无法安装更新"
   clipboard_empty: "剪贴板中没有文本"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "尚未询问"
   allow: "允许"
   open_settings: "打开设置"
+queue:
+  title: "等待发送"
+  to: "发送至 %{name}"
+  hint: "设备上线且 Solferry 正在运行时发送。%{days} 天后丢弃。"
+  cancel: "取消发送"

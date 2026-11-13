@@ -8,6 +8,9 @@ menu:
   settings: "Paramètres..."
   quit: "Quitter Solferry"
 notification:
+  queue:
+    delivered: "Fichiers en attente remis"
+    failed: "Fichiers en attente non remis"
   offer:
     title: "Fichiers entrants"
     body: "%{name} souhaite vous envoyer des fichiers"
@@ -37,6 +40,8 @@ format:
     days: "il y a %{count} j"
     months: "il y a %{count} mois"
 toast:
+  queued: "%{name} est hors ligne. Envoi dès son retour"
+  queue_delivered: "%{title} remis à %{name}"
   update_ready: "Solferry %{version} est prêt à être installé"
   install_failed: "Impossible d'installer la mise à jour"
   clipboard_empty: "Le presse-papiers ne contient pas de texte"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Pas encore demandé"
   allow: "Autoriser"
   open_settings: "Ouvrir les réglages"
+queue:
+  title: "En attente d'envoi"
+  to: "Pour %{name}"
+  hint: "Envoyé au retour de l'appareil, tant que Solferry est ouvert. Abandonné après %{days} jours."
+  cancel: "Annuler l'envoi"

@@ -16,7 +16,7 @@ use solferry_core::{Direction, Event};
 use crate::instance::Instance;
 use crate::opened::OpenedFiles;
 use crate::service::{Command, Handle, Update};
-use crate::state::AppState;
+use crate::state::{AppState, Tone};
 use crate::tray::{Tray, TrayAction, TrayEvents};
 use crate::views::MainView;
 
@@ -145,6 +145,14 @@ fn notify(update: &Update, cx: &mut App) {
             let body =
                 t!("notification.received.body", title = transfer.title, peer = transfer.peer);
             (t!("notification.received.title"), body)
+        }
+        Update::Transfer(Event::QueueSettled { entry, outcome }) => {
+            let Some((tone, body)) = crate::queued::settled_message(entry, outcome) else { return };
+            let title = match tone {
+                Tone::Success => t!("notification.queue.delivered"),
+                Tone::Error => t!("notification.queue.failed"),
+            };
+            (title, body.into())
         }
         _ => return,
     };

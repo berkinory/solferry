@@ -8,6 +8,9 @@ menu:
   settings: "Налаштування..."
   quit: "Вийти з Solferry"
 notification:
+  queue:
+    delivered: "Відкладені файли доставлено"
+    failed: "Відкладені файли не доставлено"
   offer:
     title: "Вхідні файли"
     body: "%{name} хоче надіслати вам файли"
@@ -37,6 +40,8 @@ format:
     days: "%{count} дн. тому"
     months: "%{count} міс. тому"
 toast:
+  queued: "%{name} не в мережі. Надішлемо, коли з'явиться"
+  queue_delivered: "%{title}: доставлено на %{name}"
   update_ready: "Solferry %{version} готовий до встановлення"
   install_failed: "Не вдалося встановити оновлення"
   clipboard_empty: "У буфері обміну немає тексту"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Ще не запитано"
   allow: "Дозволити"
   open_settings: "Відкрити налаштування"
+queue:
+  title: "Чекає на надсилання"
+  to: "Для %{name}"
+  hint: "Надішлеться, коли пристрій з'явиться, а Solferry буде запущено. Видаляється через %{days} днів."
+  cancel: "Скасувати надсилання"

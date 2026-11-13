@@ -8,6 +8,9 @@ menu:
   settings: "Instellingen..."
   quit: "Stop Solferry"
 notification:
+  queue:
+    delivered: "Wachtende bestanden afgeleverd"
+    failed: "Wachtende bestanden niet afgeleverd"
   offer:
     title: "Inkomende bestanden"
     body: "%{name} wil je bestanden sturen"
@@ -37,6 +40,8 @@ format:
     days: "%{count} dagen geleden"
     months: "%{count} maanden geleden"
 toast:
+  queued: "%{name} is offline. Wordt verstuurd zodra het terug is"
+  queue_delivered: "%{title} afgeleverd bij %{name}"
   update_ready: "Solferry %{version} staat klaar"
   install_failed: "Kan de update niet installeren"
   clipboard_empty: "Je klembord bevat geen tekst"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Nog niet gevraagd"
   allow: "Toestaan"
   open_settings: "Instellingen openen"
+queue:
+  title: "Wacht op verzenden"
+  to: "Naar %{name}"
+  hint: "Wordt verstuurd zodra het apparaat terug is en Solferry draait. Vervalt na %{days} dagen."
+  cancel: "Verzenden annuleren"

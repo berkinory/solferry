@@ -1,7 +1,9 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use futures::channel::mpsc::UnboundedSender;
-use solferry_core::Node;
+use solferry_core::{Event, Node};
+use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
 use crate::service::{Command, Pending, PendingPairings, Update};
@@ -60,4 +62,35 @@ pub fn restart_after_rotation(node: Node, commands: UnboundedSender<Command>) ->
         let _ = commands.unbounded_send(Command::Restart);
     })
     .abort_handle()
+}
+
+/// Passes the node's events on, with the history again whenever a transfer ends and the queue
+/// again whenever it changes.
+pub fn forward_events(node: Node, updates: UnboundedSender<Update>) -> AbortHandle {
+    let mut events = node.events();
+    tokio::spawn(async move {
+        loop {
+            match events.recv().await {
+                Ok(Event::QueueChanged) => {
+                    let _ = updates.unbounded_send(Update::Queue(node.queued()));
+                }
+                Ok(event) => {
+                    let over = matches!(event, Event::Completed { .. } | Event::Failed { .. });
+                    let _ = updates.unbounded_send(Update::Transfer(event));
+                    if over {
+                        let _ = updates.unbounded_send(Update::History(node.history()));
+                    }
+                }
+                Err(RecvError::Lagged(_)) => {}
+                Err(RecvError::Closed) => break,
+            }
+        }
+    })
+    .abort_handle()
+}
+
+/// Delivers queued sends while the app runs. The desktop queues paths only, so nothing needs
+/// reopening.
+pub fn deliver_queued(node: Node) -> AbortHandle {
+    tokio::spawn(async move { node.deliver_queued(Arc::new(|_| None)).await }).abort_handle()
 }

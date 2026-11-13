@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
@@ -16,6 +16,7 @@ use super::{radar, ui};
 use crate::assets::{Glyph, file_glyph, icon};
 use crate::format;
 use crate::service::{Command, Target};
+use crate::state::AppState;
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_LG, SPACE_SM};
 
@@ -161,6 +162,22 @@ fn send_button(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         SendPhase::Flying => button.into_any_element(),
     };
     div().flex().justify_center().pt(px(SPACE_LG)).pb(px(SPACE_SM)).child(button).into_any_element()
+}
+
+/// Sends to the devices that may be there, and queues for paired devices known to be away,
+/// rather than making them wait out a send that can't connect.
+pub fn launch(targets: Vec<Target>, paths: Vec<PathBuf>, state: &AppState, cx: &Context<MainView>) {
+    let away = |target: &Target| {
+        let paired = state.devices.iter().any(|device| device.id == target.addr.id);
+        paired && state.reachable.as_ref().is_some_and(|there| !there.contains(&target.addr.id))
+    };
+    let (queued, sent): (Vec<_>, Vec<_>) = targets.into_iter().partition(away);
+    if !queued.is_empty() {
+        MainView::command(Command::Queue { targets: queued, paths: paths.clone() }, cx);
+    }
+    if !sent.is_empty() {
+        MainView::command(Command::Send { targets: sent, paths }, cx);
+    }
 }
 
 pub fn sheet(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {

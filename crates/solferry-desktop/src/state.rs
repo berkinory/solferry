@@ -6,7 +6,7 @@ use iroh::EndpointId;
 use rust_i18n::t;
 use solferry_core::{
     BlockedDevice, Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary,
-    PastTransfer, Platform, RelayHealth, TransferId, about, explain,
+    PastTransfer, Platform, QueuedSend, RelayHealth, TransferId, about, explain,
 };
 
 use crate::format;
@@ -108,6 +108,8 @@ pub struct AppState {
     pub reachable: Option<HashSet<EndpointId>>,
     pub transfers: Vec<Transfer>,
     pub history: Vec<PastTransfer>,
+    /// Sends waiting for paired devices that weren't there.
+    pub queued: Vec<QueuedSend>,
     pub toasts: Vec<Toast>,
     pub updater: Status,
     toasts_made: u64,
@@ -168,6 +170,10 @@ impl AppState {
             Update::Reachable(reachable) => self.reachable = Some(reachable),
             Update::Transfer(event) => self.on_event(event),
             Update::History(history) => self.history = history,
+            Update::Queue(queued) => self.queued = queued,
+            Update::Queued { name } => {
+                self.toast(Tone::Success, t!("toast.queued", name = name), None);
+            }
             Update::Offer { key, summary } => self.offers.push(Offer { key, summary }),
             Update::OfferGone(key) => self.offers.retain(|offer| offer.key != key),
             Update::PairingGone(key) => {
@@ -273,7 +279,7 @@ impl AppState {
             Event::Started { id, peer_name, label, direction, bytes, .. } => {
                 self.begin(Transfer::new(id, label, peer_name, direction, bytes));
             }
-            Event::RouteChanged { .. } => {}
+            Event::RouteChanged { .. } | Event::QueueChanged => {}
             Event::LinkReceived { name, .. } => {
                 if let Some(link) = &mut self.link {
                     link.received.push(name.clone());
@@ -311,6 +317,7 @@ impl AppState {
                 self.settle(id);
             }
             Event::Failed { id, error } => self.fail(id, error),
+            Event::QueueSettled { entry, outcome } => self.queue_settled(&entry, &outcome),
         }
     }
 

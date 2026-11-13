@@ -13,6 +13,7 @@ mod opened;
 mod permissions;
 mod popover;
 mod qr;
+mod queued;
 mod service;
 mod shell;
 mod state;
