@@ -1,7 +1,8 @@
 # Releasing
 
-1. Set `version` in the root `Cargo.toml` and merge it to `main`. Android and the packages read it from there.
-2. Tag that commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`.
+1. Rename `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z - YYYY-MM-DD`. That section becomes the release notes, and the workflow refuses a tag without one.
+2. Set `version` in the root `Cargo.toml`, and `MARKETING_VERSION` in the iOS project, then merge to `main`. Android and the packages read the version from `Cargo.toml`.
+3. Tag that commit and push the tag: `git tag v0.2.0 && git push origin v0.2.0`.
 
 The `release` workflow builds every platform, signs and notarizes the macOS app, publishes the GitHub release and the relay image, and updates the Homebrew tap. Running the workflow by hand does the same builds and publishes nothing.
 

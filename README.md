@@ -1,151 +1,120 @@
-# solferry
+<div align="center">
 
-Accountless, open source file transfer between your devices and the people you trust. It works on the local network and over Tailscale or a similar overlay, with no server involved. Run your own relay and it reaches across the internet too.
+<img src="crates/solferry-desktop/assets/icon.png" width="96" alt="Solferry icon">
 
-There is no account and no upload step. Files go straight from one device to another, end-to-end encrypted.
+# Solferry
 
-> Early development. The core, CLI and desktop app work on Linux, Windows and macOS builds, and the Android app on Android 10 and later. The iOS app is written and builds, but has not been tried on a device yet.
+**Send files between your devices. No account, nothing in the cloud.**
 
-## Why
+[![Release](https://img.shields.io/github/v/release/berkinory/solferry?include_prereleases&sort=semver)](https://github.com/berkinory/solferry/releases)
+[![CI](https://github.com/berkinory/solferry/actions/workflows/ci.yml/badge.svg)](https://github.com/berkinory/solferry/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux%20%7C%20Android-555)
 
-| | solferry | LocalSend | Blip |
-|---|---|---|---|
-| Open source | yes | yes | no |
-| No account | yes | yes | no |
-| Same network | yes | yes | yes |
-| Tailscale and overlays | yes | yes | no |
-| Across the internet | with your own relay | no | yes |
-| Resume after interruption | yes | no | yes |
+[Download](#download) · [Documentation](docs/README.md) · [Run a relay](docs/relay.md) · [Security](SECURITY.md)
 
-## Install
+</div>
 
-Downloads are on the [releases page](https://github.com/berkinory/solferry/releases). On macOS and Linux, Homebrew works too:
+<p align="center">
+  <img src="docs/images/desktop-home.png" height="420" alt="Solferry on the desktop">
+  &nbsp;&nbsp;
+  <img src="docs/images/android-home.png" height="420" alt="Solferry on Android">
+</p>
+
+Solferry is an open source, accountless alternative to AirDrop and LocalSend. Files go straight from one device to another, end-to-end encrypted, over your local network or Tailscale. There is no sign-up, no upload step and no server of ours anywhere in the path. If you want to reach devices on other networks, you run your own relay and everyone you pair with uses it.
+
+> [!NOTE]
+> Solferry is in early development. The desktop apps, the Android app and the command line tool are released. The iOS app is built and tested on the simulator, and ships later.
+
+## Highlights
+
+- **Private by design.** No accounts, no telemetry and no servers to trust. A device is its key, and every connection is end-to-end encrypted with TLS 1.3.
+- **Fast and resilient.** Large files move as parallel segments and resume after a dropped connection or a restart. Every file is checked against the sender's BLAKE3 hash before it lands.
+- **You decide who can send.** Unpaired devices have to ask, and you can block them. Pairing never accepts files on its own.
+- **Works where you are.** Local network and Tailscale out of the box. Your own relay for everything else, set up with one command.
+- **Waits for offline devices.** Send to a paired device that is away and it gets the files when it comes back, still asking first.
+- **Fits into each platform.** Share sheet on macOS and Android, drop on the Dock icon, menu bar popover, Android Quick Settings tile, Accept and Decline from the notification.
+- **Thoughtful details.** HEIC photos turn into JPEG for devices that can't open them. Texts and links go to the other device's clipboard. A browser can send or take files without the app.
+- **Scriptable.** A full command line tool for servers, pipes and headless machines, with JSON output.
+
+## Download
+
+| Platform | Download | Requires |
+|---|---|---|
+| macOS, Apple silicon | [Solferry-macos-aarch64.dmg](https://github.com/berkinory/solferry/releases/latest/download/Solferry-macos-aarch64.dmg) | macOS 12 |
+| macOS, Intel | [Solferry-macos-x86_64.dmg](https://github.com/berkinory/solferry/releases/latest/download/Solferry-macos-x86_64.dmg) | macOS 12 |
+| Windows | [Solferry-windows-setup.exe](https://github.com/berkinory/solferry/releases/latest/download/Solferry-windows-setup.exe) | Windows 10, x64 |
+| Linux, x86_64 | [Solferry-linux-x86_64.AppImage](https://github.com/berkinory/solferry/releases/latest/download/Solferry-linux-x86_64.AppImage) | glibc 2.35 |
+| Linux, ARM64 | [Solferry-linux-aarch64.AppImage](https://github.com/berkinory/solferry/releases/latest/download/Solferry-linux-aarch64.AppImage) | glibc 2.35 |
+| Android | [Solferry-android.apk](https://github.com/berkinory/solferry/releases/latest/download/Solferry-android.apk) | Android 10 |
+| Command line, Linux | [x86_64](https://github.com/berkinory/solferry/releases/latest/download/solferry-cli-linux-x86_64.tar.xz) · [ARM64](https://github.com/berkinory/solferry/releases/latest/download/solferry-cli-linux-aarch64.tar.xz) | any |
+
+The macOS apps and the Windows installer include the `solferry` command. With Homebrew:
 
 ```sh
 brew tap berkinory/brew
-brew trust berkinory/brew
-brew install --cask solferry   # the macOS app, with the solferry command
-brew install solferry-cli      # the command line tool alone, on Linux
+brew install --cask solferry   # macOS app, with the solferry command
+brew install solferry-cli      # command line tool alone, on Linux
 ```
 
-On Windows the installer puts the `solferry` command on your PATH too.
+The desktop apps update themselves, which you can turn off in Settings. See [Installation](docs/install.md) for first launch notes on each platform.
 
-The desktop apps update themselves unless you turn that off in Settings.
+## Quick start
 
-## Desktop app
+1. Install Solferry on two devices on the same network, or on the same Tailscale network.
+2. Each one shows the other under **Nearby**. Press **Pair** and check that both screens show the same six digits.
+3. Drop files on the window, share them to Solferry, or press the send button, then pick a device.
+
+You don't have to pair to send. An unpaired device on your network gets asked, and can accept, decline or block you.
+
+From a terminal:
 
 ```sh
-cargo run --release -p solferry-desktop
+solferry receive                          # on one device
+solferry send photos/ --to my-laptop      # on the other
 ```
 
-Drop files on a device, or on the window to pick several devices. Closing the window keeps Solferry in the tray, ready to receive. The clipboard button on a paired device sends the text you copied: it lands on that device's clipboard if it receives without asking, and waits there to be copied otherwise. `Ctrl+O` (`Cmd+O` on macOS) chooses files, `Ctrl+N` adds a device and `Ctrl+,` opens settings.
-
-On macOS, run it as an app so it can show notifications and ask for local network access:
-
-```sh
-just bundle-macos
-open target/release/Solferry.app
-```
-
-## iOS
-
-```sh
-rustup target add aarch64-apple-ios aarch64-apple-ios-sim
-ios/build-rust.sh
-open ios/Solferry.xcodeproj
-```
-
-Needs Xcode on a Mac. `ios/build-rust.sh` writes the Rust core and its Swift bindings to `ios/Generated`. Run it again after changing the core. Finding nearby devices on a real iPhone needs Apple's multicast entitlement.
-
-## Android
-
-```sh
-rustup target add aarch64-linux-android x86_64-linux-android
-cargo install cargo-ndk
-cd android && ./gradlew installDebug
-```
-
-Needs JDK 21 and the Android SDK with an NDK. Gradle builds the Rust core through `android/build-rust.sh` and generates its Kotlin bindings. Share files to Solferry from any app, or pick them from the send button. Received files land in Downloads/Solferry.
-
-## Command line
-
-```sh
-cargo install --path crates/solferry-cli
-```
-
-On the same network, pair by comparing a code. Keep one device receiving, then on the other:
-
-```sh
-solferry pair --with my-laptop
-```
-
-Across networks, or to use a QR code, run `solferry pair` and paste what it prints on the other device:
-
-```sh
-solferry join sf1...
-```
-
-Then keep one side receiving and send from the other:
-
-```sh
-solferry receive
-solferry send holiday-photos/ --to my-laptop
-```
-
-Send to several devices with repeated `--to`. `--to last` sends to the device you last sent files to. Share text with a paired device's clipboard, or pipe it in with `-`:
-
-```sh
-solferry send --text "see you at 8" --to my-laptop
-git log -1 | solferry send --text - --to my-laptop
-```
-
-A lone `-` sends stdin as a file instead, named with `--name`:
-
-```sh
-tar c holiday-photos/ | solferry send - --name photos.tar --to my-laptop
-```
+The [user guide](docs/guide.md) covers everything else, and the [CLI reference](docs/cli.md) covers every command.
 
 ## Who can send you files
 
 | | Paired | Not paired |
 |---|---|---|
-| Same network or Tailscale | received right away | asks you, and you can block them |
-| Through a relay | received right away | refused, you never see it |
+| Same network or Tailscale | asks you, or arrives right away if you chose that for the device | asks you, and you can block them |
+| Through a relay | asks you, or arrives right away if you chose that for the device | refused, you never see it |
 
-Pairing never grants this on its own. A paired device still asks until you choose "Always accept" on one of its offers or run `solferry approval <device> auto`. This choice stays on your device. `solferry block` and `solferry unblock` manage blocked devices.
+A paired device asks until you pick **Always accept** on one of its offers. That choice is stored on your device only and never comes from the other side. [How trust works](docs/trust.md) explains the rest.
 
-Tailscale devices running solferry show up by themselves, next to devices on your network.
+## How it compares
 
-`solferry receive --yes` takes files from every paired device without asking. Unpaired devices are still asked, and on a machine with no terminal to ask on they are refused with one line on stderr.
+| | Solferry | LocalSend | AirDrop |
+|---|---|---|---|
+| Open source | yes | yes | no |
+| No account | yes | yes | Apple ID |
+| Windows, Linux and Android | yes | yes | no |
+| Tailscale and other overlays | finds devices by itself | by IP address | no |
+| Across the internet | through your own relay | no | no |
+| Resumes interrupted transfers | yes | no | no |
+| Waits for offline devices | yes | no | no |
 
-To keep a server or headless machine receiving, use [deploy/systemd/solferry.service](deploy/systemd/solferry.service).
+## Documentation
 
-## Firewalls
-
-A strict firewall can block devices from finding each other on the same network. Allow incoming UDP on port 53318.
-
-## Relays
-
-solferry ships with no servers and contacts none by default. To reach devices on other networks, use Tailscale or a similar overlay, or run your own relay, see [docs/relay.md](docs/relay.md). One person sets it up and everyone they pair with uses it automatically.
-
-## Repository
-
-| Path | Purpose |
+| | |
 |---|---|
-| `crates/solferry-proto` | Wire messages and framing |
-| `crates/solferry-core` | Identity, trust, discovery, transfers |
-| `crates/solferry-cli` | The `solferry` command |
-| `crates/solferry-desktop` | Desktop app built with GPUI |
-| `crates/solferry-ffi` | UniFFI bridge the mobile apps call into |
-| `android` | Android app in Kotlin and Compose |
-| `ios` | iOS app in SwiftUI |
-| `deploy/relay` | Self-hosted relay |
-| `tests/netlab` | NAT, loss and outage scenarios in Linux namespaces |
-| `tests/desktop` | Driver for real input against the desktop app |
-| `docs` | Architecture, protocol and relay guides |
+| [Installation](docs/install.md) | Downloads, first launch and updates on every platform |
+| [User guide](docs/guide.md) | Pairing, sending, receiving, texts, the queue and settings |
+| [Command line](docs/cli.md) | Every `solferry` command, with examples |
+| [Trust and privacy](docs/trust.md) | Who can reach you, what is encrypted and what a relay sees |
+| [Run a relay](docs/relay.md) | Reach devices on other networks with your own server |
+| [Troubleshooting](docs/troubleshooting.md) | Devices that don't show up, firewalls and permissions |
+| [Building from source](docs/building.md) | Desktop, Android, iOS and the CLI |
+| [Architecture](docs/architecture.md) | How the code is laid out and why |
+| [Protocol](docs/protocol.md) | What goes over the wire |
 
-Read [docs/architecture.md](docs/architecture.md) to understand the code, and [CONTRIBUTING.md](CONTRIBUTING.md) to work on it.
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions, and [Building from source](docs/building.md) to run the apps. Please report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT
+Solferry is released under the [MIT License](LICENSE).

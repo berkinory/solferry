@@ -34,7 +34,7 @@ Or paste it in Settings. Pair as usual: the pairing code carries the link, so th
 
 Settings and the CLI show the link as `https://relay.example.com#••••`. The copy button next to it copies the whole link.
 
-To keep a relay from using all of a device's bandwidth, set Relay speed limit in Settings, or run `solferry relay limit 5` for 5 MB/s and `solferry relay limit off` to remove it. It only applies while files go through the relay. A direct path is never limited.
+To keep a relay from using all of a device's bandwidth, set Relay speed limit in Settings, or run `solferry relay limit 5` for 5 MB/s and `solferry relay limit 0` to remove it. In Settings you type the number in MB/s, and 0 means no limit. It only applies while files go through the relay. A direct path is never limited.
 
 ## Access
 

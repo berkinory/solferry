@@ -3,7 +3,7 @@
 solferry is one Rust core with thin clients around it. Everything hard lives in `solferry-core`, so each client only draws screens and talks to its platform.
 
 ```text
- CLI, desktop, Android next
+ CLI, desktop, Android, iOS
               |
           solferry-core        identity, trust, discovery, transfers
               |
@@ -16,7 +16,7 @@ solferry is one Rust core with thin clients around it. Everything hard lives in 
 
 A device is its Ed25519 key, stored in `device.key` in the data directory. There are no accounts. iroh authenticates every connection against that key, so a device cannot be impersonated.
 
-`devices.json` lists paired devices. A device is either `own` or `contact`. Clients decide what that means: the CLI accepts transfers from your own devices automatically and asks for everything else.
+`devices.json` lists paired devices, each with its name, platform, relays, last known addresses and whether its files arrive without asking. That last flag starts off and only ever changes on this device.
 
 Peers that are not paired can only reach you over a local address or an overlay you joined, and only while visibility is `everyone`. Blocked devices and everything else are closed before a byte of file metadata is read.
 
