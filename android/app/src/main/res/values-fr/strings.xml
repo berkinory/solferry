@@ -142,6 +142,10 @@
     <string name="relay_udp_blocked">Connecté, mais UDP 7842 est bloqué</string>
     <string name="relay_refused">Refusé, vérifiez le lien</string>
     <string name="relay_unreachable">Impossible de joindre le serveur</string>
+    <string name="relay_limit_title">Limite de vitesse du Relay</string>
+    <string name="relay_limit_hint">S\'applique uniquement quand les fichiers passent par le Relay. Les connexions directes ne sont jamais limitées.</string>
+    <string name="relay_limit_none">Aucune limite</string>
+    <string name="relay_limit_speed">%1$d Mo/s</string>
     <string name="folder_title">Enregistrer les fichiers dans</string>
     <string name="folder_downloads">Téléchargements/Solferry</string>
     <string name="folder_reset">Réinitialiser</string>

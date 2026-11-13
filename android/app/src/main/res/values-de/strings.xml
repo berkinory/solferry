@@ -140,6 +140,10 @@
     <string name="relay_udp_blocked">Verbunden, aber UDP 7842 ist blockiert</string>
     <string name="relay_refused">Abgelehnt, prüfe den Link</string>
     <string name="relay_unreachable">Server nicht erreichbar</string>
+    <string name="relay_limit_title">Relay-Geschwindigkeitslimit</string>
+    <string name="relay_limit_hint">Gilt nur, solange Dateien über das Relay laufen. Direkte Verbindungen werden nie begrenzt.</string>
+    <string name="relay_limit_none">Kein Limit</string>
+    <string name="relay_limit_speed">%1$d MB/s</string>
     <string name="folder_title">Dateien speichern in</string>
     <string name="folder_downloads">Downloads/Solferry</string>
     <string name="folder_reset">Zurücksetzen</string>

@@ -142,6 +142,10 @@
     <string name="relay_udp_blocked">Connesso, porta UDP 7842 bloccata</string>
     <string name="relay_refused">Rifiutato, controlla il link</string>
     <string name="relay_unreachable">Impossibile raggiungere il server</string>
+    <string name="relay_limit_title">Limite di velocità del Relay</string>
+    <string name="relay_limit_hint">Vale solo mentre i file passano dal Relay. Le connessioni dirette non vengono mai limitate.</string>
+    <string name="relay_limit_none">Nessun limite</string>
+    <string name="relay_limit_speed">%1$d MB/s</string>
     <string name="folder_title">Salva i file in</string>
     <string name="folder_downloads">Download/Solferry</string>
     <string name="folder_reset">Ripristina</string>

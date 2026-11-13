@@ -52,7 +52,7 @@ data class PairingPrompt(val key: ULong, val peer: Identity, val name: String, v
 
 data class ReceivedText(val key: Long, val name: String, val text: String, val copied: Boolean)
 
-data class Me(val id: String, val fingerprint: String, val name: String, val visibility: String, val checkUpdates: Boolean? = null)
+data class Me(val id: String, val fingerprint: String, val name: String, val visibility: String, val checkUpdates: Boolean? = null, val relaySpeedLimit: ULong? = null)
 
 data class AvailableUpdate(val version: String, val page: String)
 
@@ -89,7 +89,7 @@ data class AppState(
     val strangers get() = nearby.filter { near -> devices.none { it.identity.id == near.identity.id } }
 
     fun apply(update: Update, now: Long, res: Resources): AppState = when (update) {
-        is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility, update.checkUpdates), startProblem = null)
+        is Update.Ready -> copy(me = Me(update.id, update.fingerprint, update.name, update.visibility, update.checkUpdates, update.relaySpeedLimit), startProblem = null)
         is Update.StartFailed -> copy(startProblem = update.problem, startReason = update.reason)
         is Update.Devices -> copy(devices = update.devices)
         is Update.History -> copy(history = update.entries)

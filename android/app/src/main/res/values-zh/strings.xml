@@ -138,6 +138,10 @@
     <string name="relay_udp_blocked">已连接，但 UDP 7842 被阻止</string>
     <string name="relay_refused">连接被拒绝，请检查链接</string>
     <string name="relay_unreachable">无法连接服务器</string>
+    <string name="relay_limit_title">Relay 限速</string>
+    <string name="relay_limit_hint">仅在文件经由 Relay 传输时生效，直接连接始终不限速。</string>
+    <string name="relay_limit_none">不限速</string>
+    <string name="relay_limit_speed">%1$d MB/s</string>
     <string name="folder_title">文件保存位置</string>
     <string name="folder_downloads">下载/Solferry</string>
     <string name="folder_reset">恢复默认</string>
