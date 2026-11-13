@@ -78,6 +78,7 @@ tokio = { version = "1", features = [
 tracing = "0.1"
 tray-icon = "0.26"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
 walkdir = "2"
 webpki-roots = "1"
 

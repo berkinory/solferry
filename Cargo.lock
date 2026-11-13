@@ -8276,6 +8276,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tray-icon",
+ "url",
  "windows 0.62.2",
  "winresource",
 ]

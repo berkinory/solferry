@@ -4,6 +4,7 @@ mod assets;
 mod format;
 mod instance;
 mod login;
+mod opened;
 #[cfg_attr(
     not(any(target_os = "macos", windows)),
     allow(dead_code, reason = "Linux asks for no permissions")
@@ -49,12 +50,14 @@ fn main() {
     let app =
         gpui_kit::application().with_quit_mode(QuitMode::Explicit).with_assets(assets::Assets);
     app.on_reopen(shell::show_window);
+    let (open_handler, opened) = opened::listen();
+    app.on_open_urls(open_handler);
     app.run(move |cx| {
         // Windows shows no notifications from an app without one.
         cx.set_app_identity(APP_ID, "Solferry");
         gpui_kit::init(cx);
         theme::install(cx);
         views::keys::install(cx);
-        shell::start(handle, updates, tray::start(show_in_tray), (instance, hidden), cx);
+        shell::start(handle, updates, tray::start(show_in_tray), (instance, hidden, opened), cx);
     });
 }
