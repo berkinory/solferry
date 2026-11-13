@@ -50,7 +50,7 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
                                 .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
                         ),
                 )
-                .child(relay_limit::choices(config, cx)),
+                .child(relay_limit::field(view, cx)),
         )
         .into_any_element()
 }

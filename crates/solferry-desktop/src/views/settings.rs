@@ -22,6 +22,7 @@ pub fn load_inputs(view: &MainView, window: &mut Window, cx: &mut Context<MainVi
     if let Some(name) = name {
         view.name_input.update(cx, |input, cx| input.set_value(name, window, cx));
     }
+    super::relay_limit::load(view, window, cx);
 }
 
 pub fn change(view: &MainView, cx: &mut Context<MainView>, edit: impl FnOnce(&mut Config)) {

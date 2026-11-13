@@ -17,7 +17,8 @@ use super::dialog::{self, Dialog};
 use super::keys::{self, AddDevice, Back, ChooseFiles, OpenSettings};
 use super::onboarding::Onboarding;
 use super::{
-    confirm, history, home, nav, pairing, relays, send, settings, texts, toast, toast_timing,
+    confirm, history, home, nav, pairing, relay_limit, relays, send, settings, texts, toast,
+    toast_timing,
 };
 use crate::assets::MARK;
 use crate::service::{Command, Target};
@@ -73,6 +74,7 @@ pub struct MainView {
     pub address_input: Entity<InputState>,
     pub name_input: Entity<InputState>,
     pub relay_input: Entity<InputState>,
+    pub relay_limit_input: Entity<InputState>,
     pub text_input: Entity<TextareaState>,
     onboarding: Option<Entity<Onboarding>>,
     focus: FocusHandle,
@@ -104,6 +106,7 @@ impl MainView {
         });
         let relay_input =
             cx.new(|cx| InputState::new(window, cx).placeholder("https://relay.example.com#token"));
+        let relay_limit_input = cx.new(|cx| InputState::new(window, cx).placeholder("0"));
         cx.subscribe_in(&code_input, window, |view, _, event, _, cx| {
             if matches!(event, InputEvent::PressEnter { .. }) {
                 pairing::join(view, cx);
@@ -119,6 +122,12 @@ impl MainView {
         cx.subscribe_in(&name_input, window, |view, _, event, _, cx| {
             if matches!(event, InputEvent::PressEnter { .. } | InputEvent::Blur) {
                 settings::commit_name(view, cx);
+            }
+        })
+        .detach();
+        cx.subscribe_in(&relay_limit_input, window, |view, _, event, window, cx| {
+            if matches!(event, InputEvent::PressEnter { .. } | InputEvent::Blur) {
+                relay_limit::commit(view, window, cx);
             }
         })
         .detach();
@@ -159,6 +168,7 @@ impl MainView {
             address_input,
             name_input,
             relay_input,
+            relay_limit_input,
             text_input,
             onboarding: None,
             focus,

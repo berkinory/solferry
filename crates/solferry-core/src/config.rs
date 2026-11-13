@@ -7,10 +7,6 @@ use crate::store;
 
 const CONFIG_FILE: &str = "config.json";
 const APP_DIR: &str = "solferry";
-const MIB: u64 = 1024 * 1024;
-
-/// The relay speed limits the apps offer, in bytes per second.
-pub const RELAY_SPEED_LIMITS: [u64; 6] = [MIB, 2 * MIB, 5 * MIB, 10 * MIB, 25 * MIB, 50 * MIB];
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]

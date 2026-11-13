@@ -148,7 +148,7 @@ pub enum RelayCommand {
     },
     /// Limit how fast files go through a relay. Direct paths are never limited.
     Limit {
-        /// MB per second each way, or `off` for no limit.
+        /// MB per second each way. 0 or `off` means no limit.
         #[arg(value_parser = parse_speed)]
         speed: Speed,
     },
@@ -158,12 +158,12 @@ pub enum RelayCommand {
 pub struct Speed(pub Option<u64>);
 
 fn parse_speed(text: &str) -> Result<Speed, String> {
-    if text.eq_ignore_ascii_case("off") {
+    if text.eq_ignore_ascii_case("off") || text == "0" {
         return Ok(Speed(None));
     }
     match text.parse::<u64>() {
         Ok(megabytes @ 1..=10_000) => Ok(Speed(Some(megabytes * 1024 * 1024))),
-        _ => Err("use a whole number of MB per second from 1 to 10000, or off".to_owned()),
+        _ => Err("use a whole number of MB per second up to 10000, or 0 or off for no limit".to_owned()),
     }
 }
 

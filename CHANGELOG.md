@@ -13,7 +13,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - `solferry send --to last` sends to the device this one last finished sending files to.
 - Android has a Quick Settings tile that turns visibility on and off. Long-press it to open Solferry.
 - Give your relay a new token without cutting anyone off: `deploy/relay/rotate.sh` prints a new link and keeps the old token working until you run `rotate.sh finish`. Paste the new link on one device and the devices paired with it pick it up the next time they reach it.
-- Relay speed limit in Settings, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
+- Relay speed limit in Settings, typed in MB/s where 0 means no limit, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
 - A copy button next to each relay. Relay links show as `https://relay.example.com#••••` so the token stays off screens.
 - HEIC photos sent from iPhone, Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
 - Incoming file notifications have Accept and Decline buttons on Android, iOS, macOS and Windows, so you can answer without opening the app. The notification goes away once the offer is answered anywhere, withdrawn or expired. Linux keeps the plain notification.

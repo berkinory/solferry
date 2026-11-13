@@ -4,10 +4,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,8 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.solferry.AppState
@@ -29,7 +35,6 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.RelayStatus
-import uniffi.solferry_ffi.relaySpeedLimits
 
 private const val GUIDE = "https://github.com/berkinory/solferry/blob/main/docs/relay.md"
 private val MIB = 1024uL * 1024uL
@@ -89,21 +94,30 @@ fun RelayCard(state: AppState, engine: Engine) {
     }
 }
 
-/** How fast files may go through a relay. Choosing restarts the node, which applies it. */
+/** How fast files may go through a relay, typed in MB/s, 0 for no limit. Saving restarts the node, so it saves on Done or leaving the field. */
 @Composable
 private fun RelaySpeedLimit(current: ULong?, engine: Engine) {
+    val saved = (current?.div(MIB) ?: 0uL).toString()
+    var typed by remember(saved) { mutableStateOf(saved) }
+    val focus = LocalFocusManager.current
+    fun commit() {
+        val megabytes = typed.trim().toULongOrNull() ?: return run { typed = saved }
+        val limit = if (megabytes == 0uL) null else megabytes * MIB
+        if (limit != current) engine.bridge.setRelaySpeedLimit(limit)
+    }
     Column(Modifier.padding(top = SpaceTokens.sm.dp), verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
         Text(stringResource(R.string.relay_limit_title))
-        Muted(stringResource(R.string.relay_limit_hint))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp), verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
-            (listOf<ULong?>(null) + relaySpeedLimits()).forEach { limit ->
-                Button(
-                    { engine.bridge.setRelaySpeedLimit(limit) },
-                    label = limit?.let { stringResource(R.string.relay_limit_speed, (it / MIB).toInt()) } ?: stringResource(R.string.relay_limit_none),
-                    kind = if (current == limit) ButtonKind.Secondary else ButtonKind.Ghost,
-                    size = ButtonSize.Sm,
-                )
-            }
+        Muted(stringResource(R.string.relay_limit_hint) + " 0 = " + stringResource(R.string.relay_limit_none))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+            Field(
+                typed,
+                { value -> typed = value.filter(Char::isDigit).take(6) },
+                placeholder = "0",
+                modifier = Modifier.width(120.dp).onFocusChanged { if (!it.isFocused) commit() },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focus.clearFocus() }),
+            )
+            Muted("MB/s")
         }
     }
 }

@@ -160,29 +160,46 @@ private struct RelayCard: View {
     }
 }
 
-/// How fast files may go through a relay. Choosing restarts the node, which applies it.
+/// How fast files may go through a relay, typed in MB/s, 0 for no limit. Saving restarts the node, so it waits for Save.
 private struct RelaySpeedLimit: View {
     @Environment(Engine.self) private var engine
     let current: UInt64?
+    @State private var typed = ""
     private let mib: UInt64 = 1024 * 1024
+
+    private var saved: String { String((current ?? 0) / mib) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpaceTokens.xs) {
-            HStack {
-                Text("Relay speed limit")
-                Spacer(minLength: SpaceTokens.sm)
-                Picker("Relay speed limit", selection: Binding(get: { current }, set: { engine.bridge.setRelaySpeedLimit(limit: $0) })) {
-                    Text("No limit").tag(UInt64?.none)
-                    ForEach(relaySpeedLimits(), id: \.self) { limit in
-                        Text("\(Int(limit / mib)) MB/s").tag(UInt64?.some(limit))
+            Text("Relay speed limit")
+            Muted("Only applies while files go through the relay. Direct connections are never limited.")
+            Muted(verbatim: "0 = " + String(localized: "No limit"))
+            HStack(spacing: SpaceTokens.sm) {
+                Field(text: $typed, placeholder: "0", onSubmit: commit) {
+                    if typed != saved {
+                        ActionButton(label: "Save", kind: .primary, scale: .small, action: commit)
                     }
                 }
-                .pickerStyle(.menu)
-                .labelsHidden()
+                .keyboardType(.numberPad)
+                .frame(width: 180)
+                Muted(verbatim: "MB/s")
             }
-            Muted("Only applies while files go through the relay. Direct connections are never limited.")
         }
         .padding(.top, SpaceTokens.sm)
+        .onChange(of: current, initial: true) { typed = saved }
+        .onChange(of: typed) { _, value in
+            let digits = String(value.filter(\.isNumber).prefix(6))
+            if digits != value { typed = digits }
+        }
+    }
+
+    private func commit() {
+        guard let megabytes = UInt64(typed) else {
+            typed = saved
+            return
+        }
+        let limit = megabytes == 0 ? nil : megabytes * mib
+        if limit != current { engine.bridge.setRelaySpeedLimit(limit: limit) }
     }
 }
 

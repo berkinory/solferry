@@ -51,13 +51,6 @@ pub fn lan_addresses() -> Vec<String> {
 
 /// Picks the language for every text the bridge returns, from a tag like `tr-TR` or `en_US`.
 /// Languages Solferry doesn't have fall back to English.
-/// The relay speed limits Settings offers, in bytes per second.
-#[uniffi::export]
-#[must_use]
-pub fn relay_speed_limits() -> Vec<u64> {
-    solferry_core::RELAY_SPEED_LIMITS.to_vec()
-}
-
 #[uniffi::export]
 pub fn set_locale(locale: String) {
     solferry_core::set_locale(&locale);
