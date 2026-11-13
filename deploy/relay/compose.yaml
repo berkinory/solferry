@@ -13,6 +13,9 @@ services:
     environment:
       RELAY_HOSTNAME: ${RELAY_HOSTNAME:?}
       RELAY_EMAIL: ${RELAY_EMAIL:-}
+      # Bytes per second each client may send into the relay. Unset means no limit.
+      RELAY_BYTES_PER_SECOND: ${RELAY_BYTES_PER_SECOND:-}
+      RELAY_MAX_BURST_BYTES: ${RELAY_MAX_BURST_BYTES:-}
     ports:
       - "80:8080/tcp"
       - "443:8443/tcp"
