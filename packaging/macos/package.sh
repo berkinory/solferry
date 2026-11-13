@@ -40,6 +40,7 @@ notarize() {
 }
 
 "$ROOT/packaging/macos/bundle.sh" "$RELEASE"
+codesign --verify --deep --strict "$APP"
 if [ -n "$IDENTITY" ]; then
     SUBMISSION=$(mktemp -d)/Solferry.zip
     ditto -c -k --keepParent "$APP" "$SUBMISSION"
