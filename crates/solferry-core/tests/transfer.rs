@@ -114,6 +114,22 @@ async fn wait_for_progress(events: &mut tokio::sync::broadcast::Receiver<Event>,
     tokio::time::timeout(Duration::from_secs(30), wait).await.unwrap();
 }
 
+/// The staging folder of the one transfer under `partial`, once its first segment recorded progress.
+async fn wait_for_recorded(partial: &Path) -> PathBuf {
+    let wait = async {
+        loop {
+            let staging = fs::read_dir(partial).ok().and_then(|mut dirs| dirs.next()?.ok());
+            if let Some(staging) = staging
+                && staging.path().join("0.0").exists()
+            {
+                return staging.path();
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(30), wait).await.unwrap()
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn corrupted_partial_data_is_never_delivered() {
     let sender = peer("sender", Visibility::Everyone).await;
@@ -134,12 +150,13 @@ async fn corrupted_partial_data_is_never_delivered() {
         async move { sender.send(target, vec![file]).await }
     });
     wait_for_progress(&mut events, 8 * 1024 * 1024).await;
+    // Progress counts bytes off the wire, so wait until the first segment has flushed some to
+    // disk and recorded it, or the corruption below would land on bytes resume never trusts.
+    let staging = wait_for_recorded(&destination.join(".solferry-partial")).await;
     first.abort();
     node.shutdown().await.unwrap();
 
-    let staging =
-        fs::read_dir(destination.join(".solferry-partial")).unwrap().next().unwrap().unwrap();
-    let part = staging.path().join("0");
+    let part = staging.join("0");
     let mut bytes = fs::read(&part).unwrap();
     bytes[1024] ^= 0xff;
     fs::write(&part, bytes).unwrap();
