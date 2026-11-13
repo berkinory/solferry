@@ -1,5 +1,7 @@
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::{AnyElement, Context, FontWeight, IntoElement, ParentElement, Styled, div, px};
+use gpui_kit::{
+    AnyElement, App, Context, FontWeight, IntoElement, ParentElement, Styled, div, px, uniform_list,
+};
 use rust_i18n::t;
 use solferry_core::{Direction, PastTransfer};
 
@@ -12,7 +14,7 @@ use crate::service::Command;
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_LABEL};
 
-fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
+fn empty(cx: &Context<MainView>) -> AnyElement {
     let core = div()
         .flex()
         .items_center()
@@ -29,17 +31,18 @@ fn empty(room: f32, cx: &Context<MainView>) -> AnyElement {
         .items_center()
         .justify_center()
         .gap(px(SPACE_SM))
-        .h(px(room))
+        .h_full()
         .child(core)
         .child(ui::text(t!("history.empty.title")).pt(px(SPACE_XS)).font_weight(FontWeight::MEDIUM))
         .child(ui::muted(t!("history.empty.body"), cx).text_center())
         .into_any_element()
 }
 
-pub fn render(view: &MainView, room: f32, cx: &mut Context<MainView>) -> AnyElement {
-    let state = view.state.read(cx).clone();
-    if state.history.is_empty() {
-        return empty(room, cx);
+/// Only the rows in view are drawn, so a long history scrolls as lightly as a short one.
+pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
+    let count = view.state.read(cx).history.len();
+    if count == 0 {
+        return empty(cx);
     }
     let clear = Button::new("clear-history")
         .ghost()
@@ -47,13 +50,22 @@ pub fn render(view: &MainView, room: f32, cx: &mut Context<MainView>) -> AnyElem
         .label(t!("history.clear"))
         .on_click(cx.listener(|_, _, _, cx| MainView::command(Command::ClearHistory, cx)))
         .into_any_element();
-    let rows: Vec<_> = state.history.iter().map(|past| row(past, cx)).collect();
+    let state = view.state.clone();
+    let rows = uniform_list("history-rows", count, move |range, _, cx| {
+        let history = &state.read(cx).history;
+        let rows = history.get(range).unwrap_or_default();
+        // The well spaced its rows with a gap, which a list has no room for.
+        rows.iter().map(|past| div().pb(px(SPACE_XS)).child(row(past, cx))).collect()
+    })
+    .size_full()
+    .py(px(SPACE_SM));
     ui::card(Glyph::History, &t!("history.title"), Some(clear), cx)
-        .child(ui::well(cx).children(rows))
+        .h_full()
+        .child(ui::well(cx).flex_1().min_h_0().py_0().child(rows))
         .into_any_element()
 }
 
-fn row(past: &PastTransfer, cx: &Context<MainView>) -> AnyElement {
+fn row(past: &PastTransfer, cx: &App) -> AnyElement {
     let glyph = if past.direction == Direction::Sending { Glyph::Upload } else { Glyph::Download };
     let outcome =
         if past.completed { format::bytes(past.bytes) } else { t!("history.failed").into_owned() };

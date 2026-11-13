@@ -385,12 +385,24 @@ impl Render for MainView {
                 _ => None,
             });
         let toasts = toast::render(self, f32::from(window.viewport_size().width), cx);
-        let room = f32::from(window.viewport_size().height) - HEADER_HEIGHT - nav::CLEARANCE;
         let tabs = nav::render(self, cx);
         let body = match self.page {
             Page::Home | Page::Send | Page::Pair | Page::Text => home::render(self, cx),
-            Page::History => history::render(self, room, cx),
+            Page::History => history::render(self, cx),
             Page::Settings => settings::render(self, cx),
+        };
+        let column = div().mx_auto().w_full().max_w(px(CONTENT_WIDTH));
+        let content = div()
+            .id("content")
+            .size_full()
+            .p(px(SPACE_SM))
+            .pt(px(CONTENT_TOP))
+            .pb(px(nav::CLEARANCE));
+        // History scrolls inside its own list, which only draws the rows in view.
+        let content = if self.page == Page::History {
+            content.child(column.h_full().child(body))
+        } else {
+            content.child(column.child(body)).overflow_y_scroll()
         };
         div()
             .id("main")
@@ -418,18 +430,7 @@ impl Render for MainView {
             .child(TitleBar::new())
             .child(div().flex_none().h(px(HEADER_HEIGHT - TITLE_BAR)))
             .child(brand(cx))
-            .child(
-                div().flex_1().min_h_0().child(
-                    div()
-                        .id("content")
-                        .size_full()
-                        .p(px(SPACE_SM))
-                        .pt(px(CONTENT_TOP))
-                        .pb(px(nav::CLEARANCE))
-                        .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
-                        .overflow_y_scroll(),
-                ),
-            )
+            .child(div().flex_1().min_h_0().child(content))
             .child(tabs)
             .children(sheet)
             .children(overlay)
