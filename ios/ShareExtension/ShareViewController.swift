@@ -42,24 +42,22 @@ final class ShareViewController: UIViewController {
         }
     }
 
-    /// Extensions can't reach `UIApplication.shared`, but the application sits at the end of the
-    /// responder chain. From iOS 18 the old `openURL:` only logs and returns false, so the
-    /// modern call is used there.
+    /// Extensions can't reach `UIApplication.shared`, and may not call its `open` at all, but the
+    /// application sits at the end of the responder chain and still opens URLs when asked through
+    /// the runtime. From iOS 18 the old `openURL:` only logs and returns false.
     private func openApp(_ url: URL) {
         var responder: UIResponder? = self
-        while let current = responder {
-            if let application = current as? UIApplication {
-                if #available(iOS 18.0, *) {
-                    application.open(url, options: [:]) { _ in self.finish() }
-                } else {
-                    application.perform(Selector(("openURL:")), with: url)
-                    finish()
-                }
-                return
-            }
-            responder = current.next
+        while let current = responder, !(current is UIApplication) { responder = current.next }
+        guard let application = responder else { return fail() }
+        if #available(iOS 18.0, *) {
+            typealias Open = @convention(c) (AnyObject, Selector, URL, NSDictionary, AnyObject?) -> Void
+            let selector = NSSelectorFromString("openURL:options:completionHandler:")
+            guard let method = application.method(for: selector) else { return fail() }
+            unsafeBitCast(method, to: Open.self)(application, selector, url, NSDictionary(), nil)
+        } else {
+            application.perform(NSSelectorFromString("openURL:"), with: url)
         }
-        fail()
+        finish()
     }
 
     private func finish() {
