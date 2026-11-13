@@ -1,4 +1,5 @@
 use std::fs;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -114,17 +115,24 @@ async fn wait_for_progress(events: &mut tokio::sync::broadcast::Receiver<Event>,
     tokio::time::timeout(Duration::from_secs(30), wait).await.unwrap();
 }
 
-/// The staging folder of the one transfer under `partial`, once its first segment recorded progress.
-async fn wait_for_recorded(partial: &Path) -> PathBuf {
+/// Large enough that a transfer over loopback still runs for a while after its first segment
+/// records progress, which happens halfway through each of its 16 MiB segments.
+const CORRUPTED_SIZE: usize = 256 * 1024 * 1024;
+const SEGMENT: u64 = 16 * 1024 * 1024;
+
+/// The staging folder of the one transfer under `partial` and the index of a segment of its first
+/// file that recorded progress. A segment records only once it holds a whole step on disk.
+async fn wait_for_recorded(partial: &Path) -> (PathBuf, u64) {
     let wait = async {
         loop {
             let staging = fs::read_dir(partial).ok().and_then(|mut dirs| dirs.next()?.ok());
-            if let Some(staging) = staging
-                && staging.path().join("0.0").exists()
-            {
-                return staging.path();
+            let recorded = staging.as_ref().and_then(|staging| {
+                (0..16).find(|segment| staging.path().join(format!("0.{segment}")).exists())
+            });
+            if let (Some(staging), Some(segment)) = (staging, recorded) {
+                return (staging.path(), segment);
             }
-            tokio::time::sleep(Duration::from_millis(20)).await;
+            tokio::time::sleep(Duration::from_millis(2)).await;
         }
     };
     tokio::time::timeout(Duration::from_secs(30), wait).await.unwrap()
@@ -136,7 +144,7 @@ async fn corrupted_partial_data_is_never_delivered() {
     let mut receiver = peer("receiver", Visibility::Everyone).await;
     let source = TempDir::new().unwrap();
     let file = source.path().join("doc.bin");
-    write_random(&file, 64 * 1024 * 1024);
+    write_random(&file, CORRUPTED_SIZE);
     let destination = receiver.data.join("inbox");
 
     let mut events = receiver.node.events();
@@ -149,17 +157,21 @@ async fn corrupted_partial_data_is_never_delivered() {
         let file = file.clone();
         async move { sender.send(target, vec![file]).await }
     });
-    wait_for_progress(&mut events, 8 * 1024 * 1024).await;
-    // Progress counts bytes off the wire, so wait until the first segment has flushed some to
-    // disk and recorded it, or the corruption below would land on bytes resume never trusts.
-    let staging = wait_for_recorded(&destination.join(".solferry-partial")).await;
+    wait_for_progress(&mut events, 1024 * 1024).await;
+    // Progress counts bytes off the wire. Only bytes a segment recorded on disk are trusted on
+    // resume, so the corruption has to land in one of those.
+    let (staging, segment) = wait_for_recorded(&destination.join(".solferry-partial")).await;
     first.abort();
     node.shutdown().await.unwrap();
 
-    let part = staging.join("0");
-    let mut bytes = fs::read(&part).unwrap();
-    bytes[1024] ^= 0xff;
-    fs::write(&part, bytes).unwrap();
+    let mut part = fs::File::options().read(true).write(true).open(staging.join("0")).unwrap();
+    let offset = segment * SEGMENT + 1024;
+    let mut byte = [0];
+    part.seek(SeekFrom::Start(offset)).unwrap();
+    part.read_exact(&mut byte).unwrap();
+    part.seek(SeekFrom::Start(offset)).unwrap();
+    part.write_all(&[byte[0] ^ 0xff]).unwrap();
+    drop(part);
 
     let (restarted, offers) = start(&receiver.data).await;
     accept_all(offers, destination.clone());
