@@ -8,6 +8,7 @@ pub(crate) mod sender;
 mod session;
 mod source;
 mod staging;
+mod throttle;
 
 pub(crate) use manifest::Manifest;
 pub use manifest::NamedFile;
@@ -17,5 +18,6 @@ pub(crate) use session::{
 };
 pub(crate) use staging::free_path;
 pub(crate) use staging::{Staging, prune_abandoned};
+pub(crate) use throttle::{RelayLimit, Throttle};
 
 const CHUNK_SIZE: usize = 1024 * 1024;

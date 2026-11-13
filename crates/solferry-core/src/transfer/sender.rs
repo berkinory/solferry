@@ -9,7 +9,7 @@ use tokio::sync::mpsc;
 
 use super::segments::{Progress, segments};
 use super::source::{Source, read_at};
-use super::{CHUNK_SIZE, Manifest, Meter};
+use super::{CHUNK_SIZE, Manifest, Meter, Throttle};
 use crate::error::{Error, Result, StorageContext};
 use crate::route::{Route, current_route};
 
@@ -46,11 +46,12 @@ pub(crate) async fn run(
     manifest: &Arc<Manifest>,
     progress: &Progress,
     meter: &Meter,
+    throttle: &Throttle,
 ) -> Result<Route> {
     let units = units(manifest, progress);
     let count = units.len();
     let uploads = stream::iter(units)
-        .map(|unit| send_segment(connection, manifest, unit, meter))
+        .map(|unit| send_segment(connection, manifest, unit, meter, throttle))
         .buffer_unordered(STREAM_CONCURRENCY)
         .try_collect::<()>();
     tokio::try_join!(uploads, confirm(control, manifest, count))?;
@@ -82,6 +83,7 @@ async fn send_segment(
     manifest: &Arc<Manifest>,
     unit: Unit,
     meter: &Meter,
+    throttle: &Throttle,
 ) -> Result<()> {
     let source = manifest.sources[unit.index].clone();
     let size = manifest.entries[unit.index].size;
@@ -99,6 +101,7 @@ async fn send_segment(
     write_frame(&mut stream, &start).await?;
     while let Some(chunk) = incoming.recv().await {
         let len = chunk.len() as u64;
+        throttle.pass(chunk.len()).await;
         stream.write_chunk(chunk).await.map_err(|_| Error::ConnectionLost)?;
         meter.add(len);
     }

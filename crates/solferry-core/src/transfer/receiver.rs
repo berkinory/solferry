@@ -11,7 +11,7 @@ use tokio::task::JoinSet;
 
 use super::segments::{Progress, segments};
 use super::staging::{Segment, forget, write_part};
-use super::{CHUNK_SIZE, Meter, Staging};
+use super::{CHUNK_SIZE, Meter, Staging, Throttle};
 use crate::error::{Error, Result};
 
 const CLOSE_WAIT: Duration = Duration::from_secs(5);
@@ -31,6 +31,7 @@ pub(crate) async fn run(
     control: &mut SendStream,
     plan: Plan,
     meter: Arc<Meter>,
+    throttle: Throttle,
 ) -> Result<Vec<PathBuf>> {
     let plan = Arc::new(plan);
     let needed: usize = plan.progress.iter().map(Vec::len).sum();
@@ -50,11 +51,12 @@ pub(crate) async fn run(
                 let start: FileStart = read_frame(&mut stream).await?;
                 let segment = claim(&plan, &mut seen, &start)?;
                 accepted += 1;
-                let (meter, results) = (meter.clone(), results.clone());
+                let (meter, results, throttle) = (meter.clone(), results.clone(), throttle.clone());
                 let name = plan.entries[start.index as usize].path.clone();
                 let result = FileResult { index: start.index, ok: true, segment: start.segment };
                 files.spawn(async move {
-                    receive_segment(stream, segment, name, result, &meter, &results).await
+                    receive_segment(stream, segment, name, result, &meter, &results, &throttle)
+                        .await
                 });
             }
             Some(result) = pending.recv() => write_frame(control, &result).await?,
@@ -119,6 +121,7 @@ async fn receive_segment(
     result: FileResult,
     meter: &Meter,
     results: &mpsc::Sender<FileResult>,
+    throttle: &Throttle,
 ) -> Result<()> {
     let remaining = segment.range.end - segment.range.start - segment.held;
     let segment = std::sync::Arc::new(segment);
@@ -127,7 +130,7 @@ async fn receive_segment(
         let segment = segment.clone();
         tokio::task::spawn_blocking(move || write_part(&segment, incoming))
     };
-    let received = pump(&mut stream, remaining, &chunks, meter).await;
+    let received = pump(&mut stream, remaining, &chunks, meter, throttle).await;
     drop(chunks);
     let actual = writer.await.map_err(|error| Error::Protocol(error.to_string()))??;
     let expected = received?;
@@ -145,12 +148,14 @@ async fn pump(
     mut remaining: u64,
     chunks: &mpsc::Sender<Bytes>,
     meter: &Meter,
+    throttle: &Throttle,
 ) -> Result<blake3::Hash> {
     while remaining > 0 {
         let limit = usize::try_from(remaining).unwrap_or(CHUNK_SIZE).min(CHUNK_SIZE);
         let chunk = stream.read_chunk(limit).await.map_err(|_| Error::ConnectionLost)?;
         let chunk = chunk.ok_or(Error::ConnectionLost)?;
         remaining -= chunk.len() as u64;
+        throttle.pass(chunk.len()).await;
         meter.add(chunk.len() as u64);
         chunks.send(chunk).await.map_err(|_| Error::ConnectionLost)?;
     }

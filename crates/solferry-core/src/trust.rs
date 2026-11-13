@@ -84,6 +84,35 @@ impl TrustStore {
         Ok(())
     }
 
+    /// Takes new tokens for relays `peer` gave this device, and ignores any other relay. Every
+    /// stored copy of such a relay changes with it, since the token belongs to the server, not to
+    /// whoever passed it on. Returns the links that changed.
+    pub(crate) fn rotate_relays(
+        &mut self,
+        peer: &EndpointId,
+        links: &[String],
+    ) -> Result<Vec<String>> {
+        let Some(device) = self.get(peer) else { return Ok(Vec::new()) };
+        let given: Vec<RelayLink> =
+            device.relays.iter().filter_map(|link| RelayLink::parse(link).ok()).collect();
+        let rotated: Vec<(RelayLink, &String)> = links
+            .iter()
+            .filter_map(|text| Some((RelayLink::parse(text).ok()?, text)))
+            .filter(|(new, _)| given.iter().any(|old| old.same_server(new) && old != new))
+            .collect();
+        if rotated.is_empty() {
+            return Ok(Vec::new());
+        }
+        for stored in self.devices.iter_mut().flat_map(|device| device.relays.iter_mut()) {
+            let Ok(old) = RelayLink::parse(stored) else { continue };
+            if let Some((_, text)) = rotated.iter().find(|(new, _)| new.same_server(&old)) {
+                stored.clone_from(text);
+            }
+        }
+        store::write_json(&self.path, &self.devices)?;
+        Ok(rotated.into_iter().map(|(_, text)| text.clone()).collect())
+    }
+
     pub(crate) fn blocked(&self) -> &[BlockedDevice] {
         &self.blocked
     }

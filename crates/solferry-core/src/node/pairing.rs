@@ -135,7 +135,7 @@ pub(super) async fn adopt_relays(shared: &Shared, links: &[String]) {
 }
 
 /// Relays this device waits on, with the access tokens another device needs to use them.
-fn relay_links(shared: &Shared, extra: &[String]) -> Vec<String> {
+pub(super) fn relay_links(shared: &Shared, extra: &[String]) -> Vec<String> {
     let trust = shared.trust();
     let stored = trust.all().iter().flat_map(|device| &device.relays);
     let known: Vec<&String> = shared.config.relays.iter().chain(stored).chain(extra).collect();

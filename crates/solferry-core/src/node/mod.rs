@@ -8,6 +8,7 @@ mod overlay;
 mod pairing;
 mod presence;
 mod probe;
+mod relays;
 mod subnet;
 pub(crate) mod text;
 
@@ -21,7 +22,9 @@ use iroh::endpoint::Connection;
 use iroh::protocol::Router;
 use iroh::{Endpoint, EndpointAddr, EndpointId};
 use iroh_mdns_address_lookup::MdnsAddressLookup;
-use solferry_proto::{ALPN_LEAVING, ALPN_PAIR, ALPN_PRESENCE, ALPN_TEXT, ALPN_TRANSFER, close};
+use solferry_proto::{
+    ALPN_LEAVING, ALPN_PAIR, ALPN_PRESENCE, ALPN_RELAYS, ALPN_TEXT, ALPN_TRANSFER, close,
+};
 use tokio::sync::{Semaphore, broadcast, mpsc, watch};
 
 pub use confirm::PairingRequest;
@@ -37,6 +40,7 @@ use crate::event::{Event, TransferId};
 use crate::history::{History, PastTransfer};
 use crate::relay::RelayLink;
 use crate::route;
+use crate::transfer::RelayLimit;
 use crate::trust::{BlockedDevice, Device, TrustStore};
 use crate::{identity, net};
 
@@ -77,6 +81,8 @@ pub(crate) struct Shared {
     running: Mutex<HashMap<TransferId, PastTransfer>>,
     pub(crate) heard: Mutex<presence::Heard>,
     uses_relays: bool,
+    pub(crate) relay_limit: RelayLimit,
+    relays_sent: relays::Sent,
 }
 
 impl fmt::Debug for Shared {
@@ -189,6 +195,7 @@ impl Node {
         let relays = if isolated { Vec::new() } else { known_relays(&config, &trust)? };
         let uses_relays = !relays.is_empty();
         let network = net::bind(secret, &config, &relays, isolated).await?;
+        let relay_limit = RelayLimit::new(config.relay_speed_limit);
         let (offers, offer_queue) = mpsc::channel(OFFER_BUFFER);
         let shared = Arc::new(Shared {
             endpoint: network.endpoint.clone(),
@@ -207,6 +214,8 @@ impl Node {
             running: Mutex::new(HashMap::new()),
             heard: Mutex::new(presence::Heard::default()),
             uses_relays,
+            relay_limit,
+            relays_sent: relays::Sent::default(),
         });
         if !isolated {
             probe::answer_probes(shared.clone());
@@ -217,6 +226,7 @@ impl Node {
             .accept(ALPN_TEXT, text::TextHandler(shared.clone()))
             .accept(ALPN_PRESENCE, presence::PresenceHandler(shared.clone()))
             .accept(ALPN_LEAVING, presence::LeavingHandler(shared.clone()))
+            .accept(ALPN_RELAYS, relays::RelaysHandler(shared.clone()))
             .spawn();
         Ok((Self { shared, router }, offer_queue))
     }

@@ -20,7 +20,7 @@ pub mod update;
 
 rust_i18n::i18n!("locales", fallback = "en");
 
-pub use config::{Appearance, Config, Visibility, default_data_dir};
+pub use config::{Appearance, Config, RELAY_SPEED_LIMITS, Visibility, default_data_dir};
 pub use error::{Error, Result};
 pub use event::{Direction, Event, TransferId};
 pub use explain::{Explanation, about, explain};
