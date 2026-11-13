@@ -1,9 +1,10 @@
 use std::io::IsTerminal;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use indicatif::HumanBytes;
 use serde_json::json;
-use solferry_core::{Direction, Event, Result};
+use solferry_core::{Direction, Event, QUEUE_DAYS, QueueOutcome, Result};
 use tokio::sync::mpsc;
 
 use super::prompt::{self, Question};
@@ -24,6 +25,9 @@ pub async fn run(
     let questions = prompt::spawn(json, blocks);
     // Under --json stdin is the answer channel by contract, so only plain output can be headless.
     let headless = !json && !std::io::stdin().is_terminal();
+    let delivery = node.clone();
+    // Only paths queue from the CLI, so there is nothing for it to reopen.
+    let queue = tokio::spawn(async move { delivery.deliver_queued(Arc::new(|_| None)).await });
     if json {
         let ready = json!({
             "event": "ready",
@@ -83,6 +87,7 @@ pub async fn run(
             _ = tokio::signal::ctrl_c() => break,
         }
     }
+    queue.abort();
     node.shutdown().await
 }
 
@@ -112,6 +117,22 @@ fn report(event: &Event) {
         Event::Failed { id, error } => {
             eprintln!("Transfer {id}: {}", crate::explain::render(error));
         }
+        Event::QueueSettled { entry, outcome } => match outcome {
+            QueueOutcome::Delivered => {
+                println!("Delivered queued {} to {}", entry.label, entry.peer_name);
+            }
+            QueueOutcome::Failed(error) => eprintln!(
+                "Queued {} for {}: {}",
+                entry.label,
+                entry.peer_name,
+                crate::explain::render(error)
+            ),
+            QueueOutcome::Expired => println!(
+                "Gave up on {} for {} after {QUEUE_DAYS} days",
+                entry.label, entry.peer_name
+            ),
+            QueueOutcome::Cancelled => {}
+        },
         _ => {}
     }
 }

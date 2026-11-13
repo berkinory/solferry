@@ -56,7 +56,11 @@ impl Node {
         self.deliver(target.into(), Arc::new(manifest)).await
     }
 
-    async fn deliver(&self, target: EndpointAddr, manifest: Arc<Manifest>) -> Result<SendReport> {
+    pub(super) async fn deliver(
+        &self,
+        target: EndpointAddr,
+        manifest: Arc<Manifest>,
+    ) -> Result<SendReport> {
         let started = Instant::now();
         let peer_name = self.shared.trust().get(&target.id).map(|device| device.name.clone());
         let _ = self.shared.events.send(Event::Waiting {

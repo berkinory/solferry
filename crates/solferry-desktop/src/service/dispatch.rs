@@ -4,7 +4,7 @@ use std::sync::Arc;
 use futures::SinkExt;
 use futures::channel::mpsc::UnboundedSender;
 use iroh::EndpointAddr;
-use solferry_core::{Config, Link, LinkFile, Node};
+use solferry_core::{Config, Error, Link, LinkFile, Node, QueuedFiles};
 
 use super::{Command, ONLINE_WAIT, Target, Update};
 use crate::heic;
@@ -24,6 +24,12 @@ pub(super) fn dispatch(
             Command::Send { targets, paths } => {
                 send(&node, &data_dir, targets, paths, &updates).await;
             }
+            Command::Queue { targets, paths } => {
+                for target in targets {
+                    let _ = updates.send(queue(&node, target, paths.clone())).await;
+                }
+            }
+            Command::Unqueue(id) => node.unqueue(id),
             Command::SendText { target: Target { addr, name, .. }, text } => {
                 let result = node.send_text(addr, text).await;
                 let _ = updates.send(Update::TextShared { name, result }).await;
@@ -85,6 +91,13 @@ pub(super) fn dispatch(
     });
 }
 
+fn queue(node: &Node, target: Target, paths: Vec<PathBuf>) -> Update {
+    match node.queue(target.addr.id, QueuedFiles::Paths(paths.clone())) {
+        Ok(_) => Update::Queued { name: target.name },
+        Err(error) => Update::SendFailed { target, paths, error },
+    }
+}
+
 async fn pair(node: &Node, addr: EndpointAddr, updates: &mut UnboundedSender<Update>) {
     let shown = updates.clone();
     let show = move |code: &str| {
@@ -143,9 +156,17 @@ async fn send(
         tokio::spawn(async move {
             let result = node.send(target.addr.clone(), sent).await;
             drop(jpegs);
-            if let Err(error) = result {
-                let _ = updates.send(Update::SendFailed { target, paths, error }).await;
-            }
+            let update = match result {
+                // A paired device that didn't answer gets it once it is back.
+                Err(Error::Unreachable(_))
+                    if node.find_device(&target.addr.id.to_z32()).is_ok() =>
+                {
+                    queue(&node, target, paths)
+                }
+                Err(error) => Update::SendFailed { target, paths, error },
+                Ok(_) => return,
+            };
+            let _ = updates.send(update).await;
         });
     }
 }

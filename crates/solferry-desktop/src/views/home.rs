@@ -9,7 +9,7 @@ use gpui_kit::{
 use rust_i18n::t;
 
 use super::main_view::MainView;
-use super::{devices, link, offers, texts, ui};
+use super::{devices, link, offers, queue, texts, ui};
 use crate::assets::{Glyph, icon};
 use crate::theme::{color, palette};
 use crate::tokens::{RADIUS_FIELD, SPACE_SM};
@@ -125,6 +125,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .children(offers)
         .children(shared)
         .child(drop_zone(dragging, cx))
+        .children(queue::card(&state, cx))
         .child(devices::render(&state, view, cx))
         .child(link::card(cx))
         .into_any_element()

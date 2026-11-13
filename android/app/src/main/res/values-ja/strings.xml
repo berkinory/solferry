@@ -201,4 +201,12 @@
     <string name="tile_label">公開</string>
     <string name="tile_visible">公開中</string>
     <string name="tile_hidden">非公開</string>
+    <string name="queue_queued">%1$s はオフラインです。戻ったら送信します</string>
+    <string name="queue_delivered">%1$s を %2$s に届けました</string>
+    <string name="queue_title">送信待ち</string>
+    <string name="queue_to">宛先: %1$s</string>
+    <string name="queue_hint">デバイスが戻り、Solferry が起動していれば送信します。%1$d日後に破棄されます。</string>
+    <string name="queue_cancel">送信を取り消す</string>
+    <string name="notify_queue_delivered">送信待ちのファイルを届けました</string>
+    <string name="notify_queue_failed">送信待ちのファイルを届けられませんでした</string>
 </resources>

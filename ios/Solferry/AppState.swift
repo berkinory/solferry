@@ -77,6 +77,8 @@ struct AppState {
     var blocked: [BlockedDevice] = []
     var transfers: [Transfer] = []
     var history: [HistoryEntry] = []
+    /// Sends waiting for paired devices that weren't there.
+    var queue: [QueueEntry] = []
     var offers: [Incoming] = []
     var pairings: [PairingPrompt] = []
     var pairingCode: String?
@@ -194,6 +196,14 @@ struct AppState {
             toast(.success, String(localized: "Received \(name)"))
         case let .linkText(text):
             link?.texts.append(text)
+        case let .queue(entries): queue = entries
+        case let .queued(name): toast(.success, String(localized: "\(name) is offline. Sending when it's back"))
+        case let .queueSettled(_, name, label, _, result):
+            switch result {
+            case .delivered: toast(.success, String(localized: "Delivered \(label) to \(name)"))
+            case let .failed(problem): toast(.failure, problem.title)
+            case .dropped: break
+            }
         }
     }
 

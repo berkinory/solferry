@@ -8,6 +8,9 @@ menu:
   settings: "Ustawienia..."
   quit: "Zakończ Solferry"
 notification:
+  queue:
+    delivered: "Oczekujące pliki dostarczone"
+    failed: "Oczekujące pliki niedostarczone"
   offer:
     title: "Przychodzące pliki"
     body: "%{name} chce wysłać Ci pliki"
@@ -37,6 +40,8 @@ format:
     days: "%{count} dni temu"
     months: "%{count} mies. temu"
 toast:
+  queued: "%{name} jest offline. Wyślemy, gdy wróci"
+  queue_delivered: "Dostarczono %{title} do %{name}"
   update_ready: "Solferry %{version} jest gotowe"
   install_failed: "Nie udało się zainstalować aktualizacji"
   clipboard_empty: "W schowku nie ma tekstu"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Jeszcze nie pytano"
   allow: "Zezwól"
   open_settings: "Otwórz ustawienia"
+queue:
+  title: "Czeka na wysłanie"
+  to: "Do %{name}"
+  hint: "Wyśle się, gdy urządzenie wróci, a Solferry będzie działać. Usuwane po %{days} dniach."
+  cancel: "Anuluj wysyłanie"

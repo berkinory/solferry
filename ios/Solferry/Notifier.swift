@@ -49,6 +49,14 @@ enum Notifier {
         show(String(localized: "Files received"), String(localized: "\(label) from \(name), in \(folder)"))
     }
 
+    static func queueDelivered(label: String, name: String) {
+        show(String(localized: "Queued files delivered"), String(localized: "Delivered \(label) to \(name)"))
+    }
+
+    static func queueFailed(reason: String) {
+        show(String(localized: "Queued files not delivered"), reason)
+    }
+
     static func settleOffer(_ key: UInt64) {
         take(offerId(key))
     }

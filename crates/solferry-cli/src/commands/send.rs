@@ -49,6 +49,7 @@ pub async fn run(
     data_dir: PathBuf,
     payload: Payload,
     targets: Vec<String>,
+    queue: bool,
     json: bool,
 ) -> Result<()> {
     let (node, _offers) = super::start(data_dir.clone()).await?;
@@ -63,17 +64,28 @@ pub async fn run(
     } else {
         tokio::spawn(show_progress(node.events()))
     };
-    let sends = addrs.into_iter().map(|addr| async {
+    let sends = addrs.iter().map(|addr| async {
         match &files {
-            Files::Paths(paths) => node.send(addr, paths.clone()).await,
-            Files::Spooled(spooled) => node.send_named(addr, vec![copy(spooled)?]).await,
+            Files::Paths(paths) => node.send(addr.clone(), paths.clone()).await,
+            Files::Spooled(spooled) => node.send_named(addr.clone(), vec![copy(spooled)?]).await,
         }
     });
     let mut failure = None;
-    for (target, outcome) in targets.iter().zip(join_all(sends).await) {
-        match outcome {
-            Ok(report) => show_sent(target, &report, json),
-            Err(error) => {
+    // Piped stdin lives only as long as this run, so only paths can wait in the queue.
+    let queueable = match &files {
+        Files::Paths(paths) if queue => Some(paths),
+        _ => None,
+    };
+    for ((target, addr), outcome) in targets.iter().zip(&addrs).zip(join_all(sends).await) {
+        match (outcome, queueable) {
+            (Ok(report), _) => show_sent(target, &report, json),
+            (Err(Error::Unreachable(_)), Some(paths))
+                if node.find_device(&addr.id.to_z32()).is_ok() =>
+            {
+                let queued = super::queue::add(&node, addr.id, paths)?;
+                super::queue::show_queued(target, &queued, json);
+            }
+            (Err(error), _) => {
                 show_failure(target, &error, json);
                 failure = Some(error);
             }
@@ -230,7 +242,9 @@ async fn show_progress(mut events: broadcast::Receiver<Event>) {
             | Event::Absent { .. }
             | Event::Started { .. }
             | Event::Paired { .. }
-            | Event::TextReceived { .. } => {}
+            | Event::TextReceived { .. }
+            | Event::QueueChanged
+            | Event::QueueSettled { .. } => {}
         }
     }
 }

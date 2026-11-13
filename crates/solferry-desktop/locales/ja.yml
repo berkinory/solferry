@@ -8,6 +8,9 @@ menu:
   settings: "設定…"
   quit: "Solferry を終了"
 notification:
+  queue:
+    delivered: "送信待ちのファイルを届けました"
+    failed: "送信待ちのファイルを届けられませんでした"
   offer:
     title: "ファイルの受信リクエスト"
     body: "%{name} がファイルを送ろうとしています"
@@ -37,6 +40,8 @@ format:
     days: "%{count}日前"
     months: "%{count}か月前"
 toast:
+  queued: "%{name} はオフラインです。戻ったら送信します"
+  queue_delivered: "%{title} を %{name} に届けました"
   update_ready: "Solferry %{version} の準備ができました"
   install_failed: "アップデートをインストールできませんでした"
   clipboard_empty: "クリップボードにテキストがありません"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "まだ確認していません"
   allow: "許可"
   open_settings: "設定を開く"
+queue:
+  title: "送信待ち"
+  to: "宛先: %{name}"
+  hint: "デバイスが戻り、Solferry が起動していれば送信します。%{days}日後に破棄されます。"
+  cancel: "送信を取り消す"

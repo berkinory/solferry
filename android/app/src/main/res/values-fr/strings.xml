@@ -209,4 +209,12 @@
     <string name="tile_label">Visibilité</string>
     <string name="tile_visible">Visible</string>
     <string name="tile_hidden">Masqué</string>
+    <string name="queue_queued">%1$s est hors ligne. Envoi dès son retour</string>
+    <string name="queue_delivered">%1$s remis à %2$s</string>
+    <string name="queue_title">En attente d\'envoi</string>
+    <string name="queue_to">Pour %1$s</string>
+    <string name="queue_hint">Envoyé au retour de l\'appareil, tant que Solferry est ouvert. Abandonné après %1$d jours.</string>
+    <string name="queue_cancel">Annuler l\'envoi</string>
+    <string name="notify_queue_delivered">Fichiers en attente remis</string>
+    <string name="notify_queue_failed">Fichiers en attente non remis</string>
 </resources>

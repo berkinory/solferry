@@ -8,8 +8,8 @@ use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
     Appearance, BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, NearbyDevice,
-    Node, NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth,
-    TransferId,
+    Node, NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform, QueuedSend,
+    RelayHealth, TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
@@ -39,6 +39,12 @@ pub enum Command {
         target: Target,
         text: String,
     },
+    /// Keeps a send for paired devices that aren't there, until they are.
+    Queue {
+        targets: Vec<Target>,
+        paths: Vec<PathBuf>,
+    },
+    Unqueue(u64),
     Cancel(TransferId),
     Answer {
         offer: u64,
@@ -107,6 +113,10 @@ pub enum Update {
     Reachable(HashSet<EndpointId>),
     Transfer(Event),
     History(Vec<PastTransfer>),
+    Queue(Vec<QueuedSend>),
+    Queued {
+        name: String,
+    },
     Offer {
         key: u64,
         summary: OfferSummary,
@@ -194,28 +204,10 @@ async fn start(
     };
     let _ = updates.unbounded_send(ready);
     let _ = updates.unbounded_send(Update::History(node.history()));
+    let _ = updates.unbounded_send(Update::Queue(node.queued()));
 
     let mut tasks = Vec::new();
-    let mut events = node.events();
-    let (outgoing, recorder) = (updates.clone(), node.clone());
-    tasks.push(
-        tokio::spawn(async move {
-            loop {
-                match events.recv().await {
-                    Ok(event) => {
-                        let over = matches!(event, Event::Completed { .. } | Event::Failed { .. });
-                        let _ = outgoing.unbounded_send(Update::Transfer(event));
-                        if over {
-                            let _ = outgoing.unbounded_send(Update::History(recorder.history()));
-                        }
-                    }
-                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
-                    Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
-                }
-            }
-        })
-        .abort_handle(),
-    );
+    tasks.push(watch::forward_events(node.clone(), updates.clone()));
 
     let waiting = pending.clone();
     let outgoing = updates.clone();
@@ -281,6 +273,7 @@ async fn start(
     );
     tasks.push(watch::follow_presence(node.clone(), updates.clone()));
     tasks.push(watch::restart_after_rotation(node.clone(), restarts.clone()));
+    tasks.push(watch::deliver_queued(node.clone()));
     Some(Session { node, tasks })
 }
 

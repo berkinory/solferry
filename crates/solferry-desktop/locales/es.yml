@@ -8,6 +8,9 @@ menu:
   settings: "Ajustes..."
   quit: "Salir de Solferry"
 notification:
+  queue:
+    delivered: "Archivos en espera entregados"
+    failed: "Archivos en espera no entregados"
   offer:
     title: "Archivos entrantes"
     body: "%{name} quiere enviarte archivos"
@@ -37,6 +40,8 @@ format:
     days: "hace %{count} días"
     months: "hace %{count} meses"
 toast:
+  queued: "%{name} no está conectado. Se enviará cuando vuelva"
+  queue_delivered: "%{title} entregado a %{name}"
   update_ready: "Solferry %{version} está listo"
   install_failed: "No se ha podido instalar la actualización"
   clipboard_empty: "No hay texto en el portapapeles"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Aún no se ha pedido"
   allow: "Permitir"
   open_settings: "Abrir Ajustes"
+queue:
+  title: "Esperando para enviar"
+  to: "Para %{name}"
+  hint: "Se envía cuando vuelva el dispositivo, con Solferry abierto. Se descarta tras %{days} días."
+  cancel: "Cancelar envío"

@@ -11,9 +11,11 @@ use solferry_core::{
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
+use crate::queue::{self, queue};
 use crate::types::{
-    BlockedDevice, HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, Update, identity,
+    BlockedDevice, HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, identity,
 };
+use crate::update::Update;
 use crate::{Edit, Listener};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
@@ -169,6 +171,7 @@ pub async fn start(
         out.update(relays(&checker, &health));
     }));
     tasks.push(forward_events(&node, listener.clone(), shelf.clone()));
+    tasks.push(queue::follow(node.clone(), listener.clone()));
 
     let (out, kept) = (listener.clone(), shelf.clone());
     let downloads = node.config().download_dir.clone();
@@ -196,8 +199,25 @@ pub async fn start(
         }
     }));
 
-    let (out, kept) = (listener.clone(), shelf.clone());
+    tasks.push(sweep_prompts(listener.clone(), shelf.clone()));
+
+    let (scanner, out, kept) = (node.clone(), listener.clone(), shelf.clone());
     tasks.push(spawn(async move {
+        scanner
+            .follow_nearby(|found| {
+                let shown = found.iter().map(Into::into).collect();
+                *lock(&kept.nearby) =
+                    found.into_iter().map(|device| (device.addr.id, device)).collect();
+                out.update(Update::Nearby { devices: shown });
+            })
+            .await;
+    }));
+    Some(Session { node, tasks })
+}
+
+/// Drops prompts whose peer left or whose wait ran out, so nobody answers a request that is gone.
+fn sweep_prompts(out: Arc<dyn Listener>, kept: Arc<Shelf>) -> AbortHandle {
+    spawn(async move {
         let mut sweep = tokio::time::interval(PROMPT_SWEEP);
         loop {
             sweep.tick().await;
@@ -216,23 +236,11 @@ pub async fn start(
                 open
             });
         }
-    }));
-
-    let (scanner, out, kept) = (node.clone(), listener.clone(), shelf.clone());
-    tasks.push(spawn(async move {
-        scanner
-            .follow_nearby(|found| {
-                let shown = found.iter().map(Into::into).collect();
-                *lock(&kept.nearby) =
-                    found.into_iter().map(|device| (device.addr.id, device)).collect();
-                out.update(Update::Nearby { devices: shown });
-            })
-            .await;
-    }));
-    Some(Session { node, tasks })
+    })
 }
 
-/// Passes transfer events to the app, with the history again whenever a transfer ends.
+/// Passes transfer events to the app, with the history again whenever a transfer ends and the
+/// queue whenever it changes.
 fn forward_events(node: &Node, out: Arc<dyn Listener>, kept: Arc<Shelf>) -> AbortHandle {
     let (mut events, recorder) = (node.events(), node.clone());
     spawn(async move {
@@ -242,7 +250,7 @@ fn forward_events(node: &Node, out: Arc<dyn Listener>, kept: Arc<Shelf>) -> Abor
                     if let Event::Waiting { id, .. } | Event::Started { id, .. } = &event {
                         lock(&kept.transfers).insert(id.to_string(), *id);
                     }
-                    out.update(Update::from_event(&event));
+                    out.update(Update::from_event(&event).unwrap_or_else(|| queue(&recorder)));
                     if matches!(event, Event::Completed { .. } | Event::Failed { .. }) {
                         out.update(history(&recorder));
                     }

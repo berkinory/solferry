@@ -201,4 +201,12 @@
     <string name="tile_label">可见性</string>
     <string name="tile_visible">可见</string>
     <string name="tile_hidden">已隐藏</string>
+    <string name="queue_queued">%1$s 不在线。上线后自动发送</string>
+    <string name="queue_delivered">%1$s 已送达 %2$s</string>
+    <string name="queue_title">等待发送</string>
+    <string name="queue_to">发送至 %1$s</string>
+    <string name="queue_hint">设备上线且 Solferry 正在运行时发送。%1$d 天后丢弃。</string>
+    <string name="queue_cancel">取消发送</string>
+    <string name="notify_queue_delivered">待发送的文件已送达</string>
+    <string name="notify_queue_failed">待发送的文件未能送达</string>
 </resources>

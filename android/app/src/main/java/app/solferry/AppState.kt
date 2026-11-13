@@ -8,6 +8,8 @@ import uniffi.solferry_ffi.Incoming
 import uniffi.solferry_ffi.Nearby
 import uniffi.solferry_ffi.PairedDevice
 import uniffi.solferry_ffi.Problem
+import uniffi.solferry_ffi.QueueEntry
+import uniffi.solferry_ffi.QueueResult
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.Update
 
@@ -67,6 +69,8 @@ data class AppState(
     val blocked: List<BlockedDevice> = emptyList(),
     val transfers: List<Transfer> = emptyList(),
     val history: List<HistoryEntry> = emptyList(),
+    /** Sends waiting for paired devices that weren't there. */
+    val queue: List<QueueEntry> = emptyList(),
     val offers: List<Incoming> = emptyList(),
     val pairings: List<PairingPrompt> = emptyList(),
     val pairingCode: String? = null,
@@ -140,6 +144,13 @@ data class AppState(
         is Update.LinkFailed -> toast(Tone.Error, update.problem.title).copy(link = null)
         is Update.LinkReceived -> toast(Tone.Success, res.getString(R.string.transfer_received, update.name)).copy(link = link?.let { it.copy(received = it.received + update.name) })
         is Update.LinkText -> copy(link = link?.let { it.copy(texts = it.texts + update.text) })
+        is Update.Queue -> copy(queue = update.entries)
+        is Update.Queued -> toast(Tone.Success, res.getString(R.string.queue_queued, update.name))
+        is Update.QueueSettled -> when (val result = update.result) {
+            is QueueResult.Delivered -> toast(Tone.Success, res.getString(R.string.queue_delivered, update.label, update.name))
+            is QueueResult.Failed -> toast(Tone.Error, result.problem.title)
+            is QueueResult.Dropped -> this
+        }
     }
 
     fun toast(tone: Tone, title: String) =

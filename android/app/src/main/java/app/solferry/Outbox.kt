@@ -51,7 +51,7 @@ class Outbox(private val context: Context) {
         return files.map { (name, file) -> SharedFile(name, file.detachFd()) }.takeIf { it.isNotEmpty() }
     }
 
-    private fun displayName(uri: Uri): String {
+    fun displayName(uri: Uri): String {
         context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) cursor.getString(0)?.let { return it }
         }

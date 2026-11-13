@@ -11,6 +11,10 @@ private final class BridgeEvents: Listener, @unchecked Sendable {
             MainActor.assumeIsolated { self?.engine?.receive(update) }
         }
     }
+
+    func reopen(reference: String) -> Int32? {
+        QueueFiles.reopen(reference)
+    }
 }
 
 @MainActor
@@ -69,6 +73,14 @@ final class Engine {
             Task.detached { [weak self] in
                 let saved = Exporter.export(to: folder)
                 await self?.exported(saved, by: name, to: folder)
+            }
+        case let .queueSettled(id, name, label, references, result):
+            let others = Set(state.queue.filter { $0.id != id }.flatMap(\.references))
+            for reference in references where !others.contains(reference) { QueueFiles.release(reference) }
+            switch result {
+            case .delivered: Notifier.queueDelivered(label: label, name: name)
+            case let .failed(problem): Notifier.queueFailed(reason: problem.title)
+            case .dropped: break
             }
         case let .completed(id):
             if let done = state.transfers.first(where: { $0.id == id }), !done.sending {
@@ -139,12 +151,26 @@ final class Engine {
         }
     }
 
+    /// A paired device known to be away gets the files once it's back, instead of a send that can't connect.
     func send(_ urls: [URL], to peers: [String]) {
         let bridge = bridge!
-        let wantJpeg = Heic.enabled ? Set(peers.filter { Heic.wanted(platform(of: $0)) }) : []
-        Task.detached {
+        let away = Set(peers.filter { peer in
+            state.devices.contains { $0.identity.id == peer } && state.reachable.map { !$0.contains(peer) } == true
+        })
+        let wantJpeg = Heic.enabled ? Set(peers.filter { !away.contains($0) && Heic.wanted(platform(of: $0)) }) : []
+        Task.detached { [weak self] in
             let jpegs = wantJpeg.isEmpty ? [:] : Heic.jpegCopies(of: urls)
             for peer in peers {
+                if away.contains(peer) {
+                    let kept = urls.compactMap(QueueFiles.keep)
+                    if kept.count == urls.count {
+                        bridge.queueFiles(peer: peer, files: kept)
+                    } else {
+                        kept.forEach { QueueFiles.release($0.reference) }
+                        await self?.toastFailure(String(localized: "Couldn't open that file, try sharing it again"))
+                    }
+                    continue
+                }
                 let chosen = wantJpeg.contains(peer) ? urls.map { jpegs[$0] ?? $0 } : urls
                 let files = chosen.compactMap(Outbox.open)
                 if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
@@ -156,6 +182,10 @@ final class Engine {
     private func platform(of peer: String) -> DevicePlatform? {
         let identity = state.devices.first { $0.identity.id == peer }?.identity ?? state.nearby.first { $0.identity.id == peer }?.identity
         return identity?.platform
+    }
+
+    private func toastFailure(_ title: String) {
+        state.toast(.failure, title)
     }
 
     func clearPairingErrors() {

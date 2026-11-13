@@ -8,6 +8,9 @@ menu:
   settings: "Settings..."
   quit: "Quit Solferry"
 notification:
+  queue:
+    delivered: "Queued files delivered"
+    failed: "Queued files not delivered"
   offer:
     title: "Incoming files"
     body: "%{name} wants to send you files"
@@ -37,6 +40,8 @@ format:
     days: "%{count}d ago"
     months: "%{count}mo ago"
 toast:
+  queued: "%{name} is offline. Sending when it's back"
+  queue_delivered: "Delivered %{title} to %{name}"
   update_ready: "Solferry %{version} is ready"
   install_failed: "Couldn't install the update"
   clipboard_empty: "Your clipboard has no text"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Not asked yet"
   allow: "Allow"
   open_settings: "Open Settings"
+queue:
+  title: "Waiting to send"
+  to: "To %{name}"
+  hint: "Sent once the device is back while Solferry is running. Dropped after %{days} days."
+  cancel: "Cancel send"

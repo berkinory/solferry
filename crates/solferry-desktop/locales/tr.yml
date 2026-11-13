@@ -8,6 +8,9 @@ menu:
   settings: "Ayarlar..."
   quit: "Solferry'den Çık"
 notification:
+  queue:
+    delivered: "Bekleyen dosyalar iletildi"
+    failed: "Bekleyen dosyalar iletilemedi"
   offer:
     title: "Gelen dosyalar"
     body: "%{name} sana dosya göndermek istiyor"
@@ -37,6 +40,8 @@ format:
     days: "%{count} gün önce"
     months: "%{count} ay önce"
 toast:
+  queued: "%{name} çevrimdışı. Geri geldiğinde gönderilecek"
+  queue_delivered: "%{title}, %{name} cihazına iletildi"
   update_ready: "Solferry %{version} hazır"
   install_failed: "Güncelleme yüklenemedi"
   clipboard_empty: "Panoda metin yok"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Henüz sorulmadı"
   allow: "İzin ver"
   open_settings: "Ayarları aç"
+queue:
+  title: "Gönderilmeyi bekliyor"
+  to: "Alıcı: %{name}"
+  hint: "Solferry açıkken cihaz geri geldiğinde gönderilir. %{days} gün sonra silinir."
+  cancel: "Gönderimi iptal et"

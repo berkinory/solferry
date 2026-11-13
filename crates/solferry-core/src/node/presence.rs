@@ -97,10 +97,7 @@ impl Node {
         };
         let devices = self.devices().into_iter().filter(|device| !fresh.contains(&device.id));
         let probes = devices.map(|device| async move {
-            let probe = endpoint.connect(device.addr(), ALPN_PRESENCE);
-            let connection = tokio::time::timeout(ANSWER_WAIT, probe).await.ok()?.ok()?;
-            connection.close(close::DONE.into(), b"seen");
-            Some(device.id)
+            answers(endpoint, device.addr()).await.then_some(device.id)
         });
         let answered: Vec<EndpointId> = join_all(probes).await.into_iter().flatten().collect();
         for peer in &answered {
@@ -121,6 +118,14 @@ impl Node {
         });
         join_all(goodbyes).await;
     }
+}
+
+/// Whether the device answers a presence probe right now.
+pub(super) async fn answers(endpoint: &iroh::Endpoint, addr: iroh::EndpointAddr) -> bool {
+    let probe = endpoint.connect(addr, ALPN_PRESENCE);
+    let Ok(Ok(connection)) = tokio::time::timeout(ANSWER_WAIT, probe).await else { return false };
+    connection.close(close::DONE.into(), b"seen");
+    true
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {

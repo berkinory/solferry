@@ -69,6 +69,7 @@ fun HomeScreen(
         items(state.offers, key = { "offer-${it.key}" }) { OfferCard(it, engine) }
         state.text?.let { item(key = "text-${it.key}") { TextCard(it, engine) } }
         item { SendZone(onPickFiles) }
+        if (state.queue.isNotEmpty()) item(key = "queue") { QueueCard(state.queue, engine) }
         if (state.devices.isNotEmpty()) {
             item { DeviceCard(state.devices, state.nearby, state.reachable, state.history, engine, onText) }
         }

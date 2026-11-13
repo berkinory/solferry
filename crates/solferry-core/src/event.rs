@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use iroh::EndpointId;
 
 use crate::error::Error;
+use crate::queue::{QueueOutcome, QueuedSend};
 use crate::route::Route;
 use crate::trust::Device;
 
@@ -90,5 +91,12 @@ pub enum Event {
     Failed {
         id: TransferId,
         error: Error,
+    },
+    /// Sends waiting for offline devices changed. `Node::queued` has the list.
+    QueueChanged,
+    /// A queued send is over and has left the queue.
+    QueueSettled {
+        entry: QueuedSend,
+        outcome: QueueOutcome,
     },
 }

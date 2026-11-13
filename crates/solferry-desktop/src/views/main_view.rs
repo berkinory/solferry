@@ -227,7 +227,7 @@ impl MainView {
 
     pub fn send_now(&mut self, targets: Vec<Target>, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
         self.clear_pending(cx);
-        Self::command(Command::Send { targets, paths }, cx);
+        super::send::launch(targets, paths, self.state.read(cx), cx);
     }
 
     pub fn toggle_target(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
@@ -270,7 +270,7 @@ impl MainView {
         }
         let targets: Vec<Target> =
             self.selected.iter().filter_map(|id| self.targets.get(id).cloned()).collect();
-        Self::command(Command::Send { targets, paths: self.pending.clone() }, cx);
+        super::send::launch(targets, self.pending.clone(), self.state.read(cx), cx);
         self.send_phase = SendPhase::Flying;
         cx.notify();
         cx.spawn_in(window, async move |view, cx| {

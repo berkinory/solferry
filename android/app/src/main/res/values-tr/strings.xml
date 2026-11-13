@@ -205,4 +205,12 @@
     <string name="tile_label">Görünürlük</string>
     <string name="tile_visible">Görünür</string>
     <string name="tile_hidden">Gizli</string>
+    <string name="queue_queued">%1$s çevrimdışı. Geri geldiğinde gönderilecek</string>
+    <string name="queue_delivered">%1$s, %2$s cihazına iletildi</string>
+    <string name="queue_title">Gönderilmeyi bekliyor</string>
+    <string name="queue_to">Alıcı: %1$s</string>
+    <string name="queue_hint">Solferry açıkken cihaz geri geldiğinde gönderilir. %1$d gün sonra silinir.</string>
+    <string name="queue_cancel">Gönderimi iptal et</string>
+    <string name="notify_queue_delivered">Bekleyen dosyalar iletildi</string>
+    <string name="notify_queue_failed">Bekleyen dosyalar iletilemedi</string>
 </resources>

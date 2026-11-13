@@ -8,6 +8,9 @@ menu:
   settings: "Einstellungen..."
   quit: "Solferry beenden"
 notification:
+  queue:
+    delivered: "Wartende Dateien zugestellt"
+    failed: "Wartende Dateien nicht zugestellt"
   offer:
     title: "Eingehende Dateien"
     body: "%{name} möchte dir Dateien senden"
@@ -37,6 +40,8 @@ format:
     days: "vor %{count} Tagen"
     months: "vor %{count} Monaten"
 toast:
+  queued: "%{name} ist offline. Wird gesendet, sobald es wieder da ist"
+  queue_delivered: "%{title} an %{name} zugestellt"
   update_ready: "Solferry %{version} ist bereit"
   install_failed: "Update konnte nicht installiert werden"
   clipboard_empty: "Kein Text in der Zwischenablage"
@@ -252,3 +257,8 @@ permissions:
   not_asked: "Noch nicht gefragt"
   allow: "Erlauben"
   open_settings: "Einstellungen öffnen"
+queue:
+  title: "Wartet auf Versand"
+  to: "An %{name}"
+  hint: "Wird gesendet, sobald das Gerät wieder da ist und Solferry läuft. Nach %{days} Tagen verworfen."
+  cancel: "Senden abbrechen"

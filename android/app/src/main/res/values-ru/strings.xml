@@ -213,4 +213,12 @@
     <string name="tile_label">Видимость</string>
     <string name="tile_visible">Виден</string>
     <string name="tile_hidden">Скрыт</string>
+    <string name="queue_queued">%1$s не в сети. Отправим, когда появится</string>
+    <string name="queue_delivered">%1$s: доставлено на %2$s</string>
+    <string name="queue_title">Ждёт отправки</string>
+    <string name="queue_to">Для %1$s</string>
+    <string name="queue_hint">Отправится, когда устройство появится, а Solferry будет запущен. Удаляется через %1$d дней.</string>
+    <string name="queue_cancel">Отменить отправку</string>
+    <string name="notify_queue_delivered">Отложенные файлы доставлены</string>
+    <string name="notify_queue_failed">Отложенные файлы не доставлены</string>
 </resources>
