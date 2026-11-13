@@ -122,8 +122,9 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
           security list-keychains -d user -s "$KEYCHAIN" login.keychain
           rm "$RUNNER_TEMP/certificate.p12"
-          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' | head -1)
-          [ -n "$IDENTITY" ] || { echo "::error::The certificate has no Developer ID Application identity"; exit 1; }
+          # The app group both bundles share is prefixed with this team, so no other team may sign.
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application:.*(Z66C58Z3RC)\)"/\1/p' | head -1)
+          [ -n "$IDENTITY" ] || { echo "::error::The certificate has no Developer ID Application identity of team Z66C58Z3RC"; exit 1; }
           echo "SOLFERRY_SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
 
       - if: runner.os == 'macOS'

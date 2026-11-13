@@ -4,6 +4,10 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 
 ## Unreleased
 
+### Added
+
+- Solferry shows up in the share sheet on iPhone, iPad and Mac. Sharing photos or files to it opens the send sheet with them.
+
 ### Changed
 
 - The relay is called a relay server, and "Relay" is no longer translated into words like "Röle". Other stiff translations were reworded in several languages.

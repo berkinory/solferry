@@ -17,6 +17,7 @@ sys-locale.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+url.workspace = true
 auto-launch = "0.6"
 
 [dev-dependencies]

@@ -3,14 +3,17 @@ use std::time::Duration;
 use futures::StreamExt;
 use futures::channel::mpsc::UnboundedReceiver;
 use gpui_kit::component::{Theme, TitleBar};
+use std::path::PathBuf;
+
 use gpui_kit::{
     App, AppContext, AsyncApp, Bounds, ClipboardItem, Entity, Global, SharedString,
-    SystemNotification, WindowBounds, px, size,
+    SystemNotification, WeakEntity, WindowBounds, px, size,
 };
 use rust_i18n::t;
 use solferry_core::{Direction, Event};
 
 use crate::instance::Instance;
+use crate::opened::OpenedFiles;
 use crate::service::{Command, Handle, Update};
 use crate::state::AppState;
 use crate::tray::{Tray, TrayAction, TrayEvents};
@@ -20,14 +23,14 @@ const WINDOW_WIDTH: f32 = 420.0;
 const WINDOW_HEIGHT: f32 = 620.0;
 /// Keeps the window clear of a menu bar and a dock or taskbar on small screens.
 const SCREEN_MARGIN: f32 = 96.0;
-/// How often the tray menu and later launches are checked for.
+/// How often the tray menu, later launches and opened files are checked for.
 const POLL_EVERY: Duration = Duration::from_millis(150);
 
 pub struct Shell {
     pub state: Entity<AppState>,
     pub service: Handle,
     pub tray: Tray,
-    window: Option<gpui_kit::AnyWindowHandle>,
+    window: Option<(gpui_kit::AnyWindowHandle, WeakEntity<MainView>)>,
 }
 
 impl Global for Shell {}
@@ -36,7 +39,7 @@ pub fn start(
     service: Handle,
     updates: UnboundedReceiver<Update>,
     (tray, actions): (Tray, TrayEvents),
-    (instance, hidden): (Instance, bool),
+    (instance, hidden, opened): (Instance, bool, OpenedFiles),
     cx: &mut App,
 ) {
     let state = cx.new(|_| AppState::default());
@@ -56,6 +59,10 @@ pub fn start(
             cx.background_executor().timer(POLL_EVERY).await;
             if instance.woken() {
                 cx.update(show_window);
+            }
+            let files = opened.drain();
+            if !files.is_empty() {
+                cx.update(|cx| send_files(files, cx));
             }
             for action in actions.drain() {
                 cx.update(|cx| match action {
@@ -89,7 +96,7 @@ fn handle_update(update: Update, cx: &mut App) {
 }
 
 fn notify(update: &Update, cx: &mut App) {
-    let window = cx.global::<Shell>().window;
+    let window = cx.global::<Shell>().window.as_ref().map(|(window, _)| *window);
     if window.is_some_and(|w| w.update(cx, |_, w, _| w.is_window_active()).unwrap_or(false)) {
         return;
     }
@@ -130,8 +137,16 @@ fn notify(update: &Update, cx: &mut App) {
     });
 }
 
+/// Opens the send sheet with `paths`, adding them to any files already waiting there.
+pub fn send_files(paths: Vec<PathBuf>, cx: &mut App) {
+    show_window(cx);
+    if let Some((_, view)) = cx.global::<Shell>().window.clone() {
+        let _ = view.update(cx, |view, cx| view.stage(paths, cx));
+    }
+}
+
 pub fn show_window(cx: &mut App) {
-    if let Some(window) = cx.global::<Shell>().window
+    if let Some((window, _)) = cx.global::<Shell>().window
         && window.update(cx, |_, window, _| window.activate_window()).is_ok()
     {
         return;
@@ -163,8 +178,8 @@ pub fn show_window(cx: &mut App) {
         Theme::sync_system_appearance(Some(window), cx);
         cx.new(|cx| MainView::new(window, cx))
     });
-    if let Ok((window, _)) = opened {
-        cx.global_mut::<Shell>().window = Some(window);
+    if let Ok((window, view)) = opened {
+        cx.global_mut::<Shell>().window = Some((window, view.downgrade()));
     }
     cx.activate(true);
 }

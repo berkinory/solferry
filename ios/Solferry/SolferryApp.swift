@@ -76,7 +76,14 @@ private struct RootView: View {
         }
         .photosPicker(isPresented: $browsingPhotos, selection: $photos, matching: nil)
         .onChange(of: photos) { _, picked in loadPhotos(picked) }
-        .onOpenURL { url in staged = [url] }
+        .onOpenURL { url in
+            if url.scheme == "solferry" {
+                let files = Outbox.shared(url)
+                if !files.isEmpty { staged += files }
+            } else {
+                staged = [url]
+            }
+        }
         .onChange(of: staged) { _, files in if !files.isEmpty { sending = true } }
         .onChange(of: engine.state.pairedCount) { goHome() }
         .onChange(of: engine.state.asking) { before, now in if now > before { goHome() } }
