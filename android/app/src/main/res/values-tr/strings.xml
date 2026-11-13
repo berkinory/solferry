@@ -129,6 +129,8 @@
     <string name="settings_find_off">Yeni cihazlar bu cihazı bulamaz. Eşleştirilmiş cihazlar yine de ulaşabilir.</string>
     <string name="settings_background_title">Arka planda dosya al</string>
     <string name="settings_background_body">Solferry kapalıyken de dosya al. Bildirim gösterir, daha çok pil harcar.</string>
+    <string name="settings_heic_title">HEIC fotoğrafları JPEG\'e dönüştür</string>
+    <string name="settings_heic_body">HEIC açamayan Linux ve Windows cihazlar için. Bu cihazda, gözle görülür kalite kaybı olmadan dönüştürülür.</string>
     <string name="language_title">Dil</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay sunucusu</string>

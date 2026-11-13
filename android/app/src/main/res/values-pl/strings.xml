@@ -133,6 +133,8 @@
     <string name="settings_find_off">Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć.</string>
     <string name="settings_background_title">Odbieraj w tle</string>
     <string name="settings_background_body">Odbieraj, gdy Solferry jest zamknięte. Pokazuje powiadomienie, zużywa więcej baterii.</string>
+    <string name="settings_heic_title">Konwertuj zdjęcia HEIC na JPEG</string>
+    <string name="settings_heic_body">Dla urządzeń z systemem Linux i Windows, które nie otwierają plików HEIC. Konwersja odbywa się na tym urządzeniu, bez widocznej utraty jakości.</string>
     <string name="language_title">Język</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Serwer Relay</string>

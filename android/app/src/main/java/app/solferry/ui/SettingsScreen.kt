@@ -66,6 +66,7 @@ fun SettingsScreen(state: AppState, engine: Engine) = Page(stringResource(R.stri
         }
     }
     BackgroundCard(state, engine)
+    HeicCard(state, engine)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) AppearanceCard(engine)
     me?.checkUpdates?.let { UpdatesCard(it, state.update, engine) }
@@ -84,6 +85,17 @@ fun BackgroundCard(state: AppState, engine: Engine) =
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Muted(stringResource(R.string.settings_background_body), Modifier.weight(1f))
                 Toggle(state.standby, { engine.setStandby(it) }, stringResource(R.string.settings_background_title))
+            }
+        }
+    }
+
+@Composable
+private fun HeicCard(state: AppState, engine: Engine) =
+    Card(R.drawable.ic_type_image, stringResource(R.string.settings_heic_title)) {
+        PaddedWell {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
+                Muted(stringResource(R.string.settings_heic_body), Modifier.weight(1f))
+                Toggle(state.convertHeic, { engine.setConvertHeic(it) }, stringResource(R.string.settings_heic_title))
             }
         }
     }

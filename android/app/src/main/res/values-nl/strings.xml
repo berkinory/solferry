@@ -129,6 +129,8 @@
     <string name="settings_find_off">Nieuwe apparaten kunnen dit apparaat niet vinden. Gekoppelde apparaten bereiken het nog wel.</string>
     <string name="settings_background_title">Ontvangen op de achtergrond</string>
     <string name="settings_background_body">Ontvang terwijl Solferry gesloten is. Toont een melding, gebruikt meer batterij.</string>
+    <string name="settings_heic_title">HEIC-foto\'s omzetten naar JPEG</string>
+    <string name="settings_heic_body">Voor Linux- en Windows-apparaten, die HEIC niet kunnen openen. Wordt op dit apparaat omgezet, zonder zichtbaar kwaliteitsverlies.</string>
     <string name="language_title">Taal</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relayserver</string>

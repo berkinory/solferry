@@ -127,6 +127,8 @@
     <string name="settings_find_off">新しいデバイスからは見つかりません。ペアリング済みのデバイスからは引き続き接続できます。</string>
     <string name="settings_background_title">バックグラウンドで受信</string>
     <string name="settings_background_body">Solferry を閉じていても受信します。通知が表示され、電池の消費が増えます。</string>
+    <string name="settings_heic_title">HEIC写真をJPEGに変換</string>
+    <string name="settings_heic_body">HEICを開けないLinuxとWindowsのデバイス向けです。変換はこのデバイス上で行われ、見た目の画質は落ちません。</string>
     <string name="language_title">言語</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay サーバー</string>

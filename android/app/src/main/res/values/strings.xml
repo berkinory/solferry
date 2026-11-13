@@ -132,6 +132,8 @@
     <string name="settings_find_off">Nobody new can find this device. Paired devices can still reach it.</string>
     <string name="settings_background_title">Receive in the background</string>
     <string name="settings_background_body">Receive while Solferry is closed. Shows a notification, uses more battery.</string>
+    <string name="settings_heic_title">Convert HEIC photos to JPEG</string>
+    <string name="settings_heic_body">For Linux and Windows devices, which can\'t open HEIC. Converted on this device with no visible quality loss.</string>
     <string name="language_title">Language</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay server</string>

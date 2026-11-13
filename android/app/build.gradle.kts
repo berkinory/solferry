@@ -88,5 +88,6 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.core.ktx)
+    implementation(libs.exifinterface)
     implementation("${libs.jna.get()}@aar")
 }
