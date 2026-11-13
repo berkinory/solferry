@@ -71,18 +71,21 @@ pub async fn run(
         }
     });
     let mut failure = None;
+    // Piped stdin lives only as long as this run, so only paths can wait in the queue.
+    let queueable = match &files {
+        Files::Paths(paths) if queue => Some(paths),
+        _ => None,
+    };
     for ((target, addr), outcome) in targets.iter().zip(&addrs).zip(join_all(sends).await) {
-        match outcome {
-            Ok(report) => show_sent(target, &report, json),
-            Err(Error::Unreachable(_))
-                if queue
-                    && node.find_device(&addr.id.to_z32()).is_ok()
-                    && let Files::Paths(paths) = &files =>
+        match (outcome, queueable) {
+            (Ok(report), _) => show_sent(target, &report, json),
+            (Err(Error::Unreachable(_)), Some(paths))
+                if node.find_device(&addr.id.to_z32()).is_ok() =>
             {
                 let queued = super::queue::add(&node, addr.id, paths)?;
                 super::queue::show_queued(target, &queued, json);
             }
-            Err(error) => {
+            (Err(error), _) => {
                 show_failure(target, &error, json);
                 failure = Some(error);
             }
