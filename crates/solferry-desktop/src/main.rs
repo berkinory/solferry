@@ -10,6 +10,7 @@ mod opened;
     allow(dead_code, reason = "Linux asks for no permissions")
 )]
 mod permissions;
+mod popover;
 mod qr;
 mod service;
 mod shell;
@@ -41,7 +42,8 @@ fn main() {
     let data_dir = std::env::var_os("SOLFERRY_DATA_DIR").map_or_else(default_data_dir, Into::into);
     let config = Config::load(&data_dir).unwrap_or_default();
     views::language::apply(config.language.as_deref());
-    let Some(instance) = instance::Instance::claim(&data_dir) else { return };
+    let launched = opened::from_args();
+    let Some(instance) = instance::Instance::claim(&data_dir, &launched) else { return };
     let show_in_tray = config.show_in_tray;
     // A launch at login waits in the tray, or in the Dock on macOS, unless nothing would show it.
     let hidden = std::env::args().any(|arg| arg == login::HIDDEN)
@@ -50,7 +52,7 @@ fn main() {
     let app =
         gpui_kit::application().with_quit_mode(QuitMode::Explicit).with_assets(assets::Assets);
     app.on_reopen(shell::show_window);
-    let (open_handler, opened) = opened::listen();
+    let (open_handler, opened) = opened::listen(launched);
     app.on_open_urls(open_handler);
     app.run(move |cx| {
         // Windows shows no notifications from an app without one.

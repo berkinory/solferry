@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, Context, Div, FontWeight, Hsla, IntoElement,
+    Animation, AnimationExt, AnyElement, App, Context, Div, FontWeight, Hsla, IntoElement,
     ParentElement, Styled, div, px,
 };
 use rust_i18n::t;
@@ -107,7 +107,7 @@ pub fn searching(cx: &mut Context<MainView>) -> Div {
 }
 
 /// One quiet line for when nothing new is around but the search is still on.
-pub fn scanning(cx: &Context<MainView>) -> AnyElement {
+pub fn scanning(cx: &App) -> AnyElement {
     let primary = color(palette(cx).primary);
     div()
         .flex()
