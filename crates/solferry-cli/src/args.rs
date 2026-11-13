@@ -47,6 +47,16 @@ pub enum Command {
         /// Device name, id prefix or nearby device name, or last for the device this one last sent files to. Repeat to send to several.
         #[arg(long = "to", required = true)]
         targets: Vec<String>,
+        /// When a paired device can't be reached, keep the send until it can. `solferry receive`
+        /// delivers it.
+        #[arg(long, conflicts_with_all = ["text", "name"])]
+        queue: bool,
+    },
+    /// List sends waiting for offline paired devices.
+    Queue {
+        /// Take back the queued send with this id.
+        #[arg(long)]
+        cancel: Option<String>,
     },
     /// Share files with a browser on this network, or take files from one when no paths are given.
     #[command(after_help = help::LINK)]

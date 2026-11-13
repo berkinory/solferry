@@ -140,7 +140,12 @@ impl Node {
         let _ = self.shared.events.send(Event::QueueChanged);
     }
 
-    async fn deliver_entry(&self, device: &Device, entry: &QueuedSend, reopen: &Reopen) -> Result<()> {
+    async fn deliver_entry(
+        &self,
+        device: &Device,
+        entry: &QueuedSend,
+        reopen: &Reopen,
+    ) -> Result<()> {
         let (sender, files, reopen) = (self.id(), entry.files.clone(), reopen.clone());
         let manifest = tokio::task::spawn_blocking(move || match files {
             QueuedFiles::Paths(paths) => Manifest::scan(&paths, sender),

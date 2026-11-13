@@ -50,7 +50,14 @@ Examples:
   solferry send big.iso --to laptop --to phone --json
   solferry send notes.md --to last
   tar c photos/ | solferry send - --name photos.tar --to laptop
-  echo hello | solferry send --text - --to laptop"#;
+  echo hello | solferry send --text - --to laptop
+  solferry send report.pdf --to laptop --queue
+
+With --queue, a paired device that can't be reached gets the send later: it is
+queued, and `solferry receive` or the desktop app on this device delivers it
+when the device is back, for up to 7 days. The device is still asked first.
+`solferry queue` lists queued sends and `solferry queue --cancel <id>` takes
+one back. With --json a queued send prints one "queued" line. Stdin can't queue."#;
 
 pub const RECEIVE: &str = r#"Offers from devices whose approval is "auto" arrive without asking. Others ask,
 and --yes accepts the rest of the paired devices too. Unpaired devices are always

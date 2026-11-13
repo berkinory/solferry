@@ -3,6 +3,7 @@ mod json;
 mod link;
 mod pair;
 mod prompt;
+mod queue;
 mod receive;
 mod send;
 mod settings;
@@ -28,9 +29,11 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Send { text: Some(text), targets, .. } => {
             send::text(data_dir, text, targets, json).await
         }
-        Command::Send { paths, name, targets, text: None } => {
-            send::run(data_dir, send::Payload::parse(paths, name), targets, json).await
+        Command::Send { paths, name, targets, text: None, queue } => {
+            let payload = send::Payload::parse(paths, name);
+            send::run(data_dir, payload, targets, queue, json).await
         }
+        Command::Queue { cancel } => queue::run(data_dir, cancel.as_deref(), json).await,
         Command::Link { paths } => link::run(data_dir, paths, json).await,
         Command::Receive { dir, yes, once } => receive::run(data_dir, dir, yes, once, json).await,
         Command::Pair { with: Some(name), .. } => pair::pair_nearby(data_dir, &name, json).await,

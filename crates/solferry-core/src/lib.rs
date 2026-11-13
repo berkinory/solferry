@@ -30,7 +30,7 @@ pub use link::{Link, LinkFile};
 pub use locale::set_locale;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
-    Reopen, RelayHealth, SendReport,
+    RelayHealth, Reopen, SendReport,
 };
 pub use platform::Platform;
 pub use queue::{QUEUE_DAYS, QueueOutcome, QueuedFiles, QueuedSend, SharedSource};

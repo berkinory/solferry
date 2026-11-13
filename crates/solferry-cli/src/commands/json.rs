@@ -1,5 +1,7 @@
 use serde_json::{Value, json};
-use solferry_core::{Direction, Error, Event, OfferSummary, PairingRequest, Platform, Route};
+use solferry_core::{
+    Direction, Error, Event, OfferSummary, PairingRequest, Platform, QueueOutcome, Route,
+};
 use tokio::sync::broadcast;
 
 pub async fn print_events(mut events: broadcast::Receiver<Event>) {
@@ -68,6 +70,24 @@ pub fn encode(event: &Event) -> Value {
         Event::Absent { peer } => json!({ "event": "absent", "peer": peer.to_z32() }),
         Event::Failed { id, error } => {
             with_error(json!({ "event": "failed", "id": id.to_string() }), error)
+        }
+        Event::QueueChanged => json!({ "event": "queue_changed" }),
+        Event::QueueSettled { entry, outcome } => {
+            let (name, error) = match outcome {
+                QueueOutcome::Delivered => ("delivered", None),
+                QueueOutcome::Failed(error) => ("failed", Some(error)),
+                QueueOutcome::Expired => ("expired", None),
+                QueueOutcome::Cancelled => ("cancelled", None),
+            };
+            let settled = json!({
+                "event": "queue_settled",
+                "queue_id": super::queue::short_id(entry.id),
+                "peer": entry.peer.to_z32(),
+                "peer_name": entry.peer_name,
+                "label": entry.label,
+                "outcome": name,
+            });
+            error.map_or_else(|| settled.clone(), |error| with_error(settled.clone(), error))
         }
     }
 }
