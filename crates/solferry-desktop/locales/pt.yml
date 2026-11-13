@@ -185,6 +185,9 @@ settings:
     title: "Permitir que me encontrem"
     visible: "Os dispositivos na sua rede podem ver este e pedir para enviar arquivos."
     hidden: "Nenhum dispositivo novo pode encontrar este. Os pareados ainda podem se conectar a ele."
+  heic:
+    title: "Converter fotos HEIC para JPEG"
+    body: "Para dispositivos Linux e Windows, que não abrem HEIC. A conversão é feita neste dispositivo, sem perda de qualidade visível."
   tray:
     title: "Mostrar na bandeja do sistema"
     title_macos: "Mostrar na barra de menus"

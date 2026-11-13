@@ -27,6 +27,7 @@ const ONLINE_WAIT: Duration = Duration::from_secs(5);
 pub struct Target {
     pub addr: EndpointAddr,
     pub name: String,
+    pub platform: Option<Platform>,
 }
 
 pub enum Command {
@@ -75,6 +76,7 @@ pub enum Command {
     SetShowInTray(bool),
     SetLanguage(Option<String>),
     SetAppearance(Appearance),
+    SetConvertHeic(bool),
     /// Shares these paths with browsers, or takes files from them when there are none.
     Link(Vec<PathBuf>),
     StopLink,
@@ -124,8 +126,7 @@ pub enum Update {
     PairingFailed(Error),
     AddressFailed(Error),
     SendFailed {
-        name: String,
-        addr: EndpointAddr,
+        target: Target,
         paths: Vec<PathBuf>,
         error: Error,
     },
@@ -283,6 +284,14 @@ async fn start(
     Some(Session { node, tasks })
 }
 
+/// Changes one setting the node doesn't need to restart for.
+fn save(data_dir: &Path, edit: impl FnOnce(&mut Config)) {
+    if let Ok(mut config) = Config::load(data_dir) {
+        edit(&mut config);
+        let _ = config.save(data_dir);
+    }
+}
+
 async fn run(
     data_dir: PathBuf,
     mut commands: UnboundedReceiver<Command>,
@@ -301,24 +310,15 @@ async fn run(
             Command::CheckForUpdates => releases.check_now(),
             Command::InstallUpdate => releases.install(),
             Command::SetCheckUpdates(enabled) => {
-                if let Ok(config) = Config::load(&data_dir) {
-                    let _ = Config { check_updates: enabled, ..config }.save(&data_dir);
-                }
+                save(&data_dir, |config| config.check_updates = enabled);
             }
-            Command::SetShowInTray(shown) => {
-                if let Ok(config) = Config::load(&data_dir) {
-                    let _ = Config { show_in_tray: shown, ..config }.save(&data_dir);
-                }
-            }
-            Command::SetLanguage(language) => {
-                if let Ok(config) = Config::load(&data_dir) {
-                    let _ = Config { language, ..config }.save(&data_dir);
-                }
-            }
+            Command::SetShowInTray(shown) => save(&data_dir, |config| config.show_in_tray = shown),
+            Command::SetLanguage(language) => save(&data_dir, |config| config.language = language),
             Command::SetAppearance(appearance) => {
-                if let Ok(config) = Config::load(&data_dir) {
-                    let _ = Config { appearance, ..config }.save(&data_dir);
-                }
+                save(&data_dir, |config| config.appearance = appearance);
+            }
+            Command::SetConvertHeic(convert_heic) => {
+                save(&data_dir, |config| config.convert_heic = convert_heic);
             }
             Command::Link(paths) => {
                 link = None;
@@ -379,7 +379,7 @@ async fn run(
             }
             other => {
                 if let Some(active) = &session {
-                    dispatch(&active.node, other, &updates);
+                    dispatch(&active.node, &data_dir, other, &updates);
                 }
             }
         }

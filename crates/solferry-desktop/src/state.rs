@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
-use iroh::{EndpointAddr, EndpointId};
+use iroh::EndpointId;
 use rust_i18n::t;
 use solferry_core::{
     BlockedDevice, Config, Device, Direction, Error, Event, NearbyDevice, OfferSummary,
@@ -11,7 +11,7 @@ use solferry_core::{
 
 use crate::format;
 use crate::permissions::{self, Permission};
-use crate::service::Update;
+use crate::service::{Target, Update};
 use crate::updater::Status;
 
 const MAX_TOASTS: usize = 3;
@@ -47,8 +47,7 @@ pub struct LinkView {
 
 #[derive(Clone)]
 pub struct FailedSend {
-    pub name: String,
-    pub addr: EndpointAddr,
+    pub target: Target,
     pub paths: Vec<PathBuf>,
 }
 
@@ -214,13 +213,13 @@ impl AppState {
                     self.text_failed(&name, &error);
                 }
             }
-            Update::SendFailed { name, addr, paths, error } => {
+            Update::SendFailed { target, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
-                    let title = about(&error, &name);
+                    let title = about(&error, &target.name);
                     self.toast(
                         Tone::Error,
                         title,
-                        Some(Action::Retry(FailedSend { name, addr, paths })),
+                        Some(Action::Retry(FailedSend { target, paths })),
                     );
                 }
             }

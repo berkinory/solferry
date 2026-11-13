@@ -55,6 +55,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .child(relays::section(view, &config, cx))
         .child(visibility_section(&config, cx))
         .child(tray_section(&config, cx))
+        .children(cfg!(target_os = "macos").then(|| heic_section(&config, cx)))
         .child(login_section(cx))
         .child(language::section(&config, cx))
         .child(super::appearance::section(&config, cx))
@@ -174,6 +175,42 @@ fn tray_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
             ),
         )
         .into_any_element()
+}
+
+/// Only a Mac decodes HEIC, so other systems have nothing to convert.
+fn heic_section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
+    let title = t!("settings.heic.title");
+    ui::card(Glyph::TypeImage, &title, None, cx)
+        .child(
+            ui::padded_well(cx).child(
+                div()
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .gap(px(SPACE_MD))
+                    .child(ui::muted(t!("settings.heic.body"), cx).flex_1().min_w_0())
+                    .child(
+                        Switch::new("heic")
+                            .large()
+                            .checked(config.convert_heic)
+                            .accessibility_label(title)
+                            .on_click(cx.listener(|view, on: &bool, _, cx| {
+                                set_convert_heic(view, *on, cx);
+                            })),
+                    ),
+            ),
+        )
+        .into_any_element()
+}
+
+fn set_convert_heic(view: &MainView, on: bool, cx: &mut Context<MainView>) {
+    view.state.update(cx, |state, cx| {
+        if let Some(config) = &mut state.config {
+            config.convert_heic = on;
+        }
+        cx.notify();
+    });
+    MainView::command(Command::SetConvertHeic(on), cx);
 }
 
 /// Asks the system each time, since its login entry is the only record and the user can remove it.

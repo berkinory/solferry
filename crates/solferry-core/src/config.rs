@@ -33,6 +33,7 @@ pub enum Appearance {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[expect(clippy::struct_excessive_bools, reason = "each switch is a separate setting")]
 pub struct Config {
     pub name: String,
     /// Relays you run. Empty means this device never contacts a server.
@@ -50,6 +51,8 @@ pub struct Config {
     /// The desktop app's language, such as `tr`. `None` follows the system.
     pub language: Option<String>,
     pub appearance: Appearance,
+    /// Whether the macOS app sends HEIC photos as JPEG to Linux and Windows devices.
+    pub convert_heic: bool,
     /// Whether the desktop app has shown its first launch screen.
     pub onboarded: bool,
 }
@@ -69,6 +72,7 @@ impl Default for Config {
             show_in_tray: true,
             language: None,
             appearance: Appearance::System,
+            convert_heic: true,
             onboarded: false,
         }
     }

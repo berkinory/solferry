@@ -2,6 +2,7 @@
 
 mod assets;
 mod format;
+mod heic;
 mod instance;
 mod login;
 mod opened;

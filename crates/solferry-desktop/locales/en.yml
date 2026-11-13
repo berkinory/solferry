@@ -185,6 +185,9 @@ settings:
     title: "Let others find me"
     visible: "Devices on your network can see this one and ask to send."
     hidden: "Nobody new can find this device. Paired devices can still reach it."
+  heic:
+    title: "Convert HEIC photos to JPEG"
+    body: "For Linux and Windows devices, which can't open HEIC. Converted on this device with no visible quality loss."
   tray:
     title: "Show in tray"
     title_macos: "Show in menu bar"
