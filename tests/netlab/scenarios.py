@@ -115,7 +115,7 @@ def relay_from_pairing():
     payload = work / "payload.bin"
     with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
         target.write(source.read(20 * 1024 * 1024))
-    receiver.spawn(["receive", "--dir", work / "inbox"], work / "receive.log")
+    receiver.spawn(["receive", "--yes", "--dir", work / "inbox"], work / "receive.log")
     time.sleep(3)
     rc, output, seconds = sender.run(["send", payload, "--to", "beta"])
     target = work / "inbox/payload.bin"
