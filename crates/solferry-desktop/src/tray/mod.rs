@@ -12,7 +12,13 @@ pub enum TrayAction {
 #[derive(Clone, Copy, Debug)]
 pub enum Anchor {
     /// The icon's rectangle in physical pixels, from the top left of the main display.
-    #[cfg_attr(target_os = "linux", expect(dead_code, reason = "ksni gives a point"))]
+    #[cfg_attr(
+        not(target_os = "macos"),
+        expect(
+            dead_code,
+            reason = "ksni gives a point, and Windows places its flyouts by the corner"
+        )
+    )]
     Icon { x: f64, y: f64, width: f64, height: f64 },
     /// The point a Linux tray host passed with the click. Many pass (0, 0) instead.
     #[cfg_attr(not(target_os = "linux"), expect(dead_code, reason = "only ksni gives a point"))]
