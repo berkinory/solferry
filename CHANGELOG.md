@@ -2,11 +2,11 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
-## Unreleased
+## 0.0.4 - 2026-11-13
 
 ### Added
 
-- Solferry shows up in the share sheet on iPhone, iPad and Mac. Sharing photos or files to it opens the send sheet with them.
+- Solferry shows up in the macOS share menu. Sharing files or photos to it opens the send sheet with them.
 - A click on the tray or menu bar icon opens a small popover with your devices. Pick one and choose files, or choose files first. Right-click still shows the menu.
 - Dropping files on the Dock icon opens the send sheet with them. On Windows and Linux, files passed to the app when it starts do the same.
 - `solferry send -` sends whatever is piped in as one file. `--name` sets its name, otherwise it arrives as stdin.txt, or stdin.bin when it isn't text.
@@ -15,10 +15,10 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Give your relay a new token without cutting anyone off: `deploy/relay/rotate.sh` prints a new link and keeps the old token working until you run `rotate.sh finish`. Paste the new link on one device and the devices paired with it pick it up the next time they reach it.
 - Relay speed limit in Settings, typed in MB/s where 0 means no limit, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
 - A copy button next to each relay. Relay links show as `https://relay.example.com#••••` so the token stays off screens.
-- HEIC photos sent from iPhone, Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
-- Incoming file notifications have Accept and Decline buttons on Android, iOS, macOS and Windows, so you can answer without opening the app. The notification goes away once the offer is answered anywhere, withdrawn or expired. Linux keeps the plain notification.
+- HEIC photos sent from Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
+- Incoming file notifications have Accept and Decline buttons on Android, macOS and Windows, so you can answer without opening the app. The notification goes away once the offer is answered anywhere, withdrawn or expired. Linux keeps the plain notification.
 - Links in received text are underlined and open when you tap or click them. Only links written out with http, https or mailto count, and nothing opens by itself.
-- Sending to a paired device that's offline queues the files instead of failing. They go out by themselves when the device is back, and it still asks before taking them. Queued sends show on the home screen with a cancel button and are dropped after 7 days. Delivery needs Solferry running on the sending side; on Android that means the background receiving option, on iOS the app on screen, otherwise they go out the next time you open it. The CLI has `send --queue`, `solferry queue`, and `receive` delivers them. HEIC photos queued for a Linux or Windows device are converted to JPEG when they're queued, like any other send.
+- Sending to a paired device that's offline queues the files instead of failing. They go out by themselves when the device is back, and it still asks before taking them. Queued sends show on the home screen with a cancel button and are dropped after 7 days. Delivery needs Solferry running on the sending side; on Android that means the background receiving option, otherwise they go out the next time you open it. The CLI has `send --queue`, `solferry queue`, and `receive` delivers them. HEIC photos queued for a Linux or Windows device are converted to JPEG when they're queued, like any other send.
 
 ### Changed
 
@@ -28,7 +28,8 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Adding a new link for a relay you already have replaces the old one.
 - The relay is called a relay server, and "Relay" is no longer translated into words like "Röle". Other stiff translations were reworded in several languages.
 - The language list has no "system default" entry anymore. The system's language starts out selected, and picking another one sticks.
-- iOS catches up: onboarding, the Permissions card, the appearance setting, and the same translations as the other apps.
+- No scrollbars anywhere in the apps.
+- Stopping `solferry send` with Ctrl-C tells the other side at once, so its offer goes away instead of waiting to time out.
 
 ### Removed
 

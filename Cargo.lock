@@ -8210,7 +8210,7 @@ dependencies = [
 
 [[package]]
 name = "solferry-cli"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "clap",
  "futures",
@@ -8226,7 +8226,7 @@ dependencies = [
 
 [[package]]
 name = "solferry-core"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "blake3",
  "bytes",
@@ -8266,7 +8266,7 @@ dependencies = [
 
 [[package]]
 name = "solferry-desktop"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "auto-launch",
  "block2 0.6.2",
@@ -8296,7 +8296,7 @@ dependencies = [
 
 [[package]]
 name = "solferry-ffi"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "iroh",
  "qrcode",
@@ -8310,7 +8310,7 @@ dependencies = [
 
 [[package]]
 name = "solferry-proto"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "prost",
  "thiserror 2.0.21",
