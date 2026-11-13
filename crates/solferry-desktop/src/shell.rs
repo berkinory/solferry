@@ -7,7 +7,8 @@ use std::path::PathBuf;
 
 use gpui_kit::{
     App, AppContext, AsyncApp, Bounds, ClipboardItem, Entity, Global, SharedString,
-    SystemNotification, WeakEntity, WindowBounds, px, size,
+    SystemNotification, SystemNotificationAction, SystemNotificationResponse, WeakEntity,
+    WindowBounds, px, size,
 };
 use rust_i18n::t;
 use solferry_core::{Direction, Event};
@@ -54,6 +55,7 @@ pub fn start(
     if !hidden {
         show_window(cx);
     }
+    cx.on_system_notification_response(|response, cx| respond(&response, cx));
     let mut updates = updates;
     cx.spawn(async move |cx: &mut AsyncApp| {
         while let Some(update) = updates.next().await {
@@ -91,6 +93,9 @@ fn handle_update(update: Update, cx: &mut App) {
         return;
     }
     notify(&update, cx);
+    if let Update::OfferGone(key) = update {
+        cx.dismiss_system_notification(&offer_tag(key));
+    }
     if let Update::Transfer(Event::TextReceived { text, auto_copy: true, .. }) = &update {
         cx.write_to_clipboard(ClipboardItem::new_string(text.clone()));
     }
@@ -111,6 +116,10 @@ fn notify(update: &Update, cx: &mut App) {
         return;
     }
     let state = cx.global::<Shell>().state.read(cx);
+    let (tag, actions) = match update {
+        Update::Offer { key, .. } => (offer_tag(*key), offer_actions()),
+        _ => (SharedString::from("solferry"), Vec::new()),
+    };
     let (title, body) = match update {
         Update::Offer { summary, .. } => (
             t!("notification.offer.title"),
@@ -140,10 +149,10 @@ fn notify(update: &Update, cx: &mut App) {
         _ => return,
     };
     cx.show_system_notification(SystemNotification {
-        tag: "solferry".into(),
+        tag,
         title: SharedString::from(title),
         body: SharedString::from(body),
-        actions: Vec::new(),
+        actions,
     });
 }
 
@@ -153,6 +162,46 @@ pub fn send_files(paths: Vec<PathBuf>, cx: &mut App) {
     if let Some((_, view)) = cx.global::<Shell>().window.clone() {
         let _ = view.update(cx, |view, cx| view.stage(paths, cx));
     }
+}
+
+const OFFER_TAG: &str = "offer-";
+const ACCEPT: &str = "accept";
+const DECLINE: &str = "decline";
+
+fn offer_tag(key: u64) -> SharedString {
+    SharedString::from(format!("{OFFER_TAG}{key}"))
+}
+
+/// Plain answers only: always accepting a device is a choice to make in the app. Linux gets none,
+/// since GPUI can't take an XDG notification back once the offer is gone.
+fn offer_actions() -> Vec<SystemNotificationAction> {
+    if cfg!(target_os = "linux") {
+        return Vec::new();
+    }
+    vec![
+        SystemNotificationAction { id: ACCEPT.into(), label: t!("offers.accept").into() },
+        SystemNotificationAction { id: DECLINE.into(), label: t!("offers.decline").into() },
+    ]
+}
+
+fn respond(response: &SystemNotificationResponse, cx: &mut App) {
+    let key = response.tag.strip_prefix(OFFER_TAG).and_then(|key| key.parse().ok());
+    match (key, response.action_id.as_deref()) {
+        (Some(offer), Some(action @ (ACCEPT | DECLINE))) => {
+            settle_offer(offer, Command::Answer { offer, accept: action == ACCEPT }, cx);
+        }
+        _ => show_window(cx),
+    }
+}
+
+/// Answers an offer and takes back its notification, wherever the answer came from.
+pub fn settle_offer(key: u64, answer: Command, cx: &mut App) {
+    cx.global::<Shell>().state.clone().update(cx, |state, cx| {
+        state.offers.retain(|offer| offer.key != key);
+        cx.notify();
+    });
+    cx.dismiss_system_notification(&offer_tag(key));
+    cx.global::<Shell>().service.send(answer);
 }
 
 pub fn show_window(cx: &mut App) {

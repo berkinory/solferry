@@ -10,6 +10,7 @@ use super::ui;
 use crate::assets::Glyph;
 use crate::format;
 use crate::service::Command;
+use crate::shell;
 use crate::state::Offer;
 use crate::theme::{color, palette};
 use crate::tokens::SPACE_XS;
@@ -55,7 +56,9 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
             .sm()
             .label(t!("offers.always"))
             .tooltip(t!("offers.always_tooltip", name = summary.peer_name))
-            .on_click(cx.listener(move |view, _, _, cx| view.accept_always(key, cx)))
+            .on_click(cx.listener(move |_, _, _, cx| {
+                shell::settle_offer(key, Command::AcceptAlways(key), cx);
+            }))
     });
     ask(Glyph::Download, &t!("offers.title"), cx)
         .child(
@@ -88,9 +91,10 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                 .sm()
                                 .icon(Glyph::Check)
                                 .label(t!("offers.accept"))
-                                .on_click(
-                                    cx.listener(move |view, _, _, cx| view.answer(key, true, cx)),
-                                ),
+                                .on_click(cx.listener(move |_, _, _, cx| {
+                                    let answer = Command::Answer { offer: key, accept: true };
+                                    shell::settle_offer(key, answer, cx);
+                                })),
                         )
                         .children(always)
                         .child(
@@ -98,38 +102,13 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
                                 .warning()
                                 .sm()
                                 .label(t!("offers.decline"))
-                                .on_click(
-                                    cx.listener(move |view, _, _, cx| view.answer(key, false, cx)),
-                                ),
+                                .on_click(cx.listener(move |_, _, _, cx| {
+                                    let answer = Command::Answer { offer: key, accept: false };
+                                    shell::settle_offer(key, answer, cx);
+                                })),
                         )
                         .children(block),
                 ),
         )
         .into_any_element()
-}
-
-impl MainView {
-    pub fn answer(&mut self, key: u64, accept: bool, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::Answer { offer: key, accept }, cx);
-    }
-
-    pub fn accept_always(&mut self, key: u64, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::AcceptAlways(key), cx);
-    }
-
-    pub fn block_offer(&mut self, key: u64, cx: &mut Context<Self>) {
-        self.state.update(cx, |state, cx| {
-            state.offers.retain(|offer| offer.key != key);
-            cx.notify();
-        });
-        Self::command(Command::BlockOffer(key), cx);
-    }
 }

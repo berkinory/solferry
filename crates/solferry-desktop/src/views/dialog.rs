@@ -12,6 +12,7 @@ use super::button::Button;
 use super::main_view::MainView;
 use super::ui;
 use crate::service::Command;
+use crate::shell;
 use crate::tokens::{RADIUS_CARD, SPACE_LG, SPACE_SM, SPACE_XS};
 
 const WIDTH: f32 = 292.0;
@@ -48,7 +49,9 @@ fn confirm(view: &mut MainView, cx: &mut Context<MainView>) {
             view.expanded = None;
             MainView::command(Command::Forget(id), cx);
         }
-        Some(Dialog::Block { key, .. }) => view.block_offer(key, cx),
+        Some(Dialog::Block { key, .. }) => {
+            shell::settle_offer(key, Command::BlockOffer(key), cx);
+        }
         None => {}
     }
     cx.notify();
