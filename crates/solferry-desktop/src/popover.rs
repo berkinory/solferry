@@ -12,6 +12,7 @@ use crate::tray::Anchor;
 use crate::views::{Popover, popover};
 
 /// Room left between the popover and the icon or the edge of the screen.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 const GAP: f32 = 6.0;
 const EDGE: f32 = 8.0;
 /// Clicking the icon of an open popover closes it as it loses focus, before the click arrives.
