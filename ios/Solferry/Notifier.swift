@@ -88,9 +88,10 @@ enum Notifier {
         ) {
             let action = response.actionIdentifier
             let key = (response.notification.request.content.userInfo["key"] as? String).flatMap(UInt64.init)
-            DispatchQueue.main.async { [weak self] in
+            let engine = engine
+            DispatchQueue.main.async {
                 if let key, action == acceptAction || action == declineAction {
-                    MainActor.assumeIsolated { self?.engine?.answerOffer(key, accept: action == acceptAction) }
+                    MainActor.assumeIsolated { engine?.answerOffer(key, accept: action == acceptAction) }
                 }
                 completionHandler()
             }
