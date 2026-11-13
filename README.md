@@ -110,6 +110,8 @@ Pairing never grants this on its own. A paired device still asks until you choos
 
 Tailscale devices running solferry show up by themselves, next to devices on your network.
 
+`solferry receive --yes` takes files from every paired device without asking. Unpaired devices are still asked, and on a machine with no terminal to ask on they are refused with one line on stderr.
+
 To keep a server or headless machine receiving, use [deploy/systemd/solferry.service](deploy/systemd/solferry.service).
 
 ## Firewalls

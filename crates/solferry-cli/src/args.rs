@@ -57,7 +57,7 @@ pub enum Command {
         /// Save here instead of the default download folder.
         #[arg(long)]
         dir: Option<PathBuf>,
-        /// Accept every file offer without asking, from paired and unpaired devices alike.
+        /// Accept file offers from paired devices without asking. Unpaired devices are still asked.
         #[arg(long)]
         yes: bool,
         /// Exit after the first finished incoming transfer.

@@ -12,6 +12,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 
 ### Changed
 
+- `solferry receive --yes` only takes files from paired devices without asking. Unpaired devices are asked as usual, or refused with a line on stderr when there is no terminal to ask on.
 - The relay is called a relay server, and "Relay" is no longer translated into words like "Röle". Other stiff translations were reworded in several languages.
 - The language list has no "system default" entry anymore. The system's language starts out selected, and picking another one sticks.
 - iOS catches up: onboarding, the Permissions card, the appearance setting, and the same translations as the other apps.

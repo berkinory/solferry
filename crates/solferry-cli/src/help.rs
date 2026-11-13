@@ -18,8 +18,10 @@ pub const AGENTS: &str = r#"Scripts and agents:
                 whose approval is "ask", and before pairing. With --json it
                 prints an "offer" or "pairing_request" event, then reads one
                 line from stdin: accept, decline or block. End of input declines.
-  --yes         receive takes every file offer without asking, from paired and
-                unpaired devices alike. Pairing requests are still asked.
+  --yes         receive takes file offers from paired devices without asking.
+                Unpaired devices are still asked, and refused with a line on
+                stderr when stdin isn't a terminal and --json is off. Pairing
+                requests are still asked.
   --once        receive exits after its first finished incoming transfer.
   --data-dir    Where the device key, settings and paired devices live. Also
                 SOLFERRY_DATA_DIR. Each directory is a separate device, so two
@@ -45,7 +47,8 @@ Examples:
   echo hello | solferry send --text - --to laptop"#;
 
 pub const RECEIVE: &str = r#"Offers from devices whose approval is "auto" arrive without asking. Others ask,
-unless --yes is given. With --json each question is one line on stdout,
+and --yes accepts the rest of the paired devices too. Unpaired devices are always
+asked, or refused when there is no terminal to ask on and --json is off. With --json each question is one line on stdout,
   {"event":"offer","id":...,"peer":...,"peer_name":...,"paired":...,
    "files":...,"bytes":...,"first_path":...}
   {"event":"pairing_request","peer":...,"peer_name":...,"code":...}
