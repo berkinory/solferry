@@ -12,10 +12,15 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - `solferry send -` sends whatever is piped in as one file. `--name` sets its name, otherwise it arrives as stdin.txt, or stdin.bin when it isn't text.
 - `solferry send --to last` sends to the device this one last finished sending files to.
 - Android has a Quick Settings tile that turns visibility on and off. Long-press it to open Solferry.
+- Give your relay a new token without cutting anyone off: `deploy/relay/rotate.sh` prints a new link and keeps the old token working until you run `rotate.sh finish`. Paste the new link on one device and the devices paired with it pick it up the next time they reach it.
+- Relay speed limit in Settings, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
+- A copy button next to each relay. Relay links show as `https://relay.example.com#••••` so the token stays off screens.
 
 ### Changed
 
 - `solferry receive --yes` only takes files from paired devices without asking. Unpaired devices are asked as usual, or refused with a line on stderr when there is no terminal to ask on.
+- The relay server sets no speed limit of its own unless you set `RELAY_BYTES_PER_SECOND`.
+- Adding a new link for a relay you already have replaces the old one.
 - The relay is called a relay server, and "Relay" is no longer translated into words like "Röle". Other stiff translations were reworded in several languages.
 - The language list has no "system default" entry anymore. The system's language starts out selected, and picking another one sticks.
 - iOS catches up: onboarding, the Permissions card, the appearance setting, and the same translations as the other apps.
