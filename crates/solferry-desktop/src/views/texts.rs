@@ -7,6 +7,7 @@ use gpui_kit::{
 use rust_i18n::t;
 
 use super::button::Button;
+use super::links;
 use super::main_view::{MainView, Page};
 use super::ui;
 use crate::assets::Glyph;
@@ -45,7 +46,10 @@ fn card(shared: &SharedText, cx: &mut Context<MainView>) -> AnyElement {
     ui::titled(heading, Some(dismiss), cx)
         .child(
             ui::padded_well(cx)
-                .child(ui::text(shared.text.clone()).line_clamp(PREVIEW_LINES))
+                .child(
+                    links::text(SharedString::from(format!("text-{key}")), shared.text.clone(), cx)
+                        .line_clamp(PREVIEW_LINES),
+                )
                 .child(
                     div().flex().gap(px(SPACE_SM)).pt(px(SPACE_XS)).child(
                         Button::new(SharedString::from(format!("text-copy-{key}")))

@@ -9,6 +9,7 @@ mod home;
 pub mod keys;
 pub mod language;
 mod link;
+mod links;
 mod main_view;
 mod nav;
 mod offers;

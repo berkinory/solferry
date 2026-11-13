@@ -2,6 +2,7 @@ use gpui_kit::{AnyElement, ClipboardItem, Context, IntoElement, ParentElement, S
 use rust_i18n::t;
 
 use super::button::Button;
+use super::links;
 use super::main_view::MainView;
 use super::ui;
 use crate::assets::Glyph;
@@ -73,7 +74,12 @@ fn text_row(index: usize, text: &str, cx: &mut Context<MainView>) -> AnyElement 
         .items_start()
         .gap(px(SPACE_SM))
         .p(px(5.))
-        .child(ui::text(text.to_owned()).line_clamp(PREVIEW_LINES).flex_1().min_w_0())
+        .child(
+            links::text(("link-text", index), text.to_owned(), cx)
+                .line_clamp(PREVIEW_LINES)
+                .flex_1()
+                .min_w_0(),
+        )
         .child(
             Button::new(("copy-link-text", index))
                 .ghost()
