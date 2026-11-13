@@ -99,6 +99,12 @@ solferry send --text "see you at 8" --to my-laptop
 git log -1 | solferry send --text - --to my-laptop
 ```
 
+A lone `-` sends stdin as a file instead, named with `--name`:
+
+```sh
+tar c holiday-photos/ | solferry send - --name photos.tar --to my-laptop
+```
+
 ## Who can send you files
 
 | | Paired | Not paired |

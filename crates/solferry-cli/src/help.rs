@@ -38,12 +38,15 @@ Typical flow:
 
 pub const SEND: &str = r#"Each target is a paired device's name or id prefix, a full device id, or the name
 of a device on this network. Unpaired devices are asked before files arrive.
-With --json, transfer events stream as lines, then one "sent" or "send_failed"
+A lone - reads stdin to the end and sends it as one file, named by --name or
+stdin.txt (stdin.bin when it isn't text). --text - shares stdin with a paired
+device's clipboard instead. With --json, transfer events stream as lines, then one "sent" or "send_failed"
 line per target.
 
 Examples:
   solferry send photo.jpg notes/ --to laptop
   solferry send big.iso --to laptop --to phone --json
+  tar c photos/ | solferry send - --name photos.tar --to laptop
   echo hello | solferry send --text - --to laptop"#;
 
 pub const RECEIVE: &str = r#"Offers from devices whose approval is "auto" arrive without asking. Others ask,

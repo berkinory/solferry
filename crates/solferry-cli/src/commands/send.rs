@@ -1,31 +1,72 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
+use clap::CommandFactory;
+use clap::error::ErrorKind;
 use futures::future::join_all;
 use indicatif::{HumanBytes, ProgressBar, ProgressStyle};
 use iroh::{EndpointAddr, EndpointId};
 use serde_json::json;
-use solferry_core::{Direction, Error, Event, Node, Result, Route, SendReport};
+use solferry_core::{Direction, Error, Event, NamedFile, Node, Result, Route, SendReport};
 use tokio::sync::broadcast;
+
+use crate::args::Cli;
 
 const NEARBY_WINDOW: Duration = Duration::from_secs(3);
 const DRAIN_WAIT: Duration = Duration::from_secs(2);
 const BAR_TEMPLATE: &str = "{msg} [{bar:32}] {bytes}/{total_bytes} {bytes_per_sec} eta {eta}";
 
+/// What `send` was given: paths, or a lone `-` for stdin with the name it should arrive under.
+pub enum Payload {
+    Paths(Vec<PathBuf>),
+    Stdin(Option<String>),
+}
+
+impl Payload {
+    pub fn parse(paths: Vec<PathBuf>, name: Option<String>) -> Self {
+        let stdin = paths.iter().any(|path| path.as_os_str() == "-");
+        match (stdin, paths.len(), name) {
+            (true, 1, name) => Self::Stdin(name),
+            (true, ..) => usage("- sends stdin and can't be combined with other paths"),
+            (false, _, Some(_)) => usage("--name names stdin, so it needs - as the only path"),
+            (false, _, None) => Self::Paths(paths),
+        }
+    }
+}
+
+enum Files {
+    Paths(Vec<PathBuf>),
+    Spooled(NamedFile),
+}
+
+fn usage(message: &str) -> ! {
+    Cli::command().error(ErrorKind::ArgumentConflict, message).exit()
+}
+
 pub async fn run(
     data_dir: PathBuf,
-    paths: Vec<PathBuf>,
+    payload: Payload,
     targets: Vec<String>,
     json: bool,
 ) -> Result<()> {
-    let (node, _offers) = super::start(data_dir).await?;
+    let (node, _offers) = super::start(data_dir.clone()).await?;
     let addrs = resolve(&node, &targets, json).await?;
+    // Read only once the targets are known, so a typo fails before a long pipe is drained.
+    let files = match payload {
+        Payload::Paths(paths) => Files::Paths(paths),
+        Payload::Stdin(name) => Files::Spooled(super::stdin::spool(&data_dir, name).await?),
+    };
     let mut progress = if json {
         tokio::spawn(super::json::print_events(node.events()))
     } else {
         tokio::spawn(show_progress(node.events()))
     };
-    let sends = addrs.into_iter().map(|addr| node.send(addr, paths.clone()));
+    let sends = addrs.into_iter().map(|addr| async {
+        match &files {
+            Files::Paths(paths) => node.send(addr, paths.clone()).await,
+            Files::Spooled(spooled) => node.send_named(addr, vec![copy(spooled)?]).await,
+        }
+    });
     let mut failure = None;
     for (target, outcome) in targets.iter().zip(join_all(sends).await) {
         match outcome {
@@ -43,6 +84,15 @@ pub async fn run(
     }
     shutdown?;
     failure.map_or(Ok(()), Err)
+}
+
+/// Each target gets its own handle; reads go by offset, so they never share a position.
+fn copy(spooled: &NamedFile) -> Result<NamedFile> {
+    let file = spooled.file.try_clone().map_err(|error| Error::Storage {
+        path: PathBuf::from(&spooled.name),
+        source: std::sync::Arc::new(error),
+    })?;
+    Ok(NamedFile { name: spooled.name.clone(), file })
 }
 
 /// Shares text with paired devices. They copy it, or show it to copy if they ask first.

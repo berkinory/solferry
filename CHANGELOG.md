@@ -9,6 +9,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Solferry shows up in the share sheet on iPhone, iPad and Mac. Sharing photos or files to it opens the send sheet with them.
 - A click on the tray or menu bar icon opens a small popover with your devices. Pick one and choose files, or choose files first. Right-click still shows the menu.
 - Dropping files on the Dock icon opens the send sheet with them. On Windows and Linux, files passed to the app when it starts do the same.
+- `solferry send -` sends whatever is piped in as one file. `--name` sets its name, otherwise it arrives as stdin.txt, or stdin.bin when it isn't text.
 
 ### Changed
 

@@ -8210,6 +8210,7 @@ dependencies = [
  "qrcode",
  "serde_json",
  "solferry-core",
+ "tempfile",
  "tokio",
  "tracing-subscriber",
 ]
