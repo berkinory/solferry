@@ -34,11 +34,7 @@ pub fn card(offer: &Offer, cx: &mut Context<MainView>) -> AnyElement {
         count => t!("offers.files.other", count = count),
     };
     let weight = format!("{files}, {}", format::bytes(summary.bytes));
-    let detail = if summary.paired {
-        weight
-    } else {
-        format!("{weight}  ·  {}", ui::fingerprint(&summary.peer))
-    };
+    let detail = weight;
     let first = (summary.files == 1).then(|| ui::muted(summary.first_path.clone(), cx).truncate());
     let name = summary.peer_name.clone();
     let block = (!summary.paired).then(|| {

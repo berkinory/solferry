@@ -71,7 +71,6 @@ private fun DeviceRow(
     near: Nearby?,
     online: Boolean?,
     lastTransfer: Long?,
-    twin: Boolean,
     engine: Engine,
     onText: (PairedDevice) -> Unit,
 ) {
@@ -83,12 +82,10 @@ private fun DeviceRow(
             DeviceTile(device.identity.copy(platform = device.identity.platform ?: near?.identity?.platform), (online ?: (near != null)))
             Column(Modifier.weight(1f)) {
                 Text(device.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                // Two paired devices under one name, usually one reinstalled, tell apart by key.
-                val key = if (twin) " · ${device.identity.fingerprint}" else ""
                 when {
-                    (online ?: (near != null)) -> StatusLine(stringResource(R.string.device_online) + key, palette.successFill)
-                    online == null -> StatusLine(stringResource(R.string.device_paired) + key)
-                    else -> StatusLine(stringResource(R.string.device_offline) + key, palette.inkMuted.copy(alpha = 0.5f))
+                    (online ?: (near != null)) -> StatusLine(stringResource(R.string.device_online), palette.successFill)
+                    online == null -> StatusLine(stringResource(R.string.device_paired))
+                    else -> StatusLine(stringResource(R.string.device_offline), palette.inkMuted.copy(alpha = 0.5f))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -141,8 +138,7 @@ fun DeviceCard(
                 key(device.identity.id) {
                     val online = reachable?.contains(device.identity.id)
                     val last = history.firstOrNull { it.peer == device.identity.id && it.completed }?.finishedMs?.toLong()
-                    val twin = devices.count { it.name == device.name } > 1
-                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, twin, engine, onText)
+                    DeviceRow(device, nearby.find { it.identity.id == device.identity.id }, online, last, engine, onText)
                 }
             }
         }

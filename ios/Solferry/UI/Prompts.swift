@@ -94,7 +94,7 @@ struct OfferCard: View {
                 Asker(
                     peer: incoming.sender,
                     title: "\(incoming.name) wants to send",
-                    detail: "\(files), \(bytes(incoming.bytes))" + (incoming.paired ? "" : "  ·  \(incoming.sender.fingerprint)")
+                    detail: "\(files), \(bytes(incoming.bytes))"
                 )
                 if incoming.files == 1 { Text(incoming.firstPath).lineLimit(1).truncationMode(.middle).foregroundStyle(palette.inkMuted) }
                 ViewThatFits(in: .horizontal) {

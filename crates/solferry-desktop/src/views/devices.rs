@@ -63,12 +63,6 @@ pub fn rows(state: &AppState) -> (Vec<Row>, Vec<Row>) {
         .map(|device| {
             let found = near(&device.id);
             let (detail, dot) = presence(found, &device.id, state);
-            let twins = state.devices.iter().filter(|other| other.name == device.name).count();
-            let detail = if twins > 1 {
-                format!("{detail} · {}", ui::fingerprint(&device.id)).into()
-            } else {
-                detail
-            };
             let online = matches!(dot, Some(Dot::Online));
             Row {
                 id: device.id,

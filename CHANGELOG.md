@@ -22,6 +22,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 
 ### Changed
 
+- Devices and offers no longer show a key next to their status.
 - `solferry receive --yes` only takes files from paired devices without asking. Unpaired devices are asked as usual, or refused with a line on stderr when there is no terminal to ask on.
 - The relay server sets no speed limit of its own unless you set `RELAY_BYTES_PER_SECOND`.
 - Adding a new link for a relay you already have replaces the old one.

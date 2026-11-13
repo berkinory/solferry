@@ -95,7 +95,7 @@ fun OfferCard(incoming: Incoming, engine: Engine) {
     val files = pluralStringResource(R.plurals.offer_files, count, count)
     Card(R.drawable.ic_download, stringResource(R.string.offer_title), palette.primary) {
         PaddedWell {
-            Asker(incoming.sender, stringResource(R.string.offer_wants_to_send, incoming.name), stringResource(R.string.offer_size, files, bytes(incoming.bytes.toLong())) + if (incoming.paired) "" else "  ·  ${incoming.sender.fingerprint}")
+            Asker(incoming.sender, stringResource(R.string.offer_wants_to_send, incoming.name), stringResource(R.string.offer_size, files, bytes(incoming.bytes.toLong())))
             if (incoming.files == 1UL) Text(incoming.firstPath, maxLines = 1, overflow = TextOverflow.Ellipsis, color = palette.inkMuted)
             Row(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {
                 Button({ engine.answerOffer(incoming.key, true) }, Modifier.weight(1f), label = stringResource(R.string.offer_accept), kind = ButtonKind.Primary)
