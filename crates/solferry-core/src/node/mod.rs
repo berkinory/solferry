@@ -82,7 +82,7 @@ pub(crate) struct Shared {
     pub(crate) heard: Mutex<presence::Heard>,
     uses_relays: bool,
     pub(crate) relay_limit: RelayLimit,
-    relays_sent: relays::Sent,
+    relay_shares: relays::Shares,
 }
 
 impl fmt::Debug for Shared {
@@ -215,7 +215,7 @@ impl Node {
             heard: Mutex::new(presence::Heard::default()),
             uses_relays,
             relay_limit,
-            relays_sent: relays::Sent::default(),
+            relay_shares: relays::Shares::default(),
         });
         if !isolated {
             probe::answer_probes(shared.clone());
@@ -322,7 +322,7 @@ impl Node {
 
     /// Says goodbye to the paired devices, then stops.
     pub async fn shutdown(self) -> Result<()> {
-        self.leave().await;
+        tokio::join!(self.leave(), self.shared.relay_shares.finish());
         self.router.shutdown().await.map_err(|error| Error::Protocol(error.to_string()))
     }
 }

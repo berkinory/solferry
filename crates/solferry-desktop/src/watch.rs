@@ -4,7 +4,7 @@ use futures::channel::mpsc::UnboundedSender;
 use solferry_core::Node;
 use tokio::task::AbortHandle;
 
-use crate::service::{Pending, PendingPairings, Update};
+use crate::service::{Command, Pending, PendingPairings, Update};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
 const PRESENCE_EVERY: Duration = Duration::from_secs(3);
@@ -48,6 +48,16 @@ pub fn follow_presence(node: Node, updates: UnboundedSender<Update>) -> AbortHan
             every.tick().await;
             let _ = updates.unbounded_send(Update::Reachable(node.reachable().await));
         }
+    })
+    .abort_handle()
+}
+
+/// Restarts the node once it took a relay's new token and nothing is being sent, since a running
+/// relay connection keeps the token it started with.
+pub fn restart_after_rotation(node: Node, commands: UnboundedSender<Command>) -> AbortHandle {
+    tokio::spawn(async move {
+        node.wants_restart().await;
+        let _ = commands.unbounded_send(Command::Restart);
     })
     .abort_handle()
 }

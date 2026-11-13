@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -10,10 +11,10 @@ use solferry_core::{
 use tokio::sync::broadcast::error::RecvError;
 use tokio::task::AbortHandle;
 
-use crate::Listener;
 use crate::types::{
     BlockedDevice, HistoryEntry, Incoming, PairedDevice, Relay, RelayStatus, Update, identity,
 };
+use crate::{Edit, Listener};
 
 const PROMPT_SWEEP: Duration = Duration::from_secs(1);
 const RELAY_WAIT: Duration = Duration::from_secs(5);
@@ -40,6 +41,43 @@ impl Session {
             task.abort();
         }
         let _ = self.node.shutdown().await;
+    }
+}
+
+/// What restarting the node needs, held apart from the bridge so a running node can ask for it.
+#[derive(Clone)]
+pub struct Restarter {
+    pub runtime: tokio::runtime::Handle,
+    pub data_dir: PathBuf,
+    pub listener: Arc<dyn Listener>,
+    pub shelf: Arc<Shelf>,
+    pub session: Arc<tokio::sync::Mutex<Option<Session>>>,
+}
+
+impl Restarter {
+    /// Stops the node, applies `edit` to the saved settings, and starts it again. The new node
+    /// restarts itself the same way once it takes a relay's new token.
+    pub fn restart(&self, edit: Option<Edit>) {
+        let this = self.clone();
+        self.runtime.spawn(async move {
+            let mut active = this.session.lock().await;
+            if let Some(running) = active.take() {
+                running.stop().await;
+            }
+            if let Some(edit) = edit {
+                let mut config = solferry_core::Config::load(&this.data_dir).unwrap_or_default();
+                edit(&mut config);
+                let _ = config.save(&this.data_dir);
+            }
+            *active = start(this.data_dir.clone(), &this.shelf, &this.listener).await;
+            if let Some(started) = active.as_mut() {
+                let (node, again) = (started.node.clone(), this.clone());
+                started.tasks.push(spawn(async move {
+                    node.wants_restart().await;
+                    again.restart(None);
+                }));
+            }
+        });
     }
 }
 

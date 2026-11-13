@@ -1,7 +1,9 @@
 use futures::SinkExt;
 use futures::channel::mpsc::UnboundedSender;
+use std::path::PathBuf;
+
 use iroh::EndpointAddr;
-use solferry_core::Node;
+use solferry_core::{Link, LinkFile, Node};
 
 use super::{Command, ONLINE_WAIT, Target, Update};
 
@@ -68,6 +70,7 @@ pub(super) fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<
             | Command::AnswerPairing { .. }
             | Command::BlockOffer(_)
             | Command::Apply(_)
+            | Command::Restart
             | Command::CheckForUpdates
             | Command::InstallUpdate
             | Command::SetCheckUpdates(_)
@@ -92,4 +95,20 @@ async fn pair(node: &Node, addr: EndpointAddr, updates: &mut UnboundedSender<Upd
     };
     let _ = updates.send(result).await;
     let _ = updates.send(Update::Devices(node.devices())).await;
+}
+
+pub(super) async fn open_link(node: &Node, paths: Vec<PathBuf>) -> (Option<Link>, Update) {
+    let receiving = paths.is_empty();
+    let started = if receiving {
+        node.receive_link().await
+    } else {
+        node.share_link(paths.into_iter().map(LinkFile::Path).collect()).await
+    };
+    match started {
+        Ok(link) => {
+            let urls = link.urls().to_vec();
+            (Some(link), Update::LinkReady { urls, receiving })
+        }
+        Err(error) => (None, Update::LinkFailed(error)),
+    }
 }

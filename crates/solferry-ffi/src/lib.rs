@@ -13,14 +13,14 @@ use solferry_core::{Config, NamedFile, RelayLink, Visibility};
 use tokio::runtime::Runtime;
 use tokio::sync::Mutex;
 
-use session::{Session, Shelf, blocked, devices, history, lock};
+use session::{Restarter, Session, Shelf, blocked, devices, history, lock};
 pub use types::*;
 
 uniffi::setup_scaffolding!();
 
 const CONFIG_FILE: &str = "config.json";
 
-type Edit = Box<dyn FnOnce(&mut Config) + Send>;
+pub(crate) type Edit = Box<dyn FnOnce(&mut Config) + Send>;
 
 /// A QR code as rows of dark and light modules, for the app to draw at any size.
 #[derive(Clone, Debug, uniffi::Record)]
@@ -436,21 +436,14 @@ impl Solferry {
     }
 
     fn restart(&self, edit: Option<Edit>) {
-        let (current, listener, memory) =
-            (self.session.clone(), self.listener.clone(), self.shelf.clone());
-        let data_dir = self.data_dir.clone();
-        self.runtime.spawn(async move {
-            let mut active = current.lock().await;
-            if let Some(running) = active.take() {
-                running.stop().await;
-            }
-            if let Some(edit) = edit {
-                let mut config = Config::load(&data_dir).unwrap_or_default();
-                edit(&mut config);
-                let _ = config.save(&data_dir);
-            }
-            *active = session::start(data_dir, &memory, &listener).await;
-        });
+        let restarter = Restarter {
+            runtime: self.runtime.handle().clone(),
+            data_dir: self.data_dir.clone(),
+            listener: self.listener.clone(),
+            shelf: self.shelf.clone(),
+            session: self.session.clone(),
+        };
+        restarter.restart(edit);
     }
 }
 
