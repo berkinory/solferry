@@ -185,6 +185,9 @@ settings:
     title: "Für andere auffindbar"
     visible: "Geräte in deinem Netzwerk sehen dieses Gerät und können dir Dateien anbieten."
     hidden: "Neue Geräte können dieses Gerät nicht finden. Gekoppelte Geräte erreichen es weiterhin."
+  heic:
+    title: "HEIC-Fotos in JPEG umwandeln"
+    body: "Für Linux- und Windows-Geräte, die HEIC nicht öffnen können. Die Umwandlung erfolgt auf diesem Gerät ohne sichtbaren Qualitätsverlust."
   tray:
     title: "Im Infobereich anzeigen"
     title_macos: "In der Menüleiste anzeigen"

@@ -81,6 +81,7 @@ data class AppState(
     val link: LinkState? = null,
     val toastsMade: Long = 0,
     val standby: Boolean = false,
+    val convertHeic: Boolean = true,
     /** Null while files go to Downloads/Solferry. */
     val saveFolder: SaveFolder? = null,
     val pairedCount: Int = 0,

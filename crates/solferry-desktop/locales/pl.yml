@@ -185,6 +185,9 @@ settings:
     title: "Widoczne dla innych"
     visible: "Urządzenia w Twojej sieci widzą to urządzenie i mogą proponować mu pliki."
     hidden: "Nikt nowy nie znajdzie tego urządzenia. Sparowane urządzenia nadal mogą się z nim łączyć."
+  heic:
+    title: "Konwertuj zdjęcia HEIC na JPEG"
+    body: "Dla urządzeń z systemem Linux i Windows, które nie otwierają plików HEIC. Konwersja odbywa się na tym urządzeniu, bez widocznej utraty jakości."
   tray:
     title: "Pokaż w zasobniku"
     title_macos: "Pokaż na pasku menu"

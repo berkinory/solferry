@@ -3,7 +3,7 @@ use std::time::Duration;
 use gpui_kit::{AsyncApp, Context, Entity};
 
 use super::main_view::MainView;
-use crate::service::{Command, Target};
+use crate::service::Command;
 use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer};
 
 pub const EXIT: Duration = Duration::from_millis(220);
@@ -94,8 +94,8 @@ impl MainView {
     pub fn run_toast_action(&mut self, toast: &Toast, cx: &mut Context<Self>) {
         match toast.action.clone() {
             Some(Action::Retry(failure)) => {
-                let target = Target { addr: failure.addr, name: failure.name };
-                Self::command(Command::Send { targets: vec![target], paths: failure.paths }, cx);
+                let targets = vec![failure.target];
+                Self::command(Command::Send { targets, paths: failure.paths }, cx);
             }
             Some(Action::Restart) => Self::command(Command::InstallUpdate, cx),
             None => {}

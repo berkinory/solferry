@@ -185,6 +185,9 @@ settings:
     title: "允许他人发现我"
     visible: "同一网络中的设备可以看到本设备，并请求向你发送文件。"
     hidden: "新设备无法发现本设备，已配对的设备仍可连接。"
+  heic:
+    title: "将 HEIC 照片转换为 JPEG"
+    body: "适用于无法打开 HEIC 的 Linux 和 Windows 设备。在本设备上转换，画质无明显损失。"
   tray:
     title: "在系统托盘中显示"
     title_macos: "在菜单栏中显示"

@@ -185,6 +185,9 @@ settings:
     title: "Vindbaar voor anderen"
     visible: "Apparaten op je netwerk kunnen dit apparaat zien en vragen om iets te sturen."
     hidden: "Nieuwe apparaten kunnen dit apparaat niet vinden. Gekoppelde apparaten bereiken het nog wel."
+  heic:
+    title: "HEIC-foto's omzetten naar JPEG"
+    body: "Voor Linux- en Windows-apparaten, die HEIC niet kunnen openen. Wordt op dit apparaat omgezet, zonder zichtbaar kwaliteitsverlies."
   tray:
     title: "In systeemvak tonen"
     title_macos: "In menubalk tonen"

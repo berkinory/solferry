@@ -151,8 +151,8 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
     let (hover, highlight) = (cx.theme().accent, color(palette(cx).primary));
     let group = SharedString::from(format!("row-{}", row.id));
     let id: ElementId = group.clone().into();
-    let target = Target { addr: row.addr.clone(), name: row.name.clone() };
-    let drop_target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
+    let drop_target = target.clone();
     let details = row
         .approval
         .filter(|_| expanded)
@@ -179,7 +179,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
         .drag_over::<ExternalPaths>(move |style, _, _, _| style.border_color(highlight).bg(hover))
         .on_drop(cx.listener(move |view, paths: &ExternalPaths, _, cx| {
             cx.stop_propagation();
-            let target = Target { addr: drop_target.addr.clone(), name: drop_target.name.clone() };
+            let target = drop_target.clone();
             view.send_now(vec![target], paths.paths().to_vec(), cx);
         }))
         .on_click(cx.listener(move |view, _, _, cx| {
@@ -187,8 +187,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
                 view.expanded = if view.expanded == Some(row_id) { None } else { Some(row_id) };
                 cx.notify();
             } else {
-                let target = Target { addr: target.addr.clone(), name: target.name.clone() };
-                MainView::pick_files_for(target, cx);
+                MainView::pick_files_for(target.clone(), cx);
             }
         }))
         .child(shown)
@@ -211,7 +210,7 @@ fn device_row(row: Row, view: &MainView, cx: &mut Context<MainView>) -> AnyEleme
 
 fn share_button(row: &Row, cx: &mut Context<MainView>) -> AnyElement {
     let id = row.id;
-    let target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
     Button::new(SharedString::from(format!("share-{id}")))
         .ghost()
         .xs()
@@ -219,8 +218,7 @@ fn share_button(row: &Row, cx: &mut Context<MainView>) -> AnyElement {
         .tooltip(t!("devices.send_text"))
         .on_click(cx.listener(move |view, _, window: &mut Window, cx| {
             cx.stop_propagation();
-            let target = Target { addr: target.addr.clone(), name: target.name.clone() };
-            view.compose_text(target, window, cx);
+            view.compose_text(target.clone(), window, cx);
         }))
         .into_any_element()
 }

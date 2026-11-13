@@ -185,6 +185,9 @@ settings:
     title: "Herkese görünür ol"
     visible: "Ağındaki cihazlar bu cihazı görebilir ve dosya göndermek için izin isteyebilir."
     hidden: "Yeni cihazlar bu cihazı bulamaz. Eşleştirilmiş cihazlar yine de ulaşabilir."
+  heic:
+    title: "HEIC fotoğrafları JPEG'e dönüştür"
+    body: "HEIC açamayan Linux ve Windows cihazlar için. Bu cihazda, gözle görülür kalite kaybı olmadan dönüştürülür."
   tray:
     title: "Sistem tepsisinde göster"
     title_macos: "Menü çubuğunda göster"

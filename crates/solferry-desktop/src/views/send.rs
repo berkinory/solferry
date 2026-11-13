@@ -78,7 +78,7 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
     let id = row.id;
     let selected = view.selected.contains(&id);
     let hover = cx.theme().accent;
-    let (addr, name) = (row.addr.clone(), row.name.clone());
+    let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
     let mut body = div()
         .id(SharedString::from(format!("target-{id}")))
         .flex()
@@ -89,7 +89,7 @@ fn target_row(row: &Row, view: &MainView, cx: &mut Context<MainView>) -> AnyElem
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
         .on_click(cx.listener(move |view, _, _, cx| {
-            view.toggle_target(id, Target { addr: addr.clone(), name: name.clone() }, cx);
+            view.toggle_target(id, target.clone(), cx);
         }))
         .child(devices::tile(row.platform, row.online, selected, cx))
         .child(

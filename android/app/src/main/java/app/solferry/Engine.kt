@@ -9,12 +9,9 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelFileDescriptor
-import android.provider.OpenableColumns
 import android.provider.Settings
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import java.io.FileNotFoundException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -32,8 +29,15 @@ import kotlin.concurrent.thread
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
 class Engine(private val context: Context) : Listener {
     private val settings = context.getSharedPreferences("solferry", Context.MODE_PRIVATE)
-    private val mutable = MutableStateFlow(AppState(standby = settings.getBoolean(STANDBY, false), saveFolder = savedFolder()))
+    private val mutable = MutableStateFlow(
+        AppState(
+            standby = settings.getBoolean(STANDBY, false),
+            saveFolder = savedFolder(),
+            convertHeic = settings.getBoolean(CONVERT_HEIC, true),
+        ),
+    )
     val state: StateFlow<AppState> = mutable
+    private val outbox = Outbox(context)
     private val main = Handler(Looper.getMainLooper())
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
     private val multicast = context.getSystemService(WifiManager::class.java)
@@ -167,39 +171,42 @@ class Engine(private val context: Context) : Listener {
         clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.app_name), text))
     }
 
-    fun sendUris(peer: String, uris: List<Uri>) {
-        open(uris)?.let { bridge.sendFiles(peer, it) }
+    /** Off the main thread: HEIC photos may need converting for some of [peers] first. */
+    fun sendUris(peers: Collection<String>, uris: List<Uri>) {
+        val wantJpeg = if (state.value.convertHeic) peers.filter { Heic.wanted(platform(it)) }.toSet() else emptySet()
+        thread(name = "solferry-send") {
+            val folder = if (wantJpeg.isEmpty()) null else outbox.stage()
+            try {
+                val jpegs = folder?.let { outbox.convertHeic(uris, it) }.orEmpty()
+                for (peer in peers) {
+                    val files = open(uris, if (peer in wantJpeg) jpegs else emptyMap()) ?: return@thread
+                    bridge.sendFiles(peer, files)
+                }
+            } finally {
+                folder?.deleteRecursively()
+            }
+        }
     }
 
     fun shareLink(uris: List<Uri>) {
         open(uris)?.let { bridge.shareLink(it) }
     }
 
-    /** Opens each picked document for the core, which reads it through /proc/self/fd and closes it. */
-    private fun open(uris: List<Uri>): List<SharedFile>? {
-        val opened = mutableListOf<ParcelFileDescriptor>()
-        val files = try {
-            uris.map { uri ->
-                val file = context.contentResolver.openFileDescriptor(uri, "r") ?: throw FileNotFoundException(uri.toString())
-                opened += file
-                displayName(uri) to file
-            }
-        } catch (_: Exception) {
-            // These come from other apps, whose providers can refuse or fail in any way.
-            opened.forEach { it.close() }
-            mutable.update { it.toast(Tone.Error, context.getString(R.string.error_open_file)) }
-            return null
-        }
-        return files.map { (name, file) -> SharedFile(name, file.detachFd()) }.takeIf { it.isNotEmpty() }
+    private fun open(uris: List<Uri>, jpegs: Map<Uri, File> = emptyMap()): List<SharedFile>? {
+        val files = outbox.open(uris, jpegs)
+        if (files == null && uris.isNotEmpty()) mutable.update { it.toast(Tone.Error, context.getString(R.string.error_open_file)) }
+        return files
     }
 
-    /** What a picked document is called and how big it is, for the send screen. */
-    fun describe(uri: Uri): PickedFile {
-        var size: Long? = null
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst() && !cursor.isNull(0)) size = cursor.getLong(0)
-        }
-        return PickedFile(uri, displayName(uri), size)
+    private fun platform(peer: String) = state.value.run {
+        (devices.find { it.identity.id == peer }?.identity ?: nearby.find { it.identity.id == peer }?.identity)?.platform
+    }
+
+    fun describe(uri: Uri): PickedFile = outbox.describe(uri)
+
+    fun setConvertHeic(on: Boolean) {
+        settings.edit { putBoolean(CONVERT_HEIC, on) }
+        mutable.update { it.copy(convertHeic = on) }
     }
 
     fun pasted(): String? {
@@ -266,19 +273,13 @@ class Engine(private val context: Context) : Listener {
         bridge.answerPairing(key, accept)
     }
 
-    private fun displayName(uri: Uri): String {
-        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) cursor.getString(0)?.let { return it }
-        }
-        return uri.lastPathSegment?.substringAfterLast('/') ?: "file"
-    }
-
     private fun deviceName(): String =
         Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME)
             ?: "${Build.MANUFACTURER} ${Build.MODEL}"
 
     private companion object {
         const val STANDBY = "standby"
+        const val CONVERT_HEIC = "convert_heic"
         const val ONBOARDED = "onboarded"
         const val APPEARANCE = "appearance"
         const val SAVE_FOLDER = "save_folder"

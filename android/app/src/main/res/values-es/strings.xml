@@ -131,6 +131,8 @@
     <string name="settings_find_off">Ningún dispositivo nuevo podrá encontrarlo. Los vinculados seguirán pudiendo conectarse.</string>
     <string name="settings_background_title">Recibir en segundo plano</string>
     <string name="settings_background_body">Recibe con Solferry cerrado. Muestra una notificación y gasta más batería.</string>
+    <string name="settings_heic_title">Convertir fotos HEIC a JPEG</string>
+    <string name="settings_heic_body">Para dispositivos Linux y Windows, que no pueden abrir HEIC. Se convierten en este dispositivo sin pérdida de calidad visible.</string>
     <string name="language_title">Idioma</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Servidor relay</string>

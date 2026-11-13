@@ -18,10 +18,8 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 url.workspace = true
-auto-launch = "0.6"
-
-[dev-dependencies]
 tempfile.workspace = true
+auto-launch = "0.6"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 ksni.workspace = true
@@ -37,6 +35,13 @@ objc2-app-kit = { version = "0.3", default-features = false, features = [
   "NSResponder",
   "NSScreen",
 ] }
+objc2-core-foundation = { version = "0.3", default-features = false, features = [
+  "std",
+  "CFURL",
+  "CFString",
+  "CFDictionary",
+  "CFNumber",
+] }
 objc2-foundation = { version = "0.3", default-features = false, features = [
   "std",
   "NSArray",
@@ -44,6 +49,11 @@ objc2-foundation = { version = "0.3", default-features = false, features = [
   "NSGeometry",
   "NSError",
   "NSString",
+] }
+objc2-image-io = { version = "0.3", default-features = false, features = [
+  "std",
+  "CGImageSource",
+  "CGImageDestination",
 ] }
 objc2-user-notifications = { version = "0.3", default-features = false, features = [
   "std",

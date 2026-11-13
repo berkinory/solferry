@@ -3388,6 +3388,88 @@
         }
       }
     },
+    "Convert HEIC photos to JPEG" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC-Fotos in JPEG umwandeln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertir fotos HEIC a JPEG"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertir les photos HEIC en JPEG"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converti le foto HEIC in JPEG"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC写真をJPEGに変換"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC 사진을 JPEG로 변환"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC-foto's omzetten naar JPEG"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konwertuj zdjęcia HEIC na JPEG"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converter fotos HEIC para JPEG"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конвертировать фото HEIC в JPEG"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC fotoğrafları JPEG'e dönüştür"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конвертувати фото HEIC у JPEG"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 HEIC 照片转换为 JPEG"
+          }
+        }
+      }
+    },
     "Copied" : {
       "localizations" : {
         "de" : {
@@ -4942,6 +5024,88 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查找你的设备并直接发送。"
+          }
+        }
+      }
+    },
+    "For Linux and Windows devices, which can't open HEIC. Converted on this device with no visible quality loss." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Linux- und Windows-Geräte, die HEIC nicht öffnen können. Die Umwandlung erfolgt auf diesem Gerät ohne sichtbaren Qualitätsverlust."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para dispositivos Linux y Windows, que no pueden abrir HEIC. Se convierten en este dispositivo sin pérdida de calidad visible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour les appareils Linux et Windows, qui ne savent pas ouvrir le HEIC. La conversion se fait sur cet appareil, sans perte de qualité visible."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per i dispositivi Linux e Windows, che non aprono i file HEIC. La conversione avviene su questo dispositivo, senza perdita di qualità visibile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEICを開けないLinuxとWindowsのデバイス向けです。変換はこのデバイス上で行われ、見た目の画質は落ちません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC를 열 수 없는 Linux 및 Windows 기기용입니다. 이 기기에서 변환되며 눈에 띄는 화질 저하가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor Linux- en Windows-apparaten, die HEIC niet kunnen openen. Wordt op dit apparaat omgezet, zonder zichtbaar kwaliteitsverlies."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dla urządzeń z systemem Linux i Windows, które nie otwierają plików HEIC. Konwersja odbywa się na tym urządzeniu, bez widocznej utraty jakości."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para dispositivos Linux e Windows, que não abrem HEIC. A conversão é feita neste dispositivo, sem perda de qualidade visível."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для устройств на Linux и Windows, которые не открывают HEIC. Конвертация происходит на этом устройстве без заметной потери качества."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC açamayan Linux ve Windows cihazlar için. Bu cihazda, gözle görülür kalite kaybı olmadan dönüştürülür."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для пристроїв на Linux і Windows, які не відкривають HEIC. Конвертація відбувається на цьому пристрої без помітної втрати якості."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "适用于无法打开 HEIC 的 Linux 和 Windows 设备。在本设备上转换，画质无明显损失。"
           }
         }
       }

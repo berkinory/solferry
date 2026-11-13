@@ -129,6 +129,8 @@
     <string name="settings_find_off">Neue Geräte können dieses Gerät nicht finden. Gekoppelte Geräte erreichen es weiterhin.</string>
     <string name="settings_background_title">Im Hintergrund empfangen</string>
     <string name="settings_background_body">Empfangen, während Solferry geschlossen ist. Zeigt eine Benachrichtigung, braucht mehr Akku.</string>
+    <string name="settings_heic_title">HEIC-Fotos in JPEG umwandeln</string>
+    <string name="settings_heic_body">Für Linux- und Windows-Geräte, die HEIC nicht öffnen können. Die Umwandlung erfolgt auf diesem Gerät ohne sichtbaren Qualitätsverlust.</string>
     <string name="language_title">Sprache</string>
     <string name="settings_version">Solferry %1$s</string>
     <string name="relay_title">Relay-Server</string>

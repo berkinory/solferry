@@ -185,6 +185,9 @@ settings:
     title: "Visible par les autres"
     visible: "Les appareils de votre réseau peuvent voir celui-ci et lui proposer des fichiers."
     hidden: "Aucun nouvel appareil ne peut le trouver. Les appareils associés peuvent toujours le joindre."
+  heic:
+    title: "Convertir les photos HEIC en JPEG"
+    body: "Pour les appareils Linux et Windows, qui ne savent pas ouvrir le HEIC. La conversion se fait sur cet appareil, sans perte de qualité visible."
   tray:
     title: "Afficher dans la zone de notification"
     title_macos: "Afficher dans la barre des menus"

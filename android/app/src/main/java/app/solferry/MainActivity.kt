@@ -141,7 +141,7 @@ class MainActivity : ComponentActivity() {
                             state,
                             files = remember(shared) { shared.map(engine::describe) },
                             onRemove = { file -> shared = shared - file.uri },
-                            onSend = { peers -> peers.forEach { engine.sendUris(it, shared) } },
+                            onSend = { peers -> engine.sendUris(peers, shared) },
                             onShareLink = { engine.shareLink(shared); shared = emptyList() },
                             onClose = { shared = emptyList() },
                         )

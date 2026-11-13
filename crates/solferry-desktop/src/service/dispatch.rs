@@ -1,30 +1,30 @@
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
 use futures::SinkExt;
 use futures::channel::mpsc::UnboundedSender;
-use std::path::PathBuf;
-
 use iroh::EndpointAddr;
-use solferry_core::{Link, LinkFile, Node};
+use solferry_core::{Config, Link, LinkFile, Node};
 
 use super::{Command, ONLINE_WAIT, Target, Update};
+use crate::heic;
 
 /// Runs a command that only needs the node, without holding up the next one.
-pub(super) fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<Update>) {
+pub(super) fn dispatch(
+    node: &Node,
+    data_dir: &Path,
+    command: Command,
+    updates: &UnboundedSender<Update>,
+) {
     let mut updates = updates.clone();
     let node = node.clone();
+    let data_dir = data_dir.to_owned();
     tokio::spawn(async move {
         match command {
             Command::Send { targets, paths } => {
-                for Target { addr, name } in targets {
-                    let (node, paths, mut updates) = (node.clone(), paths.clone(), updates.clone());
-                    tokio::spawn(async move {
-                        if let Err(error) = node.send(addr.clone(), paths.clone()).await {
-                            let failed = Update::SendFailed { name, addr, paths, error };
-                            let _ = updates.send(failed).await;
-                        }
-                    });
-                }
+                send(&node, &data_dir, targets, paths, &updates).await;
             }
-            Command::SendText { target: Target { addr, name }, text } => {
+            Command::SendText { target: Target { addr, name, .. }, text } => {
                 let result = node.send_text(addr, text).await;
                 let _ = updates.send(Update::TextShared { name, result }).await;
             }
@@ -77,6 +77,7 @@ pub(super) fn dispatch(node: &Node, command: Command, updates: &UnboundedSender<
             | Command::SetShowInTray(_)
             | Command::SetLanguage(_)
             | Command::SetAppearance(_)
+            | Command::SetConvertHeic(_)
             | Command::Link(_)
             | Command::StopLink
             | Command::Quit => {}
@@ -110,5 +111,41 @@ pub(super) async fn open_link(node: &Node, paths: Vec<PathBuf>) -> (Option<Link>
             (Some(link), Update::LinkReady { urls, receiving })
         }
         Err(error) => (None, Update::LinkFailed(error)),
+    }
+}
+
+/// Sends to each target at once. Targets that can't open HEIC get JPEG copies, made once and
+/// kept until the last of their sends ends.
+async fn send(
+    node: &Node,
+    data_dir: &Path,
+    targets: Vec<Target>,
+    paths: Vec<PathBuf>,
+    updates: &UnboundedSender<Update>,
+) {
+    let convert = cfg!(target_os = "macos")
+        && targets.iter().any(|target| heic::wanted(target.platform))
+        && Config::load(data_dir).is_ok_and(|config| config.convert_heic);
+    let staged = if convert {
+        let originals = paths.clone();
+        tokio::task::spawn_blocking(move || heic::stage(&originals))
+            .await
+            .ok()
+            .flatten()
+            .map(Arc::new)
+    } else {
+        None
+    };
+    for target in targets {
+        let jpegs = staged.clone().filter(|_| heic::wanted(target.platform));
+        let sent = jpegs.as_ref().map_or_else(|| paths.clone(), |staged| staged.paths.clone());
+        let (node, paths, mut updates) = (node.clone(), paths.clone(), updates.clone());
+        tokio::spawn(async move {
+            let result = node.send(target.addr.clone(), sent).await;
+            drop(jpegs);
+            if let Err(error) = result {
+                let _ = updates.send(Update::SendFailed { target, paths, error }).await;
+            }
+        });
     }
 }
