@@ -128,7 +128,7 @@ struct TextCard: View {
     var body: some View {
         Card(glyph: .clipboard, title: "Text from \(shared.name)") {
             PaddedWell {
-                Text(shared.text).lineLimit(4).textSelection(.enabled)
+                Text(linked(shared.text)).lineLimit(4).textSelection(.enabled)
                 HStack(spacing: SpaceTokens.sm) {
                     ActionButton(label: shared.copied ? "Copied" : "Copy", glyph: shared.copied ? .check : .copy, scale: .small) {
                         engine.copy(shared.text)
