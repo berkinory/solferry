@@ -161,3 +161,46 @@ impl TrustStore {
         Ok(first)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use iroh::SecretKey;
+
+    use super::*;
+
+    fn device(relays: &[&str]) -> Device {
+        Device {
+            id: SecretKey::generate().public(),
+            name: "peer".to_owned(),
+            auto_accept: false,
+            relays: relays.iter().map(|link| (*link).to_owned()).collect(),
+            direct_addrs: Vec::new(),
+            paired_at_ms: 0,
+            platform: None,
+        }
+    }
+
+    /// A paired device may renew the token of a relay it gave this one, and nothing else: it can't
+    /// add a relay, or change one another device gave.
+    #[test]
+    fn rotates_only_relays_the_peer_gave() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut trust = TrustStore::load(dir.path()).unwrap();
+        let giver = device(&["https://ours.example#old"]);
+        let other = device(&["https://ours.example#old", "https://theirs.example#kept"]);
+        let (giver_id, other_id) = (giver.id, other.id);
+        trust.upsert(giver).unwrap();
+        trust.upsert(other).unwrap();
+
+        let pushed =
+            ["https://ours.example#new", "https://theirs.example#stolen", "https://new.example#x"]
+                .map(str::to_owned);
+        let rotated = trust.rotate_relays(&giver_id, &pushed).unwrap();
+
+        assert_eq!(rotated, ["https://ours.example#new"]);
+        let reloaded = TrustStore::load(dir.path()).unwrap();
+        assert_eq!(reloaded.get(&giver_id).unwrap().relays, ["https://ours.example#new"]);
+        let kept = &reloaded.get(&other_id).unwrap().relays;
+        assert_eq!(kept, &["https://ours.example#new", "https://theirs.example#kept"]);
+    }
+}
