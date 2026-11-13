@@ -27,7 +27,7 @@ struct LinkScreen: View {
                     Well {
                         ForEach(Array(link.texts.enumerated()), id: \.offset) { _, text in
                             HStack(alignment: .top, spacing: SpaceTokens.sm) {
-                                Text(verbatim: text).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
+                                Text(linked(text)).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
                                 ActionButton(label: "Copy", glyph: .copy, scale: .small) { engine.copy(text) }
                             }
                             .padding(SpaceTokens.xs)

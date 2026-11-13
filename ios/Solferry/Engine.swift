@@ -31,6 +31,7 @@ final class Engine {
             deviceName: UIDevice.current.name,
             listener: events
         )
+        Notifier.listen(self)
         let folder = destination()
         Task.detached { [weak self] in
             let saved = Exporter.recover(to: folder)

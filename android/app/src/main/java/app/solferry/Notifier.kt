@@ -59,8 +59,12 @@ object Notifier {
             .setContentIntent(opener(context))
             .build()
 
+    /** Only plain answers: always accepting a device is a choice to make in the app. */
     fun offer(context: Context, key: ULong, name: String) =
-        show(context, context.getString(R.string.offer_title), context.getString(R.string.notify_offer_body, name), OFFER, key.toInt())
+        show(context, context.getString(R.string.offer_title), context.getString(R.string.notify_offer_body, name), OFFER, key.toInt()) {
+            addAction(0, context.getString(R.string.offer_accept), OfferAnswers.intent(context, key, true))
+            addAction(0, context.getString(R.string.common_decline), OfferAnswers.intent(context, key, false))
+        }
 
     fun pairing(context: Context, key: ULong, name: String) =
         show(context, context.getString(R.string.pair_request_title), context.getString(R.string.notify_pairing_body, name), PAIRING, key.toInt())
@@ -90,7 +94,10 @@ object Notifier {
     }
 
     @SuppressLint("MissingPermission") // allowed() checks it
-    private fun show(context: Context, title: String, body: String, tag: String? = null, id: Int = next++) {
+    private fun show(
+        context: Context, title: String, body: String, tag: String? = null, id: Int = next++,
+        actions: NotificationCompat.Builder.() -> Unit = {},
+    ) {
         if (appVisible || !allowed(context)) return
         val notification = NotificationCompat.Builder(context, ASKS)
             .setSmallIcon(R.drawable.ic_launcher_mark)
@@ -98,6 +105,7 @@ object Notifier {
             .setContentText(body)
             .setContentIntent(opener(context))
             .setAutoCancel(true)
+            .apply(actions)
             .build()
         NotificationManagerCompat.from(context).notify(tag, id, notification)
     }

@@ -16,6 +16,8 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Relay speed limit in Settings, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
 - A copy button next to each relay. Relay links show as `https://relay.example.com#••••` so the token stays off screens.
 - HEIC photos sent from iPhone, Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
+- Incoming file notifications have Accept and Decline buttons on Android, iOS, macOS and Windows, so you can answer without opening the app. The notification goes away once the offer is answered anywhere, withdrawn or expired. Linux keeps the plain notification.
+- Links in received text are underlined and open when you tap or click them. Only links written out with http, https or mailto count, and nothing opens by itself.
 
 ### Changed
 
