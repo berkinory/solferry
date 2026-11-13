@@ -52,10 +52,15 @@ enum Outbox {
         }
     }
 
-    static func temporaryCopy(of source: URL) throws -> URL {
+    /// A folder of its own for one file, so the file keeps its name and `discard` can remove both.
+    nonisolated static func freshFolder() throws -> URL {
         let folder = directory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let copy = folder.appending(path: source.lastPathComponent)
+        return folder
+    }
+
+    static func temporaryCopy(of source: URL) throws -> URL {
+        let copy = try freshFolder().appending(path: source.lastPathComponent)
         try FileManager.default.copyItem(at: source, to: copy)
         return copy
     }

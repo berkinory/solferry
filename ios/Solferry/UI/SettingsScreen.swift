@@ -23,6 +23,7 @@ struct SettingsScreen: View {
             RelayCard()
             SaveFolderCard()
             VisibilityCard(found: me?.visibility != "Hidden")
+            HeicCard()
             AppearanceCard()
             if !engine.state.blocked.isEmpty { BlockedCard(blocked: engine.state.blocked) }
             HStack {
@@ -74,6 +75,20 @@ private struct VisibilityCard: View {
             PaddedWell {
                 Toggle(isOn: Binding(get: { found }, set: { engine.bridge.setReach(reach: $0 ? .everyone : .hidden) })) {
                     Muted(found ? "Devices on your network can see this one and ask to send." : "Nobody new can find this device. Paired devices can still reach it.")
+                }
+            }
+        }
+    }
+}
+
+private struct HeicCard: View {
+    @AppStorage(Heic.key) private var convert = true
+
+    var body: some View {
+        Card(glyph: .typeImage, title: "Convert HEIC photos to JPEG") {
+            PaddedWell {
+                Toggle(isOn: $convert) {
+                    Muted("For Linux and Windows devices, which can't open HEIC. Converted on this device with no visible quality loss.")
                 }
             }
         }

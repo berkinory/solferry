@@ -140,13 +140,21 @@ final class Engine {
 
     func send(_ urls: [URL], to peers: [String]) {
         let bridge = bridge!
+        let wantJpeg = Heic.enabled ? Set(peers.filter { Heic.wanted(platform(of: $0)) }) : []
         Task.detached {
+            let jpegs = wantJpeg.isEmpty ? [:] : Heic.jpegCopies(of: urls)
             for peer in peers {
-                let files = urls.compactMap(Outbox.open)
+                let chosen = wantJpeg.contains(peer) ? urls.map { jpegs[$0] ?? $0 } : urls
+                let files = chosen.compactMap(Outbox.open)
                 if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
             }
-            Outbox.discard(urls)
+            Outbox.discard(urls + jpegs.values)
         }
+    }
+
+    private func platform(of peer: String) -> DevicePlatform? {
+        let identity = state.devices.first { $0.identity.id == peer }?.identity ?? state.nearby.first { $0.identity.id == peer }?.identity
+        return identity?.platform
     }
 
     func clearPairingErrors() {
