@@ -15,6 +15,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Give your relay a new token without cutting anyone off: `deploy/relay/rotate.sh` prints a new link and keeps the old token working until you run `rotate.sh finish`. Paste the new link on one device and the devices paired with it pick it up the next time they reach it.
 - Relay speed limit in Settings, and `solferry relay limit`, caps how fast files go through a relay. Direct connections are never limited.
 - A copy button next to each relay. Relay links show as `https://relay.example.com#••••` so the token stays off screens.
+- HEIC photos sent from iPhone, Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
 
 ### Changed
 
