@@ -157,12 +157,14 @@ final class Engine {
         let away = Set(peers.filter { peer in
             state.devices.contains { $0.identity.id == peer } && state.reachable.map { !$0.contains(peer) } == true
         })
-        let wantJpeg = Heic.enabled ? Set(peers.filter { !away.contains($0) && Heic.wanted(platform(of: $0)) }) : []
+        let wantJpeg = Heic.enabled ? Set(peers.filter { Heic.wanted(platform(of: $0)) }) : []
         Task.detached { [weak self] in
             let jpegs = wantJpeg.isEmpty ? [:] : Heic.jpegCopies(of: urls)
             for peer in peers {
+                let chosen = wantJpeg.contains(peer) ? urls.map { jpegs[$0] ?? $0 } : urls
                 if away.contains(peer) {
-                    let kept = urls.compactMap(QueueFiles.keep)
+                    // The queue keeps a private copy of each, so a JPEG copy is what a queued send delivers.
+                    let kept = chosen.compactMap(QueueFiles.keep)
                     if kept.count == urls.count {
                         bridge.queueFiles(peer: peer, files: kept)
                     } else {
@@ -171,7 +173,6 @@ final class Engine {
                     }
                     continue
                 }
-                let chosen = wantJpeg.contains(peer) ? urls.map { jpegs[$0] ?? $0 } : urls
                 let files = chosen.compactMap(Outbox.open)
                 if !files.isEmpty { bridge.sendFiles(peer: peer, files: files) }
             }
