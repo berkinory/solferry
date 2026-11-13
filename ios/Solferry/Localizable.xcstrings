@@ -21,12 +21,6 @@
             "value" : "%2$@ vous a envoyé %1$@ (dossier %3$@)"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ מ־%@, ב־%@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -107,12 +101,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ souhaite s'associer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ רוצה להצטמד"
           }
         },
         "it" : {
@@ -197,12 +185,6 @@
             "value" : "%@ souhaite s'associer à cet appareil"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ רוצה להצטמד למכשיר הזה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -283,12 +265,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ souhaite vous envoyer des fichiers"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ רוצה לשלוח"
           }
         },
         "it" : {
@@ -373,12 +349,6 @@
             "value" : "%@ souhaite vous envoyer des fichiers"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ רוצה לשלוח לך קבצים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -459,12 +429,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ : impossible d'enregistrer dans %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: לא ניתן לשמור ב־%@"
           }
         },
         "it" : {
@@ -610,30 +574,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld fichiers"
-                }
-              }
-            }
-          }
-        },
-        "he" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "קובץ אחד"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld קבצים"
-                }
-              },
-              "two" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld קבצים"
                 }
               }
             }
@@ -937,30 +877,6 @@
             }
           }
         },
-        "he" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "העברה אחת"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld העברות"
-                }
-              },
-              "two" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld העברות"
-                }
-              }
-            }
-          }
-        },
         "it" : {
           "variations" : {
             "plural" : {
@@ -1193,12 +1109,6 @@
             "value" : "%lld %%"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld%%"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1279,12 +1189,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "il y a %lld j"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לפני %lld ימים"
           }
         },
         "it" : {
@@ -1369,12 +1273,6 @@
             "value" : "il y a %lld h"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לפני %lld שע׳"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1457,12 +1355,6 @@
             "value" : "il y a %lld min"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לפני %lld דק׳"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1543,12 +1435,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "il y a %lld mois"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לפני %lld חודשים"
           }
         },
         "it" : {
@@ -1636,12 +1522,6 @@
             "value" : "Un navigateur sur votre réseau peut vous envoyer des fichiers ou du texte."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "דפדפן ברשת שלך יכול לשלוח לך קבצים או טקסט."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1722,12 +1602,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accepter"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אישור"
           }
         },
         "it" : {
@@ -1812,12 +1686,6 @@
             "value" : "Ajouter"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוספה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1898,12 +1766,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autoriser"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מתן הרשאה"
           }
         },
         "it" : {
@@ -1988,12 +1850,6 @@
             "value" : "Autorisé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מאושר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2074,12 +1930,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toujours accepter"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לאשר תמיד"
           }
         },
         "it" : {
@@ -2164,12 +2014,6 @@
             "value" : "Apparence"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מראה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2250,12 +2094,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bloquer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חסימה"
           }
         },
         "it" : {
@@ -2340,12 +2178,6 @@
             "value" : "Bloquer %@ ?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לחסום את %@?"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2426,12 +2258,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bloqués"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חסומים"
           }
         },
         "it" : {
@@ -2516,12 +2342,6 @@
             "value" : "Impossible de joindre le serveur"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אין חיבור לשרת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2602,12 +2422,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuler"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ביטול"
           }
         },
         "it" : {
@@ -2692,12 +2506,6 @@
             "value" : "Modifier"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שינוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2778,12 +2586,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vérifiez que l'autre appareil affiche ce code, puis confirmez sur celui-ci."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צריך לוודא שהמכשיר השני מציג את הקוד הזה, ואז לאשר שם."
           }
         },
         "it" : {
@@ -2868,12 +2670,6 @@
             "value" : "Vérification…"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בבדיקה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2954,12 +2750,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ניקוי"
           }
         },
         "it" : {
@@ -3044,12 +2834,6 @@
             "value" : "Fermer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סגירה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3130,12 +2914,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comparer les codes"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "השוואת קודים"
           }
         },
         "it" : {
@@ -3220,12 +2998,6 @@
             "value" : "Confirmer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אישור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3306,12 +3078,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ne confirmez que si l'autre écran affiche le même code."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כדאי לאשר רק אם במסך השני מופיע אותו קוד."
           }
         },
         "it" : {
@@ -3396,12 +3162,6 @@
             "value" : "Connecté"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחובר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3482,12 +3242,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connecté, mais UDP 7842 est bloqué"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחובר, UDP 7842 חסום"
           }
         },
         "it" : {
@@ -3572,12 +3326,6 @@
             "value" : "Copié"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הועתק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3658,12 +3406,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copié dans le presse-papiers"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הועתק ללוח"
           }
         },
         "it" : {
@@ -3748,12 +3490,6 @@
             "value" : "Copier"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העתקה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3834,12 +3570,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier le code"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העתקת הקוד"
           }
         },
         "it" : {
@@ -3924,12 +3654,6 @@
             "value" : "Copier le lien"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העתקת הקישור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4010,12 +3734,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossible d'utiliser ce dossier"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא ניתן להשתמש בתיקייה הזו"
           }
         },
         "it" : {
@@ -4100,12 +3818,6 @@
             "value" : "Sombre"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כהה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4186,12 +3898,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refuser"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "דחייה"
           }
         },
         "it" : {
@@ -4276,12 +3982,6 @@
             "value" : "Nom de l'appareil"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם המכשיר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4362,12 +4062,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appareils"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים"
           }
         },
         "it" : {
@@ -4452,12 +4146,6 @@
             "value" : "Les appareils de votre réseau peuvent voir celui-ci et lui proposer des fichiers."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים ברשת שלך יכולים לראות את המכשיר הזה ולבקש לשלוח אליו."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4538,12 +4226,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ignorer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סגירה"
           }
         },
         "it" : {
@@ -4628,12 +4310,6 @@
             "value" : "Saisir un code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הזנת קוד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4714,12 +4390,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisir une adresse IP"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הזנת כתובת IP"
           }
         },
         "it" : {
@@ -4804,12 +4474,6 @@
             "value" : "Échec"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נכשל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4890,12 +4554,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fichiers"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבצים"
           }
         },
         "it" : {
@@ -4980,12 +4638,6 @@
             "value" : "Fichiers reçus"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הקבצים התקבלו"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5066,12 +4718,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les fichiers que vous envoyez ou recevez apparaîtront ici."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבצים שנשלחים או מתקבלים יופיעו כאן."
           }
         },
         "it" : {
@@ -5156,12 +4802,6 @@
             "value" : "Trouve vos appareils et leur envoie directement."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מוצאת את המכשירים שלך ושולחת אליהם ישירות."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5242,12 +4882,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pour les appareils sur un autre réseau. Affichez un code ici, saisissez-le là-bas."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "למכשירים ברשת אחרת. מציגים קוד כאן ומזינים אותו שם."
           }
         },
         "it" : {
@@ -5332,12 +4966,6 @@
             "value" : "Pour les fichiers, textes et demandes d'association reçus."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לקבצים, טקסטים ובקשות צימוד נכנסים."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5418,12 +5046,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oublier"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הסרה"
           }
         },
         "it" : {
@@ -5508,12 +5130,6 @@
             "value" : "Oublier %@ ?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "להסיר את %@?"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5594,12 +5210,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Commencer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קדימה, מתחילים"
           }
         },
         "it" : {
@@ -5684,12 +5294,6 @@
             "value" : "Historique"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "היסטוריה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5770,12 +5374,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fichiers entrants"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבצים נכנסים"
           }
         },
         "it" : {
@@ -5860,12 +5458,6 @@
             "value" : "Cet appareil ne pourra plus vous envoyer de fichiers ni demander à s'associer. Vous pourrez le débloquer plus tard."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "המכשיר לא יוכל לשלוח קבצים או לבקש צימוד. אפשר לבטל את החסימה בהמשך."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5946,12 +5538,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cet appareil ne sera plus associé, jusqu'à ce que vous l'associiez à nouveau."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "המכשיר לא יהיה מצומד עד שיצומד מחדש."
           }
         },
         "it" : {
@@ -6036,12 +5622,6 @@
             "value" : "Dernier transfert"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העברה אחרונה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6122,12 +5702,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Visible par les autres"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "גלוי לאחרים"
           }
         },
         "it" : {
@@ -6212,12 +5786,6 @@
             "value" : "Clair"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בהיר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6298,12 +5866,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réseau local"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רשת מקומית"
           }
         },
         "it" : {
@@ -6388,12 +5950,6 @@
             "value" : "Recherche d'appareils"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חיפוש מכשירים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6474,12 +6030,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recherche de nouveaux appareils sur ce réseau"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חיפוש מכשירים חדשים ברשת הזו"
           }
         },
         "it" : {
@@ -6564,12 +6114,6 @@
             "value" : "Accès à %@ perdu. Les fichiers seront enregistrés dans le dossier Solferry."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אין יותר גישה אל %@, הקבצים יישמרו בתיקייה Solferry"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6650,12 +6194,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nom"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם"
           }
         },
         "it" : {
@@ -6740,12 +6278,6 @@
             "value" : "À proximité"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בקרבת מקום"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6826,12 +6358,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les appareils à proximité verront ce nom."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים בקרבת מקום יראו את השם הזה."
           }
         },
         "it" : {
@@ -6916,12 +6442,6 @@
             "value" : "Solferry n'est pas sur l'autre appareil ?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אין אפליקציה במכשיר השני"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7002,12 +6522,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun transfert pour l'instant"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עדיין אין העברות"
           }
         },
         "it" : {
@@ -7092,12 +6606,6 @@
             "value" : "Aucun nouvel appareil ne peut le trouver. Les appareils associés peuvent toujours le joindre."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים חדשים לא יכולים למצוא את המכשיר הזה. מכשירים מצומדים עדיין יכולים להתחבר אליו."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7178,12 +6686,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas encore demandé"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עוד לא נשאל"
           }
         },
         "it" : {
@@ -7268,12 +6770,6 @@
             "value" : "Non associé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא מצומד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7354,12 +6850,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עדכונים"
           }
         },
         "it" : {
@@ -7444,12 +6934,6 @@
             "value" : "Désactivé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כבוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7530,12 +7014,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hors ligne"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא מחובר"
           }
         },
         "it" : {
@@ -7620,12 +7098,6 @@
             "value" : "En ligne"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחובר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7706,12 +7178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir Réglages"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פתיחת הגדרות"
           }
         },
         "it" : {
@@ -7796,12 +7262,6 @@
             "value" : "Ouvrez Solferry sur un autre appareil de ce réseau pour le voir apparaître ici."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כשפותחים את Solferry במכשיר אחר ברשת הזו, הוא יופיע כאן."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7882,12 +7342,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrez Solferry pour le copier"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפשר להעתיק אותו ב־Solferry"
           }
         },
         "it" : {
@@ -7972,12 +7426,6 @@
             "value" : "Ouvrez-le dans un navigateur sur le même réseau pour télécharger les fichiers."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפשר לפתוח את הקישור בדפדפן באותה רשת כדי להוריד את הקבצים."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8058,12 +7506,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrez-le dans un navigateur sur le même réseau pour envoyer des fichiers ou du texte ici."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפשר לפתוח את הקישור בדפדפן באותה רשת כדי לשלוח לכאן קבצים או טקסט."
           }
         },
         "it" : {
@@ -8148,12 +7590,6 @@
             "value" : "Options pour %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפשרויות עבור %@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8234,12 +7670,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Associer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צימוד"
           }
         },
         "it" : {
@@ -8324,12 +7754,6 @@
             "value" : "Associer avec un code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צימוד עם קוד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8410,12 +7834,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Associé"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצומד"
           }
         },
         "it" : {
@@ -8500,12 +7918,6 @@
             "value" : "Associé à %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הצימוד עם %@ הושלם"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8586,12 +7998,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Association…"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מתבצע צימוד…"
           }
         },
         "it" : {
@@ -8676,12 +8082,6 @@
             "value" : "Demande d'association"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בקשת צימוד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8762,12 +8162,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collez un code sf1"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הדבקת קוד sf1"
           }
         },
         "it" : {
@@ -8852,12 +8246,6 @@
             "value" : "Autorisations"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הרשאות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8938,12 +8326,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Photos et vidéos"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תמונות וסרטונים"
           }
         },
         "it" : {
@@ -9028,12 +8410,6 @@
             "value" : "Code QR"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד QR"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9114,12 +8490,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Joignez des appareils sur d'autres réseaux via votre propre serveur relay."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חיבור למכשירים ברשתות אחרות דרך שרת Relay משלך."
           }
         },
         "it" : {
@@ -9204,12 +8574,6 @@
             "value" : "Recevoir par lien"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבלה בקישור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9290,12 +8654,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recevoir sans confirmation"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבלה בלי לשאול"
           }
         },
         "it" : {
@@ -9380,12 +8738,6 @@
             "value" : "Reçus"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התקבלו"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9466,12 +8818,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réception terminée : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התקבל: %@"
           }
         },
         "it" : {
@@ -9556,12 +8902,6 @@
             "value" : "Fichiers reçus"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבצים שהתקבלו"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9642,12 +8982,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réception : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבלת %@"
           }
         },
         "it" : {
@@ -9732,12 +9066,6 @@
             "value" : "Reconnexion à %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חיבור מחדש אל %@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9818,12 +9146,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refusé, vérifiez le lien"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "החיבור נדחה, כדאי לבדוק את הקישור"
           }
         },
         "it" : {
@@ -9908,12 +9230,6 @@
             "value" : "Serveur relay"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שרת Relay"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9994,12 +9310,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הסרת %@"
           }
         },
         "it" : {
@@ -10084,12 +9394,6 @@
             "value" : "Réinitialiser"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "איפוס"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10170,12 +9474,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enregistrer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שמירה"
           }
         },
         "it" : {
@@ -10260,12 +9558,6 @@
             "value" : "Enregistrer les fichiers dans"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תיקיית שמירה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10346,12 +9638,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Envoyer"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחה"
           }
         },
         "it" : {
@@ -10436,12 +9722,6 @@
             "value" : "Envoyer des fichiers"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת קבצים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10522,12 +9802,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Envoyez des fichiers entre vos appareils. Sans compte, et rien ne passe par le cloud."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת קבצים בין המכשירים שלך. בלי חשבון, בלי ענן."
           }
         },
         "it" : {
@@ -10612,12 +9886,6 @@
             "value" : "Envoyer du texte"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת טקסט"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10698,12 +9966,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Envoyer du texte à %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת טקסט אל %@"
           }
         },
         "it" : {
@@ -10849,30 +10111,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Envoyer à %lld appareils"
-                }
-              }
-            }
-          }
-        },
-        "he" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "שליחה למכשיר אחד"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "שליחה ל־%lld מכשירים"
-                }
-              },
-              "two" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "שליחה ל־%lld מכשירים"
                 }
               }
             }
@@ -11110,12 +10348,6 @@
             "value" : "Envoi : %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שליחת %@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11196,12 +10428,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Envoi terminé : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נשלח: %@"
           }
         },
         "it" : {
@@ -11286,12 +10512,6 @@
             "value" : "Réglages"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11372,12 +10592,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guide d'installation"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מדריך התקנה"
           }
         },
         "it" : {
@@ -11462,12 +10676,6 @@
             "value" : "Partager par lien"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שיתוף בקישור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11550,12 +10758,6 @@
             "value" : "Afficher un code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הצגת קוד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11636,12 +10838,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher le code"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הצגת קוד"
           }
         },
         "it" : {
@@ -11729,12 +10925,6 @@
             "value" : "Arrêter"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עצירה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11815,12 +11005,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Système"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לפי המערכת"
           }
         },
         "it" : {
@@ -11905,12 +11089,6 @@
             "value" : "Appuyez pour choisir ce que vous voulez envoyer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מקישים כדי לבחור מה לשלוח"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11991,12 +11169,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ vous a envoyé du texte"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "טקסט מ־%@"
           }
         },
         "it" : {
@@ -12081,12 +11253,6 @@
             "value" : "Le dossier Solferry dans l'app Fichiers"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התיקייה Solferry באפליקציה ״קבצים״"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12167,12 +11333,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adresse de cet appareil : %@."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הכתובת של המכשיר הזה: %@."
           }
         },
         "it" : {
@@ -12257,12 +11417,6 @@
             "value" : "À %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אל %@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12343,12 +11497,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transfert"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העברה"
           }
         },
         "it" : {
@@ -12433,12 +11581,6 @@
             "value" : "Débloquer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ביטול חסימה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12519,12 +11661,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appareil sans nom"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר ללא שם"
           }
         },
         "it" : {
@@ -12609,12 +11745,6 @@
             "value" : "Utiliser un code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שימוש בקוד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12695,12 +11825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente : %@"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בהמתנה ל־%@"
           }
         },
         "it" : {
@@ -12785,12 +11909,6 @@
             "value" : "Bienvenue dans Solferry"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ברוכים הבאים ל־Solferry"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12873,12 +11991,6 @@
             "value" : "Valable une seule fois, pendant 10 minutes."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לשימוש חד־פעמי, בתוקף ל־10 דקות."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12959,12 +12071,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nom de votre appareil"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם המכשיר שלך"
           }
         },
         "it" : {
@@ -13052,12 +12158,6 @@
             "value" : "à l'instant"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עכשיו"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13138,12 +12238,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "hier"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אתמול"
           }
         },
         "it" : {

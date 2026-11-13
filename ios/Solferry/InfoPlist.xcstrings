@@ -38,12 +38,6 @@
             "value" : "Solferry trouve vos autres appareils sur ce réseau et leur envoie des fichiers directement."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solferry מוצאת את המכשירים האחרים שלך ברשת הזו ושולחת אליהם קבצים ישירות."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",

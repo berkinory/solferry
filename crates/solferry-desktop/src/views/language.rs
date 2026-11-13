@@ -33,7 +33,6 @@ const LANGUAGES: &[(&str, &str, &str)] = &[
     ("zh", "简体中文", "cn"),
     ("nl", "Nederlands", "nl"),
     ("pl", "Polski", "pl"),
-    ("he", "עברית", "il"),
 ];
 const FLAG: f32 = 15.0;
 const MENU_HEIGHT: f32 = 267.0;

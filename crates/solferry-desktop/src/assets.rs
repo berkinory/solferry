@@ -126,7 +126,6 @@ fn flag_bytes(path: &str) -> Option<&'static [u8]> {
         "flags/cn.svg" => include_bytes!("../assets/flags/cn.svg"),
         "flags/nl.svg" => include_bytes!("../assets/flags/nl.svg"),
         "flags/pl.svg" => include_bytes!("../assets/flags/pl.svg"),
-        "flags/il.svg" => include_bytes!("../assets/flags/il.svg"),
         _ => return None,
     })
 }

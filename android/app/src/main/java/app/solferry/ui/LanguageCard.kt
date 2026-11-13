@@ -42,7 +42,6 @@ private val LANGUAGES = listOf(
     Triple("zh", "简体中文", "🇨🇳"),
     Triple("nl", "Nederlands", "🇳🇱"),
     Triple("pl", "Polski", "🇵🇱"),
-    Triple("he", "עברית", "🇮🇱"),
 )
 
 /** The app's own language. Android recreates the activity once it changes. */
