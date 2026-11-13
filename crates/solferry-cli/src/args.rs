@@ -44,7 +44,7 @@ pub enum Command {
         /// Send this text to a paired device's clipboard instead of files. Use - to read stdin.
         #[arg(long)]
         text: Option<String>,
-        /// Device name, id prefix or nearby device name. Repeat to send to several.
+        /// Device name, id prefix or nearby device name, or last for the device this one last sent files to. Repeat to send to several.
         #[arg(long = "to", required = true)]
         targets: Vec<String>,
     },

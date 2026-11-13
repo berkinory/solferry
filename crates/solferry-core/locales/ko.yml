@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "이 주소에서 응답이 없어요"
     next: "상대 기기에서 Solferry를 열고 '다른 기기에 표시'가 켜져 있는지 확인하세요."
+  no_recent_target:
+    title: "이 기기에서 아직 보낸 적이 없어요"
+    next: "먼저 기기 이름을 지정해 한 번 보내세요. 그다음부터는 \"last\"로 그 기기를 다시 고를 수 있어요."
   protocol:
     title: "Solferry에 문제가 생겼어요"
     next: "버그예요. 세부 정보와 함께 알려 주세요."

@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "该地址没有响应"
     next: "请在对方设备上打开 Solferry，并确认已开启“允许他人发现我”。"
+  no_recent_target:
+    title: "此设备尚未发送过任何内容"
+    next: "先按名称向某台设备发送一次，之后 \"last\" 会再次选中它。"
   protocol:
     title: "Solferry 出了点问题"
     next: "这是程序 bug，请附上详细信息反馈给我们。"

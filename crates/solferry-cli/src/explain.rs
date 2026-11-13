@@ -53,6 +53,7 @@ fn kind(error: &Error) -> &'static str {
         Error::AmbiguousDevice(_) => "ambiguous_device",
         Error::InvalidAddress(_) => "invalid_address",
         Error::NoAnswer(_) => "no_answer",
+        Error::NoRecentTarget => "no_recent_target",
         Error::Protocol(_) => "protocol",
     }
 }
@@ -100,6 +101,9 @@ fn advice(error: &Error) -> Advice {
         Error::InvalidAddress(_) => "Give an IPv4 address such as 192.168.1.20.",
         Error::NoAnswer(_) => {
             "Make sure solferry is running there and visible to everyone. `solferry status` shows its address."
+        }
+        Error::NoRecentTarget => {
+            "Name the device with --to once. After a finished send, --to last picks it again."
         }
         Error::Protocol(_) => "This is a bug. Please report it with the message above.",
     };

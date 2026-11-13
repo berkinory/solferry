@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "Geen antwoord op dat adres"
     next: "Open Solferry daar en controleer of het vindbaar is voor anderen."
+  no_recent_target:
+    title: "Er is nog niets vanaf dit apparaat verstuurd"
+    next: "Stuur één keer naar een apparaat met zijn naam. Daarna kiest \"last\" het opnieuw."
   protocol:
     title: "Er ging iets mis in Solferry"
     next: "Dit is een bug. Meld het alsjeblieft, met de details."

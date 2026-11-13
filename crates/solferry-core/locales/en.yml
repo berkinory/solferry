@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "Nothing answered at that address"
     next: "Open Solferry there and check that it's visible to everyone."
+  no_recent_target:
+    title: "Nothing has been sent from this device yet"
+    next: "Send to a device by name once. After that, \"last\" picks it again."
   protocol:
     title: "Something went wrong in Solferry"
     next: "This is a bug. Please report it with the details."

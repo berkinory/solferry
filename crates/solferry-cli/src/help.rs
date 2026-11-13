@@ -36,8 +36,9 @@ Typical flow:
   B$ solferry send report.pdf --to A --json   # A's name or id prefix
 "#;
 
-pub const SEND: &str = r#"Each target is a paired device's name or id prefix, a full device id, or the name
-of a device on this network. Unpaired devices are asked before files arrive.
+pub const SEND: &str = r#"Each target is a paired device's name or id prefix, a full device id, the name of
+a device on this network, or last: the device this one last finished sending
+files to, paired or not. Unpaired devices are asked before files arrive.
 A lone - reads stdin to the end and sends it as one file, named by --name or
 stdin.txt (stdin.bin when it isn't text). --text - shares stdin with a paired
 device's clipboard instead. With --json, transfer events stream as lines, then one "sent" or "send_failed"
@@ -46,6 +47,7 @@ line per target.
 Examples:
   solferry send photo.jpg notes/ --to laptop
   solferry send big.iso --to laptop --to phone --json
+  solferry send notes.md --to last
   tar c photos/ | solferry send - --name photos.tar --to laptop
   echo hello | solferry send --text - --to laptop"#;
 

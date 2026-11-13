@@ -92,7 +92,7 @@ solferry receive
 solferry send holiday-photos/ --to my-laptop
 ```
 
-Send to several devices with repeated `--to`. Share text with a paired device's clipboard, or pipe it in with `-`:
+Send to several devices with repeated `--to`. `--to last` sends to the device you last sent files to. Share text with a paired device's clipboard, or pipe it in with `-`:
 
 ```sh
 solferry send --text "see you at 8" --to my-laptop

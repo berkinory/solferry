@@ -13,6 +13,8 @@ use tokio::sync::broadcast;
 use crate::args::Cli;
 
 const NEARBY_WINDOW: Duration = Duration::from_secs(3);
+/// Stands for the device this one last sent files to, ahead of any device named "last".
+const LAST: &str = "last";
 const DRAIN_WAIT: Duration = Duration::from_secs(2);
 const BAR_TEMPLATE: &str = "{msg} [{bar:32}] {bytes}/{total_bytes} {bytes_per_sec} eta {eta}";
 
@@ -161,6 +163,10 @@ pub async fn text(data_dir: PathBuf, text: String, targets: Vec<String>, json: b
 async fn resolve(node: &Node, targets: &[String], json: bool) -> Result<Vec<EndpointAddr>> {
     let mut addrs = Vec::with_capacity(targets.len());
     for target in targets {
+        if target == LAST {
+            addrs.push(last_target(node)?);
+            continue;
+        }
         match node.find_device(target) {
             Ok(device) => addrs.push(device.addr()),
             Err(Error::UnknownDevice(_)) => {
@@ -188,6 +194,15 @@ async fn resolve(node: &Node, targets: &[String], json: bool) -> Result<Vec<Endp
         }
     }
     Ok(addrs)
+}
+
+/// The device this one last finished sending files to, from the transfer history.
+fn last_target(node: &Node) -> Result<EndpointAddr> {
+    let history = node.history();
+    let last = history.iter().find(|past| past.direction == Direction::Sending && past.completed);
+    let peer = last.ok_or(Error::NoRecentTarget)?.peer;
+    let paired = node.devices().into_iter().find(|device| device.id == peer);
+    Ok(paired.map_or_else(|| EndpointAddr::new(peer), |device| device.addr()))
 }
 
 async fn show_progress(mut events: broadcast::Receiver<Event>) {

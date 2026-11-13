@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "Aucune réponse à cette adresse"
     next: "Ouvrez Solferry sur cet appareil et vérifiez qu'il est visible par les autres."
+  no_recent_target:
+    title: "Rien n'a encore été envoyé depuis cet appareil"
+    next: "Envoyez une fois à un appareil en le nommant. Ensuite, \"last\" le choisira à nouveau."
   protocol:
     title: "Un problème est survenu dans Solferry"
     next: "Il s'agit d'un bug. Merci de le signaler en indiquant les détails."
