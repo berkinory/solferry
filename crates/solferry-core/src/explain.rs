@@ -99,6 +99,9 @@ pub fn explain(error: &Error) -> Explanation {
             say(t!("explain.invalid_address.title"), t!("explain.invalid_address.next"))
         }
         Error::NoAnswer(_) => say(t!("explain.no_answer.title"), t!("explain.no_answer.next")),
+        Error::NoRecentTarget => {
+            say(t!("explain.no_recent_target.title"), t!("explain.no_recent_target.next"))
+        }
         Error::Protocol(_) => say(t!("explain.protocol.title"), t!("explain.protocol.next")),
     }
 }

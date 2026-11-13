@@ -35,13 +35,16 @@ pub enum Command {
     /// Send files or folders to one or more devices.
     #[command(after_help = help::SEND)]
     Send {
-        /// Files or folders to send.
+        /// Files or folders to send. A lone - sends stdin as one file.
         #[arg(required_unless_present = "text", conflicts_with = "text")]
         paths: Vec<PathBuf>,
+        /// The file name the receiver sees for stdin. Defaults to stdin.txt, or stdin.bin when it isn't text.
+        #[arg(long, conflicts_with = "text")]
+        name: Option<String>,
         /// Send this text to a paired device's clipboard instead of files. Use - to read stdin.
         #[arg(long)]
         text: Option<String>,
-        /// Device name, id prefix or nearby device name. Repeat to send to several.
+        /// Device name, id prefix or nearby device name, or last for the device this one last sent files to. Repeat to send to several.
         #[arg(long = "to", required = true)]
         targets: Vec<String>,
     },
@@ -57,7 +60,7 @@ pub enum Command {
         /// Save here instead of the default download folder.
         #[arg(long)]
         dir: Option<PathBuf>,
-        /// Accept every file offer without asking, from paired and unpaired devices alike.
+        /// Accept file offers from paired devices without asking. Unpaired devices are still asked.
         #[arg(long)]
         yes: bool,
         /// Exit after the first finished incoming transfer.

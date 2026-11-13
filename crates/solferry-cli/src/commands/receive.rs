@@ -1,3 +1,4 @@
+use std::io::IsTerminal;
 use std::path::PathBuf;
 
 use indicatif::HumanBytes;
@@ -21,6 +22,8 @@ pub async fn run(
     let mut pairings = node.pairing_requests();
     let (blocks, mut to_block) = mpsc::unbounded_channel();
     let questions = prompt::spawn(json, blocks);
+    // Under --json stdin is the answer channel by contract, so only plain output can be headless.
+    let headless = !json && !std::io::stdin().is_terminal();
     if json {
         let ready = json!({
             "event": "ready",
@@ -37,8 +40,16 @@ pub async fn run(
         tokio::select! {
             offer = offers.recv() => {
                 let Some(offer) = offer else { break };
-                if yes || offer.summary.auto_accept {
+                let summary = &offer.summary;
+                if summary.auto_accept || (yes && summary.paired) {
                     offer.accept(destination.clone());
+                } else if yes && headless {
+                    eprintln!(
+                        "Refused files from {} ({}): not paired, and --yes only takes files from paired devices",
+                        summary.peer_name,
+                        summary.peer.to_z32(),
+                    );
+                    offer.decline();
                 } else {
                     let _ = questions.send(Question::Offer(offer, destination.clone()));
                 }

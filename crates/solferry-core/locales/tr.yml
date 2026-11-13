@@ -96,6 +96,9 @@ explain:
   no_answer:
     title: "Bu adresten yanıt gelmedi"
     next: "O cihazda Solferry'yi aç ve herkese görünür olduğundan emin ol."
+  no_recent_target:
+    title: "Bu cihazdan henüz bir şey gönderilmedi"
+    next: "Bir kez cihazın adıyla gönder. Sonrasında \"last\" onu yeniden seçer."
   protocol:
     title: "Solferry'de bir sorun oluştu"
     next: "Bu bir yazılım hatası. Lütfen ayrıntılarıyla birlikte bildir."

@@ -92,11 +92,17 @@ solferry receive
 solferry send holiday-photos/ --to my-laptop
 ```
 
-Send to several devices with repeated `--to`. Share text with a paired device's clipboard, or pipe it in with `-`:
+Send to several devices with repeated `--to`. `--to last` sends to the device you last sent files to. Share text with a paired device's clipboard, or pipe it in with `-`:
 
 ```sh
 solferry send --text "see you at 8" --to my-laptop
 git log -1 | solferry send --text - --to my-laptop
+```
+
+A lone `-` sends stdin as a file instead, named with `--name`:
+
+```sh
+tar c holiday-photos/ | solferry send - --name photos.tar --to my-laptop
 ```
 
 ## Who can send you files
@@ -109,6 +115,8 @@ git log -1 | solferry send --text - --to my-laptop
 Pairing never grants this on its own. A paired device still asks until you choose "Always accept" on one of its offers or run `solferry approval <device> auto`. This choice stays on your device. `solferry block` and `solferry unblock` manage blocked devices.
 
 Tailscale devices running solferry show up by themselves, next to devices on your network.
+
+`solferry receive --yes` takes files from every paired device without asking. Unpaired devices are still asked, and on a machine with no terminal to ask on they are refused with one line on stderr.
 
 To keep a server or headless machine receiving, use [deploy/systemd/solferry.service](deploy/systemd/solferry.service).
 

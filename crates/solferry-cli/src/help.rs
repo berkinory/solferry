@@ -18,8 +18,10 @@ pub const AGENTS: &str = r#"Scripts and agents:
                 whose approval is "ask", and before pairing. With --json it
                 prints an "offer" or "pairing_request" event, then reads one
                 line from stdin: accept, decline or block. End of input declines.
-  --yes         receive takes every file offer without asking, from paired and
-                unpaired devices alike. Pairing requests are still asked.
+  --yes         receive takes file offers from paired devices without asking.
+                Unpaired devices are still asked, and refused with a line on
+                stderr when stdin isn't a terminal and --json is off. Pairing
+                requests are still asked.
   --once        receive exits after its first finished incoming transfer.
   --data-dir    Where the device key, settings and paired devices live. Also
                 SOLFERRY_DATA_DIR. Each directory is a separate device, so two
@@ -34,18 +36,24 @@ Typical flow:
   B$ solferry send report.pdf --to A --json   # A's name or id prefix
 "#;
 
-pub const SEND: &str = r#"Each target is a paired device's name or id prefix, a full device id, or the name
-of a device on this network. Unpaired devices are asked before files arrive.
-With --json, transfer events stream as lines, then one "sent" or "send_failed"
+pub const SEND: &str = r#"Each target is a paired device's name or id prefix, a full device id, the name of
+a device on this network, or last: the device this one last finished sending
+files to, paired or not. Unpaired devices are asked before files arrive.
+A lone - reads stdin to the end and sends it as one file, named by --name or
+stdin.txt (stdin.bin when it isn't text). --text - shares stdin with a paired
+device's clipboard instead. With --json, transfer events stream as lines, then one "sent" or "send_failed"
 line per target.
 
 Examples:
   solferry send photo.jpg notes/ --to laptop
   solferry send big.iso --to laptop --to phone --json
+  solferry send notes.md --to last
+  tar c photos/ | solferry send - --name photos.tar --to laptop
   echo hello | solferry send --text - --to laptop"#;
 
 pub const RECEIVE: &str = r#"Offers from devices whose approval is "auto" arrive without asking. Others ask,
-unless --yes is given. With --json each question is one line on stdout,
+and --yes accepts the rest of the paired devices too. Unpaired devices are always
+asked, or refused when there is no terminal to ask on and --json is off. With --json each question is one line on stdout,
   {"event":"offer","id":...,"peer":...,"peer_name":...,"paired":...,
    "files":...,"bytes":...,"first_path":...}
   {"event":"pairing_request","peer":...,"peer_name":...,"code":...}

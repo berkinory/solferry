@@ -74,6 +74,8 @@ pub enum Error {
     InvalidAddress(String),
     #[error("nothing answered at {0}")]
     NoAnswer(String),
+    #[error("this device hasn't sent anything yet")]
+    NoRecentTarget,
     #[error("protocol violation: {0}")]
     Protocol(String),
 }

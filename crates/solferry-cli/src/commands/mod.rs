@@ -6,6 +6,7 @@ mod prompt;
 mod receive;
 mod send;
 mod settings;
+mod stdin;
 
 use std::path::PathBuf;
 
@@ -27,8 +28,8 @@ pub async fn run(cli: Cli) -> Result<()> {
         Command::Send { text: Some(text), targets, .. } => {
             send::text(data_dir, text, targets, json).await
         }
-        Command::Send { paths, targets, text: None } => {
-            send::run(data_dir, paths, targets, json).await
+        Command::Send { paths, name, targets, text: None } => {
+            send::run(data_dir, send::Payload::parse(paths, name), targets, json).await
         }
         Command::Link { paths } => link::run(data_dir, paths, json).await,
         Command::Receive { dir, yes, once } => receive::run(data_dir, dir, yes, once, json).await,
