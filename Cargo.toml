@@ -83,7 +83,7 @@ walkdir = "2"
 webpki-roots = "1"
 
 [workspace.lints.rust]
-# Denied everywhere; the one exception reads what macOS hands a callback, and says why.
+# Denied everywhere; the exceptions call into macOS, and say why.
 unsafe_code = "deny"
 missing_debug_implementations = "warn"
 

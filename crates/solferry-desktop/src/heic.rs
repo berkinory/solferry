@@ -60,9 +60,10 @@ fn jpeg_name(path: &Path) -> PathBuf {
     name
 }
 
-/// Re-encodes the first image at 0.95 with ImageIO, which carries over its metadata,
+/// Re-encodes the first image at 0.95 with `ImageIO`, which carries over its metadata,
 /// orientation, dates and GPS included, without adding any.
 #[cfg(target_os = "macos")]
+#[allow(unsafe_code)]
 fn convert(source: &Path, target: &Path) -> Result<(), &'static str> {
     use objc2_core_foundation::{CFDictionary, CFNumber, CFString, CFURL};
     use objc2_image_io::{
