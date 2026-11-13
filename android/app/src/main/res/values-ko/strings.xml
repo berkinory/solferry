@@ -192,4 +192,7 @@
     <string name="appearance_system">시스템</string>
     <string name="appearance_light">라이트</string>
     <string name="appearance_dark">다크</string>
+    <string name="tile_label">표시</string>
+    <string name="tile_visible">표시 중</string>
+    <string name="tile_hidden">숨김</string>
 </resources>

@@ -200,4 +200,7 @@
     <string name="appearance_system">Système</string>
     <string name="appearance_light">Clair</string>
     <string name="appearance_dark">Sombre</string>
+    <string name="tile_label">Visibilité</string>
+    <string name="tile_visible">Visible</string>
+    <string name="tile_hidden">Masqué</string>
 </resources>

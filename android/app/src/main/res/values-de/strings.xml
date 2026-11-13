@@ -196,4 +196,7 @@
     <string name="appearance_system">System</string>
     <string name="appearance_light">Hell</string>
     <string name="appearance_dark">Dunkel</string>
+    <string name="tile_label">Sichtbarkeit</string>
+    <string name="tile_visible">Sichtbar</string>
+    <string name="tile_hidden">Verborgen</string>
 </resources>

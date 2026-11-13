@@ -196,4 +196,7 @@
     <string name="appearance_system">Systeem</string>
     <string name="appearance_light">Licht</string>
     <string name="appearance_dark">Donker</string>
+    <string name="tile_label">Zichtbaarheid</string>
+    <string name="tile_visible">Zichtbaar</string>
+    <string name="tile_hidden">Verborgen</string>
 </resources>

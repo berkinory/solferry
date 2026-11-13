@@ -192,4 +192,7 @@
     <string name="appearance_system">跟随系统</string>
     <string name="appearance_light">浅色</string>
     <string name="appearance_dark">深色</string>
+    <string name="tile_label">可见性</string>
+    <string name="tile_visible">可见</string>
+    <string name="tile_hidden">已隐藏</string>
 </resources>

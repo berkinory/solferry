@@ -196,4 +196,7 @@
     <string name="appearance_system">Sistem</string>
     <string name="appearance_light">Açık</string>
     <string name="appearance_dark">Koyu</string>
+    <string name="tile_label">Görünürlük</string>
+    <string name="tile_visible">Görünür</string>
+    <string name="tile_hidden">Gizli</string>
 </resources>
