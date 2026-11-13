@@ -6,7 +6,7 @@ mod messages;
 pub use frame::{FrameError, MAX_FRAME_LEN, read_frame, read_small_frame, write_frame};
 pub use messages::{
     Decision, Entry, FileResult, FileStart, Finalized, Hello, Offer, OfferReply, PairChallenge,
-    PairReply, PairRequest, PairReveal, SharedText, Ticket,
+    PairReply, PairRequest, PairReveal, RelayLinks, SharedText, Ticket,
 };
 
 pub const ALPN_TRANSFER: &[u8] = b"solferry/1";
@@ -14,6 +14,7 @@ pub const ALPN_PAIR: &[u8] = b"solferry-pair/1";
 pub const ALPN_TEXT: &[u8] = b"solferry-text/1";
 pub const ALPN_PRESENCE: &[u8] = b"solferry-presence/1";
 pub const ALPN_LEAVING: &[u8] = b"solferry-leaving/1";
+pub const ALPN_RELAYS: &[u8] = b"solferry-relays/1";
 pub const PROTOCOL_VERSION: u32 = 2;
 pub const HASH_LEN: usize = 32;
 

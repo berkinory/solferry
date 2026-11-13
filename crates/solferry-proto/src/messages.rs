@@ -141,3 +141,11 @@ pub struct SharedText {
     #[prost(string, tag = "1")]
     pub text: String,
 }
+
+/// The relay links a paired device uses now, sent after a relay's token changed so the other side
+/// can keep using it.
+#[derive(Clone, PartialEq, Message)]
+pub struct RelayLinks {
+    #[prost(string, repeated, tag = "1")]
+    pub links: Vec<String>,
+}
