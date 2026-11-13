@@ -47,6 +47,13 @@ pub fn lan_addresses() -> Vec<String> {
 
 /// Picks the language for every text the bridge returns, from a tag like `tr-TR` or `en_US`.
 /// Languages Solferry doesn't have fall back to English.
+/// The relay speed limits Settings offers, in bytes per second.
+#[uniffi::export]
+#[must_use]
+pub fn relay_speed_limits() -> Vec<u64> {
+    solferry_core::RELAY_SPEED_LIMITS.to_vec()
+}
+
 #[uniffi::export]
 pub fn set_locale(locale: String) {
     solferry_core::set_locale(&locale);
@@ -344,9 +351,18 @@ impl Solferry {
             return;
         }
         self.change(move |config| {
-            config.relays.retain(|existing| *existing != link);
+            let Ok(added) = RelayLink::parse(&link) else { return };
+            // A new link for a relay already here is its new token, so it replaces the old one.
+            config.relays.retain(|existing| {
+                RelayLink::parse(existing).map_or(true, |existing| !existing.same_server(&added))
+            });
             config.relays.push(link);
         });
+    }
+
+    /// Bytes per second each way while files go through a relay, or `None` for no limit.
+    pub fn set_relay_speed_limit(&self, limit: Option<u64>) {
+        self.change(move |config| config.relay_speed_limit = limit);
     }
 
     pub fn remove_relay(&self, link: String) {

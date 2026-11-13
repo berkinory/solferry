@@ -71,10 +71,24 @@ fn relays(node: &Node, health: &[RelayHealth]) -> Update {
         Some(Relay {
             link: link.clone(),
             url: parsed.url().to_string(),
+            shown: parsed.masked(),
             status: found.map_or(RelayStatus::Checking, Into::into),
         })
     };
     Update::Relays { relays: node.config().relays.iter().filter_map(row).collect() }
+}
+
+fn ready(node: &Node) -> Update {
+    let config = node.config();
+    Update::Ready {
+        id: crate::types::device_id(&node.id()),
+        fingerprint: node.id().fmt_short().to_string(),
+        name: config.name.clone(),
+        download_dir: config.download_dir.display().to_string(),
+        visibility: format!("{:?}", config.visibility),
+        check_updates: update::enabled().then_some(config.check_updates),
+        relay_speed_limit: config.relay_speed_limit,
+    }
 }
 
 pub async fn start(
@@ -93,14 +107,7 @@ pub async fn start(
         }
     };
     let config = node.config();
-    listener.update(Update::Ready {
-        id: crate::types::device_id(&node.id()),
-        fingerprint: node.id().fmt_short().to_string(),
-        name: config.name.clone(),
-        download_dir: config.download_dir.display().to_string(),
-        visibility: format!("{:?}", config.visibility),
-        check_updates: update::enabled().then_some(config.check_updates),
-    });
+    listener.update(ready(&node));
     listener.update(devices(&node));
     listener.update(blocked(&node));
     listener.update(history(&node));

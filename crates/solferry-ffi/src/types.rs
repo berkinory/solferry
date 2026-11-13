@@ -146,9 +146,12 @@ impl From<&RelayHealth> for RelayStatus {
 
 #[derive(Clone, Debug, uniffi::Record)]
 pub struct Relay {
-    /// What was added, including any access token. Removing a relay names it by this.
+    /// What was added, including any access token. Removing a relay names it by this, and
+    /// copying it gives this.
     pub link: String,
     pub url: String,
+    /// What to show: the server, with any token hidden.
+    pub shown: String,
     pub status: RelayStatus,
 }
 
@@ -250,6 +253,8 @@ pub enum Update {
         visibility: String,
         /// `None` when this build has no update channel.
         check_updates: Option<bool>,
+        /// Bytes per second while files go through a relay. `None` means no limit.
+        relay_speed_limit: Option<u64>,
     },
     UpdateAvailable {
         version: String,
