@@ -227,7 +227,7 @@ impl MainView {
 
     pub fn send_now(&mut self, targets: Vec<Target>, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
         self.clear_pending(cx);
-        Self::command(Command::Send { targets, paths }, cx);
+        super::send::launch(targets, paths, self.state.read(cx), cx);
     }
 
     pub fn toggle_target(&mut self, id: EndpointId, target: Target, cx: &mut Context<Self>) {
