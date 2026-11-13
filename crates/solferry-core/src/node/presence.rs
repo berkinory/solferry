@@ -96,8 +96,9 @@ impl Node {
             (fresh, heard.left.clone())
         };
         let devices = self.devices().into_iter().filter(|device| !fresh.contains(&device.id));
-        let probes = devices
-            .map(|device| async move { answers(endpoint, device.addr()).await.then_some(device.id) });
+        let probes = devices.map(|device| async move {
+            answers(endpoint, device.addr()).await.then_some(device.id)
+        });
         let answered: Vec<EndpointId> = join_all(probes).await.into_iter().flatten().collect();
         for peer in &answered {
             self.shared.share_relays(*peer);

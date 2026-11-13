@@ -203,7 +203,7 @@ class Engine(private val context: Context) : Listener {
     }
 
     private fun queueUris(peer: String, uris: List<Uri>) = thread(name = "solferry-queue") {
-        val kept = uris.map { uri -> displayName(uri).let { name -> QueueSources.keep(context, uri, name)?.let { QueuedFile(name, it) } } }
+        val kept = uris.map { uri -> outbox.displayName(uri).let { name -> QueueSources.keep(context, uri, name)?.let { QueuedFile(name, it) } } }
         val files = kept.filterNotNull()
         if (files.size == uris.size) return@thread bridge.queueFiles(peer, files)
         files.forEach { QueueSources.release(context, it.reference) }
