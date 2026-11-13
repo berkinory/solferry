@@ -11,6 +11,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - Dropping files on the Dock icon opens the send sheet with them. On Windows and Linux, files passed to the app when it starts do the same.
 - `solferry send -` sends whatever is piped in as one file. `--name` sets its name, otherwise it arrives as stdin.txt, or stdin.bin when it isn't text.
 - `solferry send --to last` sends to the device this one last finished sending files to.
+- Android has a Quick Settings tile that turns visibility on and off. Long-press it to open Solferry.
 
 ### Changed
 

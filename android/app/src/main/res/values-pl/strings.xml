@@ -204,4 +204,7 @@
     <string name="appearance_system">Systemowy</string>
     <string name="appearance_light">Jasny</string>
     <string name="appearance_dark">Ciemny</string>
+    <string name="tile_label">Widoczność</string>
+    <string name="tile_visible">Widoczne</string>
+    <string name="tile_hidden">Ukryte</string>
 </resources>

@@ -204,4 +204,7 @@
     <string name="appearance_system">Как в системе</string>
     <string name="appearance_light">Светлое</string>
     <string name="appearance_dark">Тёмное</string>
+    <string name="tile_label">Видимость</string>
+    <string name="tile_visible">Виден</string>
+    <string name="tile_hidden">Скрыт</string>
 </resources>

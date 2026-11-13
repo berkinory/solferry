@@ -192,4 +192,7 @@
     <string name="appearance_system">システム</string>
     <string name="appearance_light">ライト</string>
     <string name="appearance_dark">ダーク</string>
+    <string name="tile_label">公開</string>
+    <string name="tile_visible">公開中</string>
+    <string name="tile_hidden">非公開</string>
 </resources>
