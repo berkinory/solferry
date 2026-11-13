@@ -27,6 +27,31 @@ enum Outbox {
         }
     }
 
+    /// Takes over the copies the share extension left in the app group for `solferry://send?batch=`,
+    /// so they're discarded like any other temporary copy.
+    static func shared(_ link: URL) -> [URL] {
+        let batch = URLComponents(url: link, resolvingAgainstBaseURL: false)?
+            .queryItems?.first { $0.name == "batch" }?.value
+        // Any app can open the link, so the batch has to name a folder of ours and nothing else.
+        guard link.host() == "send", let batch, UUID(uuidString: batch) != nil,
+              let shared = FileManager.default
+                  .containerURL(forSecurityApplicationGroupIdentifier: "group.app.solferry")?
+                  .appending(path: "Shared/\(batch)", directoryHint: .isDirectory)
+        else { return [] }
+        let files = FileManager.default
+        defer { try? files.removeItem(at: shared) }
+        let items = (try? files.contentsOfDirectory(atPath: shared.path)) ?? []
+        return items.sorted { Int($0) ?? 0 < Int($1) ?? 0 }.compactMap { item in
+            let folder = directory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+            let source = shared.appending(path: item, directoryHint: .isDirectory)
+            guard let name = try? files.contentsOfDirectory(atPath: source.path).first,
+                  (try? files.createDirectory(at: directory, withIntermediateDirectories: true)) != nil,
+                  (try? files.moveItem(at: source, to: folder)) != nil
+            else { return nil }
+            return folder.appending(path: name)
+        }
+    }
+
     static func temporaryCopy(of source: URL) throws -> URL {
         let folder = directory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
