@@ -48,7 +48,10 @@ fi
 
 cd "$HERE"
 umask 077
+# Keeps settings such as RELAY_BYTES_PER_SECOND that were added to .env by hand.
+KEPT=$(grep -v '^RELAY_HOSTNAME=' .env 2>/dev/null || true)
 printf 'RELAY_HOSTNAME=%s\n' "$HOSTNAME_ARG" > .env
+[ -z "$KEPT" ] || printf '%s\n' "$KEPT" >> .env
 # shellcheck disable=SC2086
 docker compose -p solferry-relay $FILES pull --quiet --ignore-pull-failures
 # shellcheck disable=SC2086

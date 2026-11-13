@@ -16,7 +16,7 @@ pub async fn run(
     once: bool,
     json: bool,
 ) -> Result<()> {
-    let (node, mut offers) = super::start(data_dir).await?;
+    let (mut node, mut offers) = super::start(data_dir.clone()).await?;
     let destination = dir.unwrap_or_else(|| node.config().download_dir.clone());
     let mut events = node.events();
     let mut pairings = node.pairing_requests();
@@ -74,6 +74,11 @@ pub async fn run(
                 if once && matches!(event, Event::Completed { .. }) {
                     break;
                 }
+            }
+            () = node.wants_restart() => {
+                node.shutdown().await?;
+                (node, offers) = super::start(data_dir.clone()).await?;
+                (events, pairings) = (node.events(), node.pairing_requests());
             }
             _ = tokio::signal::ctrl_c() => break,
         }

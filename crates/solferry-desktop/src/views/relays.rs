@@ -3,7 +3,8 @@ use std::borrow::Cow;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::input::Input;
 use gpui_kit::{
-    AnyElement, Context, Hsla, IntoElement, ParentElement, SharedString, Styled, Window, div, px,
+    AnyElement, ClipboardItem, Context, Hsla, IntoElement, ParentElement, SharedString, Styled,
+    Window, div, px,
 };
 use rust_i18n::t;
 use solferry_core::{Config, RelayHealth, RelayLink};
@@ -11,7 +12,7 @@ use solferry_core::{Config, RelayHealth, RelayLink};
 use super::button::Button;
 use super::main_view::MainView;
 use super::settings::change;
-use super::ui;
+use super::{relay_limit, ui};
 use crate::assets::Glyph;
 use crate::state::Tone;
 use crate::theme::{color, palette};
@@ -32,30 +33,36 @@ pub fn section(view: &MainView, config: &Config, cx: &mut Context<MainView>) -> 
         .into_any_element();
     ui::card(Glyph::Relay, &t!("relays.title"), Some(guide), cx)
         .child(
-            ui::padded_well(cx).child(ui::muted(t!("relays.hint"), cx)).children(rows).child(
-                div()
-                    .flex()
-                    .gap(px(SPACE_XS))
-                    .child(div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()))
-                    .child(
-                        Button::new("add-relay")
-                            .icon(Glyph::Add)
-                            .label(t!("relays.add"))
-                            .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
-                    ),
-            ),
+            ui::padded_well(cx)
+                .child(ui::muted(t!("relays.hint"), cx))
+                .children(rows)
+                .child(
+                    div()
+                        .flex()
+                        .gap(px(SPACE_XS))
+                        .child(
+                            div().flex_1().min_w_0().child(Input::new(&view.relay_input).large()),
+                        )
+                        .child(
+                            Button::new("add-relay")
+                                .icon(Glyph::Add)
+                                .label(t!("relays.add"))
+                                .on_click(cx.listener(|view, _, window, cx| add(view, window, cx))),
+                        ),
+                )
+                .child(relay_limit::choices(config, cx)),
         )
         .into_any_element()
 }
 
 fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElement {
-    let removed = url.to_owned();
+    let (removed, copied) = (url.to_owned(), url.to_owned());
     let parsed = RelayLink::parse(url);
     let found = parsed
         .as_ref()
         .ok()
         .and_then(|link| health.iter().find(|health| health.url == *link.url()));
-    let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.url().to_string());
+    let shown = parsed.map_or_else(|_| url.to_owned(), |link| link.masked());
     let line = match found {
         Some(found) => {
             let (tone, label) = status(found, cx);
@@ -76,6 +83,20 @@ fn row(url: &str, health: &[RelayHealth], cx: &mut Context<MainView>) -> AnyElem
                 .min_w_0()
                 .child(ui::text(shown).truncate())
                 .child(line),
+        )
+        .child(
+            Button::new(SharedString::from(format!("copy-{url}")))
+                .ghost()
+                .xs()
+                .icon(Glyph::Copy)
+                .tooltip(t!("relays.copy"))
+                .on_click(cx.listener(move |view, _, _, cx| {
+                    cx.write_to_clipboard(ClipboardItem::new_string(copied.clone()));
+                    view.state.update(cx, |state, cx| {
+                        state.toast(Tone::Success, t!("relays.copied"), None);
+                        cx.notify();
+                    });
+                })),
         )
         .child(
             Button::new(SharedString::from(format!("remove-{url}")))
@@ -106,15 +127,21 @@ pub fn add(view: &MainView, window: &mut Window, cx: &mut Context<MainView>) {
     if url.is_empty() {
         return;
     }
-    if let Err(error) = RelayLink::parse(&url) {
-        view.state.update(cx, |state, cx| {
-            state.toast(Tone::Error, explain(&error).title, None);
-            cx.notify();
-        });
-        return;
-    }
+    let added = match RelayLink::parse(&url) {
+        Ok(added) => added,
+        Err(error) => {
+            view.state.update(cx, |state, cx| {
+                state.toast(Tone::Error, explain(&error).title, None);
+                cx.notify();
+            });
+            return;
+        }
+    };
+    // A new link for a relay already here is its new token, so it replaces the old one.
     change(view, cx, |config| {
-        config.relays.retain(|existing| *existing != url);
+        config.relays.retain(|existing| {
+            RelayLink::parse(existing).map_or(true, |existing| !existing.same_server(&added))
+        });
         config.relays.push(url);
     });
     view.relay_input.update(cx, |input, cx| input.set_value("", window, cx));

@@ -94,6 +94,9 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
         connection.close(close::NOT_PAIRED.into(), b"pair first");
         return Err(Error::NotPaired);
     }
+    if device.is_some() {
+        shared.share_relays(peer);
+    }
     let slots = if device.is_some() { &shared.inbound_slots } else { &shared.stranger_slots };
     let Ok(_slot) = slots.clone().try_acquire_owned() else {
         connection.close(close::BUSY.into(), b"busy");
@@ -159,8 +162,9 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     shared.track(id, connection);
     let meter = Arc::new(Meter::start(id, resumed, bytes, shared.events.clone()));
     let plan = Plan { destination, entries: offer.entries, targets, progress, staging };
+    let throttle = shared.relay_limit.receiving(connection);
     let result = tokio::select! {
-        result = receiver::run(connection, &mut send, plan, meter) => result,
+        result = receiver::run(connection, &mut send, plan, meter, throttle) => result,
         () = route::report_changes(connection, id, route, &shared.events) => unreachable!(),
     }
     .map_err(|error| remote_failure(connection, error));

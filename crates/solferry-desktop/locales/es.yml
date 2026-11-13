@@ -213,6 +213,13 @@ relays:
   refused: "Rechazado, revisa el enlace"
   udp_blocked: "Conectado, puerto UDP 7842 bloqueado"
   connected: "Conectado"
+  copy: "Copiar enlace"
+  copied: "Enlace del Relay copiado"
+  limit:
+    title: "Límite de velocidad del Relay"
+    hint: "Solo se aplica mientras los archivos pasan por el Relay. Las conexiones directas nunca se limitan."
+    none: "Sin límite"
+    speed: "%{amount} MB/s"
 updates:
   title: "Actualizaciones"
   check: "Buscar ahora"

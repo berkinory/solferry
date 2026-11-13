@@ -7,6 +7,10 @@ use crate::store;
 
 const CONFIG_FILE: &str = "config.json";
 const APP_DIR: &str = "solferry";
+const MIB: u64 = 1024 * 1024;
+
+/// The relay speed limits the apps offer, in bytes per second.
+pub const RELAY_SPEED_LIMITS: [u64; 6] = [MIB, 2 * MIB, 5 * MIB, 10 * MIB, 25 * MIB, 50 * MIB];
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -35,6 +39,8 @@ pub struct Config {
     pub relays: Vec<String>,
     /// PEM file with extra root certificates, for relays behind a private CA.
     pub relay_ca_file: Option<PathBuf>,
+    /// Bytes per second each way while files go through a relay. Direct paths are never limited.
+    pub relay_speed_limit: Option<u64>,
     pub visibility: Visibility,
     pub download_dir: PathBuf,
     /// Whether the desktop and Android apps look for new releases.
@@ -54,6 +60,7 @@ impl Default for Config {
             name: gethostname::gethostname().to_string_lossy().into_owned(),
             relays: Vec::new(),
             relay_ca_file: None,
+            relay_speed_limit: None,
             visibility: Visibility::default(),
             download_dir: dirs::download_dir()
                 .or_else(dirs::home_dir)

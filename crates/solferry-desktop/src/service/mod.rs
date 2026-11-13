@@ -7,16 +7,16 @@ use futures::StreamExt;
 use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use iroh::{EndpointAddr, EndpointId};
 use solferry_core::{
-    Appearance, BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, LinkFile,
-    NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform,
-    RelayHealth, TransferId,
+    Appearance, BlockedDevice, Config, Device, Error, Event, IncomingOffer, Link, NearbyDevice,
+    Node, NodeOptions, OfferSummary, PairingRequest, PastTransfer, Platform, RelayHealth,
+    TransferId,
 };
 use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
 mod dispatch;
 
-use dispatch::dispatch;
+use dispatch::{dispatch, open_link};
 
 use crate::updater::Updater;
 use crate::watch;
@@ -67,6 +67,8 @@ pub enum Command {
     Unblock(EndpointId),
     ClearHistory,
     Apply(Config),
+    /// Starts the node again with the settings it has.
+    Restart,
     CheckForUpdates,
     InstallUpdate,
     SetCheckUpdates(bool),
@@ -146,6 +148,7 @@ impl Handle {
 pub fn spawn(data_dir: PathBuf) -> (Handle, UnboundedReceiver<Update>) {
     let (commands, command_queue) = unbounded();
     let (updates, update_queue) = unbounded();
+    let restarts = commands.clone();
     std::thread::Builder::new()
         .name("solferry-core".to_owned())
         .spawn(move || {
@@ -153,7 +156,7 @@ pub fn spawn(data_dir: PathBuf) -> (Handle, UnboundedReceiver<Update>) {
                 .enable_all()
                 .build()
                 .expect("tokio runtime");
-            runtime.block_on(run(data_dir, command_queue, updates));
+            runtime.block_on(run(data_dir, command_queue, restarts, updates));
         })
         .expect("core thread");
     (Handle { commands }, update_queue)
@@ -169,6 +172,7 @@ struct Session {
 
 async fn start(
     data_dir: &Path,
+    restarts: &UnboundedSender<Command>,
     updates: &UnboundedSender<Update>,
     pending: &Pending,
     pairing: &PendingPairings,
@@ -275,17 +279,19 @@ async fn start(
         .abort_handle(),
     );
     tasks.push(watch::follow_presence(node.clone(), updates.clone()));
+    tasks.push(watch::restart_after_rotation(node.clone(), restarts.clone()));
     Some(Session { node, tasks })
 }
 
 async fn run(
     data_dir: PathBuf,
     mut commands: UnboundedReceiver<Command>,
+    restarts: UnboundedSender<Command>,
     updates: UnboundedSender<Update>,
 ) {
     let pending: Pending = Arc::default();
     let pairing: PendingPairings = Arc::default();
-    let mut session = start(&data_dir, &updates, &pending, &pairing).await;
+    let mut session = start(&data_dir, &restarts, &updates, &pending, &pairing).await;
     let mut link: Option<Link> = None;
     let releases = Updater::new(data_dir.clone(), updates.clone());
     releases.follow();
@@ -325,17 +331,19 @@ async fn run(
                 link = None;
                 let _ = updates.unbounded_send(Update::LinkStopped);
             }
-            Command::Apply(config) => {
+            command @ (Command::Apply(_) | Command::Restart) => {
                 if link.take().is_some() {
                     let _ = updates.unbounded_send(Update::LinkStopped);
                 }
                 if let Some(active) = session.take() {
                     stop(active).await;
                 }
-                if let Err(error) = config.save(&data_dir) {
+                if let Command::Apply(config) = command
+                    && let Err(error) = config.save(&data_dir)
+                {
                     let _ = updates.unbounded_send(Update::StartFailed(error));
                 }
-                session = start(&data_dir, &updates, &pending, &pairing).await;
+                session = start(&data_dir, &restarts, &updates, &pending, &pairing).await;
             }
             Command::AnswerPairing { key, accept } => {
                 let Some(request) = pairing.lock().await.remove(&key) else { continue };
@@ -378,22 +386,6 @@ async fn run(
     }
     if let Some(active) = session.take() {
         stop(active).await;
-    }
-}
-
-async fn open_link(node: &Node, paths: Vec<PathBuf>) -> (Option<Link>, Update) {
-    let receiving = paths.is_empty();
-    let started = if receiving {
-        node.receive_link().await
-    } else {
-        node.share_link(paths.into_iter().map(LinkFile::Path).collect()).await
-    };
-    match started {
-        Ok(link) => {
-            let urls = link.urls().to_vec();
-            (Some(link), Update::LinkReady { urls, receiving })
-        }
-        Err(error) => (None, Update::LinkFailed(error)),
     }
 }
 

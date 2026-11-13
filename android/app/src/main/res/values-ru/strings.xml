@@ -144,6 +144,10 @@
     <string name="relay_udp_blocked">Подключено, но UDP 7842 заблокирован</string>
     <string name="relay_refused">Доступ запрещён, проверьте ссылку</string>
     <string name="relay_unreachable">Сервер недоступен</string>
+    <string name="relay_limit_title">Ограничение скорости Relay</string>
+    <string name="relay_limit_hint">Действует, только пока файлы идут через Relay. Прямые соединения не ограничиваются.</string>
+    <string name="relay_limit_none">Без ограничений</string>
+    <string name="relay_limit_speed">%1$d МБ/с</string>
     <string name="folder_title">Сохранять файлы в</string>
     <string name="folder_downloads">Загрузки/Solferry</string>
     <string name="folder_reset">Сбросить</string>

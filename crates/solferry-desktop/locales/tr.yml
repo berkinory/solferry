@@ -213,6 +213,13 @@ relays:
   refused: "Reddedildi, linki kontrol et"
   udp_blocked: "Bağlı ama UDP 7842 engelli"
   connected: "Bağlı"
+  copy: "Linki kopyala"
+  copied: "Relay linki kopyalandı"
+  limit:
+    title: "Relay hız sınırı"
+    hint: "Yalnızca dosyalar Relay sunucusundan geçerken uygulanır. Doğrudan bağlantılar hiç sınırlanmaz."
+    none: "Sınırsız"
+    speed: "%{amount} MB/sn"
 updates:
   title: "Güncellemeler"
   check: "Şimdi kontrol et"

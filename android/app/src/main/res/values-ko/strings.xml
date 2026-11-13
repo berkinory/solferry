@@ -138,6 +138,10 @@
     <string name="relay_udp_blocked">연결됨 (UDP 7842 차단됨)</string>
     <string name="relay_refused">거부됨, 링크를 확인하세요</string>
     <string name="relay_unreachable">서버에 연결할 수 없음</string>
+    <string name="relay_limit_title">Relay 속도 제한</string>
+    <string name="relay_limit_hint">파일이 Relay를 거칠 때만 적용돼요. 직접 연결은 제한하지 않아요.</string>
+    <string name="relay_limit_none">제한 없음</string>
+    <string name="relay_limit_speed">%1$d MB/s</string>
     <string name="folder_title">파일 저장 위치</string>
     <string name="folder_downloads">다운로드/Solferry</string>
     <string name="folder_reset">초기화</string>

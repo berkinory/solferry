@@ -144,6 +144,10 @@
     <string name="relay_udp_blocked">Połączono, ale UDP 7842 jest zablokowany</string>
     <string name="relay_refused">Odrzucono, sprawdź link</string>
     <string name="relay_unreachable">Nie można połączyć z serwerem</string>
+    <string name="relay_limit_title">Limit prędkości Relay</string>
+    <string name="relay_limit_hint">Działa tylko wtedy, gdy pliki idą przez Relay. Połączenia bezpośrednie nigdy nie są ograniczane.</string>
+    <string name="relay_limit_none">Bez limitu</string>
+    <string name="relay_limit_speed">%1$d MB/s</string>
     <string name="folder_title">Zapisuj pliki w</string>
     <string name="folder_downloads">Pobrane/Solferry</string>
     <string name="folder_reset">Resetuj</string>

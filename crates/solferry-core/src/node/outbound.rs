@@ -114,6 +114,7 @@ async fn attempt(
         .map_err(|error| unreachable(&error))?;
     let connection = connecting.await.map_err(|error| unreachable(&error))?;
     *reached = true;
+    shared.share_relays(peer);
     shared.track(manifest.id, &connection);
     let result = async {
         let (send, recv) = connection.open_bi().await.map_err(|_| Error::ConnectionLost)?;
@@ -162,8 +163,9 @@ async fn negotiate(
         platform: crate::Platform::parse(&hello.platform),
     });
     let meter = Meter::start(manifest.id, resumed, bytes, shared.events.clone());
+    let throttle = shared.relay_limit.sending(connection);
     let final_route = tokio::select! {
-        finished = sender::run(connection, &mut recv, manifest, &progress, &meter) => finished?,
+        finished = sender::run(connection, &mut recv, manifest, &progress, &meter, &throttle) => finished?,
         () = route::report_changes(connection, manifest.id, route, &shared.events) => unreachable!(),
     };
     Ok(SendReport {

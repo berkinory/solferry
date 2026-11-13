@@ -22,6 +22,20 @@ impl RelayLink {
         &self.url
     }
 
+    /// The link with its token hidden, for screens and terminals: `https://relay.example.com#••••`.
+    #[must_use]
+    pub fn masked(&self) -> String {
+        let address = self.url.to_string();
+        let address = address.trim_end_matches('/');
+        if self.token.is_some() { format!("{address}#••••") } else { address.to_owned() }
+    }
+
+    /// Whether both links name the same server, whatever their tokens.
+    #[must_use]
+    pub fn same_server(&self, other: &Self) -> bool {
+        self.url == other.url
+    }
+
     pub(crate) fn config(&self) -> RelayConfig {
         let config = RelayConfig::from(self.url.clone());
         match &self.token {

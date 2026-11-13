@@ -84,6 +84,35 @@ impl TrustStore {
         Ok(())
     }
 
+    /// Takes new tokens for relays `peer` gave this device, and ignores any other relay. Every
+    /// stored copy of such a relay changes with it, since the token belongs to the server, not to
+    /// whoever passed it on. Returns the links that changed.
+    pub(crate) fn rotate_relays(
+        &mut self,
+        peer: &EndpointId,
+        links: &[String],
+    ) -> Result<Vec<String>> {
+        let Some(device) = self.get(peer) else { return Ok(Vec::new()) };
+        let given: Vec<RelayLink> =
+            device.relays.iter().filter_map(|link| RelayLink::parse(link).ok()).collect();
+        let rotated: Vec<(RelayLink, &String)> = links
+            .iter()
+            .filter_map(|text| Some((RelayLink::parse(text).ok()?, text)))
+            .filter(|(new, _)| given.iter().any(|old| old.same_server(new) && old != new))
+            .collect();
+        if rotated.is_empty() {
+            return Ok(Vec::new());
+        }
+        for stored in self.devices.iter_mut().flat_map(|device| device.relays.iter_mut()) {
+            let Ok(old) = RelayLink::parse(stored) else { continue };
+            if let Some((_, text)) = rotated.iter().find(|(new, _)| new.same_server(&old)) {
+                stored.clone_from(text);
+            }
+        }
+        store::write_json(&self.path, &self.devices)?;
+        Ok(rotated.into_iter().map(|(_, text)| text.clone()).collect())
+    }
+
     pub(crate) fn blocked(&self) -> &[BlockedDevice] {
         &self.blocked
     }
@@ -130,5 +159,48 @@ impl TrustStore {
             return Err(Error::AmbiguousDevice(query.to_owned()));
         }
         Ok(first)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use iroh::SecretKey;
+
+    use super::*;
+
+    fn device(relays: &[&str]) -> Device {
+        Device {
+            id: SecretKey::generate().public(),
+            name: "peer".to_owned(),
+            auto_accept: false,
+            relays: relays.iter().map(|link| (*link).to_owned()).collect(),
+            direct_addrs: Vec::new(),
+            paired_at_ms: 0,
+            platform: None,
+        }
+    }
+
+    /// A paired device may renew the token of a relay it gave this one, and nothing else: it can't
+    /// add a relay, or change one another device gave.
+    #[test]
+    fn rotates_only_relays_the_peer_gave() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut trust = TrustStore::load(dir.path()).unwrap();
+        let giver = device(&["https://ours.example#old"]);
+        let other = device(&["https://ours.example#old", "https://theirs.example#kept"]);
+        let (giver_id, other_id) = (giver.id, other.id);
+        trust.upsert(giver).unwrap();
+        trust.upsert(other).unwrap();
+
+        let pushed =
+            ["https://ours.example#new", "https://theirs.example#stolen", "https://new.example#x"]
+                .map(str::to_owned);
+        let rotated = trust.rotate_relays(&giver_id, &pushed).unwrap();
+
+        assert_eq!(rotated, ["https://ours.example#new"]);
+        let reloaded = TrustStore::load(dir.path()).unwrap();
+        assert_eq!(reloaded.get(&giver_id).unwrap().relays, ["https://ours.example#new"]);
+        let kept = &reloaded.get(&other_id).unwrap().relays;
+        assert_eq!(kept, &["https://ours.example#new", "https://theirs.example#kept"]);
     }
 }

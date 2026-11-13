@@ -213,6 +213,13 @@ relays:
   refused: "连接被拒绝，请检查链接"
   udp_blocked: "已连接，但 UDP 7842 被阻止"
   connected: "已连接"
+  copy: "复制链接"
+  copied: "已复制 Relay 链接"
+  limit:
+    title: "Relay 限速"
+    hint: "仅在文件经由 Relay 传输时生效，直接连接始终不限速。"
+    none: "不限速"
+    speed: "%{amount} MB/s"
 updates:
   title: "更新"
   check: "立即检查"

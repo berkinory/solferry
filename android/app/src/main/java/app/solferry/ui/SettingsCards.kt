@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,16 +29,19 @@ import app.solferry.design.SpaceTokens
 import uniffi.solferry_ffi.BlockedDevice
 import uniffi.solferry_ffi.Relay
 import uniffi.solferry_ffi.RelayStatus
+import uniffi.solferry_ffi.relaySpeedLimits
 
 private const val GUIDE = "https://github.com/berkinory/solferry/blob/main/docs/relay.md"
+private val MIB = 1024uL * 1024uL
 
 @Composable
 private fun RelayRow(relay: Relay, engine: Engine) {
     val palette = LocalPalette.current
+    var copied by remember(relay.link) { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
         Tile(R.drawable.ic_relay, palette.control, palette.inkMuted)
         Column(Modifier.weight(1f)) {
-            Text(relay.url, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(relay.shown, maxLines = 1, overflow = TextOverflow.Ellipsis)
             when (relay.status) {
                 RelayStatus.CHECKING -> StatusLine(stringResource(R.string.relay_checking))
                 RelayStatus.CONNECTED -> StatusLine(stringResource(R.string.relay_connected), palette.success)
@@ -46,7 +50,11 @@ private fun RelayRow(relay: Relay, engine: Engine) {
                 RelayStatus.UNREACHABLE -> StatusLine(stringResource(R.string.relay_unreachable), palette.danger)
             }
         }
-        Button({ engine.bridge.removeRelay(relay.link) }, icon = R.drawable.ic_delete, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.common_remove, relay.url))
+        Button(
+            { engine.copy(relay.link); copied = true }, icon = if (copied) R.drawable.ic_check else R.drawable.ic_copy,
+            kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(if (copied) R.string.common_copied else R.string.link_copy),
+        )
+        Button({ engine.bridge.removeRelay(relay.link) }, icon = R.drawable.ic_delete, kind = ButtonKind.Ghost, size = ButtonSize.Sm, description = stringResource(R.string.common_remove, relay.shown))
     }
 }
 
@@ -75,6 +83,26 @@ fun RelayCard(state: AppState, engine: Engine) {
                     },
                 )
                 Button(add, label = stringResource(R.string.relay_add))
+            }
+            RelaySpeedLimit(state.me?.relaySpeedLimit, engine)
+        }
+    }
+}
+
+/** How fast files may go through a relay. Choosing restarts the node, which applies it. */
+@Composable
+private fun RelaySpeedLimit(current: ULong?, engine: Engine) {
+    Column(Modifier.padding(top = SpaceTokens.sm.dp), verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
+        Text(stringResource(R.string.relay_limit_title))
+        Muted(stringResource(R.string.relay_limit_hint))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp), verticalArrangement = Arrangement.spacedBy(SpaceTokens.xs.dp)) {
+            (listOf<ULong?>(null) + relaySpeedLimits()).forEach { limit ->
+                Button(
+                    { engine.bridge.setRelaySpeedLimit(limit) },
+                    label = limit?.let { stringResource(R.string.relay_limit_speed, (it / MIB).toInt()) } ?: stringResource(R.string.relay_limit_none),
+                    kind = if (current == limit) ButtonKind.Secondary else ButtonKind.Ghost,
+                    size = ButtonSize.Sm,
+                )
             }
         }
     }

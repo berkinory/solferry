@@ -51,6 +51,7 @@ impl ProtocolHandler for PresenceHandler {
             heard.left.remove(&peer);
             drop(heard);
             let _ = self.0.events.send(Event::Present { peer });
+            self.0.share_relays(peer);
         }
         std::future::ready(Ok(()))
     }
@@ -101,8 +102,11 @@ impl Node {
             connection.close(close::DONE.into(), b"seen");
             Some(device.id)
         });
-        let answered = join_all(probes).await.into_iter().flatten();
-        answered.filter(|id| !left.contains(id)).chain(fresh).collect()
+        let answered: Vec<EndpointId> = join_all(probes).await.into_iter().flatten().collect();
+        for peer in &answered {
+            self.shared.share_relays(*peer);
+        }
+        answered.into_iter().filter(|id| !left.contains(id)).chain(fresh).collect()
     }
 
     /// Tells the paired devices that this one is going away, so they stop showing it at once.

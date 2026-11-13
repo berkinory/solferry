@@ -45,6 +45,10 @@ The sender opens one bidirectional stream, exchanges `Hello`, sends `SharedText`
 
 A device checks whether its paired devices are there by connecting on this ALPN. The finished handshake is the answer, the responder closes at once and no stream is opened.
 
+## Relay links: ALPN `solferry-relays/1`
+
+The first time two paired devices reach each other after one of them starts, each sends the other the relay links it hands out when pairing, as one `RelayLinks` frame on a unidirectional stream. The receiver accepts it only from a paired device and reads it with the 64 KiB limit. For each link it replaces the token of a relay it already stores for that device, and ignores relays that device never gave it. This is how a new token reaches paired devices after a relay rotates it.
+
 ## Close codes
 
 | Code | Meaning |

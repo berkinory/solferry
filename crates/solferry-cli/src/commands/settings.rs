@@ -4,7 +4,7 @@ use std::time::Duration;
 use serde_json::json;
 use solferry_core::{Config, Error, RelayHealth, RelayLink, Result};
 
-use crate::args::RelayCommand;
+use crate::args::{RelayCommand, Speed};
 
 const RELAY_CHECK_WAIT: Duration = Duration::from_secs(6);
 
@@ -17,6 +17,7 @@ pub async fn status(data_dir: &Path, json: bool) -> Result<()> {
             "id": node.id().to_z32(),
             "download_dir": config.download_dir,
             "relays": config.relays.iter().map(|link| address(link)).collect::<Vec<_>>(),
+            "relay_speed_limit": config.relay_speed_limit,
             "overlay": node.overlay_address().map(|ip| ip.to_string()),
             "lan": solferry_core::lan_addresses().iter().map(ToString::to_string).collect::<Vec<_>>(),
         });
@@ -26,9 +27,10 @@ pub async fn status(data_dir: &Path, json: bool) -> Result<()> {
     println!("name      {}", config.name);
     println!("id        {}", node.id().to_z32());
     println!("downloads {}", config.download_dir.display());
-    let urls: Vec<String> = config.relays.iter().map(|link| address(link)).collect();
+    let urls: Vec<String> = config.relays.iter().map(|link| shown(link)).collect();
     let relays = if urls.is_empty() { "none".to_owned() } else { urls.join(", ") };
     println!("relays    {relays}");
+    println!("relay cap {}", speed(config.relay_speed_limit));
     let overlay = node.overlay_address().map_or("none".to_owned(), |ip| ip.to_string());
     println!("overlay   {overlay}");
     let lan: Vec<String> = solferry_core::lan_addresses().iter().map(ToString::to_string).collect();
@@ -110,15 +112,17 @@ pub fn relay(data_dir: &Path, command: RelayCommand, json: bool) -> Result<()> {
             let config = Config::load(data_dir)?;
             if json {
                 let relays: Vec<_> = config.relays.iter().map(|link| address(link)).collect();
-                println!("{}", json!({ "relays": relays }));
+                let limit = config.relay_speed_limit;
+                println!("{}", json!({ "relays": relays, "relay_speed_limit": limit }));
                 return Ok(());
             }
             if config.relays.is_empty() {
                 println!("No relays. This device only uses the local network and overlays.");
             }
             for link in &config.relays {
-                println!("{}", address(link));
+                println!("{}", shown(link));
             }
+            println!("Speed limit on relays: {}", speed(config.relay_speed_limit));
             Ok(())
         }
         RelayCommand::Add { url } => {
@@ -138,7 +142,18 @@ pub fn relay(data_dir: &Path, command: RelayCommand, json: bool) -> Result<()> {
             print_relay_change("relay_remove", &removed, json);
             Ok(())
         }
+        RelayCommand::Limit { speed: Speed(limit) } => {
+            update(data_dir, |config| config.relay_speed_limit = limit)?;
+            if json {
+                println!("{}", json!({ "action": "relay_limit", "relay_speed_limit": limit }));
+            }
+            Ok(())
+        }
     }
+}
+
+fn speed(limit: Option<u64>) -> String {
+    limit.map_or_else(|| "none".to_owned(), |bytes| format!("{} MB/s", bytes / (1024 * 1024)))
 }
 
 fn print_relay_change(action: &str, relay: &RelayLink, json: bool) {
@@ -151,6 +166,11 @@ fn print_relay_change(action: &str, relay: &RelayLink, json: bool) {
 fn address(link: &str) -> String {
     RelayLink::parse(link)
         .map_or_else(|_| "invalid relay".to_owned(), |link| link.url().to_string())
+}
+
+/// What people see: the server, and whether a token goes with it.
+fn shown(link: &str) -> String {
+    RelayLink::parse(link).map_or_else(|_| "invalid relay".to_owned(), |link| link.masked())
 }
 
 fn same_relay(link: &str, other: &RelayLink) -> bool {

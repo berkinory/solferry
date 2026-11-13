@@ -16,6 +16,7 @@ mod onboarding;
 mod pairing;
 pub mod popover;
 mod radar;
+mod relay_limit;
 mod relays;
 mod ring;
 mod send;

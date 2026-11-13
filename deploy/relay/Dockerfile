@@ -6,6 +6,7 @@ FROM alpine:3.22
 RUN apk add --no-cache ca-certificates
 COPY --from=build /out/bin/iroh-relay /usr/local/bin/iroh-relay
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY token.sh /usr/local/bin/relay-token
 RUN mkdir /data && chown 65534 /data
 USER 65534
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

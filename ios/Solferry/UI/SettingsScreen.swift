@@ -84,16 +84,21 @@ private struct RelayRow: View {
     @Environment(Engine.self) private var engine
     @Environment(\.palette) private var palette
     let relay: Relay
+    @State private var copied = false
 
     var body: some View {
         HStack(spacing: SpaceTokens.md) {
             Tile(glyph: .relay, fill: palette.control, tone: palette.inkMuted)
             VStack(alignment: .leading, spacing: 0) {
-                Text(relay.url).lineLimit(1)
+                Text(verbatim: relay.shown).lineLimit(1)
                 status
             }
             Spacer(minLength: 0)
-            ActionButton(glyph: .delete, kind: .ghost, scale: .small, description: "Remove \(relay.url)") {
+            ActionButton(glyph: copied ? .check : .copy, kind: .ghost, scale: .small, description: copied ? "Copied" : "Copy link") {
+                engine.copy(relay.link)
+                copied = true
+            }
+            ActionButton(glyph: .delete, kind: .ghost, scale: .small, description: "Remove \(relay.shown)") {
                 engine.bridge.removeRelay(link: relay.link)
             }
         }
@@ -128,6 +133,7 @@ private struct RelayCard: View {
                     Field(text: $link, placeholder: "https://relay.example.com#token", onSubmit: add) { PasteInto(text: $link) }
                     ActionButton(label: "Add", action: add)
                 }
+                RelaySpeedLimit(current: state.me?.relaySpeedLimit)
             }
         }
         .onChange(of: state.relays.count) { link = "" }
@@ -136,6 +142,32 @@ private struct RelayCard: View {
     private func add() {
         let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { engine.bridge.addRelay(link: trimmed) }
+    }
+}
+
+/// How fast files may go through a relay. Choosing restarts the node, which applies it.
+private struct RelaySpeedLimit: View {
+    @Environment(Engine.self) private var engine
+    let current: UInt64?
+    private let mib: UInt64 = 1024 * 1024
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpaceTokens.xs) {
+            HStack {
+                Text("Relay speed limit")
+                Spacer(minLength: SpaceTokens.sm)
+                Picker("Relay speed limit", selection: Binding(get: { current }, set: { engine.bridge.setRelaySpeedLimit(limit: $0) })) {
+                    Text("No limit").tag(UInt64?.none)
+                    ForEach(relaySpeedLimits(), id: \.self) { limit in
+                        Text("\(Int(limit / mib)) MB/s").tag(UInt64?.some(limit))
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+            }
+            Muted("Only applies while files go through the relay. Direct connections are never limited.")
+        }
+        .padding(.top, SpaceTokens.sm)
     }
 }
 

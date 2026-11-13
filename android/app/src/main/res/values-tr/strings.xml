@@ -140,6 +140,10 @@
     <string name="relay_udp_blocked">Bağlı ama UDP 7842 engelli</string>
     <string name="relay_refused">Reddedildi, linki kontrol et</string>
     <string name="relay_unreachable">Sunucuya ulaşılamıyor</string>
+    <string name="relay_limit_title">Relay hız sınırı</string>
+    <string name="relay_limit_hint">Yalnızca dosyalar Relay sunucusundan geçerken uygulanır. Doğrudan bağlantılar hiç sınırlanmaz.</string>
+    <string name="relay_limit_none">Sınırsız</string>
+    <string name="relay_limit_speed">%1$d MB/sn</string>
     <string name="folder_title">Kayıt klasörü</string>
     <string name="folder_downloads">İndirilenler/Solferry</string>
     <string name="folder_reset">Sıfırla</string>
