@@ -68,6 +68,10 @@
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
 
+        <receiver
+            android:name=".OfferAnswers"
+            android:exported="false" />
+
         <service
             android:name=".TransferJob"
             android:exported="false"
