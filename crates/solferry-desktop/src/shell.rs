@@ -57,8 +57,10 @@ pub fn start(
     cx.spawn(async move |cx: &mut AsyncApp| {
         loop {
             cx.background_executor().timer(POLL_EVERY).await;
-            if instance.woken() {
-                cx.update(show_window);
+            match instance.woken() {
+                Some(files) if !files.is_empty() => cx.update(|cx| send_files(files, cx)),
+                Some(_) => cx.update(show_window),
+                None => {}
             }
             let files = opened.drain();
             if !files.is_empty() {
