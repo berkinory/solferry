@@ -163,7 +163,10 @@ fn parse_speed(text: &str) -> Result<Speed, String> {
     }
     match text.parse::<u64>() {
         Ok(megabytes @ 1..=10_000) => Ok(Speed(Some(megabytes * 1024 * 1024))),
-        _ => Err("use a whole number of MB per second up to 10000, or 0 or off for no limit".to_owned()),
+        _ => {
+            Err("use a whole number of MB per second up to 10000, or 0 or off for no limit"
+                .to_owned())
+        }
     }
 }
 
