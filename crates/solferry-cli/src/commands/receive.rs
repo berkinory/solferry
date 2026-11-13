@@ -84,7 +84,7 @@ pub async fn run(
                 (node, offers) = super::start(data_dir.clone()).await?;
                 (events, pairings) = (node.events(), node.pairing_requests());
             }
-            _ = tokio::signal::ctrl_c() => break,
+            () = super::interrupted() => break,
         }
     }
     queue.abort();

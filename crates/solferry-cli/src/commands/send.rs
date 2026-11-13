@@ -76,7 +76,17 @@ pub async fn run(
         Files::Paths(paths) if queue => Some(paths),
         _ => None,
     };
-    for ((target, addr), outcome) in targets.iter().zip(&addrs).zip(join_all(sends).await) {
+    let outcomes = tokio::select! {
+        outcomes = join_all(sends) => Some(outcomes),
+        () = super::interrupted() => None,
+    };
+    let Some(outcomes) = outcomes else {
+        // Shutting down closes the connections, so receivers drop the offer at once.
+        node.shutdown().await?;
+        progress.abort();
+        return Err(Error::Cancelled);
+    };
+    for ((target, addr), outcome) in targets.iter().zip(&addrs).zip(outcomes) {
         match (outcome, queueable) {
             (Ok(report), _) => show_sent(target, &report, json),
             (Err(Error::Unreachable(_)), Some(paths))

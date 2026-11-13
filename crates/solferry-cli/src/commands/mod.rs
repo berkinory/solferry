@@ -54,3 +54,19 @@ pub async fn run(cli: Cli) -> Result<()> {
 async fn start(data_dir: PathBuf) -> Result<(Node, mpsc::Receiver<IncomingOffer>)> {
     Node::start(NodeOptions { data_dir, isolated: false }).await
 }
+
+/// Resolves on Ctrl-C, or on SIGTERM where there is one, so a run can close its connections
+/// before it exits instead of leaving the other side waiting for them to time out.
+async fn interrupted() {
+    #[cfg(unix)]
+    if let Ok(mut terminate) =
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+    {
+        tokio::select! {
+            _ = tokio::signal::ctrl_c() => {}
+            _ = terminate.recv() => {}
+        }
+        return;
+    }
+    let _ = tokio::signal::ctrl_c().await;
+}

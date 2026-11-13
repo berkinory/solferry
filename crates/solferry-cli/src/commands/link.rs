@@ -28,7 +28,7 @@ pub async fn run(data_dir: PathBuf, paths: Vec<PathBuf>, json: bool) -> Result<(
     }
     loop {
         tokio::select! {
-            _ = tokio::signal::ctrl_c() => break,
+            () = super::interrupted() => break,
             event = events.recv() => match event {
                 Ok(event @ (Event::LinkReceived { .. } | Event::LinkText { .. })) if json => {
                     println!("{}", super::json::encode(&event));
