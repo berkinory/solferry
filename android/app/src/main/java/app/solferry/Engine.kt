@@ -202,8 +202,15 @@ class Engine(private val context: Context) : Listener {
         }
     }
 
+    /** Converts HEIC photos now for a device that can't open them, since it may be days before it's back. */
     private fun queueUris(peer: String, uris: List<Uri>) = thread(name = "solferry-queue") {
-        val kept = uris.map { uri -> outbox.displayName(uri).let { name -> QueueSources.keep(context, uri, name)?.let { QueuedFile(name, it) } } }
+        val jpeg = state.value.convertHeic && Heic.wanted(platform(peer))
+        val kept = uris.map { uri ->
+            val name = outbox.displayName(uri)
+            val heic = jpeg && Heic.matches(name, context.contentResolver.getType(uri))
+            (if (heic) QueueSources.keepJpeg(context, uri, name) else null)
+                ?: QueueSources.keep(context, uri, name)?.let { QueuedFile(name, it) }
+        }
         val files = kept.filterNotNull()
         if (files.size == uris.size) return@thread bridge.queueFiles(peer, files)
         files.forEach { QueueSources.release(context, it.reference) }
