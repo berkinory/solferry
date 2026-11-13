@@ -166,6 +166,7 @@ struct Page<Content: View>: View {
                 .padding(.vertical, SpaceTokens.xs)
         }
         .scrollDismissesKeyboard(.interactively)
+        .scrollIndicators(.hidden)
         .background(palette.page.ignoresSafeArea())
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
@@ -190,6 +191,7 @@ struct SheetPage<Content: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollDismissesKeyboard(.interactively)
+            .scrollIndicators(.hidden)
             .background { if #unavailable(iOS 26) { palette.page.ignoresSafeArea() } }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)

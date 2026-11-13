@@ -35,6 +35,7 @@ struct OnboardingScreen: View {
         }
         .onGeometryChange(for: Double.self) { $0.size.height } action: { height = $0 }
         .scrollBounceBehavior(.basedOnSize)
+        .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .background(palette.page.ignoresSafeArea())
         .onChange(of: current, initial: true) { _, saved in if name.isEmpty { name = saved ?? "" } }

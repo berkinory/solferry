@@ -1,5 +1,4 @@
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
     App, AsyncApp, Context, Entity, FocusHandle, FontWeight, InteractiveElement, IntoElement,
     KeyDownEvent, ParentElement, Render, SharedString, StatefulInteractiveElement, Styled, Window,
@@ -157,7 +156,7 @@ impl Render for Popover {
                 .flex()
                 .flex_col()
                 .children(rows)
-                .overflow_y_scrollbar()
+                .overflow_y_scroll()
                 .into_any_element()
         };
         let mut frame = div()

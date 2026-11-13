@@ -170,9 +170,10 @@ def desktop_colors(c):
         "popover.foreground": c["ink"],
         "switch.background": c["line"],
         "switch.thumb.background": c["page"],
+        # Solferry shows no scrollbars anywhere, text fields included.
         "scrollbar.background": "#00000000",
-        "scrollbar.thumb.background": c["line"],
-        "scrollbar.thumb.hover.background": c["inkMuted"],
+        "scrollbar.thumb.background": "#00000000",
+        "scrollbar.thumb.hover.background": "#00000000",
         "selection.background": c["primary"] + "55",
         "title_bar.background": c["page"],
         "title_bar.border": c["page"],

@@ -1,7 +1,7 @@
 //! The first launch screen: what Solferry is, and the name nearby devices will see.
 
+use gpui_kit::StatefulInteractiveElement;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, Sizable};
 use gpui_kit::{
     AppContext, Context, Entity, FontWeight, InteractiveElement, IntoElement, ParentElement,
@@ -111,6 +111,6 @@ impl Render for Onboarding {
                     )
                     .child(div().mt(px(SPACE_LG)).child(start)),
             );
-        div().id("onboarding").size_full().child(content).overflow_y_scrollbar()
+        div().id("onboarding").size_full().child(content).overflow_y_scroll()
     }
 }

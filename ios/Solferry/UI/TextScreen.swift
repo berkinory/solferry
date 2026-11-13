@@ -19,6 +19,7 @@ struct TextScreen: View {
             TextEditor(text: $text)
                 .focused($focused)
                 .scrollContentBackground(.hidden)
+                .scrollIndicators(.hidden)
                 .padding(SpaceTokens.xs)
                 .frame(minHeight: 120, maxHeight: 280)
                 .background(palette.page, in: controlShape)

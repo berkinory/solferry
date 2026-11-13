@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
+use gpui_kit::StatefulInteractiveElement;
 use gpui_kit::component::input::{InputEvent, InputState, TextareaState};
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::{ActiveTheme, TitleBar};
 use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
@@ -427,7 +427,7 @@ impl Render for MainView {
                         .pt(px(CONTENT_TOP))
                         .pb(px(nav::CLEARANCE))
                         .child(div().mx_auto().w_full().max_w(px(CONTENT_WIDTH)).child(body))
-                        .overflow_y_scrollbar(),
+                        .overflow_y_scroll(),
                 ),
             )
             .child(tabs)

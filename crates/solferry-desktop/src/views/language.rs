@@ -2,7 +2,6 @@
 
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::component::popover::Popover;
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
     Anchor, AnyElement, Context, InteractiveElement, IntoElement, ParentElement, SharedString,
     StatefulInteractiveElement, Styled, div, img, px,
@@ -104,7 +103,7 @@ pub fn section(config: &Config, cx: &mut Context<MainView>) -> AnyElement {
                 .w(px(184.))
                 .max_h(px(MENU_HEIGHT))
                 .p(px(4.))
-                .overflow_y_scrollbar()
+                .overflow_y_scroll()
                 .children(choices)
         });
     ui::card(Glyph::Language, &title, None, cx)

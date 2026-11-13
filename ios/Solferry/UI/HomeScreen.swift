@@ -21,6 +21,7 @@ struct HomeScreen: View {
             .padding(.horizontal, SpaceTokens.md)
             .padding(.vertical, SpaceTokens.xs)
         }
+        .scrollIndicators(.hidden)
         .refreshable {
             engine.bridge.checkPresence()
             try? await Task.sleep(for: .milliseconds(700))

@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use gpui_kit::component::ActiveTheme;
-use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::{
     Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement,
     ParentElement, SharedString, StatefulInteractiveElement, Styled, Window, black, div,
@@ -84,7 +83,7 @@ pub fn present(
         .id("sheet-content")
         .min_h_0()
         .child(div().flex().flex_col().px(px(SPACE_MD)).pb(px(SPACE_MD)).child(content))
-        .overflow_y_scrollbar();
+        .overflow_y_scroll();
     let panel = div()
         .relative()
         .max_h_full()
