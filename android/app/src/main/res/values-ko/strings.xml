@@ -201,4 +201,12 @@
     <string name="tile_label">공개</string>
     <string name="tile_visible">공개 중</string>
     <string name="tile_hidden">비공개</string>
+    <string name="queue_queued">%1$s이(가) 오프라인이에요. 돌아오면 보낼게요</string>
+    <string name="queue_delivered">%1$s을(를) %2$s에 전달했어요</string>
+    <string name="queue_title">전송 대기 중</string>
+    <string name="queue_to">받는 기기: %1$s</string>
+    <string name="queue_hint">기기가 돌아오고 Solferry가 실행 중이면 보내요. %1$d일 후 삭제돼요.</string>
+    <string name="queue_cancel">전송 취소</string>
+    <string name="notify_queue_delivered">대기 중이던 파일 전달됨</string>
+    <string name="notify_queue_failed">대기 중이던 파일 전달 실패</string>
 </resources>

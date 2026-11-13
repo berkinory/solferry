@@ -13,6 +13,7 @@ struct HomeScreen: View {
                 ForEach(state.offers, id: \.key) { OfferCard(incoming: $0) }
                 if let shared = state.text { TextCard(shared: shared) }
                 SendZone { pick(nil) }
+                if !state.queue.isEmpty { QueueCard(queue: state.queue) }
                 if !state.devices.isEmpty { DeviceCard(state: state, onPick: { pick($0) }, onText: text) }
                 NearbyCard(nearby: state.strangers, alone: state.devices.isEmpty)
                 BrowserCard()

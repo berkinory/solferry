@@ -213,4 +213,12 @@
     <string name="tile_label">Widoczność</string>
     <string name="tile_visible">Widoczne</string>
     <string name="tile_hidden">Ukryte</string>
+    <string name="queue_queued">%1$s jest offline. Wyślemy, gdy wróci</string>
+    <string name="queue_delivered">Dostarczono %1$s do %2$s</string>
+    <string name="queue_title">Czeka na wysłanie</string>
+    <string name="queue_to">Do %1$s</string>
+    <string name="queue_hint">Wyśle się, gdy urządzenie wróci, a Solferry będzie działać. Usuwane po %1$d dniach.</string>
+    <string name="queue_cancel">Anuluj wysyłanie</string>
+    <string name="notify_queue_delivered">Oczekujące pliki dostarczone</string>
+    <string name="notify_queue_failed">Oczekujące pliki niedostarczone</string>
 </resources>

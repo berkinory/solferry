@@ -80,6 +80,12 @@ object Notifier {
     fun received(context: Context, label: String, name: String, folder: String) =
         show(context, context.getString(R.string.notify_received_title), context.getString(R.string.notify_received_body, label, name, folder))
 
+    fun queueDelivered(context: Context, label: String, name: String) =
+        show(context, context.getString(R.string.notify_queue_delivered), context.getString(R.string.queue_delivered, label, name))
+
+    fun queueFailed(context: Context, reason: String) =
+        show(context, context.getString(R.string.notify_queue_failed), reason)
+
     /** Before Android 13 there is no permission to ask for, only the switch in system settings. */
     fun allowed(context: Context) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED

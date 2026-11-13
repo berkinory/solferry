@@ -49,6 +49,14 @@ Received data stays in `.solferry-partial/<id>/` inside the destination. Files m
 
 A resumed file is hashed from the first byte on both sides, so a damaged partial file is caught and sent again. The same check covers bit rot and a source file that changes between attempts.
 
+## Queued sends
+
+A send to a paired device that can't be reached can wait in `queue.json` instead of failing. Unpaired devices never queue. An entry holds paths, or for phones a reference only the app understands: an Android content URI with a lasting grant or a private copy when the provider gives none, and a private copy on iOS. The app reopens a reference into a descriptor when the device is back.
+
+`Node::deliver_queued` runs for as long as an app runs. It probes waiting devices every 20 seconds and at once when one of them reaches this device, then sends oldest first through the normal path, so the receiver is asked as for any send. Unreachable, busy or lost connections keep an entry; a decline or any other failure ends it. Entries expire after 7 days, and forgetting or blocking a device drops its entries.
+
+Nothing delivers while no app runs. On Android the process stays only with the background receiving option on; otherwise delivery waits for the next start, as it does on iOS, which suspends apps soon after they leave the screen. The CLI delivers from `receive`, which reads the queue when it starts.
+
 ## Congestion control
 
 Connections use BBR. Consumer Wi-Fi and mobile links lose packets for reasons unrelated to congestion, and loss-based Cubic collapses there. In `tests/netlab`, a 300 Mbit link with 0.5% loss moved 26 MiB/s with BBR and 5 MiB/s with Cubic, and a 200 Mbit link with 1% loss and 80 ms RTT moved 11 MiB/s with BBR and did not finish 300 MiB in 200 seconds with Cubic.

@@ -205,4 +205,12 @@
     <string name="tile_label">Zichtbaarheid</string>
     <string name="tile_visible">Zichtbaar</string>
     <string name="tile_hidden">Verborgen</string>
+    <string name="queue_queued">%1$s is offline. Wordt verstuurd zodra het terug is</string>
+    <string name="queue_delivered">%1$s afgeleverd bij %2$s</string>
+    <string name="queue_title">Wacht op verzenden</string>
+    <string name="queue_to">Naar %1$s</string>
+    <string name="queue_hint">Wordt verstuurd zodra het apparaat terug is en Solferry draait. Vervalt na %1$d dagen.</string>
+    <string name="queue_cancel">Verzenden annuleren</string>
+    <string name="notify_queue_delivered">Wachtende bestanden afgeleverd</string>
+    <string name="notify_queue_failed">Wachtende bestanden niet afgeleverd</string>
 </resources>

@@ -40,8 +40,8 @@ format:
     days: "%{count}일 전"
     months: "%{count}개월 전"
 toast:
-  queued: "%{name}이(가) 오프라인입니다. 돌아오면 보냅니다"
-  queue_delivered: "%{title}을(를) %{name}에 전달했습니다"
+  queued: "%{name}이(가) 오프라인이에요. 돌아오면 보낼게요"
+  queue_delivered: "%{title}을(를) %{name}에 전달했어요"
   update_ready: "Solferry %{version} 설치 준비 완료"
   install_failed: "업데이트를 설치하지 못했어요"
   clipboard_empty: "클립보드에 텍스트가 없어요"
@@ -260,5 +260,5 @@ permissions:
 queue:
   title: "전송 대기 중"
   to: "받는 기기: %{name}"
-  hint: "기기가 돌아오고 Solferry가 실행 중이면 보냅니다. %{days}일 후 삭제됩니다."
+  hint: "기기가 돌아오고 Solferry가 실행 중이면 보내요. %{days}일 후 삭제돼요."
   cancel: "전송 취소"

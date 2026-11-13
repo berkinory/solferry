@@ -205,4 +205,12 @@
     <string name="tile_label">Sichtbarkeit</string>
     <string name="tile_visible">Sichtbar</string>
     <string name="tile_hidden">Verborgen</string>
+    <string name="queue_queued">%1$s ist offline. Wird gesendet, sobald es wieder da ist</string>
+    <string name="queue_delivered">%1$s an %2$s zugestellt</string>
+    <string name="queue_title">Wartet auf Versand</string>
+    <string name="queue_to">An %1$s</string>
+    <string name="queue_hint">Wird gesendet, sobald das Gerät wieder da ist und Solferry läuft. Nach %1$d Tagen verworfen.</string>
+    <string name="queue_cancel">Senden abbrechen</string>
+    <string name="notify_queue_delivered">Wartende Dateien zugestellt</string>
+    <string name="notify_queue_failed">Wartende Dateien nicht zugestellt</string>
 </resources>

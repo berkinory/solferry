@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import uniffi.solferry_ffi.Listener
 import uniffi.solferry_ffi.Problem
+import uniffi.solferry_ffi.QueueResult
+import uniffi.solferry_ffi.QueuedFile
 import uniffi.solferry_ffi.Reach
 import uniffi.solferry_ffi.SharedFile
 import uniffi.solferry_ffi.Solferry
@@ -54,6 +56,8 @@ class Engine(private val context: Context) : Listener {
         }
     }
 
+    override fun reopen(reference: String): Int? = QueueSources.open(context, reference)
+
     override fun update(update: Update) {
         val now = System.nanoTime()
         mutable.update { it.apply(update, now, context.resources) }
@@ -74,6 +78,7 @@ class Engine(private val context: Context) : Listener {
                 val folder = destination()
                 if (!Exporter.export(context, received, folder)) main.post { saveFailed(update.name, folder) }
             }
+            is Update.QueueSettled -> settleQueued(update)
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
@@ -171,20 +176,48 @@ class Engine(private val context: Context) : Listener {
         clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.app_name), text))
     }
 
-    /** Off the main thread: HEIC photos may need converting for some of [peers] first. */
+    /**
+     * A paired device known to be away gets the files once it's back, instead of a send that can't connect. The rest get
+     * them now, off the main thread, since HEIC photos may need converting for some of them first.
+     */
     fun sendUris(peers: Collection<String>, uris: List<Uri>) {
-        val wantJpeg = if (state.value.convertHeic) peers.filter { Heic.wanted(platform(it)) }.toSet() else emptySet()
+        val current = state.value
+        val (away, present) = peers.partition { peer ->
+            current.devices.any { it.identity.id == peer } && current.reachable?.contains(peer) == false
+        }
+        away.forEach { queueUris(it, uris) }
+        if (present.isEmpty()) return
+        val wantJpeg = if (current.convertHeic) present.filter { Heic.wanted(platform(it)) }.toSet() else emptySet()
         thread(name = "solferry-send") {
             val folder = if (wantJpeg.isEmpty()) null else outbox.stage()
             try {
                 val jpegs = folder?.let { outbox.convertHeic(uris, it) }.orEmpty()
-                for (peer in peers) {
+                for (peer in present) {
                     val files = open(uris, if (peer in wantJpeg) jpegs else emptyMap()) ?: return@thread
                     bridge.sendFiles(peer, files)
                 }
             } finally {
                 folder?.deleteRecursively()
             }
+        }
+    }
+
+    private fun queueUris(peer: String, uris: List<Uri>) = thread(name = "solferry-queue") {
+        val kept = uris.map { uri -> displayName(uri).let { name -> QueueSources.keep(context, uri, name)?.let { QueuedFile(name, it) } } }
+        val files = kept.filterNotNull()
+        if (files.size == uris.size) return@thread bridge.queueFiles(peer, files)
+        files.forEach { QueueSources.release(context, it.reference) }
+        mutable.update { it.toast(Tone.Error, context.getString(R.string.error_open_file)) }
+    }
+
+    /** Lets go of what only this send still held, and tells the sender how it went if they aren't looking. */
+    private fun settleQueued(settled: Update.QueueSettled) {
+        val others = state.value.queue.filter { it.id != settled.id }.flatMap { it.references }.toSet()
+        settled.references.filter { it !in others }.forEach { QueueSources.release(context, it) }
+        when (val result = settled.result) {
+            is QueueResult.Delivered -> Notifier.queueDelivered(context, settled.label, settled.name)
+            is QueueResult.Failed -> Notifier.queueFailed(context, result.problem.title)
+            is QueueResult.Dropped -> {}
         }
     }
 

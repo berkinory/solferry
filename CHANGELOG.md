@@ -18,6 +18,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 - HEIC photos sent from iPhone, Android or a Mac to a Linux or Windows device arrive as JPEG, converted on the sending device at full quality with their date, location and orientation kept. Turn it off in Settings under "Convert HEIC photos to JPEG".
 - Incoming file notifications have Accept and Decline buttons on Android, iOS, macOS and Windows, so you can answer without opening the app. The notification goes away once the offer is answered anywhere, withdrawn or expired. Linux keeps the plain notification.
 - Links in received text are underlined and open when you tap or click them. Only links written out with http, https or mailto count, and nothing opens by itself.
+- Sending to a paired device that's offline queues the files instead of failing. They go out by themselves when the device is back, and it still asks before taking them. Queued sends show on the home screen with a cancel button and are dropped after 7 days. Delivery needs Solferry running on the sending side; on Android that means the background receiving option, on iOS the app on screen, otherwise they go out the next time you open it. The CLI has `send --queue`, `solferry queue`, and `receive` delivers them.
 
 ### Changed
 
