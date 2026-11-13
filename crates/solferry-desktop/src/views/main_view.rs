@@ -344,7 +344,7 @@ impl MainView {
     }
 }
 
-fn file_picker() -> PathPromptOptions {
+pub fn file_picker() -> PathPromptOptions {
     PathPromptOptions {
         files: true,
         directories: true,

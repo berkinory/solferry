@@ -1,8 +1,8 @@
 use rust_i18n::t;
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
-use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
+use tray_icon::{Icon, MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 
-use super::{ICON_SIZE, INK, Sender, TrayAction, mark_alpha};
+use super::{Anchor, ICON_SIZE, INK, Sender, TrayAction, mark_alpha};
 
 pub struct Tray(Option<TrayIcon>);
 
@@ -37,9 +37,31 @@ fn build(actions: Sender<TrayAction>) -> Option<TrayIcon> {
     let tray = tray.with_icon(icon);
     let tray = tray
         .with_menu(Box::new(menu))
+        // A left click opens the popover, and the menu stays on a right click.
+        .with_menu_on_left_click(false)
         .build()
         .inspect_err(|error| tracing::warn!(%error, "tray is unavailable"))
         .ok()?;
+    let clicks = actions.clone();
+    std::thread::spawn(move || {
+        while let Ok(event) = TrayIconEvent::receiver().recv() {
+            if let TrayIconEvent::Click {
+                rect,
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                let anchor = Anchor::Icon {
+                    x: rect.position.x,
+                    y: rect.position.y,
+                    width: f64::from(rect.size.width),
+                    height: f64::from(rect.size.height),
+                };
+                let _ = clicks.send(TrayAction::Popover(anchor));
+            }
+        }
+    });
     std::thread::spawn(move || {
         while let Ok(event) = MenuEvent::receiver().recv() {
             let action = if event.id == open_id {

@@ -4,7 +4,7 @@ use ksni::blocking::{Handle, TrayMethods};
 use ksni::menu::{MenuItem, StandardItem};
 use rust_i18n::t;
 
-use super::{ICON_SIZE, INK, Sender, TrayAction, mark_alpha};
+use super::{Anchor, ICON_SIZE, INK, Sender, TrayAction, mark_alpha};
 
 struct SolferryTray {
     actions: Sender<TrayAction>,
@@ -25,8 +25,8 @@ impl ksni::Tray for SolferryTray {
         vec![ksni::Icon { width: side, height: side, data }]
     }
 
-    fn activate(&mut self, _x: i32, _y: i32) {
-        let _ = self.actions.send(TrayAction::Open);
+    fn activate(&mut self, x: i32, y: i32) {
+        let _ = self.actions.send(TrayAction::Popover(Anchor::Point { x, y }));
     }
 
     fn menu(&self) -> Vec<MenuItem<Self>> {

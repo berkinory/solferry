@@ -10,6 +10,7 @@ mod opened;
     allow(dead_code, reason = "Linux asks for no permissions")
 )]
 mod permissions;
+mod popover;
 mod qr;
 mod service;
 mod shell;

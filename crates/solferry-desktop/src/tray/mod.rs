@@ -4,6 +4,19 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 pub enum TrayAction {
     Open,
     Quit,
+    /// A left click, which opens or closes the quick send popover.
+    Popover(Anchor),
+}
+
+/// Where the tray icon sits, as the platform tells it.
+#[derive(Clone, Copy, Debug)]
+pub enum Anchor {
+    /// The icon's rectangle in physical pixels, from the top left of the main display.
+    #[cfg_attr(target_os = "linux", expect(dead_code, reason = "ksni gives a point"))]
+    Icon { x: f64, y: f64, width: f64, height: f64 },
+    /// The point a Linux tray host passed with the click. Many pass (0, 0) instead.
+    #[cfg_attr(not(target_os = "linux"), expect(dead_code, reason = "only ksni gives a point"))]
+    Point { x: i32, y: i32 },
 }
 
 pub struct TrayEvents {

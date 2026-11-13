@@ -14,6 +14,7 @@ mod nav;
 mod offers;
 mod onboarding;
 mod pairing;
+pub mod popover;
 mod radar;
 mod relays;
 mod ring;
@@ -27,3 +28,4 @@ mod ui;
 mod updates;
 
 pub use main_view::MainView;
+pub use popover::Popover;

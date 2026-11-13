@@ -30,6 +30,7 @@ pub struct Shell {
     pub state: Entity<AppState>,
     pub service: Handle,
     pub tray: Tray,
+    pub popover: crate::popover::Slot,
     window: Option<(gpui_kit::AnyWindowHandle, WeakEntity<MainView>)>,
 }
 
@@ -43,7 +44,13 @@ pub fn start(
     cx: &mut App,
 ) {
     let state = cx.new(|_| AppState::default());
-    cx.set_global(Shell { state, service, tray, window: None });
+    cx.set_global(Shell {
+        state,
+        service,
+        tray,
+        popover: crate::popover::Slot::default(),
+        window: None,
+    });
     if !hidden {
         show_window(cx);
     }
@@ -70,6 +77,7 @@ pub fn start(
                 cx.update(|cx| match action {
                     TrayAction::Open => show_window(cx),
                     TrayAction::Quit => quit(cx),
+                    TrayAction::Popover(anchor) => crate::popover::toggle(anchor, cx),
                 });
             }
         }
