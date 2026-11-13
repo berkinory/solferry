@@ -9,6 +9,8 @@ Runs real `solferry` binaries inside Linux network namespaces. Two homes sit beh
 | `nat-no-relay` | Two NATs with no relay: pairing fails with an error that says what to do |
 | `relay-from-pairing` | Only one side set up a relay, the other gets it and its token from the pairing code |
 | `relay-wrong-token` | A relay refuses devices without its token |
+| `relay-rotation` | A relay gets a new token: the paired device that only knew the old one picks up the new one and keeps working after the old one stops |
+| `relay-speed-limit` | The relay speed limit holds on the sending and the receiving side, and never touches a direct path |
 | `direct-throughput` | Speed on a clean direct path |
 | `offline-lan` | No internet and no servers: discovery by name and transfer |
 | `wifi-link`, `lossy-link`, `jitter-link` | Throughput under loss, delay and jitter |

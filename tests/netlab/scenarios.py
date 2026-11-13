@@ -138,6 +138,65 @@ def relay_wrong_token():
     return {"rc": rc, "seconds": round(seconds, 1), "tail": output.splitlines()[-2:]}, stage
 
 
+def relay_rotation():
+    """Relay x gets a new token. Beta only knows the old one, from pairing, and must keep working
+    through the grace period and after the old token stops."""
+    work = Path(tempfile.mkdtemp(prefix="solferry-netlab-"))
+    work.chmod(0o755)
+    lab.up("symmetric")
+    lab.start_relays(RELAY, work)
+    lab.configure(work / "a", "alpha", [lab.RELAY_X])
+    (work / "b").mkdir()
+    (work / "b" / "config.json").write_text(json.dumps({"name": "beta", "relay_ca_file": str(work / "ca.pem")}))
+    sender, receiver = lab.Host("solferry-a", work / "a", SOLFERRY), lab.Host("solferry-b", work / "b", SOLFERRY)
+    stage = type("Rotated", (), {"close": lambda self: (sender.stop(), receiver.stop())})()
+    rc, output, _ = lab.pair(sender, receiver, work)
+    if rc:
+        raise RuntimeError(f"pairing failed: {output}")
+    payloads = [work / "first.bin", work / "second.bin"]
+    for payload in payloads:
+        with open("/dev/urandom", "rb") as source, open(payload, "wb") as target:
+            target.write(source.read(20 * 1024 * 1024))
+    rotated = "netlab-rotated"
+    lab.restart_relay_x(RELAY, work, [rotated, lab.RELAY_TOKEN])
+    sender.run(["relay", "add", lab.RELAY_X.replace(lab.RELAY_TOKEN, rotated)])
+    receiver.spawn(["receive", "--yes", "--dir", work / "inbox"], work / "receive.log")
+    time.sleep(3)
+
+    def deliver(payload):
+        rc, output, seconds = sender.run(["send", payload, "--to", "beta"])
+        target = work / "inbox" / payload.name
+        return summary(rc, output, seconds, target.exists() and digest(target) == digest(payload), 20)
+
+    grace = deliver(payloads[0])
+    time.sleep(2)
+    stored = json.loads((work / "b" / "devices.json").read_text())[0]["relays"]
+    adopted = any(link.endswith("#" + rotated) for link in stored)
+    lab.restart_relay_x(RELAY, work, [rotated])
+    time.sleep(5)
+    finished = deliver(payloads[1])
+    return {"grace": grace, "beta_adopted_new_token": adopted, "after_finish": finished}, stage
+
+
+def relay_speed_limit():
+    """A 5 MB/s relay speed limit on the sender, then on the receiver, then on both over a direct
+    path, which must not be limited."""
+    results = {}
+    for label, nat, limited in [
+        ("relay_send_capped", "symmetric", "a"),
+        ("relay_receive_capped", "symmetric", "b"),
+        ("direct_uncapped", "cone", "ab"),
+    ]:
+        stage = Stage(nat, 40)
+        for host in limited:
+            getattr(stage, host).run(["relay", "limit", "5"])
+        stage.listen()
+        rc, output, seconds = stage.send()
+        results[label] = summary(rc, output, seconds, stage.delivered(), 40)
+        stage.close()
+    return results, type("Done", (), {"close": lambda self: None})()
+
+
 def bad_link(netem):
     def run():
         stage = Stage("cone", 300)
@@ -227,6 +286,8 @@ SCENARIOS = {
     "nat-no-relay": nat_no_relay,
     "relay-from-pairing": relay_from_pairing,
     "relay-wrong-token": relay_wrong_token,
+    "relay-rotation": relay_rotation,
+    "relay-speed-limit": relay_speed_limit,
     "direct-throughput": direct_path,
     "offline-lan": offline_lan,
     "wifi-link": bad_link("delay 5ms loss 0.5% rate 300mbit"),

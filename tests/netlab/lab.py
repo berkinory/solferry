@@ -98,17 +98,18 @@ def lan():
         ns(name, "ip route add 224.0.0.0/4 dev eth0")
 
 
-def start_relays(binary, workdir):
-    make_ca(workdir)
-    ns("solferry-wan", "ip addr add 203.0.113.2/24 dev br0")
-    for name, ip in [("x", "203.0.113.1"), ("y", "203.0.113.2")]:
-        config = workdir / f"relay-{name}.toml"
-        config.write_text(
-            f'''http_bind_addr = "{ip}:8340"
+RELAYS = [("x", "203.0.113.1"), ("y", "203.0.113.2")]
+
+
+def run_relay(binary, workdir, name, ip, tokens):
+    config = workdir / f"relay-{name}.toml"
+    listed = ", ".join(f'"{token}"' for token in tokens)
+    config.write_text(
+        f'''http_bind_addr = "{ip}:8340"
 enable_relay = true
 enable_quic_addr_discovery = true
 enable_metrics = false
-access.shared_token = ["{RELAY_TOKEN}"]
+access.shared_token = [{listed}]
 
 [tls]
 https_bind_addr = "{ip}:3340"
@@ -118,8 +119,23 @@ cert_mode = "Manual"
 manual_cert_path = "{workdir}/relay.pem"
 manual_key_path = "{workdir}/relay.key"
 '''
-        )
-        sh(f"ip netns exec solferry-wan {binary} --config-path {config} >{workdir}/relay-{name}.log 2>&1 &")
+    )
+    sh(f"ip netns exec solferry-wan {binary} --config-path {config} >>{workdir}/relay-{name}.log 2>&1 &")
+
+
+def start_relays(binary, workdir):
+    make_ca(workdir)
+    ns("solferry-wan", "ip addr add 203.0.113.2/24 dev br0")
+    for name, ip in RELAYS:
+        run_relay(binary, workdir, name, ip, [RELAY_TOKEN])
+    time.sleep(1)
+
+
+def restart_relay_x(binary, workdir, tokens):
+    """Restarts relay x with these tokens, as the deploy scripts do when rotating."""
+    sh(f"pkill -f {workdir}/relay-x.toml", check=False)
+    time.sleep(0.5)
+    run_relay(binary, workdir, "x", RELAYS[0][1], tokens)
     time.sleep(1)
 
 
