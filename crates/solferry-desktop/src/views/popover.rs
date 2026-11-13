@@ -83,7 +83,7 @@ fn pick_files(
 }
 
 fn device_row(row: &Row, cx: &mut Context<Popover>) -> impl IntoElement {
-    let target = Target { addr: row.addr.clone(), name: row.name.clone() };
+    let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
     let hover = cx.theme().accent;
     div()
         .id(SharedString::from(format!("quick-{}", row.id)))
