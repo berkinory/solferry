@@ -213,6 +213,13 @@ relays:
   refused: "拒否されました。リンクを確認してください"
   udp_blocked: "接続済み (UDP 7842 はブロックされています)"
   connected: "接続済み"
+  copy: "リンクをコピー"
+  copied: "Relay のリンクをコピーしました"
+  limit:
+    title: "Relay の速度制限"
+    hint: "ファイルが Relay を経由するときだけ適用されます。直接接続は制限されません。"
+    none: "制限なし"
+    speed: "%{amount} MB/s"
 updates:
   title: "アップデート"
   check: "今すぐ確認"
