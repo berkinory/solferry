@@ -11,6 +11,7 @@ mod locale;
 mod net;
 mod node;
 mod platform;
+mod queue;
 mod relay;
 mod route;
 mod store;
@@ -29,9 +30,10 @@ pub use link::{Link, LinkFile};
 pub use locale::set_locale;
 pub use node::{
     IncomingOffer, Invite, NearbyDevice, Node, NodeOptions, OfferSummary, PairingRequest,
-    RelayHealth, SendReport,
+    Reopen, RelayHealth, SendReport,
 };
 pub use platform::Platform;
+pub use queue::{QUEUE_DAYS, QueueOutcome, QueuedFiles, QueuedSend, SharedSource};
 pub use relay::RelayLink;
 pub use route::{Route, lan_addresses};
 pub use transfer::NamedFile;

@@ -8,6 +8,7 @@ mod overlay;
 mod pairing;
 mod presence;
 mod probe;
+mod queued;
 mod relays;
 mod subnet;
 pub(crate) mod text;
@@ -25,7 +26,7 @@ use iroh_mdns_address_lookup::MdnsAddressLookup;
 use solferry_proto::{
     ALPN_LEAVING, ALPN_PAIR, ALPN_PRESENCE, ALPN_RELAYS, ALPN_TEXT, ALPN_TRANSFER, close,
 };
-use tokio::sync::{Semaphore, broadcast, mpsc, watch};
+use tokio::sync::{Notify, Semaphore, broadcast, mpsc, watch};
 
 pub use confirm::PairingRequest;
 pub use health::RelayHealth;
@@ -33,11 +34,13 @@ pub use inbound::{IncomingOffer, OfferSummary};
 pub use nearby::NearbyDevice;
 pub use outbound::SendReport;
 pub use pairing::Invite;
+pub use queued::Reopen;
 
 use crate::config::Config;
 use crate::error::{Error, Result};
 use crate::event::{Event, TransferId};
 use crate::history::{History, PastTransfer};
+use crate::queue::Queue;
 use crate::relay::RelayLink;
 use crate::route;
 use crate::transfer::RelayLimit;
@@ -80,6 +83,9 @@ pub(crate) struct Shared {
     history: Mutex<History>,
     running: Mutex<HashMap<TransferId, PastTransfer>>,
     pub(crate) heard: Mutex<presence::Heard>,
+    queue: Mutex<Queue>,
+    /// Wakes queue delivery when a send joins the queue.
+    queue_added: Notify,
     uses_relays: bool,
     pub(crate) relay_limit: RelayLimit,
     relay_shares: relays::Shares,
@@ -164,6 +170,10 @@ impl Shared {
         self.history.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
+    fn queue(&self) -> MutexGuard<'_, Queue> {
+        self.queue.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
     pub(crate) fn trust(&self) -> MutexGuard<'_, TrustStore> {
         self.trust.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
     }
@@ -213,6 +223,8 @@ impl Node {
             history: Mutex::new(History::load(&data_dir)),
             running: Mutex::new(HashMap::new()),
             heard: Mutex::new(presence::Heard::default()),
+            queue: Mutex::new(Queue::load(&data_dir)),
+            queue_added: Notify::new(),
             uses_relays,
             relay_limit,
             relay_shares: relays::Shares::default(),
@@ -260,10 +272,15 @@ impl Node {
         self.shared.trust().resolve(query).cloned()
     }
 
+    /// Unpairs the device, dropping any sends queued for it.
     pub fn forget(&self, query: &str) -> Result<Device> {
-        let mut trust = self.shared.trust();
-        let device = trust.resolve(query)?.clone();
-        trust.remove(&device.id)?;
+        let device = {
+            let mut trust = self.shared.trust();
+            let device = trust.resolve(query)?.clone();
+            trust.remove(&device.id)?;
+            device
+        };
+        self.drop_stale();
         Ok(device)
     }
 
@@ -294,7 +311,9 @@ impl Node {
 
     /// Refuses every connection from this device and forgets it if it was paired.
     pub fn block(&self, id: EndpointId, name: Option<String>) -> Result<()> {
-        self.shared.trust().block(id, name)
+        self.shared.trust().block(id, name)?;
+        self.drop_stale();
+        Ok(())
     }
 
     pub fn unblock(&self, id: EndpointId) -> Result<()> {
