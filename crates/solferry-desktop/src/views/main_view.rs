@@ -8,7 +8,7 @@ use gpui_kit::component::{ActiveTheme, TitleBar};
 use gpui_kit::{
     AnyElement, AppContext, Context, Entity, ExternalPaths, FocusHandle, Focusable, FontWeight,
     InteractiveElement, IntoElement, ParentElement, PathPromptOptions, Render, Styled, Window, div,
-    px, svg,
+    px,
 };
 use iroh::EndpointId;
 use rust_i18n::t;
@@ -20,11 +20,9 @@ use super::{
     confirm, history, home, nav, pairing, relay_limit, relays, send, settings, texts, toast,
     toast_timing,
 };
-use crate::assets::MARK;
 use crate::service::{Command, Target};
 use crate::shell::Shell;
 use crate::state::AppState;
-use crate::theme::{color, palette};
 use crate::tokens::{SPACE_SM, TYPE_LABEL};
 
 pub const COPIED_FOR: Duration = Duration::from_millis(1500);
@@ -32,8 +30,6 @@ const FLY_FOR: Duration = Duration::from_millis(380);
 const CONTENT_WIDTH: f32 = 720.0;
 const HEADER_HEIGHT: f32 = 50.0;
 const CONTENT_TOP: f32 = 4.0;
-/// The mark's art sits low in its box, and letters read high in theirs.
-const MARK_LIFT: f32 = -2.0;
 const TITLE_BAR: f32 = 34.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -429,7 +425,7 @@ impl Render for MainView {
             }))
             .child(TitleBar::new())
             .child(div().flex_none().h(px(HEADER_HEIGHT - TITLE_BAR)))
-            .child(brand(cx))
+            .child(brand())
             .child(div().flex_1().min_h_0().child(content))
             .child(tabs)
             .children(sheet)
@@ -466,7 +462,7 @@ impl MainView {
 }
 
 /// Centered over the title bar, which keeps its own window buttons and drag area.
-fn brand(cx: &Context<MainView>) -> impl IntoElement {
+fn brand() -> impl IntoElement {
     div()
         .absolute()
         .top_0()
@@ -476,9 +472,5 @@ fn brand(cx: &Context<MainView>) -> impl IntoElement {
         .flex()
         .items_center()
         .justify_center()
-        .gap(px(6.))
-        .child(
-            svg().path(MARK).size(px(14.)).mt(px(MARK_LIFT)).text_color(color(palette(cx).brand)),
-        )
         .child(div().text_size(px(TYPE_LABEL)).font_weight(FontWeight::MEDIUM).child("Solferry"))
 }
