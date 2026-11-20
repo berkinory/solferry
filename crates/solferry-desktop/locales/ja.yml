@@ -110,6 +110,7 @@ history:
   title: "履歴"
   clear: "消去"
   failed: "失敗"
+  missing: "このファイルはもうありません"
   empty:
     title: "まだ転送はありません"
     body: "送受信したファイルがここに表示されます。"

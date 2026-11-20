@@ -110,6 +110,7 @@ history:
   title: "Cronologia"
   clear: "Cancella"
   failed: "Non riuscito"
+  missing: "Quel file non c'è più"
   empty:
     title: "Ancora nessun trasferimento"
     body: "Qui compariranno i file che invii e ricevi."

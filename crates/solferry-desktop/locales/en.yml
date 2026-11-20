@@ -110,6 +110,7 @@ history:
   title: "History"
   clear: "Clear"
   failed: "Failed"
+  missing: "That file isn't there anymore"
   empty:
     title: "No transfers yet"
     body: "Files you send or receive show up here."

@@ -110,6 +110,7 @@ history:
   title: "Geschiedenis"
   clear: "Wissen"
   failed: "Mislukt"
+  missing: "Dat bestand is er niet meer"
   empty:
     title: "Nog geen overdrachten"
     body: "Bestanden die je verstuurt of ontvangt, verschijnen hier."
