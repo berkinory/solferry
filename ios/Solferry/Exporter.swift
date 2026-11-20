@@ -71,6 +71,8 @@ enum Exporter {
             moved = (try? FileManager.default.moveItem(at: file, to: writable)) != nil
         }
         if !moved, picked { try? FileManager.default.removeItem(at: target) }
+        // The core named it by the path it handed over, which is where history looks it up.
+        if moved { SavedFiles.moved(([staging.path] + path + [file.lastPathComponent]).joined(separator: "/"), to: target) }
         return moved
     }
 

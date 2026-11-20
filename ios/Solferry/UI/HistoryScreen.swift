@@ -1,7 +1,11 @@
+import QuickLook
 import SwiftUI
 
 struct HistoryScreen: View {
     @Environment(Engine.self) private var engine
+    @State private var preview: URL?
+    /// A file in a picked folder is only readable while the app holds access to it, so the preview keeps it open.
+    @State private var scoped: URL?
 
     var body: some View {
         let history = engine.state.history
@@ -12,10 +16,30 @@ struct HistoryScreen: View {
                 Card(glyph: .history, title: "History") {
                     ActionButton(label: "Clear", kind: .ghost, scale: .small) { engine.bridge.clearHistory() }
                 } content: {
-                    Well { ForEach(Array(history.enumerated()), id: \.offset) { Past(entry: $0.element) } }
+                    Well { ForEach(Array(history.enumerated()), id: \.offset) { Past(entry: $0.element, onOpen: opener(for: $0.element)) } }
                 }
             }
+            .quickLookPreview($preview)
+            .onChange(of: preview) { _, shown in
+                if shown == nil { release() }
+            }
         }
+    }
+
+    /// Only received files can be opened: a phone sends what apps hand it, which has no place of its own to go back to.
+    private func opener(for entry: HistoryEntry) -> (() -> Void)? {
+        guard !entry.sending, entry.completed, entry.path != nil else { return nil }
+        return {
+            guard let url = engine.savedFile(of: entry) else { return }
+            release()
+            if url.startAccessingSecurityScopedResource() { scoped = url }
+            preview = url
+        }
+    }
+
+    private func release() {
+        scoped?.stopAccessingSecurityScopedResource()
+        scoped = nil
     }
 }
 
@@ -42,6 +66,7 @@ private struct NoHistory: View {
 private struct Past: View {
     @Environment(\.palette) private var palette
     let entry: HistoryEntry
+    let onOpen: (() -> Void)?
 
     var body: some View {
         HStack(spacing: SpaceTokens.md) {
@@ -61,5 +86,8 @@ private struct Past: View {
             }
         }
         .padding(SpaceTokens.sm)
+        .contentShape(Rectangle())
+        .onTapGesture { onOpen?() }
+        .accessibilityAddTraits(onOpen == nil ? [] : .isButton)
     }
 }

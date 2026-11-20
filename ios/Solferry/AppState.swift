@@ -131,7 +131,7 @@ struct AppState {
             }
         case .routeChanged: break
         case let .reconnecting(id): change(id) { $0.phase = .reconnecting }
-        case let .completed(id):
+        case let .completed(id, _):
             change(id) {
                 $0.phase = .done
                 $0.transferred = $0.total
