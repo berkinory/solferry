@@ -2,7 +2,7 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
-## Unreleased
+## 0.0.5 - 2026-11-20
 
 ### Added
 
