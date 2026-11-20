@@ -155,13 +155,14 @@ fn under_icon(anchor: Anchor, size: Size<Pixels>) -> Option<Point<Pixels>> {
 /// AppKit draws a frame of its own around a window without a title bar, with corners that don't
 /// match the card. Without it the card is the only shape on screen.
 #[cfg(target_os = "macos")]
+#[allow(unsafe_code)]
 pub fn borderless(window: &gpui_kit::Window) {
     use objc2::msg_send;
     use objc2::runtime::AnyObject;
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
     const NONACTIVATING_PANEL: usize = 1 << 7;
-    let Ok(handle) = window.window_handle() else { return };
+    let Ok(handle) = HasWindowHandle::window_handle(window) else { return };
     let RawWindowHandle::AppKit(handle) = handle.as_raw() else { return };
     let view = handle.ns_view.as_ptr().cast::<AnyObject>();
     // SAFETY: the view is the window's live content view, on the main thread that owns it.
