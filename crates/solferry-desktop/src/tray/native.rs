@@ -2,7 +2,7 @@ use rust_i18n::t;
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
 use tray_icon::{Icon, MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 
-use super::{Anchor, ICON_SIZE, INK, Sender, TrayAction, mark_alpha};
+use super::{Anchor, ICON_SIZE, INK, Sender, TrayAction, icon};
 
 pub struct Tray(Option<TrayIcon>);
 
@@ -20,6 +20,26 @@ impl Tray {
             tracing::warn!(%error, "couldn't change the tray icon");
         }
     }
+
+    pub fn set_progress(&self, progress: Option<f32>) {
+        let Some(tray) = &self.0 else { return };
+        let Some(icon) = picture(progress) else { return };
+        #[cfg(target_os = "macos")]
+        let result = tray.set_icon_templated(Some(icon));
+        #[cfg(not(target_os = "macos"))]
+        let result = tray.set_icon(Some(icon));
+        if let Err(error) = result {
+            tracing::warn!(%error, "couldn't redraw the tray icon");
+        }
+    }
+}
+
+fn picture(progress: Option<f32>) -> Option<Icon> {
+    let pixels = icon::alpha(progress)
+        .into_iter()
+        .flat_map(|alpha| [INK[0], INK[1], INK[2], alpha])
+        .collect();
+    Icon::from_rgba(pixels, ICON_SIZE, ICON_SIZE).ok()
 }
 
 fn build(actions: Sender<TrayAction>) -> Option<TrayIcon> {
@@ -28,8 +48,7 @@ fn build(actions: Sender<TrayAction>) -> Option<TrayIcon> {
     let quit = MenuItem::new(t!("tray.quit"), true, None);
     let (open_id, quit_id) = (open.id().clone(), quit.id().clone());
     menu.append_items(&[&open, &quit]).ok()?;
-    let pixels = mark_alpha().flat_map(|alpha| [INK[0], INK[1], INK[2], alpha]).collect();
-    let icon = Icon::from_rgba(pixels, ICON_SIZE, ICON_SIZE).ok()?;
+    let icon = picture(None)?;
     let tray = TrayIconBuilder::new().with_tooltip("Solferry");
     #[cfg(target_os = "macos")]
     let tray = tray.with_icon_templated(icon);

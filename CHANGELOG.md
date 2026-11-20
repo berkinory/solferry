@@ -2,6 +2,12 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
+## Unreleased
+
+### Added
+
+- While files are sending or arriving, the tray and menu bar icon shows a ring that fills as they go, so you can follow along without opening the window.
+
 ## 0.0.4 - 2026-11-13
 
 ### Added
