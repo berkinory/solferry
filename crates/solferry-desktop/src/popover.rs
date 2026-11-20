@@ -37,11 +37,13 @@ pub fn toggle(anchor: Anchor, cx: &mut App) {
         return;
     }
     let devices = popover::device_count(cx);
-    let size = size(px(popover::WIDTH), px(popover::height(devices)));
+    let card = size(px(popover::WIDTH), px(popover::height(devices)));
+    // The window reaches past the card by the room its shadow needs.
+    let margin = px(popover::MARGIN);
     let options = WindowOptions {
         window_bounds: Some(WindowBounds::Windowed(Bounds {
-            origin: origin(anchor, size, cx),
-            size,
+            origin: origin(anchor, card, cx) - point(margin, margin),
+            size: size(card.width + margin * 2., card.height + margin * 2.),
         })),
         titlebar: None,
         focus: true,
@@ -148,4 +150,30 @@ fn under_icon(anchor: Anchor, size: Size<Pixels>) -> Option<Point<Pixels>> {
             point(px(left as f32), px((below + f64::from(GAP)) as f32))
         })
     })
+}
+
+/// AppKit draws a frame of its own around a window without a title bar, with corners that don't
+/// match the card. Without it the card is the only shape on screen.
+#[cfg(target_os = "macos")]
+pub fn borderless(window: &gpui_kit::Window) {
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+
+    const NONACTIVATING_PANEL: usize = 1 << 7;
+    let Ok(handle) = window.window_handle() else { return };
+    let RawWindowHandle::AppKit(handle) = handle.as_raw() else { return };
+    let view = handle.ns_view.as_ptr().cast::<AnyObject>();
+    // SAFETY: the view is the window's live content view, on the main thread that owns it.
+    unsafe {
+        let native: *mut AnyObject = msg_send![view, window];
+        if native.is_null() {
+            return;
+        }
+        let _: () = msg_send![native, setStyleMask: NONACTIVATING_PANEL];
+        let _: () = msg_send![native, setHasShadow: false];
+        // A new style mask takes key status away, and keys would stop reaching the popover.
+        let _: () = msg_send![native, makeKeyAndOrderFront: std::ptr::null_mut::<AnyObject>()];
+        let _: bool = msg_send![native, makeFirstResponder: view];
+    }
 }

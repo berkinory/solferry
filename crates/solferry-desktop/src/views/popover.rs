@@ -1,8 +1,10 @@
 use gpui_kit::component::ActiveTheme;
+use std::time::Duration;
+
 use gpui_kit::{
-    App, AsyncApp, Context, Entity, FocusHandle, FontWeight, InteractiveElement, IntoElement,
-    KeyDownEvent, ParentElement, Render, SharedString, StatefulInteractiveElement, Styled, Window,
-    div, px, svg,
+    Animation, AnimationExt, AnyElement, App, AsyncApp, Context, Entity, FocusHandle, FontWeight,
+    InteractiveElement, IntoElement, KeyDownEvent, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, black, div, ease_in_out, ease_out_quint, px, svg,
 };
 use rust_i18n::t;
 use solferry_core::Appearance;
@@ -24,6 +26,12 @@ const ROW: f32 = 43.0;
 const FOOTER: f32 = 52.0;
 /// Beyond this many devices the list scrolls.
 const ROWS_SHOWN: usize = 5;
+/// Transparent room around the card on macOS, where it draws its own shadow.
+pub const MARGIN: f32 = if cfg!(target_os = "macos") { 20.0 } else { 0.0 };
+const OPEN: Duration = Duration::from_millis(180);
+const CLOSE: Duration = Duration::from_millis(120);
+/// How far the card drops into place as it appears.
+const TRAVEL: f32 = 6.0;
 
 pub fn device_count(cx: &App) -> usize {
     let (mine, others) = devices::rows(cx.global::<Shell>().state.read(cx));
@@ -41,10 +49,13 @@ pub struct Popover {
     state: Entity<AppState>,
     focus: FocusHandle,
     was_active: bool,
+    closing: bool,
 }
 
 impl Popover {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        #[cfg(target_os = "macos")]
+        crate::popover::borderless(window);
         let state = cx.global::<Shell>().state.clone();
         let appearance =
             state.read(cx).config.as_ref().map_or(Appearance::System, |c| c.appearance);
@@ -55,14 +66,62 @@ impl Popover {
                 view.was_active = true;
             } else if view.was_active {
                 crate::popover::closed(cx);
-                window.remove_window();
+                view.dismiss(window, cx);
             }
         })
         .detach();
         let focus = cx.focus_handle();
         window.focus(&focus, cx);
-        Self { state, focus, was_active: false }
+        Self { state, focus, was_active: false, closing: false }
     }
+
+    /// Fades the card out on macOS before the window goes. Elsewhere the window is opaque, so it
+    /// goes at once.
+    fn dismiss(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if MARGIN == 0. {
+            window.remove_window();
+            return;
+        }
+        if self.closing {
+            return;
+        }
+        self.closing = true;
+        cx.notify();
+        cx.spawn_in(window, async move |_, cx| {
+            cx.background_executor().timer(CLOSE).await;
+            let _ = cx.update(|window, _| window.remove_window());
+        })
+        .detach();
+    }
+}
+
+/// On macOS the card is the window's only shape: rounded, with its own shadow, and moving in
+/// and out.
+fn shaped(card: gpui_kit::Stateful<gpui_kit::Div>, closing: bool, cx: &App) -> AnyElement {
+    if MARGIN == 0. {
+        return card.into_any_element();
+    }
+    let card = card
+        .rounded(px(RADIUS_CARD))
+        .border_1()
+        .border_color(cx.theme().border)
+        .shadow(vec![ui::shadow(black().opacity(0.3), 6., 14., 0., false)]);
+    let card = if closing {
+        card.with_animation(
+            "popover-close",
+            Animation::new(CLOSE).with_easing(ease_in_out),
+            |card, delta| card.top(px(-delta * TRAVEL / 2.)).opacity(1. - delta),
+        )
+        .into_any_element()
+    } else {
+        card.with_animation(
+            "popover-open",
+            Animation::new(OPEN).with_easing(ease_out_quint()),
+            |card, delta| card.top(px(-(1. - delta) * TRAVEL)).opacity(delta),
+        )
+        .into_any_element()
+    };
+    div().size_full().p(px(MARGIN)).child(card).into_any_element()
 }
 
 /// The file picker would open behind the popover, so the popover goes first.
@@ -159,14 +218,14 @@ impl Render for Popover {
                 .overflow_y_scroll()
                 .into_any_element()
         };
-        let mut frame = div()
+        let frame = div()
             .id("popover")
             .track_focus(&self.focus)
-            .on_key_down(|event: &KeyDownEvent, window, _| {
+            .on_key_down(cx.listener(|view, event: &KeyDownEvent, window, cx| {
                 if event.keystroke.key == "escape" {
-                    window.remove_window();
+                    view.dismiss(window, cx);
                 }
-            })
+            }))
             .flex()
             .flex_col()
             .size_full()
@@ -174,10 +233,7 @@ impl Render for Popover {
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
             .font_family(cx.theme().font_family.clone());
-        if cfg!(target_os = "macos") {
-            frame = frame.rounded(px(RADIUS_CARD)).border_1().border_color(cx.theme().border);
-        }
-        frame
+        let card = frame
             .child(header(cx))
             .child(
                 div()
@@ -194,6 +250,7 @@ impl Render for Popover {
                         .label(t!("menu.choose_files"))
                         .on_click(|_, window, cx| pick_files(window, cx, shell::send_files)),
                 ),
-            )
+            );
+        shaped(card, self.closing, cx)
     }
 }
