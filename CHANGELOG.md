@@ -8,6 +8,7 @@ Written by hand for people using Solferry. Each release's section becomes its Gi
 
 - While files are sending or arriving, the tray and menu bar icon shows a ring that fills as they go, so you can follow along without opening the window.
 - Clicking a finished transfer in History shows its file in Finder, Explorer or your file manager, including files you sent from disk. On Android and iOS, tapping a received transfer opens its first file. Transfers that finished before this update can't be opened.
+- Drag files onto a device in the tray or menu bar popover to send them to it right away. Dropping them anywhere else on the popover opens the send sheet with them.
 
 ## 0.0.4 - 2026-11-13
 

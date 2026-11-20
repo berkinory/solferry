@@ -2,9 +2,10 @@ use gpui_kit::component::ActiveTheme;
 use std::time::Duration;
 
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, App, AsyncApp, Context, Entity, FocusHandle, FontWeight,
-    InteractiveElement, IntoElement, KeyDownEvent, ParentElement, Render, SharedString,
-    StatefulInteractiveElement, Styled, Window, black, div, ease_in_out, ease_out_quint, px, svg,
+    Animation, AnimationExt, AnyElement, App, AsyncApp, Context, Entity, ExternalPaths,
+    FocusHandle, FontWeight, InteractiveElement, IntoElement, KeyDownEvent, ParentElement, Render,
+    SharedString, StatefulInteractiveElement, Styled, Window, black, div, ease_in_out,
+    ease_out_quint, px, svg, transparent_black,
 };
 use rust_i18n::t;
 use solferry_core::Appearance;
@@ -32,6 +33,12 @@ const OPEN: Duration = Duration::from_millis(180);
 const CLOSE: Duration = Duration::from_millis(120);
 /// How far the card drops into place as it appears.
 const TRAVEL: f32 = 6.0;
+/// Pressing on a file to drag it focuses the file manager on Linux and Windows, before the files
+/// reach the popover. Finder leaves the focus where it is.
+const LEAVE_AFTER: Duration =
+    Duration::from_millis(if cfg!(target_os = "macos") { 0 } else { 1500 });
+/// How often a popover that lost focus checks whether the files hovering over it went away.
+const DRAG_POLL: Duration = Duration::from_millis(200);
 
 pub fn device_count(cx: &App) -> usize {
     let (mine, others) = devices::rows(cx.global::<Shell>().state.read(cx));
@@ -65,14 +72,38 @@ impl Popover {
             if window.is_window_active() {
                 view.was_active = true;
             } else if view.was_active {
-                crate::popover::closed(cx);
-                view.dismiss(window, cx);
+                Self::leave(window, cx);
             }
         })
         .detach();
         let focus = cx.focus_handle();
         window.focus(&focus, cx);
         Self { state, focus, was_active: false, closing: false }
+    }
+
+    /// Closes once focus has been elsewhere for a moment, unless files are being dragged over it.
+    fn leave(window: &mut Window, cx: &mut Context<Self>) {
+        cx.spawn_in(window, async move |view, cx| {
+            cx.background_executor().timer(LEAVE_AFTER).await;
+            loop {
+                let waiting = view.update_in(cx, |view, window, cx| {
+                    if view.closing || window.is_window_active() {
+                        return false;
+                    }
+                    if cx.has_active_drag() {
+                        return true;
+                    }
+                    crate::popover::closed(cx);
+                    view.dismiss(window, cx);
+                    false
+                });
+                if !matches!(waiting, Ok(true)) {
+                    return;
+                }
+                cx.background_executor().timer(DRAG_POLL).await;
+            }
+        })
+        .detach();
     }
 
     /// Fades the card out on macOS before the window goes. Elsewhere the window is opaque, so it
@@ -142,7 +173,8 @@ fn pick_files(
 
 fn device_row(row: &Row, cx: &mut Context<Popover>) -> impl IntoElement {
     let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
-    let hover = cx.theme().accent;
+    let (hover, ring) = (cx.theme().accent, color(palette(cx).primary));
+    let drop_target = target.clone();
     div()
         .id(SharedString::from(format!("quick-{}", row.id)))
         .flex()
@@ -152,8 +184,17 @@ fn device_row(row: &Row, cx: &mut Context<Popover>) -> impl IntoElement {
         .h(px(ROW))
         .px(px(6.))
         .rounded(px(RADIUS_CONTROL))
+        .border_1()
+        .border_color(transparent_black())
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
+        .drag_over::<ExternalPaths>(move |style, _, _, _| style.border_color(ring).bg(hover))
+        .on_drop(cx.listener(move |view, paths: &ExternalPaths, window, cx| {
+            cx.stop_propagation();
+            let (targets, paths) = (vec![drop_target.clone()], paths.paths().to_vec());
+            cx.global::<Shell>().service.send(Command::Send { targets, paths });
+            view.dismiss(window, cx);
+        }))
         .on_click(cx.listener(move |_, _, window, cx| {
             let target = target.clone();
             pick_files(window, cx, move |paths, cx| {
@@ -225,6 +266,10 @@ impl Render for Popover {
                 if event.keystroke.key == "escape" {
                     view.dismiss(window, cx);
                 }
+            }))
+            .on_drop(cx.listener(|view, paths: &ExternalPaths, window, cx| {
+                view.dismiss(window, cx);
+                shell::send_files(paths.paths().to_vec(), cx);
             }))
             .flex()
             .flex_col()
