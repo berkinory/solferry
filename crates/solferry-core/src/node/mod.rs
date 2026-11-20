@@ -126,7 +126,7 @@ impl Shared {
 
     fn remember(&self, event: &Event) {
         let mut running = self.running.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-        let (id, completed) = match event {
+        let (id, completed, path) = match event {
             Event::Started {
                 id,
                 peer,
@@ -148,12 +148,13 @@ impl Shared {
                     finished_ms: 0,
                     completed: false,
                     platform: *platform,
+                    path: None,
                 };
                 running.insert(*id, entry);
                 return;
             }
-            Event::Completed { id } => (id, true),
-            Event::Failed { id, error } if !matches!(error, Error::Cancelled) => (id, false),
+            Event::Completed { id, path } => (id, true, path.clone()),
+            Event::Failed { id, error } if !matches!(error, Error::Cancelled) => (id, false, None),
             Event::Failed { id, .. } => {
                 running.remove(id);
                 return;
@@ -161,7 +162,8 @@ impl Shared {
             _ => return,
         };
         if let Some(entry) = running.remove(id) {
-            let finished = PastTransfer { finished_ms: pairing::now_ms(), completed, ..entry };
+            let finished =
+                PastTransfer { finished_ms: pairing::now_ms(), completed, path, ..entry };
             self.history().add(finished);
         }
     }

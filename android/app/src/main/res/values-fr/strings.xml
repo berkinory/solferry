@@ -113,6 +113,8 @@
     <string name="history_empty_title">Aucun transfert pour l\'instant</string>
     <string name="history_empty_body">Les fichiers que vous envoyez ou recevez apparaîtront ici.</string>
     <string name="history_failed">Échec</string>
+    <string name="history_missing">Ce fichier n\'existe plus</string>
+    <string name="history_no_app">Aucune app ne peut ouvrir ce fichier</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Bienvenue dans Solferry</string>

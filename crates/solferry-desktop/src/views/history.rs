@@ -1,6 +1,7 @@
 use gpui_kit::component::ActiveTheme;
 use gpui_kit::{
-    AnyElement, App, Context, FontWeight, IntoElement, ParentElement, Styled, div, px, uniform_list,
+    AnyElement, App, Context, Entity, FontWeight, InteractiveElement, IntoElement, ParentElement,
+    StatefulInteractiveElement, Styled, div, px, uniform_list,
 };
 use rust_i18n::t;
 use solferry_core::{Direction, PastTransfer};
@@ -11,8 +12,9 @@ use super::ui;
 use crate::assets::{Glyph, icon};
 use crate::format;
 use crate::service::Command;
+use crate::state::{AppState, Tone};
 use crate::theme::{color, palette};
-use crate::tokens::{RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_LABEL};
+use crate::tokens::{RADIUS_CONTROL, RADIUS_FIELD, SPACE_MD, SPACE_SM, SPACE_XS, TYPE_LABEL};
 
 fn empty(cx: &Context<MainView>) -> AnyElement {
     let core = div()
@@ -53,9 +55,12 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
     let state = view.state.clone();
     let rows = uniform_list("history-rows", count, move |range, _, cx| {
         let history = &state.read(cx).history;
-        let rows = history.get(range).unwrap_or_default();
+        let rows = history.get(range.clone()).unwrap_or_default();
         // The well spaced its rows with a gap, which a list has no room for.
-        rows.iter().map(|past| div().pb(px(SPACE_XS)).child(row(past, cx))).collect()
+        range
+            .zip(rows)
+            .map(|(index, past)| div().pb(px(SPACE_XS)).child(row(index, past, &state, cx)))
+            .collect()
     })
     .size_full()
     .py(px(SPACE_SM));
@@ -65,7 +70,7 @@ pub fn render(view: &MainView, cx: &mut Context<MainView>) -> AnyElement {
         .into_any_element()
 }
 
-fn row(past: &PastTransfer, cx: &App) -> AnyElement {
+fn row(index: usize, past: &PastTransfer, state: &Entity<AppState>, cx: &App) -> AnyElement {
     let glyph = if past.direction == Direction::Sending { Glyph::Upload } else { Glyph::Download };
     let outcome =
         if past.completed { format::bytes(past.bytes) } else { t!("history.failed").into_owned() };
@@ -86,11 +91,13 @@ fn row(past: &PastTransfer, cx: &App) -> AnyElement {
         .child(icon(ui::platform_glyph(past.platform), 10.).text_color(muted))
         .child(div().flex_1().min_w_0().truncate().child(past.peer_name.clone()))
         .child(ui::caption(format::ago(past.finished_ms), cx).flex_none());
-    div()
+    let body = div()
+        .id(("history-row", index))
         .flex()
         .items_center()
         .gap(px(SPACE_MD))
         .p(px(6.))
+        .rounded(px(RADIUS_CONTROL))
         .child(ui::tile(glyph, cx))
         .child(
             div()
@@ -101,6 +108,23 @@ fn row(past: &PastTransfer, cx: &App) -> AnyElement {
                 .text_color(cx.theme().foreground)
                 .child(title)
                 .child(detail),
-        )
+        );
+    let Some(path) = past.path.clone().filter(|_| past.completed) else {
+        return body.into_any_element();
+    };
+    let (state, hover) = (state.clone(), cx.theme().accent);
+    body.cursor_pointer()
+        .hover(move |style| style.bg(hover))
+        .on_click(move |_, _, cx| {
+            // Checked on click rather than while drawing, so scrolling never touches the disk.
+            if path.exists() {
+                cx.reveal_path(&path);
+            } else {
+                state.update(cx, |state, cx| {
+                    state.toast(Tone::Error, t!("history.missing"), None);
+                    cx.notify();
+                });
+            }
+        })
         .into_any_element()
 }

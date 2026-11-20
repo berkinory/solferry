@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -89,7 +89,8 @@ impl Node {
                     return Err(error);
                 }
                 Ok(report) => {
-                    self.shared.publish(Event::Completed { id: manifest.id });
+                    let path = manifest.first_file().and_then(|file| path::absolute(file).ok());
+                    self.shared.publish(Event::Completed { id: manifest.id, path });
                     return Ok(report);
                 }
             }

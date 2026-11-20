@@ -110,6 +110,7 @@ history:
   title: "Historial"
   clear: "Borrar"
   failed: "Error"
+  missing: "Ese archivo ya no está"
   empty:
     title: "Aún no hay transferencias"
     body: "Aquí aparecerán los archivos que envíes y recibas."

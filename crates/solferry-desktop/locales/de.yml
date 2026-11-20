@@ -110,6 +110,7 @@ history:
   title: "Verlauf"
   clear: "Leeren"
   failed: "Fehlgeschlagen"
+  missing: "Diese Datei gibt es nicht mehr"
   empty:
     title: "Noch keine Übertragungen"
     body: "Dateien, die du sendest oder empfängst, erscheinen hier."

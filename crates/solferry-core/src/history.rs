@@ -21,6 +21,9 @@ pub struct PastTransfer {
     pub finished_ms: u64,
     pub completed: bool,
     pub platform: Option<crate::Platform>,
+    /// The first file, where it was saved or sent from. None when it failed or came from an app.
+    #[serde(default)]
+    pub path: Option<PathBuf>,
 }
 
 #[derive(Debug)]

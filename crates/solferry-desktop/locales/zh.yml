@@ -110,6 +110,7 @@ history:
   title: "历史记录"
   clear: "清除"
   failed: "失败"
+  missing: "该文件已不存在"
   empty:
     title: "还没有传输记录"
     body: "你发送或接收的文件会显示在这里。"

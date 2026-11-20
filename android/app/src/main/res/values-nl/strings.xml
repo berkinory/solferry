@@ -111,6 +111,8 @@
     <string name="history_empty_title">Nog geen overdrachten</string>
     <string name="history_empty_body">Bestanden die je verstuurt of ontvangt, verschijnen hier.</string>
     <string name="history_failed">Mislukt</string>
+    <string name="history_missing">Dat bestand is er niet meer</string>
+    <string name="history_no_app">Geen app kan dit bestand openen</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Welkom bij Solferry</string>

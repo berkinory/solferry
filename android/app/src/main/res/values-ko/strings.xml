@@ -109,6 +109,8 @@
     <string name="history_empty_title">아직 전송 기록이 없어요</string>
     <string name="history_empty_body">보내거나 받은 파일이 여기에 표시돼요.</string>
     <string name="history_failed">실패</string>
+    <string name="history_missing">이 파일은 더 이상 없어요</string>
+    <string name="history_no_app">이 파일을 열 수 있는 앱이 없어요</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Solferry에 오신 걸 환영해요</string>

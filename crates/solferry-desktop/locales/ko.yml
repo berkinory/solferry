@@ -110,6 +110,7 @@ history:
   title: "기록"
   clear: "지우기"
   failed: "실패"
+  missing: "이 파일은 더 이상 없어요"
   empty:
     title: "아직 전송 기록이 없어요"
     body: "보내거나 받은 파일이 여기에 표시돼요."

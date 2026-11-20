@@ -110,6 +110,7 @@ history:
   title: "Geçmiş"
   clear: "Temizle"
   failed: "Başarısız"
+  missing: "Bu dosya artık yok"
   empty:
     title: "Henüz aktarım yok"
     body: "Gönderdiğin ve aldığın dosyalar burada görünür."

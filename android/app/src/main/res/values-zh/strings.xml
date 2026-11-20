@@ -109,6 +109,8 @@
     <string name="history_empty_title">还没有传输记录</string>
     <string name="history_empty_body">你发送或接收的文件会显示在这里。</string>
     <string name="history_failed">失败</string>
+    <string name="history_missing">该文件已不存在</string>
+    <string name="history_no_app">没有可以打开此文件的应用</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">欢迎使用 Solferry</string>

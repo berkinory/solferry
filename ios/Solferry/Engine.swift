@@ -82,8 +82,9 @@ final class Engine {
             case let .failed(problem): Notifier.queueFailed(reason: problem.title)
             case .dropped: break
             }
-        case let .completed(id):
+        case let .completed(id, path):
             if let done = state.transfers.first(where: { $0.id == id }), !done.sending {
+                if let path { SavedFiles.expect(path) }
                 let (folder, name, label) = (destination(), done.peerName, done.label)
                 Task.detached { [weak self] in
                     let saved = Exporter.export(to: folder)
@@ -183,6 +184,14 @@ final class Engine {
     private func platform(of peer: String) -> DevicePlatform? {
         let identity = state.devices.first { $0.identity.id == peer }?.identity ?? state.nearby.first { $0.identity.id == peer }?.identity
         return identity?.platform
+    }
+
+    /// Where the first file a finished transfer saved is now, or nil after saying it's gone.
+    func savedFile(of entry: HistoryEntry) -> URL? {
+        guard let path = entry.path else { return nil }
+        if let url = SavedFiles.find(path, finishedMs: entry.finishedMs) { return url }
+        toastFailure(String(localized: "That file isn't there anymore"))
+        return nil
     }
 
     private func toastFailure(_ title: String) {
