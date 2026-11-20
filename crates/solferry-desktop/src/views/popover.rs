@@ -2,9 +2,10 @@ use gpui_kit::component::ActiveTheme;
 use std::time::Duration;
 
 use gpui_kit::{
-    Animation, AnimationExt, AnyElement, App, AsyncApp, Context, Entity, FocusHandle, FontWeight,
-    InteractiveElement, IntoElement, KeyDownEvent, ParentElement, Render, SharedString,
-    StatefulInteractiveElement, Styled, Window, black, div, ease_in_out, ease_out_quint, px, svg,
+    Animation, AnimationExt, AnyElement, App, AsyncApp, Context, Entity, ExternalPaths,
+    FocusHandle, FontWeight, InteractiveElement, IntoElement, KeyDownEvent, ParentElement, Render,
+    SharedString, StatefulInteractiveElement, Styled, Window, black, div, ease_in_out,
+    ease_out_quint, px, svg, transparent_black,
 };
 use rust_i18n::t;
 use solferry_core::Appearance;
@@ -142,7 +143,8 @@ fn pick_files(
 
 fn device_row(row: &Row, cx: &mut Context<Popover>) -> impl IntoElement {
     let target = Target { addr: row.addr.clone(), name: row.name.clone(), platform: row.platform };
-    let hover = cx.theme().accent;
+    let (hover, ring) = (cx.theme().accent, color(palette(cx).primary));
+    let drop_target = target.clone();
     div()
         .id(SharedString::from(format!("quick-{}", row.id)))
         .flex()
@@ -152,8 +154,17 @@ fn device_row(row: &Row, cx: &mut Context<Popover>) -> impl IntoElement {
         .h(px(ROW))
         .px(px(6.))
         .rounded(px(RADIUS_CONTROL))
+        .border_1()
+        .border_color(transparent_black())
         .cursor_pointer()
         .hover(move |style| style.bg(hover))
+        .drag_over::<ExternalPaths>(move |style, _, _, _| style.border_color(ring).bg(hover))
+        .on_drop(cx.listener(move |view, paths: &ExternalPaths, window, cx| {
+            cx.stop_propagation();
+            let (targets, paths) = (vec![drop_target.clone()], paths.paths().to_vec());
+            cx.global::<Shell>().service.send(Command::Send { targets, paths });
+            view.dismiss(window, cx);
+        }))
         .on_click(cx.listener(move |_, _, window, cx| {
             let target = target.clone();
             pick_files(window, cx, move |paths, cx| {
@@ -225,6 +236,10 @@ impl Render for Popover {
                 if event.keystroke.key == "escape" {
                     view.dismiss(window, cx);
                 }
+            }))
+            .on_drop(cx.listener(|view, paths: &ExternalPaths, window, cx| {
+                view.dismiss(window, cx);
+                shell::send_files(paths.paths().to_vec(), cx);
             }))
             .flex()
             .flex_col()
