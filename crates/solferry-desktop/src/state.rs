@@ -134,7 +134,21 @@ pub struct AppState {
     pub permissions: HashMap<Permission, permissions::Status>,
 }
 
+/// How far the transfers are together, by bytes.
+pub fn share(running: &[&Transfer]) -> f32 {
+    let done: u64 = running.iter().map(|item| item.transferred).sum();
+    let total: u64 = running.iter().map(|item| item.total).sum();
+    #[expect(clippy::cast_possible_truncation, reason = "a progress ratio fits in f32")]
+    if total == 0 { 1. } else { (format::precise(done) / format::precise(total)) as f32 }
+}
+
 impl AppState {
+    /// How far the running transfers are together, `None` when nothing runs.
+    pub fn progress(&self) -> Option<f32> {
+        let running: Vec<_> = self.transfers.iter().filter(|item| item.running()).collect();
+        (!running.is_empty()).then(|| share(&running))
+    }
+
     /// Questions waiting for an answer, which only the home page shows.
     pub fn asking(&self) -> usize {
         self.offers.len() + self.pairing_prompts.len()

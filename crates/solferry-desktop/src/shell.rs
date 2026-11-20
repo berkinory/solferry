@@ -75,6 +75,7 @@ pub fn start(
             if !files.is_empty() {
                 cx.update(|cx| send_files(files, cx));
             }
+            cx.update(show_progress);
             for action in actions.drain() {
                 cx.update(|cx| match action {
                     TrayAction::Open => show_window(cx),
@@ -85,6 +86,13 @@ pub fn start(
         }
     })
     .detach();
+}
+
+fn show_progress(cx: &mut App) {
+    let state = cx.global::<Shell>().state.read(cx);
+    let visible = state.config.as_ref().is_none_or(|config| config.show_in_tray);
+    let progress = state.progress();
+    cx.global_mut::<Shell>().tray.show_progress(progress, visible);
 }
 
 fn handle_update(update: Update, cx: &mut App) {
