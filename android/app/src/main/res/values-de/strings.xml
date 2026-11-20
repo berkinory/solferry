@@ -111,6 +111,8 @@
     <string name="history_empty_title">Noch keine Übertragungen</string>
     <string name="history_empty_body">Dateien, die du sendest oder empfängst, erscheinen hier.</string>
     <string name="history_failed">Fehlgeschlagen</string>
+    <string name="history_missing">Diese Datei gibt es nicht mehr</string>
+    <string name="history_no_app">Keine App kann diese Datei öffnen</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Willkommen bei Solferry</string>

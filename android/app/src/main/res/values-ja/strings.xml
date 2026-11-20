@@ -109,6 +109,8 @@
     <string name="history_empty_title">まだ転送はありません</string>
     <string name="history_empty_body">送受信したファイルがここに表示されます。</string>
     <string name="history_failed">失敗</string>
+    <string name="history_missing">このファイルはもうありません</string>
+    <string name="history_no_app">このファイルを開けるアプリがありません</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Solferry へようこそ</string>

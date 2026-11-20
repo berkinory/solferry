@@ -2,6 +2,7 @@ package app.solferry.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,7 +36,7 @@ fun HistoryScreen(state: AppState, engine: Engine) {
                 R.drawable.ic_history, stringResource(R.string.history_title),
                 aside = { Button({ engine.bridge.clearHistory() }, label = stringResource(R.string.history_clear), kind = ButtonKind.Ghost, size = ButtonSize.Sm) },
             ) {
-                Well { state.history.forEach { Past(it) } }
+                Well { state.history.forEach { entry -> Past(entry, if (opens(entry)) { { engine.openReceived(entry) } } else null) } }
             }
         }
     }
@@ -59,10 +61,14 @@ private fun NoHistory() = Column(Modifier.fillMaxSize()) {
     }
 }
 
+/** Only received files can be opened: a phone sends what apps hand it, which has no place of its own to go back to. */
+private fun opens(entry: HistoryEntry) = !entry.sending && entry.completed && entry.path != null
+
 @Composable
-private fun Past(entry: HistoryEntry) {
+private fun Past(entry: HistoryEntry, onOpen: (() -> Unit)?) {
     val palette = LocalPalette.current
-    Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
+    val tappable = if (onOpen != null) Modifier.clip(ControlShape).clickable(onClick = onOpen) else Modifier
+    Row(Modifier.fillMaxWidth().then(tappable).padding(8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.md.dp)) {
         Tile(if (entry.sending) R.drawable.ic_upload else R.drawable.ic_download, palette.control, palette.inkMuted)
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpaceTokens.sm.dp)) {

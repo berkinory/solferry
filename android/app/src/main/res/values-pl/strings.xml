@@ -115,6 +115,8 @@
     <string name="history_empty_title">Brak transferów</string>
     <string name="history_empty_body">Tutaj pojawią się wysłane i odebrane pliki.</string>
     <string name="history_failed">Nie udało się</string>
+    <string name="history_missing">Tego pliku już nie ma</string>
+    <string name="history_no_app">Żadna aplikacja nie otworzy tego pliku</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Witaj w Solferry</string>

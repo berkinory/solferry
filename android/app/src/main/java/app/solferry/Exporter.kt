@@ -21,8 +21,9 @@ object Exporter {
     private const val UNFINISHED = "unfinished_copy"
     private val lock = Any()
 
-    /** Returns false if a file couldn't be moved. It stays in app storage for the next attempt. */
-    fun export(context: Context, received: File, folder: SaveFolder?): Boolean = synchronized(lock) { moveAll(context, received, folder) }
+    /** Returns false if a file couldn't be moved. It stays in app storage for the next attempt. [moved] hears where each file went. */
+    fun export(context: Context, received: File, folder: SaveFolder?, moved: (File, Uri) -> Unit = { _, _ -> }): Boolean =
+        synchronized(lock) { moveAll(context, received, folder, moved) }
 
     /** Finishes what a killed process left behind: drops its half-written copies and moves the files again. */
     fun recover(context: Context, received: File, folder: SaveFolder?): Boolean = synchronized(lock) {
@@ -33,7 +34,7 @@ object Exporter {
             runCatching { DocumentsContract.deleteDocument(context.contentResolver, copy.toUri()) }
             prefs(context).edit(commit = true) { remove(UNFINISHED) }
         }
-        moveAll(context, received, folder)
+        moveAll(context, received, folder) { _, _ -> }
     }
 
     @Suppress("DEPRECATION")
@@ -41,22 +42,23 @@ object Exporter {
 
     private fun prefs(context: Context) = context.getSharedPreferences("solferry", Context.MODE_PRIVATE)
 
-    private fun moveAll(context: Context, received: File, folder: SaveFolder?): Boolean {
+    private fun moveAll(context: Context, received: File, folder: SaveFolder?, moved: (File, Uri) -> Unit): Boolean {
         val folders = mutableMapOf<String, Uri>()
-        val moved = received.walkTopDown()
+        val results = received.walkTopDown()
             .onEnter { it.name != PARTIAL_DIR }
             .filter { it.isFile }
             .toList()
             .map { file ->
                 val path = file.parentFile?.relativeTo(received)?.path.orEmpty()
-                if (folder == null) moveToDownloads(context, path, file) else moveInto(context, folder, path, file, folders)
+                val target = if (folder == null) moveToDownloads(context, path, file) else moveInto(context, folder, path, file, folders)
+                target?.let { moved(file, it) } != null
             }
         received.walkBottomUp().onEnter { it.name != PARTIAL_DIR }.filter { it != received && it.isDirectory }
             .forEach { it.delete() }
-        return moved.all { it }
+        return results.all { it }
     }
 
-    private fun moveToDownloads(context: Context, path: String, file: File): Boolean {
+    private fun moveToDownloads(context: Context, path: String, file: File): Uri? {
         val relative = listOf(Environment.DIRECTORY_DOWNLOADS, "Solferry", path).filter { it.isNotEmpty() }.joinToString("/")
         val values = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, file.name)
@@ -64,7 +66,7 @@ object Exporter {
             put(MediaStore.Downloads.IS_PENDING, 1)
         }
         val resolver = context.contentResolver
-        val target = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return false
+        val target = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return null
         val copied = copy(context, file, target)
         if (copied) {
             resolver.update(target, ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }, null, null)
@@ -72,17 +74,17 @@ object Exporter {
         } else {
             resolver.delete(target, null, null)
         }
-        return copied
+        return target.takeIf { copied }
     }
 
-    private fun moveInto(context: Context, folder: SaveFolder, path: String, file: File, folders: MutableMap<String, Uri>): Boolean {
+    private fun moveInto(context: Context, folder: SaveFolder, path: String, file: File, folders: MutableMap<String, Uri>): Uri? {
         val resolver = context.contentResolver
-        val target = folder.create(resolver, path, file.name, folders) ?: return false
+        val target = folder.create(resolver, path, file.name, folders) ?: return null
         prefs(context).edit(commit = true) { putString(UNFINISHED, target.toString()) }
         val copied = copy(context, file, target)
         if (copied) file.delete() else runCatching { DocumentsContract.deleteDocument(resolver, target) }
         prefs(context).edit(commit = true) { remove(UNFINISHED) }
-        return copied
+        return target.takeIf { copied }
     }
 
     private fun copy(context: Context, file: File, target: Uri) = runCatching {

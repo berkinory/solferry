@@ -111,6 +111,8 @@
     <string name="history_empty_title">Henüz aktarım yok</string>
     <string name="history_empty_body">Gönderdiğin ve aldığın dosyalar burada görünür.</string>
     <string name="history_failed">Başarısız</string>
+    <string name="history_missing">Bu dosya artık yok</string>
+    <string name="history_no_app">Bu dosyayı açabilecek bir uygulama yok</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Solferry\'ye hoş geldin</string>

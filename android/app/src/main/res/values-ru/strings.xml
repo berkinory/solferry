@@ -115,6 +115,8 @@
     <string name="history_empty_title">Передач пока нет</string>
     <string name="history_empty_body">Здесь появятся отправленные и полученные файлы.</string>
     <string name="history_failed">Не удалось</string>
+    <string name="history_missing">Этого файла больше нет</string>
+    <string name="history_no_app">Нет приложения, которое откроет этот файл</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Добро пожаловать в Solferry</string>

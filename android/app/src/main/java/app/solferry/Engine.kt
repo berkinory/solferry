@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import uniffi.solferry_ffi.HistoryEntry
 import uniffi.solferry_ffi.Listener
 import uniffi.solferry_ffi.Problem
 import uniffi.solferry_ffi.QueueResult
@@ -26,6 +27,7 @@ import uniffi.solferry_ffi.Update
 import uniffi.solferry_ffi.setLocale
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
 /** Owns the Rust node for the whole process and turns its updates into [AppState]. */
@@ -42,6 +44,8 @@ class Engine(private val context: Context) : Listener {
     private val outbox = Outbox(context)
     private val main = Handler(Looper.getMainLooper())
     private val received = File(context.getExternalFilesDir(null) ?: context.filesDir, "Received").apply { mkdirs() }
+    /** First files of finished transfers whose new place [SavedFiles] should note. Any export may be the one that moves them. */
+    private val firstFiles = ConcurrentHashMap.newKeySet<String>()
     private val multicast = context.getSystemService(WifiManager::class.java)
         .createMulticastLock("solferry").apply { setReferenceCounted(false); acquire() }
     init {
@@ -76,15 +80,16 @@ class Engine(private val context: Context) : Listener {
             is Update.PairingGone -> Notifier.settlePairing(context, update.key)
             is Update.LinkReceived -> thread(name = "solferry-export") {
                 val folder = destination()
-                if (!Exporter.export(context, received, folder)) main.post { saveFailed(update.name, folder) }
+                if (!Exporter.export(context, received, folder, ::noteFirstFile)) main.post { saveFailed(update.name, folder) }
             }
             is Update.QueueSettled -> settleQueued(update)
             is Update.Completed -> {
                 val done = state.value.transfers.find { it.id == update.id }
                 if (done != null && !done.sending) {
+                    update.path?.let(firstFiles::add)
                     thread(name = "solferry-export") {
                         val folder = destination()
-                        val saved = Exporter.export(context, received, folder)
+                        val saved = Exporter.export(context, received, folder, ::noteFirstFile)
                         main.post {
                             if (saved) Notifier.received(context, done.label, done.peerName, folder?.name ?: context.getString(R.string.folder_downloads))
                             else saveFailed(done.peerName, folder)
@@ -126,6 +131,21 @@ class Engine(private val context: Context) : Listener {
         settings.edit { putBoolean(STANDBY, on) }
         mutable.update { it.copy(standby = on) }
         StandbyService.sync(context, on)
+    }
+
+    private fun noteFirstFile(file: File, uri: Uri) {
+        if (firstFiles.remove(file.path)) SavedFiles.record(context, file.path, uri)
+    }
+
+    /** Opens the first file a finished transfer saved, wherever it was moved. */
+    fun openReceived(entry: HistoryEntry) {
+        val path = entry.path ?: return
+        val problem = when (SavedFiles.open(context, path, entry.finishedMs.toLong())) {
+            SavedFiles.Opened.Yes -> return
+            SavedFiles.Opened.Missing -> R.string.history_missing
+            SavedFiles.Opened.NoApp -> R.string.history_no_app
+        }
+        mutable.update { it.toast(Tone.Error, context.getString(problem)) }
     }
 
     private fun saveFailed(name: String, folder: SaveFolder?) = mutable.update {

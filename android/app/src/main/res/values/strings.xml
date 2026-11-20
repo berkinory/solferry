@@ -114,6 +114,8 @@
     <string name="history_empty_title">No transfers yet</string>
     <string name="history_empty_body">Files you send or receive show up here.</string>
     <string name="history_failed">Failed</string>
+    <string name="history_missing">That file isn\'t there anymore</string>
+    <string name="history_no_app">No app here can open this file</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Welcome to Solferry</string>
