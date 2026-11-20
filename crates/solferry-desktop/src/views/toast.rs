@@ -17,7 +17,7 @@ use super::toast_timing::EXIT;
 use crate::assets::{Glyph, icon};
 use crate::format;
 use crate::service::Command;
-use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer};
+use crate::state::{Action, AppState, Phase, Toast, Tone, Transfer, share};
 use crate::theme::{color, palette};
 
 const WIDTH: f32 = 300.0;
@@ -198,13 +198,6 @@ fn ended_row(transfer: &Transfer, budget: usize, cx: &mut Context<MainView>) -> 
                 .child(icon(Glyph::FolderOpen, 12.).text_color(faded(cx)))
                 .on_click(cx.listener(|view, _, _, cx| view.show_downloads(cx)))
         }))
-}
-
-fn share(running: &[&Transfer]) -> f32 {
-    let done: u64 = running.iter().map(|item| item.transferred).sum();
-    let total: u64 = running.iter().map(|item| item.total).sum();
-    #[expect(clippy::cast_possible_truncation, reason = "a progress ratio fits in f32")]
-    if total == 0 { 1. } else { (format::precise(done) / format::precise(total)) as f32 }
 }
 
 fn many_row(running: &[&Transfer], open: bool, cx: &mut Context<MainView>) -> AnyElement {
