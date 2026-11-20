@@ -2,9 +2,10 @@
 
 use std::time::{Duration, Instant};
 
+use gpui_kit::base::Root;
 use gpui_kit::{
-    App, AppContext, Bounds, Pixels, Point, Size, WindowBackgroundAppearance, WindowBounds,
-    WindowKind, WindowOptions, point, px, size,
+    App, AppContext, Bounds, Pixels, Point, Size, Styled, WindowBackgroundAppearance, WindowBounds,
+    WindowKind, WindowOptions, point, px, size, transparent_black,
 };
 
 use crate::shell::Shell;
@@ -60,8 +61,13 @@ pub fn toggle(anchor: Anchor, cx: &mut App) {
         app_id: Some("solferry".to_owned()),
         ..WindowOptions::default()
     };
-    match gpui_kit::open_window(options, cx, |window, cx| cx.new(|cx| Popover::new(window, cx))) {
-        Ok((window, _)) => cx.global_mut::<Shell>().popover.window = Some(window),
+    // The root paints the theme's background over the whole window, margin and all.
+    let opened = cx.open_window(options, |window, cx| {
+        let view = cx.new(|cx| Popover::new(window, cx));
+        cx.new(|cx| Root::new(view, window, cx).bg(transparent_black()))
+    });
+    match opened {
+        Ok(window) => cx.global_mut::<Shell>().popover.window = Some(window.into()),
         Err(error) => tracing::warn!(%error, "couldn't open the popover"),
     }
     // A popover of an app in the background would never hear that focus moved on.
