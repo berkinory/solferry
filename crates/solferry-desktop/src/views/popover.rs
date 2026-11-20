@@ -33,6 +33,12 @@ const OPEN: Duration = Duration::from_millis(180);
 const CLOSE: Duration = Duration::from_millis(120);
 /// How far the card drops into place as it appears.
 const TRAVEL: f32 = 6.0;
+/// Pressing on a file to drag it focuses the file manager on Linux and Windows, before the files
+/// reach the popover. Finder leaves the focus where it is.
+const LEAVE_AFTER: Duration =
+    Duration::from_millis(if cfg!(target_os = "macos") { 0 } else { 1500 });
+/// How often a popover that lost focus checks whether the files hovering over it went away.
+const DRAG_POLL: Duration = Duration::from_millis(200);
 
 pub fn device_count(cx: &App) -> usize {
     let (mine, others) = devices::rows(cx.global::<Shell>().state.read(cx));
@@ -66,14 +72,38 @@ impl Popover {
             if window.is_window_active() {
                 view.was_active = true;
             } else if view.was_active {
-                crate::popover::closed(cx);
-                view.dismiss(window, cx);
+                Self::leave(window, cx);
             }
         })
         .detach();
         let focus = cx.focus_handle();
         window.focus(&focus, cx);
         Self { state, focus, was_active: false, closing: false }
+    }
+
+    /// Closes once focus has been elsewhere for a moment, unless files are being dragged over it.
+    fn leave(window: &mut Window, cx: &mut Context<Self>) {
+        cx.spawn_in(window, async move |view, cx| {
+            cx.background_executor().timer(LEAVE_AFTER).await;
+            loop {
+                let waiting = view.update_in(cx, |view, window, cx| {
+                    if view.closing || window.is_window_active() {
+                        return false;
+                    }
+                    if cx.has_active_drag() {
+                        return true;
+                    }
+                    crate::popover::closed(cx);
+                    view.dismiss(window, cx);
+                    false
+                });
+                if !matches!(waiting, Ok(true)) {
+                    return;
+                }
+                cx.background_executor().timer(DRAG_POLL).await;
+            }
+        })
+        .detach();
     }
 
     /// Fades the card out on macOS before the window goes. Elsewhere the window is opaque, so it
