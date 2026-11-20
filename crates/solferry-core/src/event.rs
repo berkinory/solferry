@@ -1,4 +1,5 @@
 use std::fmt;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
@@ -68,8 +69,11 @@ pub enum Event {
         id: TransferId,
         reason: Error,
     },
+    /// `path` is the first file, where it was saved when receiving or sent from when sending a
+    /// file from disk.
     Completed {
         id: TransferId,
+        path: Option<PathBuf>,
     },
     /// A browser sent a file through a receive link. It is saved under `name`.
     LinkReceived {

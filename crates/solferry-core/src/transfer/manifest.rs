@@ -32,6 +32,15 @@ impl Manifest {
             items.into_iter().map(|(entry, path)| (entry, Source::Path(path))).unzip();
         Ok(Self { id, entries, sources })
     }
+
+    /// Where the first file is read from, unless it came open from an app.
+    pub(crate) fn first_file(&self) -> Option<&Path> {
+        let index = self.entries.iter().position(|entry| !entry.is_dir)?;
+        match &self.sources[index] {
+            Source::Path(path) => Some(path),
+            Source::Open { .. } => None,
+        }
+    }
 }
 
 /// A file someone handed over already open, as a phone's share sheet does: `name` is what the

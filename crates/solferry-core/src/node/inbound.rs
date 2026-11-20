@@ -170,7 +170,7 @@ async fn serve(shared: &Shared, connection: &Connection) -> Result<()> {
     .map_err(|error| remote_failure(connection, error));
     shared.untrack(id);
     let event = match result {
-        Ok(_) => Event::Completed { id },
+        Ok(saved) => Event::Completed { id, path: saved.into_iter().next() },
         Err(error) => Event::Failed { id, error },
     };
     shared.publish(event);

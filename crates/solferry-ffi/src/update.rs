@@ -84,8 +84,11 @@ pub enum Update {
     Reconnecting {
         id: String,
     },
+    /// `path` is where the core saved the first received file, before the app moves it, or where
+    /// the first sent file came from.
     Completed {
         id: String,
+        path: Option<String>,
     },
     Cancelled {
         id: String,
@@ -207,7 +210,10 @@ impl Update {
                 Self::Progress { id: id.to_string(), transferred: *transferred, total: *total }
             }
             Event::Reconnecting { id, .. } => Self::Reconnecting { id: id.to_string() },
-            Event::Completed { id } => Self::Completed { id: id.to_string() },
+            Event::Completed { id, path } => Self::Completed {
+                id: id.to_string(),
+                path: path.as_ref().map(|path| path.to_string_lossy().into_owned()),
+            },
             Event::LinkReceived { name, bytes } => {
                 Self::LinkReceived { name: name.clone(), bytes: *bytes }
             }

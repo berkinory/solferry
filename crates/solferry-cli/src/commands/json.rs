@@ -61,7 +61,7 @@ pub fn encode(event: &Event) -> Value {
             "id": id.to_string(),
             "reason": reason.to_string(),
         }),
-        Event::Completed { id } => json!({ "event": "completed", "id": id.to_string() }),
+        Event::Completed { id, .. } => json!({ "event": "completed", "id": id.to_string() }),
         Event::LinkReceived { name, bytes } => {
             json!({ "event": "link_received", "name": name, "bytes": bytes })
         }

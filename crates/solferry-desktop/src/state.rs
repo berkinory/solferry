@@ -323,7 +323,7 @@ impl AppState {
                     transfer.phase = Phase::Reconnecting;
                 }
             }
-            Event::Completed { id } => {
+            Event::Completed { id, .. } => {
                 if let Some(transfer) = self.transfer(id) {
                     transfer.transferred = transfer.total;
                     transfer.phase = Phase::Done;

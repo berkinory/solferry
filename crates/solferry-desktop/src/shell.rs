@@ -144,7 +144,7 @@ fn notify(update: &Update, cx: &mut App) {
         Update::PairingRequest { name, .. } => {
             (t!("notification.pairing.title"), t!("notification.pairing.body", name = name))
         }
-        Update::Transfer(Event::Completed { id }) => {
+        Update::Transfer(Event::Completed { id, .. }) => {
             let received = state
                 .transfers
                 .iter()

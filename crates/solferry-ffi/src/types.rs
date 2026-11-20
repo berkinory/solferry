@@ -87,13 +87,13 @@ impl From<&NearbyDevice> for Nearby {
     }
 }
 
-/// A transfer that is over, as the history screen lists it.
 #[derive(Clone, Debug, uniffi::Record)]
 pub struct BlockedDevice {
     pub identity: Identity,
     pub name: Option<String>,
 }
 
+/// A transfer that is over, as the history screen lists it.
 #[derive(Clone, Debug, uniffi::Record)]
 pub struct HistoryEntry {
     pub peer: String,
@@ -105,6 +105,8 @@ pub struct HistoryEntry {
     pub finished_ms: u64,
     pub completed: bool,
     pub platform: Option<DevicePlatform>,
+    /// Where the core put the first file. The app moves it on, so it matches `Completed.path`.
+    pub path: Option<String>,
 }
 
 impl From<&PastTransfer> for HistoryEntry {
@@ -119,6 +121,7 @@ impl From<&PastTransfer> for HistoryEntry {
             finished_ms: past.finished_ms,
             completed: past.completed,
             platform: past.platform.map(Into::into),
+            path: past.path.as_ref().map(|path| path.to_string_lossy().into_owned()),
         }
     }
 }
