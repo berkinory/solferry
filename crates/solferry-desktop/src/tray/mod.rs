@@ -58,7 +58,9 @@ const ICON_SIZE: u32 = 44;
 const INK: [u8; 3] = [0x85, 0x80, 0xff];
 /// The mark's bounds in the 64 unit space of assets/mark.svg, centered in the icon.
 const MARK_CENTER: (f32, f32) = (32.0, 37.0);
-const MARK_SPAN: f32 = 52.0;
+/// macOS draws the icon 22 points tall, so the mark gets more room around it there to come out
+/// near 16 points, the size of the system's own menu bar icons.
+const MARK_SPAN: f32 = if cfg!(target_os = "macos") { 66.0 } else { 52.0 };
 /// Samples per pixel side, so curved edges come out smooth instead of stepped.
 const SAMPLES: u32 = 4;
 
