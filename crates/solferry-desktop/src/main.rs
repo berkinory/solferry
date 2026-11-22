@@ -1,6 +1,7 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 mod assets;
+mod dock;
 mod format;
 mod heic;
 mod instance;
@@ -62,6 +63,10 @@ fn main() {
         gpui_kit::init(cx);
         theme::install(cx);
         views::keys::install(cx);
+        // Waiting in the menu bar, the app stays out of the Dock until its window opens.
+        if hidden && show_in_tray {
+            dock::show(false);
+        }
         shell::start(handle, updates, tray::start(show_in_tray), (instance, hidden, opened), cx);
     });
 }

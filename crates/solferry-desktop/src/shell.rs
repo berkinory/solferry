@@ -13,6 +13,7 @@ use gpui_kit::{
 use rust_i18n::t;
 use solferry_core::{Direction, Event};
 
+use crate::dock;
 use crate::instance::Instance;
 use crate::opened::OpenedFiles;
 use crate::service::{Command, Handle, Update};
@@ -245,7 +246,9 @@ pub fn show_window(cx: &mut App) {
                 .config
                 .as_ref()
                 .is_none_or(|config| config.show_in_tray);
-            if !in_tray && !cfg!(target_os = "macos") {
+            if in_tray {
+                dock::show(false);
+            } else if !cfg!(target_os = "macos") {
                 quit(cx);
             }
             true
@@ -256,6 +259,7 @@ pub fn show_window(cx: &mut App) {
     if let Ok((window, view)) = opened {
         cx.global_mut::<Shell>().window = Some((window, view.downgrade()));
     }
+    dock::show(true);
     cx.activate(true);
 }
 

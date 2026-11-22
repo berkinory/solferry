@@ -2,6 +2,12 @@
 
 Written by hand for people using Solferry. Each release's section becomes its GitHub release notes.
 
+## Unreleased
+
+### Changed
+
+- On macOS, closing the window takes Solferry out of the Dock while it keeps running in the menu bar. With the menu bar icon turned off it stays in the Dock.
+
 ## 0.0.5 - 2026-11-20
 
 ### Added
