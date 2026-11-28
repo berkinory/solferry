@@ -184,8 +184,12 @@ struct AppState {
             toast(.failure, problem.title)
         case let .textReceived(name, text, autoCopy):
             self.text = ReceivedText(id: now, name: name, text: text, copied: autoCopy)
-        case let .textShared(_, problem):
-            if let problem { toast(.failure, problem.title) }
+        case let .textShared(name, problem):
+            if let problem {
+                toast(.failure, problem.title)
+            } else {
+                toast(.success, String(localized: "Text sent to \(name)"))
+            }
         case let .linkReady(urls, receiving): link = LinkState(urls: urls, receiving: receiving)
         case .linkStopped: link = nil
         case let .linkFailed(problem):

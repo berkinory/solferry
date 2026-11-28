@@ -166,6 +166,7 @@
     <string name="transfer_receiving">%1$s wordt ontvangen</string>
     <string name="transfer_sent">%1$s verstuurd</string>
     <string name="transfer_received">%1$s ontvangen</string>
+    <string name="text_sent">Tekst verstuurd naar %1$s</string>
     <plurals name="transfer_count">
         <item quantity="one">%d overdracht</item>
         <item quantity="other">%d overdrachten</item>

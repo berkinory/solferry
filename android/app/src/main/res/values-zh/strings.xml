@@ -164,6 +164,7 @@
     <string name="transfer_receiving">正在接收 %1$s</string>
     <string name="transfer_sent">已发送 %1$s</string>
     <string name="transfer_received">已收到 %1$s</string>
+    <string name="text_sent">已将文本发送到 %1$s</string>
     <plurals name="transfer_count">
         <item quantity="other">%d 项传输</item>
     </plurals>

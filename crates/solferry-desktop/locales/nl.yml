@@ -48,6 +48,7 @@ toast:
   paired: "Gekoppeld met %{name}"
   link_received: "%{name} ontvangen via een browser"
   sent: "%{title} verstuurd"
+  text_sent: "Tekst verstuurd naar %{name}"
   received: "%{title} ontvangen"
   restart: "Opnieuw starten"
   retry: "Opnieuw proberen"

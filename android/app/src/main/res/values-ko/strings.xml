@@ -164,6 +164,7 @@
     <string name="transfer_receiving">%1$s 받는 중</string>
     <string name="transfer_sent">%1$s 전송 완료</string>
     <string name="transfer_received">%1$s 수신 완료</string>
+    <string name="text_sent">%1$s에 텍스트를 보냈습니다</string>
     <plurals name="transfer_count">
         <item quantity="other">전송 %d건</item>
     </plurals>

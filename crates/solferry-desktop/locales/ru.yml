@@ -48,6 +48,7 @@ toast:
   paired: "Пара с %{name} создана"
   link_received: "Получено из браузера: %{name}"
   sent: "Отправлено: %{title}"
+  text_sent: "Текст отправлен на %{name}"
   received: "Получено: %{title}"
   restart: "Перезапустить"
   retry: "Повторить"

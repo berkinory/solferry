@@ -48,6 +48,7 @@ toast:
   paired: "已与 %{name} 配对"
   link_received: "已从浏览器收到 %{name}"
   sent: "已发送 %{title}"
+  text_sent: "已将文本发送到 %{name}"
   received: "已收到 %{title}"
   restart: "重新启动"
   retry: "重试"

@@ -48,6 +48,7 @@ toast:
   paired: "%{name} とペアリングしました"
   link_received: "ブラウザから %{name} を受信しました"
   sent: "%{title} を送信しました"
+  text_sent: "%{name} にテキストを送信しました"
   received: "%{title} を受信しました"
   restart: "再起動"
   retry: "再試行"

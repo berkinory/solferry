@@ -48,6 +48,7 @@ toast:
   paired: "%{name} ile eşleştirildi"
   link_received: "%{name} tarayıcıdan alındı"
   sent: "%{title} gönderildi"
+  text_sent: "Metin %{name} cihazına gönderildi"
   received: "%{title} alındı"
   restart: "Yeniden başlat"
   retry: "Tekrar dene"

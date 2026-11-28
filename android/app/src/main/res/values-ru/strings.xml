@@ -170,6 +170,7 @@
     <string name="transfer_receiving">Получение: %1$s</string>
     <string name="transfer_sent">Отправлено: %1$s</string>
     <string name="transfer_received">Получено: %1$s</string>
+    <string name="text_sent">Текст отправлен на %1$s</string>
     <plurals name="transfer_count">
         <item quantity="one">%d передача</item>
         <item quantity="few">%d передачи</item>

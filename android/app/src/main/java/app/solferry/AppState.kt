@@ -138,7 +138,7 @@ data class AppState(
         is Update.TextReceived -> copy(
             text = ReceivedText(now, update.name, update.text, update.autoCopy),
         )
-        is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title) } ?: this
+        is Update.TextShared -> update.problem?.let { toast(Tone.Error, it.title) } ?: toast(Tone.Success, res.getString(R.string.text_sent, update.name))
         is Update.LinkReady -> copy(link = LinkState(update.urls, update.receiving))
         is Update.LinkStopped -> copy(link = null)
         is Update.LinkFailed -> toast(Tone.Error, update.problem.title).copy(link = null)

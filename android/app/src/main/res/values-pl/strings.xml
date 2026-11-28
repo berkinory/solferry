@@ -170,6 +170,7 @@
     <string name="transfer_receiving">Odbieranie: %1$s</string>
     <string name="transfer_sent">Wysłano: %1$s</string>
     <string name="transfer_received">Odebrano: %1$s</string>
+    <string name="text_sent">Wysłano tekst do %1$s</string>
     <plurals name="transfer_count">
         <item quantity="one">%d transfer</item>
         <item quantity="few">%d transfery</item>

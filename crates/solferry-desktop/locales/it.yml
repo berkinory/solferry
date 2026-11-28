@@ -48,6 +48,7 @@ toast:
   paired: "Abbinato a %{name}"
   link_received: "Ricevuto da un browser: %{name}"
   sent: "Inviato: %{title}"
+  text_sent: "Testo inviato a %{name}"
   received: "Ricevuto: %{title}"
   restart: "Riavvia"
   retry: "Riprova"

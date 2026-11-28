@@ -228,11 +228,10 @@ impl AppState {
                 self.address_error = Some(explain(&error).title);
                 self.pairing_address = false;
             }
-            Update::TextShared { name, result } => {
-                if let Err(error) = result {
-                    self.text_failed(&name, &error);
-                }
-            }
+            Update::TextShared { name, result } => match result {
+                Ok(()) => self.toast(Tone::Success, t!("toast.text_sent", name = name), None),
+                Err(error) => self.text_failed(&name, &error),
+            },
             Update::SendFailed { target, paths, error } => {
                 if !matches!(error, Error::Cancelled) {
                     let title = about(&error, &target.name);

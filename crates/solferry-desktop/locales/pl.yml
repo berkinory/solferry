@@ -48,6 +48,7 @@ toast:
   paired: "Sparowano: %{name}"
   link_received: "Odebrano %{name} z przeglądarki"
   sent: "Wysłano: %{title}"
+  text_sent: "Wysłano tekst do %{name}"
   received: "Odebrano: %{title}"
   restart: "Uruchom ponownie"
   retry: "Spróbuj ponownie"

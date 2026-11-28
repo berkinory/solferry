@@ -164,6 +164,7 @@
     <string name="transfer_receiving">%1$s を受信中</string>
     <string name="transfer_sent">%1$s を送信しました</string>
     <string name="transfer_received">%1$s を受信しました</string>
+    <string name="text_sent">%1$s にテキストを送信しました</string>
     <plurals name="transfer_count">
         <item quantity="other">%d 件の転送</item>
     </plurals>

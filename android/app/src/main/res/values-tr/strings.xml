@@ -166,6 +166,7 @@
     <string name="transfer_receiving">%1$s alınıyor</string>
     <string name="transfer_sent">%1$s gönderildi</string>
     <string name="transfer_received">%1$s alındı</string>
+    <string name="text_sent">Metin %1$s cihazına gönderildi</string>
     <plurals name="transfer_count">
         <item quantity="one">%d aktarım</item>
         <item quantity="other">%d aktarım</item>

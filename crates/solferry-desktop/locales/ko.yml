@@ -48,6 +48,7 @@ toast:
   paired: "%{name}과(와) 페어링했어요"
   link_received: "브라우저에서 %{name} 수신 완료"
   sent: "%{title} 전송 완료"
+  text_sent: "%{name}에 텍스트를 보냈습니다"
   received: "%{title} 수신 완료"
   restart: "다시 시작"
   retry: "다시 시도"

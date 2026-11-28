@@ -168,6 +168,7 @@
     <string name="transfer_receiving">Réception : %1$s</string>
     <string name="transfer_sent">Envoi terminé : %1$s</string>
     <string name="transfer_received">Réception terminée : %1$s</string>
+    <string name="text_sent">Texte envoyé à %1$s</string>
     <plurals name="transfer_count">
         <item quantity="one">%d transfert</item>
         <item quantity="many">%d transferts</item>
