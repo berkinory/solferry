@@ -29,7 +29,7 @@ ed25519-dalek = "3"
 fs4 = "1.1"
 futures = "0.3"
 gethostname = "1"
-gpui-kit = "0.9"
+gpui-kit = "0.11"
 hex = "0.4"
 http-body-util = "0.1"
 hyper = { version = "1", default-features = false, features = [
@@ -45,7 +45,7 @@ ksni = { version = "0.3", default-features = false, features = [
 
 noq-proto = "1.4"
 prost = "0.14"
-qrcode = { version = "0.14", default-features = false }
+qrcode = { version = "0.15", default-features = false }
 rand = "0.10"
 reqwest = { version = "0.13", default-features = false, features = [
   "rustls-no-provider",
